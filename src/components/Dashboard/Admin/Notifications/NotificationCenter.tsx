@@ -12,17 +12,18 @@ import ConfirmationModal from "@/components/UI/Modal/ConfirmationModal";
 import { Package, CreditCard, Gift, Bell, TrendingDown } from "lucide-react";
 
 function timeAgo(dateString: any) {
-  if (!dateString) return "Baru saja";
+  const t = config.timeAgo || {};
+  if (!dateString) return t.justNow || "Baru saja";
   const date = new Date(dateString);
-  if (isNaN(date.getTime())) return "Baru saja";
+  if (isNaN(date.getTime())) return t.justNow || "Baru saja";
   const diffMs = Date.now() - date.getTime();
   const minutes = Math.floor(diffMs / 60000);
-  if (minutes < 1) return "Baru saja";
-  if (minutes < 60) return `${minutes} menit lalu`;
+  if (minutes < 1) return t.justNow || "Baru saja";
+  if (minutes < 60) return `${minutes} ${t.minute || "menit lalu"}`;
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours} jam lalu`;
+  if (hours < 24) return `${hours} ${t.hour || "jam lalu"}`;
   const days = Math.floor(hours / 24);
-  return `${days} hari lalu`;
+  return `${days} ${t.day || "hari lalu"}`;
 }
 
 const capitalize = (s: any) => {
@@ -180,7 +181,7 @@ export default function NotificationCenter({ onUnreadCountChange }: any) {
     try {
       const token = await getSupabaseToken();
       if (!token) {
-        toast.error("Sesi Anda telah berakhir. Silakan muat ulang.");
+        toast.error(config.validation?.sessionExpired || "Sesi Anda telah berakhir. Silakan muat ulang.");
         return;
       }
 
@@ -254,7 +255,7 @@ export default function NotificationCenter({ onUnreadCountChange }: any) {
     try {
       const token = await getSupabaseToken();
       if (!token) {
-        toast.error("Sesi Anda telah berakhir. Silakan muat ulang.");
+        toast.error(config.validation?.sessionExpired || "Sesi Anda telah berakhir. Silakan muat ulang.");
         return;
       }
 
@@ -277,7 +278,7 @@ export default function NotificationCenter({ onUnreadCountChange }: any) {
     e.preventDefault();
     const { title, message, link, type, audience } = createForm;
     if (!title || !message) {
-      toast.error("Judul dan pesan wajib diisi.");
+      toast.error(config.validation?.required || "Judul dan pesan wajib diisi.");
       return;
     }
     try {
@@ -419,7 +420,9 @@ export default function NotificationCenter({ onUnreadCountChange }: any) {
                       {timeAgo(notification.createdAt)}
                     </span>
                     {notification.link && (
-                      <span className={styles.linkIndicator}>Lihat Detail &rarr;</span>
+                      <span className={styles.linkIndicator}>
+                        {config.linkIndicator || "Lihat Detail"} &rarr;
+                      </span>
                     )}
                   </div>
                 </div>
@@ -429,7 +432,7 @@ export default function NotificationCenter({ onUnreadCountChange }: any) {
                     e.stopPropagation();
                     deleteNotification(notification);
                   }}
-                  aria-label="Hapus notifikasi"
+                  aria-label={config.buttons?.deleteAria || "Hapus notifikasi"}
                 >
                   ✕
                 </button>
@@ -556,7 +559,7 @@ export default function NotificationCenter({ onUnreadCountChange }: any) {
                   {config.modal.cancel}
                 </button>
                 <button type="submit" className={styles.submitBtn} disabled={submitting}>
-                  {submitting ? 'Menyimpan...' : config.modal.submit}
+                  {submitting ? (config.buttons?.saving || "Menyimpan...") : config.modal.submit}
                 </button>
               </div>
             </form>
@@ -568,8 +571,8 @@ export default function NotificationCenter({ onUnreadCountChange }: any) {
         isOpen={!!notificationToDelete}
         onClose={() => setNotificationToDelete(null)}
         onConfirm={confirmDeleteNotification}
-        title="Hapus Notifikasi"
-        message="Apakah Anda yakin ingin menghapus notifikasi ini?"
+        title={config.deleteModal?.title || "Hapus Notifikasi"}
+        message={config.deleteModal?.message || "Apakah Anda yakin ingin menghapus notifikasi ini?"}
       />
     </div>
   );

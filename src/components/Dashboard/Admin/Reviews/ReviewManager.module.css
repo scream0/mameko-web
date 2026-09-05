@@ -428,3 +428,70 @@
   cursor: pointer;
   accent-color: var(--primary-accent);
 }
+
+.cancelBtnSmall {
+  padding: 6px 12px;
+  font-size: 0.75rem;
+}
+
+.checkboxTh {
+  width: 40px;
+  text-align: center;
+}
+
+.checkboxTd {
+  text-align: center;
+}
+
+.selectedRow {
+  background-color: rgba(var(--primary-accent-rgb), 0.08);
+}
+
+.photoContainer {
+  margin-top: 6px;
+}
+
+.photoLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: var(--primary-accent);
+  text-decoration: underline;
+  font-weight: 600;
+  transition: opacity 0.2s ease;
+}
+
+.photoLink:hover {
+  opacity: 0.8;
+}
+
+@media (max-width: 768px) {
+  .reviewManagerContainer {
+    padding: 16px;
+  }
+
+  .filterControls {
+    gap: 8px;
+  }
+
+  .reviewsTable th,
+  .reviewsTable td {
+    padding: 12px 8px;
+    font-size: 0.8rem;
+  }
+
+  .bulkFloatingBar {
+    bottom: 15px;
+    padding: 10px 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .filterControls button {
+    flex: 1 1 calc(50% - 8px);
+    text-align: center;
+    padding: 0.45rem 0.6rem;
+  }
+}
+

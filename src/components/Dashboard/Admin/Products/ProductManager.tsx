@@ -73,16 +73,14 @@ export default function ProductManager() {
     if (filters.category !== "all") {
       params.set("category", filters.category);
     }
-    if (filters.status !== "all") {
-      params.set("status", filters.status);
-    }
+    params.set("status", filters.status);
 
     // Pagination/Sort
     // Go API default sorts by created_at desc
 
     try {
       const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + `/api/products?${params.toString()}`);
-      if (!res.ok) throw new Error("Gagal mengambil data produk dari server");
+      if (!res.ok) throw new Error(pmConfig.errors?.fetch || "Gagal mengambil data produk dari server");
       const result = await res.json();
       
       const data = result.data || [];
@@ -174,7 +172,7 @@ export default function ProductManager() {
         headers: authHeaders,
       });
       const deleteData = await deleteRes.json().catch(() => ({}));
-      if (!deleteRes.ok) throw new Error(deleteData.error || "Gagal menghapus produk dari database.");
+      if (!deleteRes.ok) throw new Error(deleteData.error || pmConfig.errors?.delete || "Gagal menghapus produk dari database.");
 
       toast.success(pmConfig.toasts.deleteSuccess);
       fetchProducts();
@@ -220,11 +218,11 @@ export default function ProductManager() {
         <div className={styles.headerRow}>
           <div>
             <h2 className={styles.title}>{pmConfig.title}</h2>
-            <p className={styles.subtitle}>Keep inventory healthy and spot issues before they affect sales.</p>
+            <p className={styles.subtitle}>{pmConfig.subtitle}</p>
           </div>
           <div className={styles.summaryPillGroup}>
-            <span className={styles.summaryPill}>Live inventory</span>
-            <span className={styles.summaryPill}>Fast updates</span>
+            <span className={styles.summaryPill}>{pmConfig.summaryPills?.live || "Inventori Realtime"}</span>
+            <span className={styles.summaryPill}>{pmConfig.summaryPills?.fast || "Pembaruan Cepat"}</span>
           </div>
         </div>
 
@@ -256,7 +254,7 @@ export default function ProductManager() {
               value={filters.category}
               onChange={(e) => handleFilterChange("category", e.target.value)}
             >
-              <option value="all">{pmConfig.filters.all} Kategori</option>
+              <option value="all">{pmConfig.filters?.allCategories || "Semua Kategori"}</option>
               {categories.map((cat) => (
                 <option key={cat} value={cat}>
                   {cat}
@@ -268,9 +266,9 @@ export default function ProductManager() {
                 value={filters.status}
                 onChange={(e) => handleFilterChange("status", e.target.value)}
             >
-                <option value="all">All Statuses</option>
-                <option value="published">Published</option>
-                <option value="draft">Draft</option>
+                <option value="all">{pmConfig.filters?.publishStatus?.all || "Semua Status Publikasi"}</option>
+                <option value="published">{pmConfig.filters?.publishStatus?.published || "Dipublikasikan"}</option>
+                <option value="draft">{pmConfig.filters?.publishStatus?.draft || "Draf"}</option>
             </select>
           </div>
         </div>
@@ -293,11 +291,11 @@ export default function ProductManager() {
                   <tr>
                     <th>{pmConfig.tableHeaders.image}</th>
                     <th>{pmConfig.tableHeaders.name}</th>
-                    <th>SKU</th>
+                    <th>{pmConfig.tableHeaders?.sku || "SKU"}</th>
                     <th>{pmConfig.tableHeaders.category}</th>
                     <th>{pmConfig.tableHeaders.stock}</th>
                     <th>{pmConfig.tableHeaders.status}</th>
-                    <th>Actions</th>
+                    <th>{pmConfig.tableHeaders.actions}</th>
                   </tr>
                 </thead>
                 <tbody>

@@ -6,6 +6,25 @@
     "points": { "title": "Poin Rewards", "desc": "Dapat dipakai untuk transaksi", "icon": "star" },
     "balance": { "title": "Saldo Wallet", "desc": "Saldo tersedia untuk belanja", "icon": "wallet", "currency": true }
   },
+  "status": {
+    "pending": { "label": "Menunggu Pembayaran", "badgeClass": "statusPending" },
+    "unpaid": { "label": "Menunggu Pembayaran", "badgeClass": "statusPending" },
+    "verifying": { "label": "Verifikasi Pembayaran", "badgeClass": "statusPending" },
+    "success": { "label": "Sedang Dikemas", "badgeClass": "statusProcessing" },
+    "paid": { "label": "Sedang Dikemas", "badgeClass": "statusProcessing" },
+    "settlement": { "label": "Sedang Dikemas", "badgeClass": "statusProcessing" },
+    "capture": { "label": "Sedang Dikemas", "badgeClass": "statusProcessing" },
+    "processing": { "label": "Sedang Dikemas", "badgeClass": "statusProcessing" },
+    "shipping": { "label": "Dalam Pengiriman", "badgeClass": "statusShipping" },
+    "shipped": { "label": "Dalam Pengiriman", "badgeClass": "statusShipping" },
+    "delivered": { "label": "Pesanan Selesai", "badgeClass": "statusCompleted" },
+    "completed": { "label": "Pesanan Selesai", "badgeClass": "statusCompleted" },
+    "cancelled": { "label": "Dibatalkan", "badgeClass": "statusCancelled" },
+    "canceled": { "label": "Dibatalkan", "badgeClass": "statusCancelled" },
+    "return_requested": { "label": "Pengajuan Return", "badgeClass": "statusWarning" },
+    "returning": { "label": "Barang Dikirim Balik", "badgeClass": "statusShipping" },
+    "returned": { "label": "Return Selesai", "badgeClass": "statusCompleted" }
+  },
   "pointsBanner": {
     "title": "Program Poin XAR",
     "desc": "Kumpulkan poin dari setiap transaksi sukses dan tukarkan dengan produk eksklusif.",
@@ -39,11 +58,19 @@
     "title": "Direkomendasikan Untuk Anda",
     "seeAll": "Lihat Semua →",
     "loading": "Mencari rekomendasi...",
-    "quickAddTitle": "Tambah ke Keranjang"
+    "quickAddTitle": "Tambah ke Keranjang",
+    "empty": "Produk rekomendasi tidak ditemukan."
+  },
+  "fallbacks": {
+    "primaryAddressUnset": "Belum diatur",
+    "defaultItemProduct": "Produk",
+    "defaultItemVariant": "Standard",
+    "defaultCategory": "Extrait de Parfum",
+    "moreItemsSuffix": "lainnya",
+    "loadingPlaceholder": "-"
   },
   "toasts": {
     "fetchOrdersError": "Gagal memuat data pesanan.",
     "fetchSummaryError": "Gagal memuat data ringkasan."
   }
 }
-

@@ -23,8 +23,7 @@ function AuthCallbackContent() {
       }
 
       if (code) {
-        // Supabase createBrowserClient automatically handles the code exchange in the background.
-        // We just need to verify the session exists.
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         let activeSession = session;
         if (sessionError || !activeSession) {
           // Fallback manual exchange just in case

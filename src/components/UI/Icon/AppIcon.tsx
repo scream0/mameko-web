@@ -54,6 +54,8 @@ import {
   CheckCircle,
   CornerDownLeft,
   ArrowUpRight,
+  ChevronRight,
+  ArrowRight,
   Image,
   Loader,
 } from "lucide-react";
@@ -130,6 +132,8 @@ const iconMap: Record<string, React.ElementType> = {
   "check-circle": CheckCircle,
   "corner-down-left": CornerDownLeft,
   "arrow-up-right": ArrowUpRight,
+  "chevron-right": ChevronRight,
+  "arrow-right": ArrowRight,
   "image": Image,
   "loader": Loader,
 };

@@ -5,6 +5,7 @@ import { BiteshipAreaSelect } from "@/components/UI/BiteshipAreaSelect/BiteshipA
 import toast from "react-hot-toast";
 import styles from "./AddressModal.module.css";
 import config from "@/data/ui/addressModalConfig.json";
+import { useScrollLock } from "@/hooks/useScrollLock";
 
 export function AddressModal() {
   const {
@@ -13,6 +14,8 @@ export function AddressModal() {
     saveAddressAndPay,
     isProcessing,
   } = useStore();
+
+  useScrollLock(isAddressModalOpen);
 
   const [formData, setFormData] = useState({
     label: "Rumah",

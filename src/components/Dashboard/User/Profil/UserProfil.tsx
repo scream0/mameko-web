@@ -1,6 +1,7 @@
 // @ts-nocheck
 "use client";
 import { useState, useEffect, lazy, Suspense, useCallback, useRef } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import styles from "./UserProfil.module.css";
 import profileConfig from "@/data/ui/userProfilConfig.json";
 import { auth } from "@/lib/supabaseClient";
@@ -21,6 +22,11 @@ const UserSettings = lazy(() => import("@/components/Dashboard/User/Settings/Use
 const WalletSection = lazy(() => import("@/components/Dashboard/User/Wallet/WalletSection"));
 
 export default function ProfileSection() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const subtabParam = searchParams.get("subtab");
+
   const [loading, setLoading] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [removingImage, setRemovingImage] = useState(false);
@@ -28,7 +34,34 @@ export default function ProfileSection() {
   const [isPasswordChanging, setIsPasswordChanging] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   
-  const [activeTab, setActiveTab] = useState("profile");
+  const [activeTab, setActiveTab] = useState(
+    subtabParam && ["profile", "wishlist", "wallet", "settings"].includes(subtabParam)
+      ? subtabParam
+      : "profile"
+  );
+
+  useEffect(() => {
+    if (subtabParam && ["profile", "wishlist", "wallet", "settings"].includes(subtabParam)) {
+      setActiveTab(subtabParam);
+    } else if (!subtabParam) {
+      setActiveTab("profile");
+    }
+  }, [subtabParam]);
+
+  const handleSubtabChange = (newSubtab: string) => {
+    setActiveTab(newSubtab);
+    const params = new URLSearchParams(searchParams.toString());
+    if (newSubtab === "profile") {
+      params.delete("subtab");
+    } else {
+      params.set("subtab", newSubtab);
+    }
+    if (!params.get("tab")) {
+      params.set("tab", "profile");
+    }
+    const queryString = params.toString();
+    router.push(queryString ? `${pathname}?${queryString}` : pathname, { scroll: false });
+  };
   const [isManageAddressModalOpen, setIsManageAddressModalOpen] = useState(false);
 
   const [profile, setProfile] = useState({
@@ -667,61 +700,64 @@ export default function ProfileSection() {
             profile={profile}
             addresses={addresses}
             deletingAccount={deletingAccount}
-            onBackToProfile={() => setActiveTab("profile")}
+            onBackToProfile={() => handleSubtabChange("profile")}
             onOpenProfileModal={() => { setTempProfile(profile); setIsProfileModalOpen(true); }}
             onOpenManageAddressModal={() => setIsManageAddressModalOpen(true)}
-            onOpenPasswordModal={() => setIsPasswordModalOpen(true)}
             onOpenLogoutModal={handleLogout}
             onDeleteAccount={handleDeleteAccount}
           />
         ) : activeTab === "wishlist" ? (
           <div className={styles.tabContainer}>
             <div className={styles.tabHeaderCard}>
-              <button onClick={() => setActiveTab("profile")} className={styles.backToProfileBtn}>
+              <button onClick={() => handleSubtabChange("profile")} className={styles.backToProfileBtn}>
                 <AppIcon name="arrow-left" size={16} />
-                <span>Kembali ke Profil</span>
+                <span>{profileConfig.nav?.backToProfile || "Kembali ke Profil"}</span>
               </button>
-              <h3 className={styles.tabTitle}>Wishlist Saya</h3>
+              <h3 className={styles.tabTitle}>{profileConfig.nav?.wishlist || "Wishlist Saya"}</h3>
             </div>
             <WishlistSection />
           </div>
         ) : activeTab === "wallet" ? (
           <div className={styles.tabContainer}>
             <div className={styles.tabHeaderCard}>
-              <button onClick={() => setActiveTab("profile")} className={styles.backToProfileBtn}>
+              <button onClick={() => handleSubtabChange("profile")} className={styles.backToProfileBtn}>
                 <AppIcon name="arrow-left" size={16} />
-                <span>Kembali ke Profil</span>
+                <span>{profileConfig.nav?.backToProfile || "Kembali ke Profil"}</span>
               </button>
-              <h3 className={styles.tabTitle}>Dompet & Penarikan Dana</h3>
+              <h3 className={styles.tabTitle}>{profileConfig.nav?.wallet || "Dompet & Penarikan Dana"}</h3>
             </div>
-            <WalletSection profile={profile} />
+            <WalletSection 
+              profile={profile} 
+              onOpenBankSettings={() => {
+                handleSubtabChange("profile");
+                setTempProfile({ ...profile });
+                setIsProfileModalOpen(true);
+              }}
+            />
           </div>
         ) : (
           <>
             {/* Wrapper Header Profil yang menyatukan Tombol Navbar di Pojok Kanan Atas */}
-            <div style={{ position: "relative" }}>
-              <div style={{ position: "absolute", top: "1rem", right: "1rem", zIndex: 10, display: "flex", gap: "0.5rem" }}>
+            <div className={styles.profileNavWrapper}>
+              <div className={styles.topNavActions}>
                 <button 
-                  className={styles.chatIconBtnNavbar} 
-                  onClick={() => setActiveTab("wishlist")} 
-                  title="Wishlist Saya" 
-                  style={activeTab === "wishlist" ? { color: "var(--primary-accent)", borderColor: "var(--primary-accent)" } : {}}
+                  className={`${styles.chatIconBtnNavbar} ${activeTab === "wishlist" ? styles.topNavBtnActive : ""}`} 
+                  onClick={() => handleSubtabChange("wishlist")} 
+                  title={profileConfig.nav?.wishlist || "Wishlist Saya"} 
                 >
                   <AppIcon name="heart" className={styles.svgIcon} />
                 </button>
                 <button 
-                  className={styles.chatIconBtnNavbar} 
-                  onClick={() => setActiveTab("wallet")} 
-                  title="Dompet & Penarikan Dana" 
-                  style={activeTab === "wallet" ? { color: "var(--primary-accent)", borderColor: "var(--primary-accent)" } : {}}
+                  className={`${styles.chatIconBtnNavbar} ${activeTab === "wallet" ? styles.topNavBtnActive : ""}`} 
+                  onClick={() => handleSubtabChange("wallet")} 
+                  title={profileConfig.nav?.wallet || "Dompet & Penarikan Dana"} 
                 >
                   <AppIcon name="wallet" className={styles.svgIcon} />
                 </button>
                 <button 
-                  className={styles.cartIconBtnNavbar} 
-                  onClick={() => setActiveTab("settings")} 
-                  title="Pengaturan Akun" 
-                  style={activeTab === "settings" ? { color: "var(--primary-accent)", borderColor: "var(--primary-accent)" } : {}}
+                  className={`${styles.cartIconBtnNavbar} ${activeTab === "settings" ? styles.topNavBtnActive : ""}`} 
+                  onClick={() => handleSubtabChange("settings")} 
+                  title={profileConfig.nav?.settings || "Pengaturan Akun"} 
                 >
                   <AppIcon name="settings" className={styles.svgIcon} />
                 </button>

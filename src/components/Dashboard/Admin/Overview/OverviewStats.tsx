@@ -6,7 +6,7 @@ import toast from "react-hot-toast";
 import overviewConfig from "@/data/ui/overviewConfig.json";
 import { StatsSkeleton } from "@/components/UI/Skeleton/SkeletonLayouts";
 import { calculateDashboardStats } from "@/utils/dashboardSummary";
-import { auth } from "@/lib/supabaseClient";
+import { auth, supabase } from "@/lib/supabaseClient";
 
 export default function OverviewStats() {
   const [stats, setStats] = useState({
@@ -26,31 +26,62 @@ export default function OverviewStats() {
 
       const [res, ordersRes] = await Promise.all([
         fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/products?limit=200", { headers }),
-        fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/admin/orders?limit=1000", { headers })
+        fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/admin/orders?limit=1000", { headers }),
       ]);
-      
-      const productsResult = res.ok ? (res.headers?.get("content-type")?.includes("application/json") ? await res.json() : {}) : {};
+
+      const productsResult = res.ok
+        ? (res.headers?.get("content-type")?.includes("application/json") ? await res.json() : {})
+        : {};
       const products = (productsResult.data || productsResult.products || []).filter(Boolean);
 
-      const ordersResult = ordersRes.ok ? (ordersRes.headers?.get("content-type")?.includes("application/json") ? await ordersRes.json() : {}) : {};
+      const ordersResult = ordersRes.ok
+        ? (ordersRes.headers?.get("content-type")?.includes("application/json") ? await ordersRes.json() : {})
+        : {};
       const orders = (ordersResult.data || ordersResult.orders || []).filter(Boolean);
 
-      const summary = calculateDashboardStats({ products, orders });
+      const summary = calculateDashboardStats(orders, products);
       setStats(summary);
-    } catch (error) {
-      console.error("Gagal mengambil data dashboard:", error);
-      toast.error("Gagal memuat data dashboard");
+    } catch (err: any) {
+      console.error("OverviewStats fetch error:", err);
+      toast.error(overviewConfig.toasts.statsLoadError);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchDashboardData();
+
+    // Debounce timer for realtime updates
+    let debounceTimer: NodeJS.Timeout;
+    const triggerDebouncedFetch = () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        fetchDashboardData();
+      }, 500);
+    };
+
+    const channel = supabase
+      .channel("overview-stats-updates")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "orders" },
+        () => triggerDebouncedFetch()
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "products" },
+        () => triggerDebouncedFetch()
+      )
+      .subscribe();
+
+    return () => {
+      clearTimeout(debounceTimer);
+      supabase.removeChannel(channel);
+    };
   }, []);
 
-  const formatRupiah = (number: any) =>
+  const formatRupiah = (number: number) =>
     new Intl.NumberFormat("id-ID", {
       style: "currency",
       currency: "IDR",
@@ -140,10 +171,6 @@ export default function OverviewStats() {
           </div>
         </div>
       </div>
-
-      {/* Tabel daftar & pengelolaan pesanan lengkap ada di tab "Orders"
-          (komponen OrdersManagement), jadi tidak dirender dobel di sini.
-          Tab ini hanya menampilkan ringkasan angka. */}
     </div>
   );
 }

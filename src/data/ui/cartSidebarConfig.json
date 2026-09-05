@@ -1,27 +1,45 @@
 {
   "accessibility": {
-    "closeAriaLabel": "Close Cart"
+    "closeAriaLabel": "Tutup Keranjang",
+    "removeItemTitle": "Hapus Item",
+    "removeItemAria": "Hapus {name} dari keranjang",
+    "decreaseQtyAria": "Kurangi jumlah {name}",
+    "increaseQtyAria": "Tambah jumlah {name}"
   },
   "icons": {
     "close": "x",
-    "emptyCart": "shopping-cart"
+    "emptyCart": "shopping-cart",
+    "trash": "trash-2",
+    "tag": "tag"
   },
   "labels": {
     "title": "Keranjang Belanja",
     "variant": "Varian:",
     "quantityMinus": "−",
     "quantityPlus": "+",
+    "subtotal": "Subtotal",
+    "promoDiscount": "Diskon Promo Toko",
     "total": "Total Pembayaran:",
-    "checkout": "Bayar Sekarang"
+    "checkout": "Bayar Sekarang",
+    "processing": "Memproses...",
+    "stockOut": "(Habis)",
+    "stockRemaining": "(Sisa: {stock})"
+  },
+  "promo": {
+    "badge": "PROMO TOKO",
+    "savingsText": "Hemat",
+    "appliedNotice": "Potongan promo toko otomatis aktif",
+    "percentageTemplate": "{value}%"
   },
   "emptyState": {
     "message": "Keranjang Anda Kosong",
     "buttonText": "Jelajahi Produk",
     "buttonLink": "#product"
   },
-  "shipping": {
-    "freeShippingThreshold": 500000,
-    "message": "Anda hanya butuh senilai {amount} lagi untuk gratis ongkir!",
-    "congratsMessage": "Selamat! Anda mendapatkan gratis biaya pengiriman."
+  "confirmModal": {
+    "title": "Hapus Item",
+    "message": "Apakah Anda yakin ingin menghapus item ini dari keranjang?",
+    "cancelBtn": "Batal",
+    "confirmBtn": "Hapus"
   }
 }

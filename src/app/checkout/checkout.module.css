@@ -259,15 +259,15 @@
 
 /* Section Card */
 .sectionCard {
-  background: rgba(var(--surface-primary-rgb), 0.5);
+  background: rgba(var(--surface-primary-rgb), 0.7);
   backdrop-filter: blur(25px);
   -webkit-backdrop-filter: blur(25px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-color);
   border-radius: 18px;
   padding: 1.5rem;
   transition: box-shadow 0.3s ease, transform 0.25s ease, border-color 0.25s ease, filter 0.3s ease;
   animation: fadeInUp 0.4s ease both;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
 }
 
 .sectionCard:hover {
@@ -913,15 +913,15 @@
 
 /* ============ Right Column — Order Summary ============ */
 .summaryCard {
-  background: rgba(var(--surface-primary-rgb), 0.5);
+  background: rgba(var(--surface-primary-rgb), 0.7);
   backdrop-filter: blur(25px);
   -webkit-backdrop-filter: blur(25px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-color);
   border-radius: 20px;
   padding: 1.4rem;
   position: sticky;
   top: 1.5rem;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08);
 }
 
 .summaryHeader {
@@ -1018,11 +1018,38 @@
   margin: 0.1rem 0 0;
 }
 
+.summaryItemPriceBox {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  text-align: right;
+}
+
+.summaryItemOriginalPrice {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  text-decoration: line-through;
+}
+
 .summaryItemPrice {
   font-size: 0.8rem;
   font-weight: 600;
   color: var(--text-primary);
   white-space: nowrap;
+}
+
+.summaryPromoBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(var(--primary-accent-rgb), 0.12);
+  color: var(--primary-accent);
+  font-size: 0.7rem;
+  font-weight: 700;
+  margin-left: 6px;
+  letter-spacing: 0.3px;
 }
 
 /* Summary Lines */
@@ -1256,205 +1283,184 @@
   line-height: 1;
 }
 
-.modalHint {
+/* ============ PAYMENT METHODS ============ */
+.paymentMethodList {
   display: flex;
-  align-items: flex-start;
-  gap: 0.6rem;
-  margin-bottom: 1rem;
-  padding: 0.75rem 0.85rem;
-  border-radius: 10px;
-  background: rgba(var(--primary-accent-rgb), 0.08);
-  color: var(--text-secondary);
-  font-size: 0.78rem;
-  line-height: 1.5;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 1rem;
 }
 
-.modalHintIcon {
-  display: inline-flex;
+.paymentMethodCard {
+  display: flex;
   align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: var(--primary-accent);
-  color: var(--primary-accent-text);
-  font-size: 0.72rem;
-  font-weight: 700;
-  flex-shrink: 0;
+  gap: 12px;
+  padding: 14px;
+  border: 1.5px solid var(--border-color);
+  border-radius: 12px;
+  cursor: pointer;
+  background: var(--surface-primary);
+  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+  user-select: none;
 }
 
-.formGroup {
-  margin-bottom: 1rem;
-}
-
-.formLabel {
-  display: block;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-  margin-bottom: 0.4rem;
-  font-family: var(--font-sans);
-}
-
-.formInput {
-  width: 100%;
-  padding: 0.75rem 0.95rem;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  background: var(--surface-secondary);
-  color: var(--text-primary);
-  font-family: var(--font-sans);
-  font-size: 0.85rem;
-  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
-}
-
-.formInput:focus {
+.paymentMethodCard:hover {
   border-color: var(--primary-accent);
-  box-shadow: 0 0 0 3px rgba(var(--primary-accent-rgb), 0.12);
-  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
 }
 
-.formTextarea {
-  width: 100%;
-  padding: 0.75rem 0.95rem;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  background: var(--surface-secondary);
-  color: var(--text-primary);
-  font-family: var(--font-sans);
-  font-size: 0.85rem;
-  resize: vertical;
-  min-height: 80px;
-  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
-}
-
-.formTextarea:focus {
+.paymentMethodCardSelected {
   border-color: var(--primary-accent);
-  box-shadow: 0 0 0 3px rgba(var(--primary-accent-rgb), 0.12);
-  transform: translateY(-1px);
+  background: rgba(var(--primary-accent-rgb), 0.05);
+  box-shadow: 0 0 0 1px var(--primary-accent);
 }
 
-.formSelect {
-  width: 100%;
-  padding: 0.7rem 1rem;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  background: var(--surface-secondary);
-  color: var(--text-primary);
-  font-family: var(--font-sans);
-  font-size: 0.85rem;
+.paymentMethodRadio {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary-accent);
   cursor: pointer;
 }
 
-.formRow {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-
-.modalFooter {
+.paymentMethodInfo {
   display: flex;
-  justify-content: flex-end;
-  gap: 0.75rem;
-  margin-top: 1.5rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--border-color);
+  flex-direction: column;
+  gap: 2px;
 }
 
-.modalBtnCancel {
-  padding: 0.7rem 1.5rem;
+.paymentMethodTitle {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+
+.paymentMethodDesc {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* ============ VOUCHER & PROMO INPUTS ============ */
+.voucherInputGroup {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.voucherInput {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--surface-secondary);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.voucherInput:focus {
+  border-color: var(--primary-accent);
+  box-shadow: 0 0 0 2px rgba(var(--primary-accent-rgb), 0.15);
+}
+
+.appliedVouchersList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.promoAppliedItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.promoBadgeText {
+  font-size: 0.8rem;
+  color: var(--primary-accent);
+  font-weight: 700;
+}
+
+.promoCodeText {
+  font-size: 0.84rem;
+  color: var(--text-primary);
+}
+
+/* ============ ADDRESS CARD HELPERS ============ */
+.addressLabelHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.addressEditBtn {
   background: transparent;
   border: 1px solid var(--border-color);
-  border-radius: 6px;
-  color: var(--text-secondary);
-  font-family: var(--font-sans);
-  font-size: 0.85rem;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.modalBtnCancel:hover {
-  background: var(--surface-secondary);
-}
-
-.modalBtnSave {
-  padding: 0.75rem 1.4rem;
-  background: linear-gradient(135deg, var(--primary-accent) 0%, rgba(var(--primary-accent-rgb), 0.84) 100%);
-  border: none;
-  border-radius: 8px;
-  color: var(--primary-accent-text);
-  font-family: var(--font-sans);
-  font-size: 0.85rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 6px 14px rgba(var(--primary-accent-rgb), 0.2);
-}
-
-.modalBtnSave:hover {
-  transform: translateY(-1px);
-  opacity: 0.95;
-}
-
-.modalBtnSave:disabled {
-  background: var(--border-color);
-  color: var(--text-secondary);
-  cursor: not-allowed;
-}
-
-/* City search dropdown */
-.citySearchWrapper {
-  position: relative;
-}
-
-.citySearchInput {
-  width: 100%;
-  padding: 0.7rem 1rem;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  background: var(--surface-secondary);
   color: var(--text-primary);
-  font-family: var(--font-sans);
-  font-size: 0.85rem;
+  font-size: 0.72rem;
+  padding: 3px 9px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.citySearchInput:focus {
+.addressEditBtn:hover {
+  background: var(--surface-secondary);
   border-color: var(--primary-accent);
 }
 
-.cityDropdown {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  max-height: 200px;
+.addressNotesText {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  margin-top: 2px;
+  margin-bottom: 6px;
+  font-style: italic;
+}
+
+.addressEmptyWrapper {
+  padding: 18px 0;
+  text-align: center;
+}
+
+.addressEmptyDesc {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  margin-bottom: 10px;
+}
+
+.addressLoadingText {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+/* ============ VOUCHER MODAL HELPERS ============ */
+.voucherModalContent {
+  max-width: 600px;
+}
+
+.voucherModalSub {
+  margin: 2px 0 0;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.voucherModalList {
+  max-height: 65vh;
   overflow-y: auto;
-  background: var(--surface-primary);
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  z-index: 10;
-  margin-top: 4px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  padding: 10px 0;
 }
 
-.cityOption {
-  padding: 0.6rem 1rem;
-  font-size: 0.8rem;
-  color: var(--text-primary);
-  cursor: pointer;
-  transition: background 0.15s;
-  font-family: var(--font-sans);
+.strikethroughText {
+  text-decoration: line-through;
+  color: var(--text-secondary);
+  margin-right: 6px;
 }
 
-.cityOption:hover {
-  background: var(--surface-secondary);
-}
-
-.cityOptionSelected {
-  background: rgba(var(--primary-accent-rgb), 0.1);
-  color: var(--primary-accent);
-  font-weight: 600;
-}
 
 /* ============ Loading / Empty ============ */
 .loadingState {

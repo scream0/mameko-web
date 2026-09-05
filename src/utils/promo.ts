@@ -42,17 +42,69 @@ export function isPromoActive(promo: any): boolean {
 }
 
 /**
+ * Cek apakah varian produk tertentu memenuhi syarat promo.
+ *
+ * @param {string|number|undefined} productId ID Produk
+ * @param {string|undefined} variantSize Ukuran/Nama varian (misal "10ml", "50ml")
+ * @param {object|null} promo Settings promo
+ * @returns {boolean}
+ */
+export function isVariantInPromo(
+  productId?: string | number,
+  variantSize?: string,
+  promo?: any
+): boolean {
+  if (!isPromoActive(promo)) return false;
+
+  const targetType = promo?.promoTargetType || "all";
+  if (targetType === "all") return true;
+
+  if (targetType === "specific_variants") {
+    if (!productId || !variantSize) return false;
+
+    let targets: string[] = [];
+    if (Array.isArray(promo.promoTargetVariants)) {
+      targets = promo.promoTargetVariants;
+    } else if (typeof promo.promoTargetVariants === "string") {
+      try {
+        targets = JSON.parse(promo.promoTargetVariants);
+      } catch {
+        targets = [];
+      }
+    }
+
+    const key1 = `${String(productId).trim()}::${String(variantSize).trim()}`;
+    const key2 = `${String(productId).trim()}-${String(variantSize).trim()}`;
+    return targets.includes(key1) || targets.includes(key2);
+  }
+
+  return true;
+}
+
+/**
  * Hitung harga setelah diskon berdasarkan tipe & nilai diskon.
  *
  * @param {number} price Harga asli
  * @param {object|null} promo Settings promo
+ * @param {object|null} context Opsional: { productId, size } untuk verifikasi varian spesifik
  * @returns {{ price: number, originalPrice: number, savings: number, hasDiscount: boolean }}
  */
-export function getDiscountedPrice(price: number, promo: any) {
+export function getDiscountedPrice(
+  price: number,
+  promo: any,
+  context?: { productId?: string | number; size?: string }
+) {
   const originalPrice = Number(price || 0);
   const base = { price: originalPrice, originalPrice, savings: 0, hasDiscount: false };
 
   if (!isPromoActive(promo) || originalPrice <= 0) return base;
+
+  // Jika context varian diberikan, pastikan varian tersebut masuk promo
+  if (context && context.productId && context.size) {
+    if (!isVariantInPromo(context.productId, context.size, promo)) {
+      return base;
+    }
+  }
 
   const type = promo.promoDiscountType || "percentage";
   const value = Number(promo.promoDiscountValue || 0);
@@ -90,7 +142,7 @@ export function formatRupiah(number: number): string {
 
 /**
  * Hitung total diskon promo untuk keranjang.
- * @param {Array} items Items keranjang ({price, quantity})
+ * @param {Array} items Items keranjang ({price, quantity, productId, size})
  * @param {object|null} promo
  * @returns {{ total: number, savings: number }}
  */
@@ -105,11 +157,20 @@ export function getCartPromoSummary(items: any[], promo: any) {
   items.forEach((item) => {
     const price = Number(item.price || 0);
     const qty = Number(item.quantity || 1);
-    const discounted = getDiscountedPrice(price, promo);
-    total += discounted.price * qty;
-    savings += discounted.savings * qty;
+    const pId = item.productId || item.id;
+    const size = item.size || item.variantName;
+
+    const hasPromo = isVariantInPromo(pId, size, promo);
+    if (hasPromo) {
+      const discounted = getDiscountedPrice(price, promo);
+      total += discounted.price * qty;
+      savings += discounted.savings * qty;
+    } else {
+      total += price * qty;
+    }
   });
 
   return { total, savings };
 }
+
 

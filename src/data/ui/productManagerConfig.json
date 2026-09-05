@@ -1,5 +1,10 @@
 {
   "title": "Manajemen Produk & Inventaris",
+  "subtitle": "Pantau kesehatan inventaris, pergerakan stok, dan kelola katalog produk.",
+  "summaryPills": {
+    "live": "Inventori Realtime",
+    "fast": "Pembaruan Cepat"
+  },
   "searchPlaceholder": "Cari nama produk...",
   "loadingText": "Memuat produk...",
   "emptyText": "Tidak ada produk yang cocok dengan filter atau pencarian.",
@@ -13,11 +18,18 @@
     "all": "Semua Status",
     "ready": "Tersedia",
     "lowStock": "Stok Menipis",
-    "soldOut": "Habis"
+    "soldOut": "Habis",
+    "allCategories": "Semua Kategori",
+    "publishStatus": {
+      "all": "Semua Status Publikasi",
+      "published": "Dipublikasikan",
+      "draft": "Draf"
+    }
   },
   "tableHeaders": {
     "image": "Gambar",
     "name": "Nama Produk",
+    "sku": "SKU",
     "category": "Kategori",
     "stock": "Total Stok",
     "status": "Status",
@@ -43,5 +55,9 @@
     "fetchError": "Gagal memuat produk dari database.",
     "deleteSuccess": "Produk berhasil dihapus.",
     "deleteError": "Gagal menghapus produk."
+  },
+  "errors": {
+    "fetch": "Gagal mengambil data produk dari server",
+    "delete": "Gagal menghapus produk dari database."
   }
 }

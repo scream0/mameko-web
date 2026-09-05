@@ -9,31 +9,10 @@ import { formatAddressDisplay } from "@/utils/address";
 import styles from "./OrderDetailPage.module.css";
 import { AppIcon } from "@/components/UI/Icon/AppIcon";
 import ordersConfig from "@/data/ui/ordersConfig.json";
+import orderDetailConfig from "@/data/ui/orderDetailConfig.json";
 
-const STATUS_INFO = {
-  pending: { label: "Menunggu Pembayaran", badgeClass: "statusPending", icon: "clock" },
-  unpaid: { label: "Menunggu Pembayaran", badgeClass: "statusPending", icon: "clock" },
-  success: { label: "Sedang Dikemas", badgeClass: "statusProcessing", icon: "package" },
-  paid: { label: "Sedang Dikemas", badgeClass: "statusProcessing", icon: "package" },
-  settlement: { label: "Sedang Dikemas", badgeClass: "statusProcessing", icon: "package" },
-  capture: { label: "Sedang Dikemas", badgeClass: "statusProcessing", icon: "package" },
-  processing: { label: "Sedang Dikemas", badgeClass: "statusProcessing", icon: "package" },
-  shipping: { label: "Dalam Pengiriman", badgeClass: "statusShipping", icon: "truck" },
-  shipped: { label: "Dalam Pengiriman", badgeClass: "statusShipping", icon: "truck" },
-  delivered: { label: "Pesanan Selesai", badgeClass: "statusCompleted", icon: "shield-check" },
-  completed: { label: "Pesanan Selesai", badgeClass: "statusCompleted", icon: "shield-check" },
-  cancelled: { label: "Dibatalkan", badgeClass: "statusCancelled", icon: "x" },
-  canceled: { label: "Dibatalkan", badgeClass: "statusCancelled", icon: "x" },
-  return_requested: { label: "Pengajuan Return", badgeClass: "statusWarning", icon: "rotate-ccw" },
-  returning: { label: "Barang Dikirim Balik", badgeClass: "statusShipping", icon: "truck" },
-  returned: { label: "Return Selesai", badgeClass: "statusCompleted", icon: "shield-check" },
-};
-
-const RETURN_STATUS_INFO = {
-  pending: { label: "⏳ Return Diproses", badgeClass: "statusReturn", icon: "rotate-ccw" },
-  approved: { label: "✅ Return Disetujui", badgeClass: "statusCompleted", icon: "shield-check" },
-  rejected: { label: "❌ Return Ditolak", badgeClass: "statusCancelled", icon: "x" },
-};
+const STATUS_INFO = orderDetailConfig.status;
+const RETURN_STATUS_INFO = orderDetailConfig.returnStatus;
 
 function getStatusInfo(rawStatus: any) {
   const key = (rawStatus || "pending").toLowerCase();
@@ -53,42 +32,42 @@ function resolveHistoryEvent(event: any, index, order: any) {
     if (actorLabel) {
       customLabel = `Dibatalkan oleh ${actorLabel}`;
     } else if (actor === "user") {
-      customLabel = "Dibatalkan oleh Pengguna";
+      customLabel = orderDetailConfig.historyActors.cancelledByUser;
     } else if (actor === "admin") {
-      customLabel = "Dibatalkan oleh Admin";
+      customLabel = orderDetailConfig.historyActors.cancelledByAdmin;
     } else if (actor === "system" || actor === "system_auto_cancel" || actor === "webhook") {
-      customLabel = "Dibatalkan Otomatis oleh Sistem";
+      customLabel = orderDetailConfig.historyActors.cancelledBySystem;
     } else {
-      customLabel = "Pesanan Dibatalkan";
+      customLabel = orderDetailConfig.historyActors.cancelledDefault;
     }
   } else if (statusValue === "completed") {
     if (actor === "user") {
-      customLabel = "Dikonfirmasi Selesai oleh Pembeli";
+      customLabel = orderDetailConfig.historyActors.completedByUser;
     } else if (actor === "system") {
-      customLabel = "Selesai Otomatis oleh Sistem";
+      customLabel = orderDetailConfig.historyActors.completedBySystem;
     } else if (actor === "admin") {
-      customLabel = "Diselesaikan oleh Admin";
+      customLabel = orderDetailConfig.historyActors.completedByAdmin;
     }
   } else if (statusValue === "paid") {
     if (actor === "webhook" || actor === "system") {
-      customLabel = "Pembayaran Terverifikasi (Midtrans)";
+      customLabel = orderDetailConfig.historyActors.paidWebhook;
     } else if (actor === "admin") {
-      customLabel = "Pembayaran Dikonfirmasi oleh Admin";
+      customLabel = orderDetailConfig.historyActors.paidAdmin;
     }
   } else if (statusValue === "returned") {
-    customLabel = "Return Selesai (Disetujui)";
+    customLabel = orderDetailConfig.historyActors.returnedApproved;
   } else if (statusValue === "return_requested") {
-    customLabel = "Pengajuan Return Diproses";
+    customLabel = orderDetailConfig.historyActors.returnRequested;
   } else if (statusValue === "delivered" && order?.return_status === "rejected") {
-    customLabel = "Return Ditolak (Pesanan Selesai)";
+    customLabel = orderDetailConfig.historyActors.returnRejectedCompleted;
   }
 
   return {
     key: `${event?.id || index}-${index}`,
     label: customLabel,
     icon: info.icon,
-    note: event?.notes || (statusValue === "cancelled" ? "Pesanan telah dibatalkan." : "Pembaruan status pesanan."),
-    timestamp: changedAt ? new Date(changedAt).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" }) : "Baru saja",
+    note: event?.notes || (statusValue === "cancelled" ? orderDetailConfig.historyActors.cancelledNote : orderDetailConfig.historyActors.defaultNote),
+    timestamp: changedAt ? new Date(changedAt).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" }) : orderDetailConfig.historyActors.justNow,
   };
 }
 
@@ -418,11 +397,11 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
       combined.push({
         isWebhook: false,
         key: "fallback-creation",
-        label: "Pesanan Dibuat",
+        label: orderDetailConfig.historyActors.creationLabel,
         icon: "package",
         timestampStr: new Date(createTime).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" }),
         timestampDate: new Date(createTime).getTime(),
-        note: "Pesanan berhasil dibuat dan menunggu pembayaran."
+        note: orderDetailConfig.historyActors.creationNote
       });
     }
 
@@ -550,7 +529,7 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
     if (!idToCopy) return;
     await navigator.clipboard.writeText(idToCopy);
     setCopied(true);
-    toast.success("Nomor pesanan berhasil disalin!");
+    toast.success(orderDetailConfig.header.copiedToast);
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -558,7 +537,7 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
     if (!effectiveResi) return;
     await navigator.clipboard.writeText(effectiveResi);
     setCopiedResi(true);
-    toast.success("Nomor resi berhasil disalin!");
+    toast.success(orderDetailConfig.shippingInfo.copyResiSuccess);
     setTimeout(() => setCopiedResi(false), 2000);
   };
 
@@ -566,7 +545,7 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
     if (!order) return;
 
     try {
-      const toastId = toast.loading("Menyiapkan Invoice PDF...");
+      const toastId = toast.loading(orderDetailConfig.invoice.loading);
       // Dynamically import html2pdf to prevent SSR issues
       const html2pdf = (await import("html2pdf.js")).default;
 
@@ -639,9 +618,15 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
                 <span style="color: #666;">Ongkos Kirim:</span>
                 <span>Rp ${shippingCost.toLocaleString("id-ID")}</span>
               </div>
+              ${promoDiscountAmount > 0 ? `
+              <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; color: #16a34a;">
+                <span>${orderDetailConfig.transactionSummary.storeDiscount}:</span>
+                <span>- Rp ${promoDiscountAmount.toLocaleString("id-ID")}</span>
+              </div>
+              ` : ""}
               ${discountAmount > 0 ? `
               <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; color: #dc2626;">
-                <span>Diskon Voucher:</span>
+                <span>${orderDetailConfig.transactionSummary.voucherDiscount}:</span>
                 <span>- Rp ${discountAmount.toLocaleString("id-ID")}</span>
               </div>
               ` : ""}
@@ -661,7 +646,7 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
 
       const opt = {
         margin: [0.5, 0.5, 0.5, 0.5],
-        filename: `Invoice-MAMEKO-${order.order_number || resolvedOrderId}.pdf`,
+        filename: `${orderDetailConfig.invoice.filenamePrefix}${order.order_number || resolvedOrderId}.pdf`,
         image: { type: "jpeg", quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true },
         jsPDF: { unit: "in", format: "a4", orientation: "portrait" }
@@ -669,22 +654,22 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
 
       html2pdf().from(invoiceElement).set(opt).save().then(() => {
         toast.dismiss(toastId);
-        toast.success("Invoice PDF berhasil diunduh.");
+        toast.success(orderDetailConfig.invoice.success);
       }).catch((err) => {
         console.error(err);
         toast.dismiss(toastId);
-        toast.error("Terjadi kesalahan saat membuat PDF.");
+        toast.error(orderDetailConfig.invoice.error);
       });
     } catch (error) {
       console.error(error);
-      toast.error("Gagal memuat modul PDF.");
+      toast.error(orderDetailConfig.invoice.moduleError);
     }
   };
 
   const handleTrackOrder = () => {
     const resi = shipping?.tracking_number;
     if (!resi) {
-      toast.error("Nomor resi belum tersedia untuk pesanan ini.");
+      toast.error(orderDetailConfig.shippingInfo.noResiToast);
       return;
     }
     window.open(`https://jet.co.id/track?hal=1&track_id=${resi}`, "_blank", "noopener,noreferrer");
@@ -809,12 +794,12 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
 
     const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
     if (!allowedTypes.includes(file.type)) {
-      toast.error("Format foto harus JPG, PNG, atau WebP.");
+      toast.error(orderDetailConfig.reviewModal.toasts.invalidType);
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      toast.error("Ukuran foto maksimal 5 MB.");
+      toast.error(orderDetailConfig.reviewModal.toasts.maxSize);
       return;
     }
 
@@ -838,7 +823,7 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
     }
 
     setIsSubmittingReview(true);
-    const toastId = toast.loading("Mengirim ulasan Anda...");
+    const toastId = toast.loading(orderDetailConfig.reviewModal.toasts.submitting);
 
     try {
       const { data: { session } } = await auth.getSession();
@@ -847,7 +832,7 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
 
       let reviewPhoto = null;
       if (reviewPhotoFile) {
-        toast.loading("Mengunggah foto ulasan...", { id: toastId });
+        toast.loading(orderDetailConfig.reviewModal.toasts.uploadingPhoto, { id: toastId });
         const uploadData = new FormData();
         uploadData.append("file", reviewPhotoFile);
         uploadData.append("userId", userId);
@@ -862,14 +847,14 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
         if (!uploadRes.ok) {
           let errorMsg = uploadResult.error || "Gagal mengunggah foto ulasan.";
           if (errorMsg.toLowerCase().includes("cloudinary")) {
-            errorMsg = "Gagal mengunggah foto. Silakan coba lagi nanti.";
+            errorMsg = orderDetailConfig.reviewModal.toasts.uploadPhotoError;
           }
           throw new Error(errorMsg);
         }
         reviewPhoto = uploadResult.secure_url;
       }
 
-      toast.loading("Menyimpan ulasan...", { id: toastId });
+      toast.loading(orderDetailConfig.reviewModal.toasts.savingReview, { id: toastId });
       const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/user/reviews", {
         method: "POST",
         headers: {
@@ -890,10 +875,10 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
       const result = await res.json();
 
       if (!res.ok) {
-        throw new Error(result.error || "Gagal mengirim ulasan.");
+        throw new Error(result.error || orderDetailConfig.reviewModal.toasts.error);
       }
 
-      toast.success("Terima kasih! Ulasan Anda berhasil dikirim.", { id: toastId });
+      toast.success(orderDetailConfig.reviewModal.toasts.success, { id: toastId });
 
       const targetItemId = String(reviewTargetItem.product_id || reviewTargetItem.productId || reviewTargetItem.id || "");
 
@@ -1057,7 +1042,7 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
         <div className={styles.pageShell}>
           <div className={styles.loadingCard}>
             <div className={styles.spinner} />
-            <p className={styles.loadingText}>Memuat rincian pesanan...</p>
+            <p className={styles.loadingText}>{orderDetailConfig.loadingAndError.loadingText}</p>
           </div>
         </div>
       </div>
@@ -1072,9 +1057,9 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
             <div className={styles.emptyIconWrap}>
               <AppIcon name="alert-triangle" size={36} />
             </div>
-            <h3 className={styles.emptyTitle}>{error ? "Gagal Memuat Pesanan" : "Pesanan Tidak Ditemukan"}</h3>
+            <h3 className={styles.emptyTitle}>{error ? orderDetailConfig.loadingAndError.failedTitle : orderDetailConfig.loadingAndError.notFoundTitle}</h3>
             <p className={styles.emptySubtitle}>
-              {error || "Detail pesanan yang Anda cari tidak tersedia, memiliki format ID yang tidak sesuai, atau sudah dihapus."}
+              {error || orderDetailConfig.loadingAndError.defaultErrorSubtitle}
             </p>
             <button onClick={handleBackToOrders} className={styles.primaryBtn}>
               <AppIcon name="arrow-left" size={16} />
@@ -1105,13 +1090,13 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
               </button>
               <div className={styles.orderIdRow}>
                 <h1 className={styles.orderNumberTitle}>{order.order_number || order.id}</h1>
-                <button onClick={handleCopyId} className={styles.copyPillBtn} title="Salin Nomor Pesanan">
+                <button onClick={handleCopyId} className={styles.copyPillBtn} title={orderDetailConfig.header.copyIdTitle}>
                   <AppIcon name={copied ? "check" : "copy"} size={13} />
-                  <span>{copied ? "Tersalin" : "Salin"}</span>
+                  <span>{copied ? orderDetailConfig.header.copied : orderDetailConfig.header.copy}</span>
                 </button>
               </div>
               <p className={styles.customerMeta}>
-                Pemesan: <strong>{order.customer_name || "Pelanggan MAMEKO"}</strong>
+                {orderDetailConfig.header.customerPrefix}<strong>{order.customer_name || orderDetailConfig.header.defaultCustomer}</strong>
               </p>
             </div>
 
@@ -1253,86 +1238,89 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
 
         {/* ─── MANUAL TRANSFER INFO ─── */}
         {isManualPayment && (isPendingStatus || (order.status || "").toLowerCase() === "verifying") && (
-          <div className={styles.panel} style={{ marginBottom: "1.5rem", border: "1px solid var(--primary-accent)", background: "rgba(var(--primary-accent-rgb), 0.03)" }}>
+          <div className={`${styles.panel} ${styles.manualTransferPanel}`}>
             <div className={styles.panelHeader}>
-              <div className={styles.panelIconCircle} style={{ background: "var(--primary-accent)", color: "var(--primary-accent-text)" }}>
+              <div className={`${styles.panelIconCircle} ${styles.manualTransferIconCircle}`}>
                 <AppIcon name="banknote" size={18} />
               </div>
-              <h2 className={styles.panelTitle}>Instruksi Transfer Manual</h2>
+              <h2 className={styles.panelTitle}>{orderDetailConfig.manualTransfer.title}</h2>
             </div>
 
-            <div style={{ padding: "0 1.5rem 1.5rem" }}>
-              <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem", marginBottom: "1rem" }}>
-                Silakan transfer tepat sebesar <strong>Rp {totalAmount.toLocaleString("id-ID")}</strong> ke salah satu rekening berikut:
+            <div className={styles.manualTransferContent}>
+              <p className={styles.manualTransferIntro}>
+                {orderDetailConfig.manualTransfer.instructionPrefix}<strong>Rp {totalAmount.toLocaleString("id-ID")}</strong>{orderDetailConfig.manualTransfer.instructionSuffix}
               </p>
-              <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", marginBottom: "1.5rem" }}>
+              <div className={styles.bankAccountList}>
                 {storeSettings?.contact?.bankAccounts && storeSettings.contact.bankAccounts.length > 0 ? (
                   storeSettings.contact.bankAccounts.map((account, idx: any) => (
-                    <div key={idx} style={{ background: "var(--surface-primary)", border: "1px solid var(--border-color)", padding: "1rem", borderRadius: "8px", flex: 1, minWidth: "200px" }}>
-                      <div style={{ fontWeight: 700, fontSize: "1.1rem" }}>{account.bankName}</div>
-                      <div style={{ fontSize: "1.2rem", margin: "0.5rem 0", letterSpacing: "1px", display: "flex", alignItems: "center", gap: "10px" }}>
+                    <div key={idx} className={styles.bankAccountCard}>
+                      <div className={styles.bankAccountName}>{account.bankName}</div>
+                      <div className={styles.bankAccountNumberRow}>
                         <span>{account.accountNumber}</span>
                         <button
                           onClick={() => {
                             navigator.clipboard.writeText(account.accountNumber);
-                            toast.success("Nomor rekening berhasil disalin!");
+                            toast.success(orderDetailConfig.manualTransfer.copyAccountSuccess);
                           }}
-                          style={{ background: "none", border: "none", cursor: "pointer", color: "var(--primary-accent)", display: "flex", alignItems: "center", padding: "4px", borderRadius: "4px" }}
-                          title="Salin Nomor Rekening"
+                          className={styles.copyAccountBtn}
+                          title={orderDetailConfig.manualTransfer.copyAccountTitle}
                         >
                           <AppIcon name="copy" size={16} />
                         </button>
                       </div>
-                      <div style={{ color: "var(--text-secondary)", fontSize: "0.85rem" }}>a.n. {account.accountName}</div>
+                      <div className={styles.bankAccountOwner}>a.n. {account.accountName}</div>
                     </div>
                   ))
                 ) : (
-                  <div style={{ color: "var(--text-secondary)", fontSize: "0.9rem", fontStyle: "italic" }}>
-                    (Belum ada rekening yang diatur. Silakan hubungi admin.)
+                  <div className={styles.emptyBankAccounts}>
+                    {orderDetailConfig.manualTransfer.emptyAccounts}
                   </div>
                 )}
               </div>
 
               {isPendingStatus ? (
-                <div style={{ background: "var(--surface-primary)", padding: "1.2rem", borderRadius: "8px", border: "1px dashed var(--border-color)" }}>
-                  <h4 style={{ marginBottom: "0.5rem", fontSize: "0.95rem" }}>Upload Bukti Pembayaran</h4>
+                <div className={styles.proofUploadBox}>
+                  <h4 className={styles.proofUploadTitle}>{orderDetailConfig.manualTransfer.uploadProofTitle}</h4>
                   {proofPreview ? (
-                    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "1rem" }}>
-                      <img src={proofPreview} alt="Bukti Transfer" style={{ maxWidth: "200px", borderRadius: "8px", border: "1px solid var(--border-color)" }} />
-                      <div style={{ display: "flex", gap: "0.5rem" }}>
-                        <button onClick={handleRemoveProof} className={styles.secondaryBtn} disabled={isSubmittingProof}>Ganti Foto</button>
+                    <div className={styles.proofPreviewWrapper}>
+                      <img src={proofPreview} alt="Bukti Transfer" className={styles.proofPreviewImg} />
+                      <div className={styles.proofActionRow}>
+                        <button onClick={handleRemoveProof} className={styles.secondaryBtn} disabled={isSubmittingProof}>
+                          {orderDetailConfig.manualTransfer.changePhotoBtn}
+                        </button>
                         <button onClick={handleUploadProof} className={styles.primaryBtn} disabled={isSubmittingProof}>
-                          {isSubmittingProof ? "Mengunggah..." : "Kirim Bukti Pembayaran"}
+                          {isSubmittingProof ? orderDetailConfig.manualTransfer.submittingProof : orderDetailConfig.manualTransfer.submitProofBtn}
                         </button>
                       </div>
                     </div>
                   ) : (
-                    <label style={{ display: "inline-block", cursor: "pointer", background: "rgba(var(--primary-accent-rgb), 0.08)", color: "var(--primary-accent)", padding: "10px 16px", borderRadius: "6px", fontWeight: 600, fontSize: "0.9rem" }}>
-                      Pilih Foto Struk / Screenshot
+                    <label className={styles.uploadProofLabel}>
+                      {orderDetailConfig.manualTransfer.selectPhotoBtn}
                       <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleProofChange} style={{ display: "none" }} />
                     </label>
                   )}
                 </div>
               ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: "1rem", background: "var(--surface-primary)", padding: "1.2rem", borderRadius: "8px", border: "1px solid var(--border-color)" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--text-secondary)" }}>
+                <div className={styles.proofVerifiedBox}>
+                  <div className={styles.proofVerifiedStatus}>
                     <AppIcon name="check-circle" size={16} style={{ color: "var(--success-color)" }} />
-                    <span>Bukti pembayaran sudah diunggah dan sedang diverifikasi admin.</span>
+                    <span>{orderDetailConfig.manualTransfer.proofUploaded}</span>
                   </div>
 
                   {/* ── TOMBOL WHATSAPP (HYBRID NOTIF) ── */}
                   {(() => {
                     let waNumber = storeSettings?.contact?.whatsappNumber?.replace(/\D/g, "") || "6281234567890";
                     if (waNumber.startsWith("0")) waNumber = "62" + waNumber.slice(1);
+                    const waText = orderDetailConfig.manualTransfer.whatsappTextTemplate.replace("{orderNumber}", order.order_number || order.id);
                     return (
                       <a
-                        href={`https://wa.me/${waNumber}?text=${encodeURIComponent(`Halo Admin, saya sudah mentransfer dan meng-upload bukti pembayaran untuk pesanan ${order.order_number || order.id}. Tolong diverifikasi ya!`)}`}
+                        href={`https://wa.me/${waNumber}?text=${encodeURIComponent(waText)}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "#25D366", color: "#fff", padding: "10px 16px", borderRadius: "6px", fontWeight: 600, fontSize: "0.9rem", textDecoration: "none", width: "fit-content" }}
+                        className={styles.whatsappNoticeBtn}
                       >
                         <AppIcon name="message-circle" size={18} />
-                        Kabari Admin via WhatsApp
+                        {orderDetailConfig.manualTransfer.whatsappCTA}
                       </a>
                     );
                   })()}
@@ -1350,29 +1338,29 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
               <div className={styles.panelIconCircle}>
                 <AppIcon name="receipt" size={18} />
               </div>
-              <h2 className={styles.panelTitle}>Ringkasan Transaksi</h2>
+              <h2 className={styles.panelTitle}>{orderDetailConfig.transactionSummary.title}</h2>
             </div>
 
             <div className={styles.summaryList}>
               <div className={styles.summaryRow}>
-                <span className={styles.summaryLabel}>Tanggal Pemesanan</span>
+                <span className={styles.summaryLabel}>{orderDetailConfig.transactionSummary.orderDate}</span>
                 <span className={styles.summaryValue}>
                   {orderDateText}
                 </span>
               </div>
 
               <div className={styles.summaryRow}>
-                <span className={styles.summaryLabel}>Metode Pembayaran</span>
-                <span className={styles.summaryValueHighlight}>{order.payment_type || "Midtrans Payment"}</span>
+                <span className={styles.summaryLabel}>{orderDetailConfig.transactionSummary.paymentMethod}</span>
+                <span className={styles.summaryValueHighlight}>{order.payment_type || orderDetailConfig.transactionSummary.defaultPaymentMethod}</span>
               </div>
 
               <div className={styles.summaryRow}>
-                <span className={styles.summaryLabel}>Subtotal Item ({items.length} produk)</span>
+                <span className={styles.summaryLabel}>{orderDetailConfig.transactionSummary.subtotalItemTemplate.replace("{count}", String(items.length))}</span>
                 <span className={styles.summaryValue}>Rp {subtotalAmount.toLocaleString("id-ID")}</span>
               </div>
 
               <div className={styles.summaryRow}>
-                <span className={styles.summaryLabel}>Biaya Pengiriman</span>
+                <span className={styles.summaryLabel}>{orderDetailConfig.transactionSummary.shippingCost}</span>
                 <span className={styles.summaryValue}>Rp {shippingCost.toLocaleString("id-ID")}</span>
               </div>
 
@@ -1384,7 +1372,7 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
               )}
 
               <div className={styles.totalRow}>
-                <span className={styles.totalLabel}>Total Pembayaran</span>
+                <span className={styles.totalLabel}>{orderDetailConfig.transactionSummary.totalPaid}</span>
                 <span className={styles.totalValue}>Rp {totalAmount.toLocaleString("id-ID")}</span>
               </div>
             </div>
@@ -1396,12 +1384,12 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
               <div className={styles.panelIconCircle}>
                 <AppIcon name="truck" size={18} />
               </div>
-              <h2 className={styles.panelTitle}>Informasi Pengiriman</h2>
+              <h2 className={styles.panelTitle}>{orderDetailConfig.shippingInfo.title}</h2>
             </div>
 
             <div className={styles.infoCardStack}>
               <div className={styles.infoBlock}>
-                <p className={styles.infoLabel}>Kurir & Layanan</p>
+                <p className={styles.infoLabel}>{orderDetailConfig.shippingInfo.courierAndService}</p>
                 <div className={styles.courierInfo}>
                   <strong>{effectiveCourier}</strong>
                   <span className={styles.courierServiceTag}>
@@ -1411,22 +1399,22 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
               </div>
 
               <div className={styles.infoBlock}>
-                <p className={styles.infoLabel}>Nomor Resi Pengiriman</p>
+                <p className={styles.infoLabel}>{orderDetailConfig.shippingInfo.trackingNumber}</p>
                 {effectiveResi ? (
                   <div className={styles.resiRow}>
                     <strong className={styles.resiCode}>{effectiveResi}</strong>
                     <button onClick={handleCopyResi} className={styles.copyMiniBtn}>
                       <AppIcon name={copiedResi ? "check" : "copy"} size={12} />
-                      <span>{copiedResi ? "Disalin" : "Salin Resi"}</span>
+                      <span>{copiedResi ? orderDetailConfig.shippingInfo.copiedResi : orderDetailConfig.shippingInfo.copyResi}</span>
                     </button>
                   </div>
                 ) : (
-                  <span className={styles.textMuted}>Resi akan diperbarui setelah kurir menjemput paket.</span>
+                  <span className={styles.textMuted}>{orderDetailConfig.shippingInfo.emptyResiText}</span>
                 )}
               </div>
 
               <div className={styles.infoBlock}>
-                <p className={styles.infoLabel}>Alamat Tujuan</p>
+                <p className={styles.infoLabel}>{orderDetailConfig.shippingInfo.destinationAddress}</p>
                 <p className={styles.addressText}>{shippingAddressText}</p>
               </div>
 
@@ -1454,7 +1442,7 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
               <div className={styles.panelIconCircle}>
                 <AppIcon name="shopping-bag" size={18} />
               </div>
-              <h2 className={styles.panelTitle}>Item Pesanan ({items.length})</h2>
+              <h2 className={styles.panelTitle}>{orderDetailConfig.items.title} ({items.length})</h2>
             </div>
 
             <div className={styles.itemList}>
@@ -1471,9 +1459,9 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
                       </div>
 
                       <div className={styles.itemInfo}>
-                        <h4 className={styles.itemName}>{item.name || item.product_name || "Parfum MAMEKO"}</h4>
+                        <h4 className={styles.itemName}>{item.name || item.product_name || orderDetailConfig.items.defaultProductName}</h4>
                         <div className={styles.itemVariantBadge}>
-                          <span>Varian: {item.size || item.variant_name || item.variant || "Standard"}</span>
+                          <span>{orderDetailConfig.items.variantPrefix}{item.size || item.variant_name || item.variant || orderDetailConfig.items.defaultVariant}</span>
                         </div>
                         <p className={styles.itemUnitPrice}>
                           Rp {itemPrice.toLocaleString("id-ID")} <span className={styles.itemQtyMultiplier}>× {itemQty}</span>
@@ -1501,7 +1489,7 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
                 })
               ) : (
                 <div className={styles.emptyItemsBox}>
-                  <p className={styles.textMuted}>Tidak ada rincian item tambahan.</p>
+                  <p className={styles.textMuted}>{orderDetailConfig.items.emptyItems}</p>
                   <strong>Total: Rp {totalAmount.toLocaleString("id-ID")}</strong>
                 </div>
               )}
@@ -1514,7 +1502,7 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
               <div className={styles.panelIconCircle}>
                 <AppIcon name="clock-3" size={18} />
               </div>
-              <h2 className={styles.panelTitle}>Riwayat Status</h2>
+              <h2 className={styles.panelTitle}>{orderDetailConfig.timeline.title}</h2>
             </div>
             <div className={styles.timeline}>
               {combinedHistory.length > 0 ? (
@@ -1528,7 +1516,7 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
                     </div>
                     <div className={styles.timelineContent}>
                       <div className={styles.timelineTitleRow}>
-                        <h4 className={styles.timelineStatusTitle} style={item.isWebhook ? { textTransform: "capitalize" } : undefined}>
+                        <h4 className={`${styles.timelineStatusTitle} ${item.isWebhook ? styles.timelineStatusTitleCapitalized : ""}`}>
                           {item.label}
                         </h4>
                         <span className={styles.timelineTime}>{item.timestampStr}</span>
@@ -1544,7 +1532,7 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
                   </div>
                   <div className={styles.timelineContent}>
                     <h4 className={styles.timelineStatusTitle}>{statusInfo.label}</h4>
-                    <p className={styles.timelineNote}>Pesanan tercatat di dalam sistem MAMEKO.</p>
+                    <p className={styles.timelineNote}>{orderDetailConfig.timeline.defaultSystemNote}</p>
                     <span className={styles.timelineTime}>{orderTimeText}</span>
                   </div>
                 </div>
@@ -1565,7 +1553,7 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
             >
               <div className={styles.modalHeader}>
                 <h3 className={styles.modalTitle}>
-                  {ordersConfig.labels.reviewTitle}
+                  {orderDetailConfig.reviewModal.title}
                 </h3>
                 <button
                   onClick={closeReviewModal}
@@ -1583,7 +1571,7 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
                   </div>
                   <div>
                     <span className={styles.modalFieldLabel}>
-                      {ordersConfig.labels.product}
+                      {orderDetailConfig.reviewModal.productLabel}
                     </span>
                     <strong className={styles.modalProductName}>{reviewTargetItem.product_name || reviewTargetItem.name || reviewModalOrder.name}</strong>
                   </div>
@@ -1591,7 +1579,7 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
 
                 <div>
                   <label className={styles.modalFieldLabel}>
-                    {ordersConfig.labels.ratingLabel}
+                    {orderDetailConfig.reviewModal.ratingLabel}
                   </label>
                   <div className={styles.starRatingGroup}>
                     {[1, 2, 3, 4, 5].map((star) => (
@@ -1613,12 +1601,12 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
 
                 <div>
                   <label className={styles.modalFieldLabel}>
-                    {ordersConfig.labels.commentLabel}
+                    {orderDetailConfig.reviewModal.commentLabel}
                   </label>
                   <textarea
                     rows={3}
                     required
-                    placeholder={ordersConfig.labels.commentPlaceholder}
+                    placeholder={orderDetailConfig.reviewModal.commentPlaceholder}
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
                     className={styles.formTextarea}
@@ -1627,7 +1615,7 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
 
                 <div>
                   <label className={styles.modalFieldLabel}>
-                    {ordersConfig.labels.uploadPhoto}
+                    {orderDetailConfig.reviewModal.uploadPhotoLabel}
                   </label>
 
                   {reviewPhotoPreview ? (
@@ -1651,7 +1639,7 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
                           className={styles.removePhotoBtn}
                         >
                           <AppIcon name="trash" size={13} />
-                          <span>Hapus Foto</span>
+                          <span>{orderDetailConfig.reviewModal.removePhoto}</span>
                         </button>
                       </div>
                     </div>
@@ -1668,10 +1656,10 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
                       </div>
                       <div className={styles.dropzoneTextGroup}>
                         <span className={styles.dropzoneMainText}>
-                          Pilih foto produk atau seret ke sini
+                          {orderDetailConfig.reviewModal.dropzoneMainText}
                         </span>
                         <span className={styles.dropzoneSubText}>
-                          Format JPG, PNG, WebP (Maksimal 5 MB)
+                          {orderDetailConfig.reviewModal.dropzoneSubText}
                         </span>
                       </div>
                     </label>
@@ -1695,12 +1683,12 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
                     {isSubmittingReview ? (
                       <>
                         <span className={styles.btnSpinner} />
-                        <span>{ordersConfig.labels.submittingReview}</span>
+                        <span>{orderDetailConfig.reviewModal.submittingBtn}</span>
                       </>
                     ) : (
                       <>
                         <AppIcon name="send" size={15} />
-                        <span>{ordersConfig.labels.submitReview}</span>
+                        <span>{orderDetailConfig.reviewModal.submitBtn}</span>
                       </>
                     )}
                   </button>

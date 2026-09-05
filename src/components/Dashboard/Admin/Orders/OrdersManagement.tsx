@@ -7,6 +7,7 @@ import styles from "./OrdersManagement.module.css";
 import { Logo } from "@/components/UI/Logo/logo";
 import AdminReturns from "./AdminReturns";
 import AdminWithdrawals from "./AdminWithdrawals";
+import adminOrdersConfig from "@/data/ui/adminOrdersConfig.json";
 
 const money = (value: any) =>
   new Intl.NumberFormat("id-ID", {
@@ -637,31 +638,18 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
 
   return (
     <section className={styles.wrapper}>
-      <div className={styles.header} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "1rem" }}>
+      <div className={`${styles.header} ${styles.headerTop}`}>
         <div>
-          <p className={styles.eyebrow}>Manajemen Pesanan</p>
-          <h2 className={styles.title}>Lacak setiap pesanan, status, dan pengiriman di satu tempat.</h2>
+          <p className={styles.eyebrow}>{adminOrdersConfig.header.eyebrow}</p>
+          <h2 className={styles.title}>{adminOrdersConfig.header.title}</h2>
         </div>
         <button
           onClick={handleRunAutomation}
           disabled={runningAutomation}
-          style={{
-            background: "var(--surface-primary)",
-            border: "1px solid var(--border-color)",
-            color: "var(--text-primary)",
-            padding: "8px 16px",
-            borderRadius: "8px",
-            fontSize: "0.85rem",
-            fontWeight: 600,
-            cursor: runningAutomation ? "not-allowed" : "pointer",
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "8px",
-            transition: "all 0.2s"
-          }}
-          title="Batalkan otomatis pesanan belum bayar >24 jam dan selesaikan pesanan terkirim >14 hari"
+          className={styles.automationBtn}
+          title={adminOrdersConfig.automation.title}
         >
-          <span>{runningAutomation ? "⏳ Memproses..." : "⚡ Jalankan Otomasi Pesanan"}</span>
+          <span>{runningAutomation ? adminOrdersConfig.automation.processing : adminOrdersConfig.automation.label}</span>
         </button>
       </div>
       
@@ -670,14 +658,13 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
           className={`${styles.tabBtn} ${adminTab === 'orders' ? styles.activeTab : ''}`}
           onClick={() => setAdminTab('orders')}
         >
-          Daftar Pesanan
+          {adminOrdersConfig.tabs.orders}
         </button>
         <button 
-          className={`${styles.tabBtn} ${adminTab === 'returns' ? styles.activeTab : ''}`}
+          className={`${styles.tabBtn} ${adminTab === 'returns' ? styles.activeTab : ''} ${styles.tabBtnRelative}`}
           onClick={() => setAdminTab('returns')}
-          style={{ position: 'relative' }}
         >
-          Pengembalian Dana (Refund)
+          {adminOrdersConfig.tabs.returns}
           {pendingReturnsCount > 0 && (
             <span className={styles.tabBadge}>{pendingReturnsCount}</span>
           )}
@@ -686,7 +673,7 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
           className={`${styles.tabBtn} ${adminTab === 'withdrawals' ? styles.activeTab : ''}`}
           onClick={() => setAdminTab('withdrawals')}
         >
-          Penarikan (Withdrawals)
+          {adminOrdersConfig.tabs.withdrawals}
         </button>
       </div>
 
@@ -697,74 +684,59 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
               <input
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
-                placeholder="Cari ID pesanan atau pelanggan"
+                placeholder={adminOrdersConfig.search.placeholder}
                 aria-label="Search orders"
               />
-              <button className={styles.searchButton} type="submit">Cari</button>
+              <button className={styles.searchButton} type="submit">{adminOrdersConfig.search.button}</button>
             </form>
             <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} className={styles.filterSelect}>
-            <option value="all">Semua status</option>
-            <option value="pending">Menunggu</option>
-            <option value="verifying">Menunggu Verifikasi</option>
-            <option value="paid">Dibayar</option>
-            <option value="processing">Diproses</option>
-            <option value="shipped">Dikirim</option>
-            <option value="delivered">Selesai</option>
-            <option value="return_requested">Pengajuan Return</option>
-            <option value="returning">Return Dikirim</option>
-            <option value="returned">Return Selesai</option>
-            <option value="cancelled">Dibatalkan</option>
-          </select>
-          <button className={styles.refreshButton} onClick={() => loadOrders(page, statusFilter, searchTerm)}>
-            Segarkan
-          </button>
-        </div>
+              {(adminOrdersConfig?.statusOptions || []).map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+            <button className={styles.refreshButton} onClick={() => loadOrders(page, statusFilter, searchTerm)}>
+              {adminOrdersConfig?.search?.refresh || "Segarkan"}
+            </button>
+          </div>
 
       <div className={styles.summaryBar}>
-        <span>{pagination.totalOrders} pesanan</span>
-        <span>Halaman {pagination.currentPage} dari {pagination.totalPages}</span>
+        <span>{pagination.totalOrders} {adminOrdersConfig?.summary?.ordersCount || "pesanan"}</span>
+        <span>{adminOrdersConfig?.summary?.pagePrefix || "Halaman"} {pagination.currentPage} {adminOrdersConfig?.summary?.pageMiddle || "dari"} {pagination.totalPages}</span>
       </div>
 
       <div className={styles.bulkBar}>
         <label className={styles.bulkLabel}>
           <input type="checkbox" checked={selectedOrders.length > 0 && selectedOrders.length === orders.length} onChange={() => setSelectedOrders(selectedOrders.length === orders.length ? [] : orders.map((order) => order.id || order.orderId))} />
-          Pilih semua
+          {adminOrdersConfig?.bulk?.selectAll || "Pilih semua"}
         </label>
         <select className={styles.statusSelect} value={bulkStatus} onChange={(e) => setBulkStatus(e.target.value)}>
-          <option value="pending">Menunggu</option>
-          <option value="verifying">Menunggu Verifikasi</option>
-          <option value="paid">Dibayar</option>
-          <option value="processing">Diproses</option>
-          <option value="shipped">Dikirim</option>
-          <option value="delivered">Selesai</option>
-          <option value="return_requested">Pengajuan Return</option>
-          <option value="returning">Return Dikirim</option>
-          <option value="returned">Return Selesai</option>
-          <option value="cancelled">Dibatalkan</option>
+          {(adminOrdersConfig?.statusOptions || []).filter((o) => o.value !== "all").map((opt) => (
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          ))}
         </select>
         <button className={styles.refreshButton} onClick={applyBulkStatus} disabled={!selectedOrders.length || bulkUpdating}>
-          {bulkUpdating ? "Memperbarui..." : "Terapkan status massal"}
+          {bulkUpdating ? (adminOrdersConfig?.bulk?.updating || "Memperbarui...") : (adminOrdersConfig?.bulk?.apply || "Terapkan status massal")}
         </button>
-        <button className={styles.secondaryButton} onClick={() => openPrintView("slip")} disabled={!selectedOrders.length}>Cetak Slip Pengiriman</button>
-        <button className={styles.secondaryButton} onClick={() => openPrintView("invoice")} disabled={!selectedOrders.length}>Cetak Faktur</button>
+        <button className={styles.secondaryButton} onClick={() => openPrintView("slip")} disabled={!selectedOrders.length}>{adminOrdersConfig?.bulk?.printSlip || "Cetak Slip Pengiriman"}</button>
+        <button className={styles.secondaryButton} onClick={() => openPrintView("invoice")} disabled={!selectedOrders.length}>{adminOrdersConfig?.bulk?.printInvoice || "Cetak Faktur"}</button>
       </div>
 
       {loading ? (
-        <p className={styles.empty}>Memuat pesanan…</p>
+        <p className={styles.empty}>{adminOrdersConfig.empty.loading}</p>
       ) : orders.length === 0 ? (
-        <p className={styles.empty}>Tidak ada pesanan yang sesuai filter.</p>
+        <p className={styles.empty}>{adminOrdersConfig.empty.noOrders}</p>
       ) : (
         <div className={styles.tableWrap}>
           <table className={styles.table}>
             <thead>
               <tr>
                 <th><input type="checkbox" checked={selectedOrders.length > 0 && selectedOrders.length === orders.length} onChange={() => setSelectedOrders(selectedOrders.length === orders.length ? [] : orders.map((order) => order.id || order.orderId))} /></th>
-                <th>Pesanan</th>
-                <th>Pelanggan</th>
-                <th>Total</th>
-                <th>Status</th>
-                <th>Pengiriman</th>
-                <th>Dibuat</th>
+                <th>{adminOrdersConfig.tableHeaders.order}</th>
+                <th>{adminOrdersConfig.tableHeaders.customer}</th>
+                <th>{adminOrdersConfig.tableHeaders.total}</th>
+                <th>{adminOrdersConfig.tableHeaders.status}</th>
+                <th>{adminOrdersConfig.tableHeaders.shipping}</th>
+                <th>{adminOrdersConfig.tableHeaders.createdAt}</th>
               </tr>
             </thead>
             <tbody>
@@ -789,7 +761,7 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
                     <td>
                       <div className={styles.orderCell}>
                         <strong>{order.customer_name || order.shipping_address?.recipientName || "Pelanggan"}</strong>
-                        <small>{order.customer_email || "Tidak ada email"}</small>
+                        <small>{order.customer_email || adminOrdersConfig.drawer.customerInfo.noEmail}</small>
                       </div>
                     </td>
                     <td>{money(orderValue(order))}</td>
@@ -800,22 +772,15 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
                         onChange={(event) => updateOrderStatusAdmin(orderId, event.target.value)}
                         disabled={updatingId === orderId || bulkUpdating}
                       >
-                        <option value="pending">Menunggu</option>
-                        <option value="verifying">Menunggu Verifikasi</option>
-                        <option value="paid">Dibayar</option>
-                        <option value="processing">Diproses</option>
-                        <option value="shipped">Dikirim</option>
-                        <option value="delivered">Selesai</option>
-                        <option value="return_requested">Pengajuan Return</option>
-                        <option value="returning">Return Dikirim</option>
-                        <option value="returned">Return Selesai</option>
-                        <option value="cancelled">Dibatalkan</option>
+                        {(adminOrdersConfig?.statusOptions || []).filter((o) => o.value !== "all").map((opt) => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
                       </select>
                     </td>
                     <td>
                       <div className={styles.orderCell}>
                         <strong>{shippingInfo.courier_name || shippingInfo.courierName || order.courier_name || order.courier || "—"}</strong>
-                        <small>{order.waybill_id || shippingInfo.tracking_number || shippingInfo.trackingNumber || order.shipping_receipt_number || "Belum ada resi"}</small>
+                        <small>{order.waybill_id || shippingInfo.tracking_number || shippingInfo.trackingNumber || order.shipping_receipt_number || adminOrdersConfig.drawer.shipping.noWaybill}</small>
                       </div>
                     </td>
                     <td>{new Date(order.createdAt || order.created_at || "1970-01-01").toLocaleDateString("id-ID")}</td>
@@ -829,11 +794,11 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
 
       <div className={styles.pagination}>
         <button disabled={page <= 1} onClick={() => { const nextPage = page - 1; setPage(nextPage); loadOrders(nextPage, statusFilter, searchTerm); }}>
-          Sebelumnya
+          {adminOrdersConfig.pagination.previous}
         </button>
-        <span>Halaman {page}</span>
+        <span>{adminOrdersConfig.pagination.page} {page}</span>
         <button disabled={page >= pagination.totalPages} onClick={() => { const nextPage = page + 1; setPage(nextPage); loadOrders(nextPage, statusFilter, searchTerm); }}>
-          Selanjutnya
+          {adminOrdersConfig.pagination.next}
         </button>
       </div>
 
@@ -842,12 +807,12 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
           <div className={styles.drawer} onClick={(event) => event.stopPropagation()}>
             <div className={styles.drawerHeader}>
               <div>
-                <p className={styles.eyebrow}>Pratinjau cetak</p>
-                <h3>{printType === "slip" ? "Slip Pengiriman" : "Faktur Belanja"}</h3>
+                <p className={styles.eyebrow}>{adminOrdersConfig.print.eyebrow}</p>
+                <h3>{printType === "slip" ? adminOrdersConfig.print.slipTitle : adminOrdersConfig.print.invoiceTitle}</h3>
               </div>
-              <div style={{ display: "flex", gap: "0.5rem" }}>
-                <button className={styles.refreshButton} onClick={() => window.print()}>Cetak</button>
-                <button className={styles.closeButton} onClick={() => setPrintOrders([])}>Tutup</button>
+              <div className={styles.printHeaderActions}>
+                <button className={styles.refreshButton} onClick={() => window.print()}>{adminOrdersConfig.print.printBtn}</button>
+                <button className={styles.closeButton} onClick={() => setPrintOrders([])}>{adminOrdersConfig.print.closeBtn}</button>
               </div>
             </div>
             <div className={styles.printPreview}>
@@ -865,52 +830,36 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
                       <h1 className={styles.printBrandTitle}>make me kool</h1>
                     </div>
                     {printType === "invoice" ? (
-                      <div style={{ position: "relative" }}>
+                      <div className={styles.printContainerRelative}>
                         {["paid", "processing", "shipped", "delivered"].includes(order.status) && (
-                          <div style={{
-                            position: "absolute",
-                            top: "20px",
-                            right: "35%",
-                            transform: "rotate(-15deg)",
-                            color: "#28a745",
-                            border: "4px solid #28a745",
-                            borderRadius: "8px",
-                            padding: "0.5rem 1.5rem",
-                            fontSize: "2.5rem",
-                            fontWeight: "bold",
-                            textTransform: "uppercase",
-                            letterSpacing: "6px",
-                            opacity: 0.5,
-                            pointerEvents: "none",
-                            zIndex: 10
-                          }}>
-                            LUNAS
+                          <div className={styles.invoicePaidStamp}>
+                            {adminOrdersConfig.print.paidStamp}
                           </div>
                         )}
                         <div className={styles.printHeader}>
                           <div>
-                            <strong>FAKTUR PENJUALAN</strong>
-                            <p style={{ marginTop: "4px" }}>No. Pesanan: {order.order_number || order.orderId || orderId}</p>
+                            <strong>{adminOrdersConfig.print.invoiceHeading}</strong>
+                            <p className={styles.printOrderNumber}>No. Pesanan: {order.order_number || order.orderId || orderId}</p>
                             <p>Tanggal: {new Date(order.createdAt || order.created_at || "1970-01-01").toLocaleDateString("id-ID")}</p>
                           </div>
-                          <div className={styles.printMeta} style={{ textAlign: "right" }}>
-                            <strong>Tagihan Kepada:</strong>
+                          <div className={`${styles.printMeta} ${styles.printMetaRight}`}>
+                            <strong>{adminOrdersConfig.print.billedTo}</strong>
                             <p>{order.customer_name || alamat?.recipientName || "Pelanggan"}</p>
                             <p>{order.customer_email || "-"}</p>
                             <p>{alamat?.phone || order.customerPhone || order.customer_phone || order.phone || "-"}</p>
                           </div>
                         </div>
-                        <div className={styles.printBody} style={{ marginBottom: "1rem" }}>
-                          <p><b>Alamat Pengiriman:</b> {getAddressStr(alamat)}</p>
-                          <p><b>Metode Pembayaran:</b> {order.payment_method || order.paymentMethod || "Transfer / VA"}</p>
+                        <div className={`${styles.printBody} ${styles.printBodyWrap}`}>
+                          <p><b>{adminOrdersConfig.print.shippingAddress}</b> {getAddressStr(alamat)}</p>
+                          <p><b>{adminOrdersConfig.print.paymentMethod}</b> {order.payment_method || order.paymentMethod || "Transfer / VA"}</p>
                         </div>
-                        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem", marginBottom: "1rem" }}>
+                        <table className={styles.printTable}>
                           <thead>
-                            <tr style={{ borderBottom: "2px solid #000" }}>
-                              <th style={{ textAlign: "left", padding: "0.5rem 0" }}>Produk</th>
-                              <th style={{ textAlign: "center", padding: "0.5rem 0" }}>Qty</th>
-                              <th style={{ textAlign: "right", padding: "0.5rem 0" }}>Harga Satuan</th>
-                              <th style={{ textAlign: "right", padding: "0.5rem 0" }}>Total</th>
+                            <tr className={styles.printTableHeaderRow}>
+                              <th className={styles.printTableThLeft}>{adminOrdersConfig.print.table.product}</th>
+                              <th className={styles.printTableThCenter}>{adminOrdersConfig.print.table.qty}</th>
+                              <th className={styles.printTableThRight}>{adminOrdersConfig.print.table.unitPrice}</th>
+                              <th className={styles.printTableThRight}>{adminOrdersConfig.print.table.total}</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -918,47 +867,46 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
                               const itemPrice = Number(item.price_at_purchase || item.price) || 0;
                               const itemQty = Number(item.quantity || item.qty) || 1;
                               return (
-                                <tr key={`${item.name}-${index}`} style={{ borderBottom: "1px solid #ddd" }}>
-                                  <td style={{ padding: "0.5rem 0" }}>{item.name || item.product_name || "Produk"} {item.variant_name || item.size ? `(${item.variant_name || item.size})` : ""}</td>
-                                  <td style={{ textAlign: "center", padding: "0.5rem 0" }}>{itemQty}</td>
-                                  <td style={{ textAlign: "right", padding: "0.5rem 0" }}>{money(itemPrice)}</td>
-                                  <td style={{ textAlign: "right", padding: "0.5rem 0" }}>{money(itemPrice * itemQty)}</td>
+                                <tr key={`${item.name}-${index}`} className={styles.printTableRow}>
+                                  <td className={styles.printTableTdItem}>{item.name || item.product_name || "Produk"} {item.variant_name || item.size ? `(${item.variant_name || item.size})` : ""}</td>
+                                  <td className={styles.printTableTdCenter}>{itemQty}</td>
+                                  <td className={styles.printTableTdRight}>{money(itemPrice)}</td>
+                                  <td className={styles.printTableTdRight}>{money(itemPrice * itemQty)}</td>
                                 </tr>
                               );
                             })}
                           </tbody>
                         </table>
-                        <div style={{ display: "flex", justifyContent: "flex-end", fontSize: "0.9rem" }}>
-                          <div style={{ width: "250px" }}>
+                        <div className={styles.printBillSummaryWrap}>
+                          <div className={styles.printBillSummaryBox}>
                             {(() => {
                               const subtotal = (order.items || []).reduce((sum, item: any) => sum + (Number(item.price_at_purchase || item.price) || 0) * (Number(item.quantity || item.qty) || 1), 0) || orderValue(order);
                               const grandTotal = orderValue(order);
                               const discount = Number(order.discount_amount || 0);
                               let shipping = Number(order.shipping_cost || order.shipping_fee || order.shippingFee || 0);
                               
-                              // Jika ongkir di DB 0 tapi total tidak sama dengan subtotal, kemungkinan ongkir tidak tersimpan dengan baik
                               if (shipping === 0 && grandTotal > (subtotal - discount)) {
                                 shipping = grandTotal - subtotal + discount;
                               }
 
                               return (
                                 <>
-                                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.4rem" }}>
-                                    <span>Subtotal Produk:</span>
+                                  <div className={styles.printBillRow}>
+                                    <span>{adminOrdersConfig.print.summary.subtotal}</span>
                                     <strong>{money(subtotal)}</strong>
                                   </div>
-                                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.4rem" }}>
-                                    <span>Ongkos Kirim:</span>
+                                  <div className={styles.printBillRow}>
+                                    <span>{adminOrdersConfig.print.summary.shipping}</span>
                                     <strong>{money(shipping)}</strong>
                                   </div>
                                   {discount > 0 && (
-                                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.4rem", color: "#e11d48" }}>
-                                      <span>Diskon:</span>
+                                    <div className={styles.printBillDiscountRow}>
+                                      <span>{adminOrdersConfig.print.summary.discount}</span>
                                       <strong>-{money(discount)}</strong>
                                     </div>
                                   )}
-                                  <div style={{ display: "flex", justifyContent: "space-between", borderTop: "2px solid #000", paddingTop: "0.4rem", marginTop: "0.2rem" }}>
-                                    <strong>Total Tagihan:</strong>
+                                  <div className={styles.printBillTotalRow}>
+                                    <strong>{adminOrdersConfig.print.summary.grandTotal}</strong>
                                     <strong>{money(grandTotal)}</strong>
                                   </div>
                                 </>
@@ -979,11 +927,11 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
                           </div>
                         </div>
                         <div className={styles.printBody}>
-                          <p><b>Penerima:</b> {alamat?.recipientName || order.customer_name || "Pelanggan"}</p>
-                          <p><b>No. HP:</b> {alamat?.phone || order.customerPhone || order.customer_phone || order.phone || "-"}</p>
-                          <p><b>Alamat:</b> {getAddressStr(alamat)}</p>
-                          <p><b>Kurir:</b> {shippingInfo.courier_name || shippingInfo.courierName || order.courier_name || order.courier || "—"} ({shippingInfo.service_type || shippingInfo.serviceType || order.courier_service || "-"})</p>
-                          <p><b>Resi:</b> {order.waybill_id || shippingInfo.tracking_number || shippingInfo.trackingNumber || order.shipping_receipt_number || "Belum ada resi"}</p>
+                          <p><b>{adminOrdersConfig.print.recipient}</b> {alamat?.recipientName || order.customer_name || "Pelanggan"}</p>
+                          <p><b>{adminOrdersConfig.print.phone}</b> {alamat?.phone || order.customerPhone || order.customer_phone || order.phone || "-"}</p>
+                          <p><b>{adminOrdersConfig.print.address}</b> {getAddressStr(alamat)}</p>
+                          <p><b>{adminOrdersConfig.print.courier}</b> {shippingInfo.courier_name || shippingInfo.courierName || order.courier_name || order.courier || "—"} ({shippingInfo.service_type || shippingInfo.serviceType || order.courier_service || "-"})</p>
+                          <p><b>{adminOrdersConfig.print.waybill}</b> {order.waybill_id || shippingInfo.tracking_number || shippingInfo.trackingNumber || order.shipping_receipt_number || adminOrdersConfig.drawer.shipping.noWaybill}</p>
                         </div>
                         <div className={styles.printItems}>
                           {(order.items || []).map((item, index: any) => (
@@ -1051,17 +999,17 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
 
         return (
         <div className={styles.drawerBackdrop} onClick={() => setActiveOrder(null)}>
-          <div className={styles.drawer} onClick={(event) => event.stopPropagation()} style={{ maxWidth: "560px" }}>
+          <div className={`${styles.drawer} ${styles.orderDrawer}`} onClick={(event) => event.stopPropagation()}>
             {/* 1. DRAWER HEADER */}
-            <div className={styles.drawerHeader} style={{ paddingBottom: "0.85rem", borderBottom: "1px solid var(--border-color)" }}>
+            <div className={`${styles.drawerHeader} ${styles.orderDrawerHeader}`}>
               <div>
-                <p className={styles.eyebrow} style={{ margin: 0 }}>
-                  Detail Pesanan
+                <p className={`${styles.eyebrow} ${styles.orderDrawerEyebrow}`}>
+                  {adminOrdersConfig.drawer.eyebrow}
                 </p>
-                <h3 style={{ margin: "4px 0 0", fontSize: "1.15rem", fontWeight: 700, color: "var(--text-primary)" }}>
+                <h3 className={styles.orderDrawerTitle}>
                   {activeOrder.order_number || activeOrder.orderId || activeOrder.id}
                 </h3>
-                <span style={{ fontSize: "0.8rem", color: "var(--text-secondary)" }}>
+                <span className={styles.orderDrawerDate}>
                   {new Date(activeOrder.createdAt || activeOrder.created_at || Date.now()).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                 </span>
               </div>
@@ -1071,26 +1019,25 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
             {/* 2. PROMINENT STATUS BAR */}
             <div className={styles.statusBanner}>
               <div>
-                <span className={styles.statusBannerLabel}>Status Pesanan</span>
-                <strong className={styles.statusBannerValue} style={{
-                  color: isCancelled ? "var(--danger-color)" : (orderStatus === "delivered" ? "#059669" : (orderStatus === "shipped" ? "#7c3aed" : (isPaidOrProcessing ? "#059669" : "var(--text-secondary)")))
-                }}>
-                  {isCancelled && "⛔ Dibatalkan"}
-                  {isVerifying && "🔍 Menunggu Verifikasi Struk"}
-                  {isPending && "⏳ Belum Dibayar"}
-                  {["paid", "processing"].includes(orderStatus) && "📦 Perlu Dikirim (Lunas)"}
-                  {orderStatus === "shipped" && "🚚 Sedang Dikirim"}
-                  {orderStatus === "delivered" && "✅ Pesanan Selesai"}
+                <span className={styles.statusBannerLabel}>{adminOrdersConfig.drawer.statusLabel}</span>
+                <strong className={`${styles.statusBannerValue} ${
+                  isCancelled ? styles.statusBannerCancelled : (orderStatus === "delivered" || isPaidOrProcessing ? styles.statusBannerSuccess : (orderStatus === "shipped" ? styles.statusBannerShipped : styles.statusBannerDefault))
+                }`}>
+                  {isCancelled && adminOrdersConfig.drawer.statusTexts.cancelled}
+                  {isVerifying && adminOrdersConfig.drawer.statusTexts.verifying}
+                  {isPending && adminOrdersConfig.drawer.statusTexts.pending}
+                  {["paid", "processing"].includes(orderStatus) && adminOrdersConfig.drawer.statusTexts.paid}
+                  {orderStatus === "shipped" && adminOrdersConfig.drawer.statusTexts.shipped}
+                  {orderStatus === "delivered" && adminOrdersConfig.drawer.statusTexts.delivered}
                   {!["cancelled", "verifying", "pending", "paid", "processing", "shipped", "delivered"].includes(orderStatus) && activeOrder.status}
                 </strong>
               </div>
-
             </div>
 
             {/* 3. CONTEXTUAL E-COMMERCE ACTION BOX */}
             <div className={styles.actionBox}>
               <h4 className={styles.actionBoxHeader}>
-                <span>⚡</span> Tindakan Operasional
+                <span>⚡</span> {adminOrdersConfig.drawer.operationalActions}
               </h4>
 
               {/* TAHAP A: BELUM BAYAR / VERIFIKASI */}
@@ -1099,18 +1046,17 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
                   {isManualPayment ? (
                     <>
                       <p className={styles.actionBoxDesc}>
-                        Pembeli memilih transfer manual ke rekening toko. Periksa struk lalu konfirmasi lunas untuk memproses.
+                        {adminOrdersConfig.drawer.verification.manualTransferDesc}
                       </p>
-                      <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                      <div className={styles.actionButtonRow}>
                         <button
                           type="button"
                           onClick={() => updateOrderStatusAdmin(activeOrder.id || activeOrder.orderId, "paid", "Pembayaran dikonfirmasi lunas oleh admin")}
                           disabled={updatingId === (activeOrder.id || activeOrder.orderId) || isPending}
-                          className={styles.btnActionSuccess}
-                          style={isPending ? { opacity: 0.5, cursor: "not-allowed" } : {}}
+                          className={`${styles.btnActionSuccess} ${isPending ? styles.btnActionDisabled : ''}`}
                           title={isPending ? "Menunggu pembeli mengunggah bukti transfer" : ""}
                         >
-                          ✅ Konfirmasi Pembayaran Lunas
+                          {adminOrdersConfig.drawer.verification.confirmPaid}
                         </button>
                         <button
                           type="button"
@@ -1118,24 +1064,23 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
                           disabled={updatingId === (activeOrder.id || activeOrder.orderId)}
                           className={styles.btnActionDanger}
                         >
-                          ❌ Batalkan Pesanan
+                          {adminOrdersConfig.drawer.verification.cancelOrder}
                         </button>
                       </div>
                     </>
                   ) : (
                     <>
                       <p className={styles.actionBoxDesc}>
-                        Pembayaran diproses otomatis oleh gerbang Midtrans. Tidak perlu konfirmasi manual.
+                        {adminOrdersConfig.drawer.verification.midtransDesc}
                       </p>
-                      <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                      <div className={styles.actionButtonRow}>
                         <button
                           type="button"
                           onClick={() => syncMidtransStatus(activeOrder.id || activeOrder.orderId)}
                           disabled={updatingId === (activeOrder.id || activeOrder.orderId)}
-                          className={styles.btnActionOutline}
-                          style={{ backgroundColor: "#eff6ff", color: "#2563eb", borderColor: "#bfdbfe" }}
+                          className={`${styles.btnActionOutline} ${styles.btnActionBlue}`}
                         >
-                          {updatingId === (activeOrder.id || activeOrder.orderId) ? "Loading..." : "🔄 Cek Status Midtrans"}
+                          {updatingId === (activeOrder.id || activeOrder.orderId) ? "Loading..." : adminOrdersConfig.drawer.verification.checkMidtrans}
                         </button>
                         <button
                           type="button"
@@ -1143,7 +1088,7 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
                           disabled={updatingId === (activeOrder.id || activeOrder.orderId)}
                           className={styles.btnActionDanger}
                         >
-                          ❌ Batalkan Pesanan
+                          {adminOrdersConfig.drawer.verification.cancelOrder}
                         </button>
                       </div>
                     </>
@@ -1155,16 +1100,16 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
               {["paid", "processing"].includes(orderStatus) && (
                 <div>
                   <p className={styles.actionBoxDesc}>
-                    Pembayaran lunas. Pilih metode pengiriman pesanan:
+                    {adminOrdersConfig.drawer.shipping.title}
                   </p>
 
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "10px" }}>
+                  <div className={styles.actionGrid}>
                     {/* Opsi 1: Biteship Auto Pickup */}
                     {storeSettings?.biteshipAutoOrder && (
-                      <div className={styles.actionOptionCard} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <div className={`${styles.actionOptionCard} ${styles.actionOptionFlex}`}>
                         <div>
-                          <strong style={{ fontSize: "0.85rem", display: "block", color: "var(--text-primary)" }}>🚚 Opsi 1: Pickup Otomatis (Biteship)</strong>
-                          <span style={{ fontSize: "0.78rem", color: "var(--text-secondary)" }}>Kurir menjemput ke alamat toko & resi terbit otomatis.</span>
+                          <strong className={styles.actionOptionTitle}>{adminOrdersConfig.drawer.shipping.option1Title}</strong>
+                          <span className={styles.actionOptionSub}>{adminOrdersConfig.drawer.shipping.option1Desc}</span>
                         </div>
                         <button
                           type="button"
@@ -1172,28 +1117,27 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
                           onClick={() => requestBiteshipPickup(activeOrder.id || activeOrder.orderId)}
                           disabled={updatingId === (activeOrder.id || activeOrder.orderId) || Boolean(activeOrder.biteship_order_id)}
                         >
-                          {updatingId === (activeOrder.id || activeOrder.orderId) ? "Memproses..." : "Request Pickup"}
+                          {updatingId === (activeOrder.id || activeOrder.orderId) ? "Memproses..." : adminOrdersConfig.drawer.shipping.requestPickupBtn}
                         </button>
                       </div>
                     )}
 
                     {/* Opsi 2: Drop Outlet / Resi Manual */}
                     <div className={styles.actionOptionCard}>
-                      <strong style={{ fontSize: "0.85rem", display: "block", marginBottom: "4px", color: "var(--text-primary)" }}>
-                        {storeSettings?.biteshipAutoOrder ? "📦 Opsi 2: Antar ke Konter / Drop Outlet" : "📦 Antar ke Konter / Drop Outlet (Input Resi)"}
+                      <strong className={styles.actionOptionTitleBlock}>
+                        {storeSettings?.biteshipAutoOrder ? adminOrdersConfig.drawer.shipping.option2TitleAuto : adminOrdersConfig.drawer.shipping.option2TitleManual}
                       </strong>
-                      <span style={{ fontSize: "0.78rem", color: "var(--text-secondary)", display: "block", marginBottom: "8px" }}>
+                      <span className={styles.actionOptionDescBlock}>
                         {storeSettings?.biteshipAutoOrder 
-                          ? "Gunakan ini saat mengantar ke counter agen atau saldo Biteship kosong." 
-                          : "Masukkan nomor resi fisik setelah menyerahkan paket ke kurir."}
+                          ? adminOrdersConfig.drawer.shipping.option2DescAuto 
+                          : adminOrdersConfig.drawer.shipping.option2DescManual}
                       </span>
-                      <div style={{ display: "flex", gap: "6px" }}>
+                      <div className={styles.shippingInputRow}>
                         <input
                           value={shippingDraft.trackingNumber}
                           onChange={(e) => setShippingDraft(prev => ({ ...prev, trackingNumber: e.target.value }))}
-                          placeholder="Ketik nomor resi fisik dari struk counter..."
-                          className={styles.drawerInput}
-                          style={{ flex: 1 }}
+                          placeholder={adminOrdersConfig.drawer.shipping.resiPlaceholder}
+                          className={`${styles.drawerInput} ${styles.shippingInputFlex}`}
                         />
                         <button
                           type="button"
@@ -1201,7 +1145,7 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
                           onClick={() => saveShipping(activeOrder)}
                           disabled={updatingId === (activeOrder.id || activeOrder.orderId) || !shippingDraft.trackingNumber?.trim()}
                         >
-                          {updatingId === (activeOrder.id || activeOrder.orderId) ? "Menyimpan..." : "Kirim Pesanan"}
+                          {updatingId === (activeOrder.id || activeOrder.orderId) ? "Menyimpan..." : adminOrdersConfig.drawer.shipping.sendBtn}
                         </button>
                       </div>
                     </div>
@@ -1212,23 +1156,23 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
               {/* TAHAP C: SEDANG DIKIRIM (SHIPPED) */}
               {orderStatus === "shipped" && (
                 <div>
-                  <div className={styles.actionOptionCard} style={{ marginBottom: "10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div className={`${styles.actionOptionCard} ${styles.trackingCardRow}`}>
                     <div>
-                      <span style={{ fontSize: "0.75rem", color: "var(--text-secondary)", display: "block" }}>Nomor Resi Pengiriman:</span>
-                      <strong style={{ fontSize: "0.95rem", color: "var(--text-primary)" }}>{activeOrder.waybill_id || activeOrder.shipping_receipt_number || shippingDraft.trackingNumber || "Belum ada resi"}</strong>
+                      <span className={styles.trackingLabel}>{adminOrdersConfig.drawer.shipping.waybillLabel}</span>
+                      <strong className={styles.trackingNumber}>{activeOrder.waybill_id || activeOrder.shipping_receipt_number || shippingDraft.trackingNumber || adminOrdersConfig.drawer.shipping.noWaybill}</strong>
                     </div>
                     {activeOrder.courier_tracking_link && (
                       <a
                         href={activeOrder.courier_tracking_link}
                         target="_blank"
                         rel="noopener noreferrer"
-                        style={{ fontSize: "0.8rem", color: "var(--text-primary)", fontWeight: 600, textDecoration: "underline" }}
+                        className={styles.trackingLink}
                       >
-                        📍 Lacak Paket ↗
+                        {adminOrdersConfig.drawer.shipping.trackPackage}
                       </a>
                     )}
                   </div>
-                  <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                  <div className={styles.actionButtonRow}>
                     {activeOrder.biteship_order_id && (
                       <button
                         type="button"
@@ -1236,7 +1180,7 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
                         onClick={() => syncBiteshipStatus(activeOrder.id || activeOrder.orderId)}
                         disabled={updatingId === (activeOrder.id || activeOrder.orderId)}
                       >
-                        {updatingId === (activeOrder.id || activeOrder.orderId) ? "Menyinkronkan..." : "🔄 Sinkron Status Kurir"}
+                        {updatingId === (activeOrder.id || activeOrder.orderId) ? "Menyinkronkan..." : adminOrdersConfig.drawer.shipping.syncCourier}
                       </button>
                     )}
                     <button
@@ -1245,7 +1189,7 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
                       onClick={() => updateOrderStatusAdmin(activeOrder.id || activeOrder.orderId, "delivered", "Pesanan ditandai selesai oleh admin")}
                       disabled={updatingId === (activeOrder.id || activeOrder.orderId)}
                     >
-                      ✅ Tandai Selesai (Delivered)
+                      {adminOrdersConfig.drawer.shipping.markDelivered}
                     </button>
                   </div>
                 </div>
@@ -1253,23 +1197,23 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
 
               {/* TAHAP D: FINAL (DELIVERED / CANCELLED) */}
               {["delivered", "cancelled", "returned"].includes(orderStatus) && (
-                <p className={styles.actionBoxDesc} style={{ margin: 0, fontStyle: "italic" }}>
+                <p className={`${styles.actionBoxDesc} ${styles.actionBoxDescMuted}`}>
                   Pesanan telah berada pada status final ({orderStatus === "delivered" ? "Selesai" : "Dibatalkan"}). Tidak diperlukan tindakan operasional lebih lanjut.
                 </p>
               )}
             </div>
 
             {/* 4. INFORMASI PENGIRIMAN & ALAMAT */}
-            <div className={styles.drawerCard} style={{ marginBottom: "1rem" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-                <h4 style={{ margin: 0 }}>Penerima & Alamat Pengiriman</h4>
-                <span style={{ fontSize: "0.75rem", padding: "3px 8px", borderRadius: "8px", background: "var(--surface-secondary)", border: "1px solid var(--border-color)", fontWeight: 600, color: "var(--text-secondary)" }}>
+            <div className={`${styles.drawerCard} ${styles.drawerCardMargin}`}>
+              <div className={styles.drawerCardHeaderFlex}>
+                <h4 className={styles.drawerCardH4}>{adminOrdersConfig.drawer.customerInfo.heading}</h4>
+                <span className={styles.courierBadge}>
                   {(chosenCourier || "Kurir").toUpperCase()} {chosenService ? `(${chosenService})` : ""}
                 </span>
               </div>
-              <p style={{ margin: "0 0 2px 0", fontWeight: 600, fontSize: "0.88rem", color: "var(--text-primary)" }}>{activeOrder.customer_name || "Pelanggan"}</p>
-              <p style={{ margin: "0 0 6px 0", fontSize: "0.8rem", color: "var(--text-secondary)" }}>
-                {activeOrder.customer_phone ? `📞 ${activeOrder.customer_phone} • ` : ""}{activeOrder.customer_email || "Tidak ada email"}
+              <p className={styles.customerName}>{activeOrder.customer_name || "Pelanggan"}</p>
+              <p className={styles.customerContact}>
+                {activeOrder.customer_phone ? `📞 ${activeOrder.customer_phone} • ` : ""}{activeOrder.customer_email || adminOrdersConfig.drawer.customerInfo.noEmail}
               </p>
               {(activeOrder.shipping_address || activeOrder.shippingAddress) && (
                 <div className={styles.addressBox}>
@@ -1280,47 +1224,46 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
 
             {/* 5. RINCIAN PRODUK & PEMBAYARAN */}
             <div className={styles.drawerCard}>
-              <h4 style={{ margin: "0 0 10px 0" }}>Rincian Barang & Pembayaran</h4>
+              <h4 className={styles.drawerH4Bottom}>{adminOrdersConfig.drawer.items.heading}</h4>
               
               {/* Item List */}
               {activeOrder.items && activeOrder.items.length > 0 && (
-                <div style={{ marginBottom: "10px", borderBottom: "1px dashed var(--border-color)", paddingBottom: "8px" }}>
+                <div className={styles.drawerItemList}>
                   {activeOrder.items.map((item, index: any) => (
-                    <div key={`${item.name}-${index}`} className={styles.itemRow} style={{ padding: "6px 0", fontSize: "0.85rem" }}>
-                      <span style={{ color: "var(--text-primary)" }}>{item.name || item.product_name || "Produk"} {item.variant_name ? `(${item.variant_name})` : ""}</span>
-                      <strong style={{ color: "var(--text-primary)" }}>{item.quantity || item.qty || 1} × {money(item.price || item.price_at_purchase || 0)}</strong>
+                    <div key={`${item.name}-${index}`} className={`${styles.itemRow} ${styles.drawerItemRow}`}>
+                      <span className={styles.itemTextPrimary}>{item.name || item.product_name || "Produk"} {item.variant_name ? `(${item.variant_name})` : ""}</span>
+                      <strong className={styles.itemTextPrimary}>{item.quantity || item.qty || 1} × {money(item.price || item.price_at_purchase || 0)}</strong>
                     </div>
                   ))}
                 </div>
               )}
 
               {/* Rincian Biaya */}
-              <div style={{ fontSize: "0.82rem", display: "flex", flexDirection: "column", gap: "4px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", color: "var(--text-secondary)" }}>
-                  <span>Ongkos Kirim:</span>
-                  <span style={{ color: "var(--text-primary)" }}>{shippingCost > 0 ? money(shippingCost) : "Gratis"}</span>
+              <div className={styles.costBreakdown}>
+                <div className={styles.costRowSecondary}>
+                  <span>{adminOrdersConfig.drawer.items.shippingCost}:</span>
+                  <span className={styles.itemTextPrimary}>{shippingCost > 0 ? money(shippingCost) : adminOrdersConfig.drawer.items.freeShipping}</span>
                 </div>
                 {activeOrder.discount_amount > 0 && (
-                  <div style={{ display: "flex", justifyContent: "space-between", color: "#059669" }}>
-                    <span>Diskon:</span>
+                  <div className={styles.costRowDiscount}>
+                    <span>{adminOrdersConfig.drawer.items.discount}:</span>
                     <span>- {money(activeOrder.discount_amount)}</span>
                   </div>
                 )}
-                <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700, fontSize: "0.95rem", marginTop: "4px", paddingTop: "6px", borderTop: "1px solid var(--border-color)", color: "var(--text-primary)" }}>
-                  <span>Total Pembayaran:</span>
-                  <span style={{ color: "var(--text-primary)" }}>{money(orderValue(activeOrder))}</span>
+                <div className={styles.costRowGrandTotal}>
+                  <span>{adminOrdersConfig.drawer.items.totalPayment}:</span>
+                  <span className={styles.itemTextPrimary}>{money(orderValue(activeOrder))}</span>
                 </div>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "6px", fontSize: "0.78rem", color: "var(--text-secondary)" }}>
-                  <span>Metode: <strong style={{ color: "var(--text-primary)" }}>{isManualPayment ? "Transfer Manual (Rekening Toko)" : (activeOrder.payment_method || activeOrder.payment_type || "Midtrans Otomatis")}</strong></span>
+                <div className={styles.paymentMethodRow}>
+                  <span>{adminOrdersConfig.drawer.items.method}: <strong className={styles.itemTextPrimary}>{isManualPayment ? adminOrdersConfig.drawer.items.manualTransferMethod : (activeOrder.payment_method || activeOrder.payment_type || adminOrdersConfig.drawer.items.midtransMethod)}</strong></span>
                   {hasPaymentProof && (
                     <a
                       href={activeOrder.shipping_detail?.payment_proof_url || activeOrder.shippingDetail?.payment_proof_url || activeOrder.payment_proof_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={styles.btnActionOutline}
-                      style={{ padding: "4px 8px", fontSize: "0.75rem", textDecoration: "none" }}
+                      className={`${styles.btnActionOutline} ${styles.paymentProofLink}`}
                     >
-                      📄 Lihat Struk ↗
+                      {adminOrdersConfig.drawer.items.viewReceipt}
                     </a>
                   )}
                 </div>
@@ -1340,7 +1283,7 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
                     timestamp: new Date(changedAt).getTime(),
                     timestampStr: new Date(changedAt).toLocaleString("id-ID"),
                     label: sh.status,
-                    note: sh.note || sh.notes || "Diperbarui oleh sistem",
+                    note: sh.note || sh.notes || adminOrdersConfig.drawer.history.systemUpdate,
                     isWebhook: false
                   });
                 });
@@ -1354,7 +1297,7 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
                     timestamp: new Date(changedAt).getTime(),
                     timestampStr: new Date(changedAt).toLocaleString("id-ID"),
                     label: th.status || th.event || "Update Kurir",
-                    note: th.note || th.details?.history?.[0]?.note || "Lokasi/Status diperbarui kurir",
+                    note: th.note || th.details?.history?.[0]?.note || adminOrdersConfig.drawer.history.courierUpdate,
                     isWebhook: true
                   });
                 });
@@ -1365,20 +1308,19 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
               if (history.length === 0) return null;
 
               return (
-                <div className={styles.drawerCard} style={{ marginTop: '0.75rem' }}>
-                  <h4 style={{ margin: "0 0 10px 0", fontSize: "0.85rem" }}>Riwayat Status & Pengiriman</h4>
+                <div className={`${styles.drawerCard} ${styles.timelineCardTop}`}>
+                  <h4 className={styles.drawerH4Bottom}>{adminOrdersConfig.drawer.history.heading}</h4>
                   <div className={styles.timeline}>
                     {history.map((item) => (
                       <div key={item.key} className={styles.timelineItem}>
                         <div className={styles.timelineMarker}>
                           <span 
-                            className={styles.timelineDot} 
-                            style={item.isWebhook ? { background: '#3b82f6', borderColor: '#bfdbfe' } : undefined} 
+                            className={`${styles.timelineDot} ${item.isWebhook ? styles.timelineDotWebhook : ''}`} 
                           />
                         </div>
                         <div className={styles.timelineContent}>
                           <div className={styles.timelineTitleRow}>
-                            <h4 className={styles.timelineStatusTitle} style={item.isWebhook ? { textTransform: "capitalize" } : undefined}>
+                            <h4 className={`${styles.timelineStatusTitle} ${item.isWebhook ? styles.timelineTitleWebhook : ''}`}>
                               {item.label}
                             </h4>
                             <span className={styles.timelineTime}>{item.timestampStr}</span>

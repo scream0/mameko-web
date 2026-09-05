@@ -1,0 +1,177 @@
+{
+  "hero": {
+    "subtitle": "PUSAT PROMOSI TERPADU",
+    "title": "Promo Toko & Voucher Belanja",
+    "description": "Kelola strategi diskon katalog toko otomatis dan kupon voucher yang dapat diklaim pelanggan.",
+    "stats": {
+      "promoLabel": "Promo Toko Otomatis",
+      "promoLive": "LIVE",
+      "promoInactive": "NONAKTIF",
+      "totalVouchersLabel": "Total Voucher Kupon",
+      "activeVouchersLabel": "Voucher Aktif"
+    }
+  },
+  "tabs": {
+    "promoToko": {
+      "id": "promo_toko",
+      "label": "Diskon Toko & Banner",
+      "liveBadge": "Live"
+    },
+    "vouchers": {
+      "id": "vouchers",
+      "label": "Kupon Voucher"
+    }
+  },
+  "promoToko": {
+    "header": {
+      "title": "Pengaturan Promo Toko & Banner",
+      "subtitle": "Diskon langsung untuk katalog produk tanpa perlu input kupon"
+    },
+    "switch": {
+      "title": "Aktifkan Diskon Toko",
+      "description": "Terapkan potongan harga otomatis di seluruh halaman toko"
+    },
+    "banner": {
+      "label": "Teks Banner Pengumuman",
+      "placeholder": "Contoh: PROMO RAMADHAN DISKON 20% SEMUA PRODUK!",
+      "hint": "Akan tampil di running-text bagian atas website toko"
+    },
+    "discountType": {
+      "label": "Tipe Potongan Diskon",
+      "percentage": "Persentase (%)",
+      "fixed": "Potongan Tetap (Rp)"
+    },
+    "discountValue": {
+      "label": "Besar Potongan Diskon",
+      "placeholderPercentage": "Misal: 20",
+      "placeholderFixed": "Misal: 25000"
+    },
+    "dates": {
+      "startLabel": "Tanggal & Jam Mulai",
+      "endLabel": "Tanggal & Jam Berakhir",
+      "hint": "Biarkan kosong jika promo berlaku tanpa batas waktu"
+    },
+    "promoCode": {
+      "label": "Kode Promo (Display/Tracking)",
+      "placeholder": "Misal: DISKONMAMEKO",
+      "hint": "Untuk ditampilkan di banner/voucher"
+    },
+    "destination": {
+      "label": "Tujuan Tombol Banner",
+      "placeholder": "Contoh: #product atau /products"
+    },
+    "targetScope": {
+      "label": "Jangkauan Promo Toko",
+      "all": "Semua Produk di Toko",
+      "allDesc": "Potongan harga diterapkan ke seluruh varian & katalog",
+      "specific": "Pilih Varian Tertentu",
+      "specificDesc": "Pilih varian produk secara spesifik menggunakan bulk action",
+      "selectedCountTemplate": "({count} dipilih)"
+    },
+    "saveBtn": {
+      "idle": "Simpan Pengaturan Promo Toko",
+      "loading": "Menyimpan Promo..."
+    },
+    "selectAllToast": "Semua {count} varian berhasil dipilih",
+    "deselectAllToast": "Seluruh pilihan varian dibatalkan"
+  },
+  "variantSelection": {
+    "title": "Pilih Varian Produk yang Mendapat Diskon Promo",
+    "description": "Tentukan varian mana saja yang mendapat potongan harga. Anda dapat memilih 1 varian saja atau menggunakan aksi massal (bulk action).",
+    "searchPlaceholder": "Cari produk atau varian (nama / ukuran)...",
+    "selectAllBtn": "Pilih Semua Varian",
+    "deselectAllBtn": "Batal Pilih Semua",
+    "selectAllTooltip": "Pilih semua varian di toko",
+    "deselectAllTooltip": "Kosongkan pilihan varian",
+    "selectedCounterTemplate": "{count} varian dipilih",
+    "totalVariantsTemplate": "dari {count} varian",
+    "selectedSuffix": "dipilih untuk mendapatkan diskon promo toko.",
+    "productSelectAll": "Pilih Semua Varian Ini",
+    "productDeselectAll": "Batal Pilih Varian Ini",
+    "standardVariantLabel": "Standar",
+    "defaultCategory": "Produk",
+    "stockTemplate": "Stok: {count}",
+    "promoActiveBadge": "PROMO AKTIF",
+    "normalPriceBadge": "Harga Normal",
+    "savingsTemplate": "Hemat {amount}",
+    "emptySearch": "Tidak ada varian yang cocok dengan pencarian",
+    "emptySearchHint": "Coba kata kunci pencarian lain atau pastikan produk sudah memiliki varian.",
+    "noProducts": "Belum ada data produk tersedia"
+  },
+  "vouchers": {
+    "headerTitle": "Daftar Kupon Voucher Belanja",
+    "headerSubtitle": "Kode voucher yang dapat diklaim dan dimasukkan oleh pelanggan saat checkout",
+    "searchPlaceholder": "Cari kode atau judul voucher...",
+    "filterAll": "Semua",
+    "filterActive": "Aktif",
+    "filterInactive": "Nonaktif",
+    "filterExpired": "Kedaluwarsa",
+    "filterBadgeTemplate": "({count})",
+    "filterCountTemplate": "{count} voucher",
+    "emptyList": "Belum ada kupon voucher dibuat",
+    "emptyListHint": "Buat kupon voucher pertamamu untuk menarik pelanggan!",
+    "emptySearch": "Tidak ada voucher yang cocok dengan filter / pencarian",
+    "emptySearchHint": "Coba gunakan kata kunci pencarian atau pilih filter status lain.",
+    "badgeActive": "Aktif",
+    "badgeExpired": "Kedaluwarsa",
+    "badgeQuotaFull": "Kuota Habis",
+    "badgeInactive": "Nonaktif",
+    "statusActive": "Aktif",
+    "statusInactive": "Mati",
+    "noExpiry": "Tanpa Expired",
+    "quotaTemplate": "Kuota: {used} / {limit} terpakai",
+    "unlimited": "∞",
+    "minPurchaseTemplate": "Min. belanja {amount}",
+    "offLabel": "Off",
+    "expPrefix": "Exp: ",
+    "editBtn": "Edit voucher",
+    "deleteBtn": "Hapus voucher",
+    "toggleActiveTitle": "Aktifkan voucher",
+    "toggleInactiveTitle": "Nonaktifkan voucher",
+    "deleteConfirm": "Apakah Anda yakin ingin menghapus voucher ini?",
+    "modal": {
+      "createTitle": "Buat Kupon Voucher Baru",
+      "editTitle": "Edit Kupon Voucher",
+      "editSubtitle": "Perbarui pengaturan kupon voucher yang sudah ada",
+      "editModeBadge": "MODE EDIT AKTIF",
+      "codeLabel": "Kode Voucher (Huruf Besar)",
+      "codePlaceholder": "Misal: RAMADHAN50",
+      "titleLabel": "Nama / Judul Voucher",
+      "titlePlaceholder": "Contoh: Diskon Pelanggan Baru",
+      "typeLabel": "Jenis Diskon",
+      "typePercentage": "Persentase (%)",
+      "typeFixed": "Nominal Tetap (Rp)",
+      "typeShipping": "Gratis Ongkir",
+      "valueLabel": "Nilai Diskon",
+      "discountPlaceholder": "Cth: 10 atau 20000",
+      "minSpendLabel": "Minimal Belanja (Rp)",
+      "minSpendPlaceholder": "Rp 0",
+      "quotaLabel": "Batas Kuota Penggunaan (0 = Tanpa Batas)",
+      "quotaPlaceholder": "Contoh: 100 (0 = Tanpa Batas)",
+      "validUntilLabel": "Batas Waktu Kedaluwarsa (Opsional)",
+      "cancelEditBtn": "Batal Edit",
+      "saveBtn": "Simpan Voucher Baru",
+      "updateBtn": "Perbarui Kupon Voucher",
+      "savingBtn": "Menyimpan..."
+    }
+  },
+  "messages": {
+    "loading": "Memuat pusat promosi & voucher...",
+    "authError": "Sesi admin tidak ditemukan. Harap login kembali.",
+    "savePromoLoading": "Menyimpan pengaturan promo toko...",
+    "savePromoSuccess": "Pengaturan promo toko berhasil diperbarui!",
+    "savePromoError": "Gagal menyimpan promo",
+    "saveVoucherLoading": "Membuat voucher baru...",
+    "updateVoucherLoading": "Memperbarui voucher...",
+    "validationCodeTitle": "Kode dan judul voucher wajib diisi.",
+    "validationDiscount": "Nilai diskon harus lebih besar dari 0.",
+    "createVoucherSuccess": "Voucher baru berhasil dibuat!",
+    "createVoucherError": "Gagal membuat voucher baru",
+    "updateVoucherSuccess": "Voucher berhasil diperbarui!",
+    "updateVoucherError": "Gagal memperbarui voucher",
+    "deleteVoucherSuccess": "Voucher berhasil dihapus",
+    "deleteVoucherError": "Gagal menghapus voucher",
+    "toggleStatusSuccess": "Voucher berhasil {status}",
+    "toggleStatusError": "Gagal mengubah status voucher"
+  }
+}

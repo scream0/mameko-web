@@ -7,6 +7,7 @@
   "emptyTitle": "Belum ada notifikasi",
   "emptyText": "Notifikasi tentang pesanan, promo, dan pengingat akan muncul di sini.",
   "loadingText": "Memuat notifikasi...",
+  "linkIndicator": "Lihat Detail →",
   "tabs": {
     "all": "Semua",
     "unread": "Belum Dibaca",
@@ -15,7 +16,14 @@
   },
   "buttons": {
     "markAllRead": "Tandai Semua Dibaca",
+    "markingAllRead": "Menandai...",
+    "deleteAria": "Hapus notifikasi",
+    "deleting": "...",
     "refresh": "Muat Ulang"
+  },
+  "deleteModal": {
+    "title": "Hapus Notifikasi",
+    "message": "Apakah Anda yakin ingin menghapus notifikasi ini?"
   },
   "emptyUnread": "Tidak ada notifikasi yang belum dibaca.",
   "timeAgo": {
@@ -33,7 +41,8 @@
   "toasts": {
     "markAllReadSuccess": "Semua notifikasi ditandai sudah dibaca.",
     "deleteSuccess": "Notifikasi dihapus.",
-    "fetchError": "Gagal memuat notifikasi."
+    "fetchError": "Gagal memuat notifikasi.",
+    "updateError": "Gagal memperbarui notifikasi.",
+    "deleteError": "Gagal menghapus notifikasi."
   }
 }
-

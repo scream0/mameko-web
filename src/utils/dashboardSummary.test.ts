@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { calculateDashboardStats } from "./dashboardSummary.js";
+import { calculateDashboardStats } from "./dashboardSummary.ts";
 
 test("calculateDashboardStats sums revenue and stock alerts from minimal data", () => {
   const result = calculateDashboardStats({

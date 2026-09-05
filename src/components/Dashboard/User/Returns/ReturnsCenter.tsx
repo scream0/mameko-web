@@ -1,139 +1,224 @@
 // @ts-nocheck
 "use client";
-import { useState, useEffect, useRef } from "react";
+
+import { useState, useEffect, useRef, useCallback } from "react";
 import toast from "react-hot-toast";
 import { auth } from "@/lib/supabaseClient";
 import styles from "./ReturnsCenter.module.css";
+import returnsConfig from "@/data/ui/returnsConfig.json";
+import { AppIcon } from "@/components/UI/Icon/AppIcon";
 import { shouldSkipAuthEvent } from "@/utils/authHelpers";
+import {
+  SkeletonText,
+  SkeletonLines,
+} from "@/components/UI/Skeleton/Skeleton";
+import { useRouter } from "next/navigation";
 
-const RETURN_STATUS_INFO = {
-  pending: { label: "Menunggu Review", color: "#f59e0b" },
-  approved: { label: "Disetujui ✅", color: "#10b981" },
-  rejected: { label: "Ditolak ❌", color: "#ef4444" },
-  return_requested: { label: "Menunggu Review", color: "#f59e0b" },
-  returned: { label: "Selesai", color: "#6366f1" },
-};
+interface ReturnsCenterProps {
+  onNavigateOrders?: () => void;
+}
 
-export default function ReturnsCenter() {
+export default function ReturnsCenter({ onNavigateOrders }: ReturnsCenterProps) {
+  const router = useRouter();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
   const lastUserIdRef = useRef(null);
 
-  const load = async (sessionToken: any) => {
+  const loadReturns = useCallback(async (sessionToken?: string) => {
     try {
-      const token = sessionToken || (await auth.getSession()).data.session?.access_token;
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/user/returns", {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
+      const token =
+        sessionToken ||
+        (await auth.getSession()).data.session?.access_token;
+      const res = await fetch(
+        (process.env.NEXT_PUBLIC_API_URL || "") + "/api/user/returns",
+        {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        },
+      );
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      if (!res.ok) {
+        throw new Error(data.error || returnsConfig.toasts.fetchError);
+      }
       setRequests(data.returns || []);
-    } catch (error) {
-      toast.error(error.message || "Gagal memuat riwayat retur.");
+    } catch (error: any) {
+      toast.error(error.message || returnsConfig.toasts.fetchError);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     let subscription = null;
 
     const initAuth = async () => {
-      const { data: { session } } = await auth.getSession();
+      const {
+        data: { session },
+      } = await auth.getSession();
       lastUserIdRef.current = session?.user?.id || null;
       if (session) {
-        load(session.access_token);
+        loadReturns(session.access_token);
       } else {
         setLoading(false);
       }
 
-      const { data: authListener } = auth.onAuthStateChange((_event, session) => {
-        if (shouldSkipAuthEvent(_event, session, lastUserIdRef.current)) return;
-        lastUserIdRef.current = session?.user?.id || null;
-        if (session) {
-          load(session.access_token);
-        } else {
-          setRequests([]);
-          setLoading(false);
-        }
-      });
+      const { data: authListener } = auth.onAuthStateChange(
+        (_event, session) => {
+          if (shouldSkipAuthEvent(_event, session, lastUserIdRef.current))
+            return;
+          lastUserIdRef.current = session?.user?.id || null;
+          if (session) {
+            loadReturns(session.access_token);
+          } else {
+            setRequests([]);
+            setLoading(false);
+          }
+        },
+      );
       subscription = authListener?.subscription;
     };
 
     initAuth();
-    return () => { if (subscription) subscription.unsubscribe(); };
-  }, []);
+
+    const handleReturnSubmitted = () => {
+      loadReturns();
+    };
+
+    window.addEventListener("return-submitted", handleReturnSubmitted);
+
+    return () => {
+      if (subscription) subscription.unsubscribe();
+      window.removeEventListener("return-submitted", handleReturnSubmitted);
+    };
+  }, [loadReturns]);
+
+  const handleGoToOrders = () => {
+    if (onNavigateOrders) {
+      onNavigateOrders();
+    } else {
+      router.push("/dashboard?tab=orders");
+    }
+  };
+
+  const getStatusData = (statusKey: string) => {
+    const statusMap = returnsConfig.status as Record<
+      string,
+      { label: string; classKey: string }
+    >;
+    return (
+      statusMap[statusKey] || {
+        label: statusKey,
+        classKey: "default",
+      }
+    );
+  };
+
+  const getAdminNoteClass = (status: string) => {
+    if (status === "approved") return styles.adminNoteApproved;
+    if (status === "rejected") return styles.adminNoteRejected;
+    return styles.adminNoteDefault;
+  };
 
   return (
-    <div className={styles.wrap}>
-      <section className={styles.card}>
-        <p className={styles.eyebrow}>After-sales support</p>
-        <h2>Riwayat Pengajuan Retur & Refund</h2>
-        <p className={styles.copy}>
-          Di sini kamu dapat melihat status pengajuan retur yang telah kamu kirim.
-          Pengajuan retur dapat dilakukan dari halaman <strong>Pesanan</strong> pada pesanan yang sudah Selesai.
-        </p>
+    <div className={styles.returnsContainer}>
+      {/* 1. Header Hero Card */}
+      <section className={styles.heroCard}>
+        <p className={styles.eyebrow}>{returnsConfig.header.eyebrow}</p>
+        <h2 className={styles.heroTitle}>{returnsConfig.header.title}</h2>
+        <p className={styles.heroCopy}>{returnsConfig.header.description}</p>
       </section>
 
-      <section className={styles.card}>
-        <h3>Status pengajuan</h3>
+      {/* 2. Daftar Pengajuan Retur */}
+      <section className={styles.listCard}>
+        <div className={styles.listHeader}>
+          <h3 className={styles.listTitle}>{returnsConfig.list.title}</h3>
+        </div>
+
         {loading ? (
-          <p>Memuat pengajuan…</p>
-        ) : requests.length ? (
           <div className={styles.list}>
-            {requests.map((item) => {
-              const statusInfo = RETURN_STATUS_INFO[item.status] || { label: item.status, color: "#71717a" };
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={`ret-skel-${i}`} className={styles.skeletonItem}>
+                <div style={{ display: "flex", justifyContent: "space-between", gap: "12px" }}>
+                  <SkeletonText width={130} height={18} />
+                  <SkeletonText width={90} height={22} radius={20} />
+                </div>
+                <SkeletonLines lines={2} widths={["70%", "40%"]} />
+              </div>
+            ))}
+          </div>
+        ) : requests.length > 0 ? (
+          <div className={styles.list}>
+            {requests.map((item: any) => {
+              const statusData = getStatusData(item.status);
+              const orderDisplayId =
+                item.orderNumber ||
+                item.orderId?.slice(-8)?.toUpperCase() ||
+                "—";
+              const formattedDate = item.createdAt
+                ? new Date(item.createdAt).toLocaleDateString("id-ID", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
+                : "";
+
               return (
-                <div key={item.id} style={{ display: "flex", flexDirection: "column", padding: "16px 0", borderBottom: "1px solid var(--border-light)" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px" }}>
-                    <div style={{ flex: 1 }}>
-                      <b style={{ fontSize: "0.9rem" }}>#{item.orderId?.slice(-8)?.toUpperCase() || "—"}</b>
-                      <br />
-                      <small style={{ color: "var(--text-secondary)" }}>
-                        {item.reason} &nbsp;·&nbsp;{" "}
-                        {item.createdAt
-                          ? new Date(item.createdAt).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })
-                          : ""}
-                      </small>
+                <div key={item.id} className={styles.returnItem}>
+                  <div className={styles.returnItemTop}>
+                    <div className={styles.orderMeta}>
+                      <div className={styles.orderNumberRow}>
+                        <AppIcon name="package" size={16} />
+                        <span className={styles.orderNumber}>
+                          {returnsConfig.list.orderPrefix}
+                          {orderDisplayId}
+                        </span>
+                      </div>
+                      <span className={styles.returnReason}>
+                        <strong>{returnsConfig.card.reasonLabel}</strong>{" "}
+                        {item.reason}
+                      </span>
+                      {formattedDate && (
+                        <span className={styles.returnDate}>
+                          {returnsConfig.card.dateLabel} {formattedDate}
+                        </span>
+                      )}
                     </div>
-                    <span style={{
-                      flexShrink: 0,
-                      fontSize: "0.8rem",
-                      fontWeight: 600,
-                      padding: "4px 10px",
-                      borderRadius: "20px",
-                      background: `${statusInfo.color}20`,
-                      color: statusInfo.color,
-                      border: `1px solid ${statusInfo.color}40`,
-                    }}>
-                      {statusInfo.label}
+                    <span
+                      className={`${styles.statusBadge} ${
+                        styles[`status_${statusData.classKey}`] ||
+                        styles.status_default
+                      }`}
+                    >
+                      {statusData.label}
                     </span>
                   </div>
 
                   {item.evidence && (
-                    <div style={{ marginTop: "8px" }}>
-                      <a
-                        href={item.evidence}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ color: "var(--primary-color)", fontSize: "0.82rem", textDecoration: "underline" }}
+                    <div className={styles.evidenceWrapper}>
+                      <button
+                        type="button"
+                        className={styles.evidenceBtn}
+                        onClick={() => setPreviewImage(item.evidence)}
                       >
-                        📎 Lihat Foto Bukti
-                      </a>
+                        <AppIcon name="image" size={15} />
+                        <span>{returnsConfig.card.evidenceBtn}</span>
+                      </button>
                     </div>
                   )}
 
                   {item.adminNote && (
-                    <div style={{
-                      marginTop: "10px",
-                      padding: "10px 14px",
-                      background: item.status === "approved" ? "rgba(16, 185, 129, 0.08)" : "rgba(239, 68, 68, 0.08)",
-                      borderLeft: `3px solid ${item.status === "approved" ? "#10b981" : "#ef4444"}`,
-                      borderRadius: "0 6px 6px 0",
-                      fontSize: "0.85rem",
-                      color: "var(--text-primary)",
-                    }}>
-                      <strong>Catatan Admin:</strong> {item.adminNote}
+                    <div
+                      className={`${styles.adminNoteBox} ${getAdminNoteClass(
+                        item.status,
+                      )}`}
+                    >
+                      <span className={styles.adminNoteTitle}>
+                        <AppIcon name="message-square" size={14} />
+                        <span>{returnsConfig.card.adminNoteTitle}</span>
+                      </span>
+                      <p className={styles.adminNoteText}>{item.adminNote}</p>
                     </div>
                   )}
                 </div>
@@ -141,13 +226,56 @@ export default function ReturnsCenter() {
             })}
           </div>
         ) : (
-          <div style={{ textAlign: "center", padding: "40px 0", color: "var(--text-secondary)" }}>
-            <p style={{ fontSize: "2rem", marginBottom: "8px" }}>📦</p>
-            <p>Belum ada pengajuan retur atau refund.</p>
-            <small>Kamu dapat mengajukan retur dari halaman <strong>Pesanan</strong>.</small>
+          <div className={styles.emptyState}>
+            <div className={styles.emptyIconWrapper}>
+              <AppIcon name="rotate-ccw" size={32} />
+            </div>
+            <h4 className={styles.emptyTitle}>{returnsConfig.list.emptyTitle}</h4>
+            <p className={styles.emptyText}>{returnsConfig.list.emptyDesc}</p>
+            <button
+              type="button"
+              className={styles.ctaOrdersBtn}
+              onClick={handleGoToOrders}
+            >
+              <AppIcon name="shopping-bag" size={16} />
+              <span>{returnsConfig.list.ctaOrders}</span>
+            </button>
           </div>
         )}
       </section>
+
+      {/* 3. Modal Pratinjau Foto Bukti (Lightbox) */}
+      {previewImage && (
+        <div
+          className={styles.modalOverlay}
+          onClick={() => setPreviewImage(null)}
+        >
+          <div
+            className={styles.modalContent}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className={styles.modalHeader}>
+              <h4>{returnsConfig.card.evidenceModalTitle}</h4>
+              <button
+                type="button"
+                className={styles.closeBtn}
+                onClick={() => setPreviewImage(null)}
+                aria-label={returnsConfig.card.closeModal}
+              >
+                <AppIcon name="x" size={18} />
+              </button>
+            </div>
+            <div className={styles.modalBody}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={previewImage}
+                alt="Bukti Pengajuan Retur"
+                className={styles.modalImg}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

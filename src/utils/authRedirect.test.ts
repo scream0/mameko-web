@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { getSafeAuthRedirect } from "./authRedirect.js";
+import { getSafeAuthRedirect } from "./authRedirect.ts";
 
 test("getSafeAuthRedirect permits only internal paths", () => {
   assert.equal(getSafeAuthRedirect("/checkout?step=payment"), "/checkout?step=payment");

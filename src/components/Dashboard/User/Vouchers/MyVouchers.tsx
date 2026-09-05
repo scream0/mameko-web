@@ -5,19 +5,10 @@ import styles from "./MyVouchers.module.css";
 import VoucherCard from "@/components/Voucher/VoucherCard";
 import toast from "react-hot-toast";
 import { auth } from "@/lib/supabaseClient";
+import vouchersConfig from "@/data/ui/vouchersConfig.json";
 
-const TABS = [
-  { key: "all", label: "Semua" },
-  { key: "active", label: "Aktif" },
-  { key: "used", label: "Terpakai" },
-  { key: "expired", label: "Kadaluarsa" },
-];
-
-const statusTextMap = {
-  active: "Aktif",
-  used: "Digunakan",
-  expired: "Kadaluarsa",
-};
+const TABS = vouchersConfig.tabs;
+const statusTextMap = vouchersConfig.status;
 
 const MyVouchers = ({
   availableVouchers = [],
@@ -78,12 +69,12 @@ const MyVouchers = ({
 
   const handleClaimVoucher = async (voucherId: any) => {
     setClaimingId(voucherId);
-    const toastId = toast.loading("Mengklaim voucher...");
+    const toastId = toast.loading(vouchersConfig.toasts.claiming);
 
     try {
       const { data: { session } } = await auth.getSession();
       if (!session) {
-        toast.error("Anda harus login.", { id: toastId });
+        toast.error(vouchersConfig.toasts.requireLogin, { id: toastId });
         setClaimingId(null);
         return;
       }
@@ -100,11 +91,11 @@ const MyVouchers = ({
       const data = await res.json();
 
       if (res.ok && data.success) {
-        toast.success(data.message || "Berhasil!", { id: toastId });
+        toast.success(data.message || vouchersConfig.toasts.claimSuccess, { id: toastId });
         setOptimisticClaimed((prev) => new Set(prev).add(String(voucherId)));
         if (refreshProfile) refreshProfile();
       } else {
-        throw new Error(data.error || "Gagal mengklaim.");
+        throw new Error(data.error || vouchersConfig.toasts.claimFailed);
       }
     } catch (error) {
       toast.error(error.message, { id: toastId });
@@ -117,7 +108,7 @@ const MyVouchers = ({
     <div className={styles.myVouchersSection}>
       {!isCheckoutMode && (
         <div className={styles.sectionGroup}>
-          <h2 className={styles.sectionTitle}>Voucher Tersedia</h2>
+          <h2 className={styles.sectionTitle}>{vouchersConfig.headings.availableTitle}</h2>
           <div className={styles.availableVouchersList}>
             {availableVouchers.length > 0 ? (
               availableVouchers.map((voucher) => {
@@ -129,20 +120,20 @@ const MyVouchers = ({
                     key={voucher.id}
                     voucher={voucher}
                     disabled={isClaimed || isClaiming}
-                    buttonText={isClaiming ? "Mengklaim..." : isClaimed ? "Sudah Diklaim" : "Klaim"}
+                    buttonText={isClaiming ? vouchersConfig.actions.claiming : isClaimed ? vouchersConfig.actions.claimed : vouchersConfig.actions.claim}
                     onActionClick={() => !isClaimed && handleClaimVoucher(voucher.id)}
                   />
                 );
               })
             ) : (
-              <p className={styles.emptyState}>Tidak ada voucher tersedia saat ini.</p>
+              <p className={styles.emptyState}>{vouchersConfig.emptyStates.noAvailable}</p>
             )}
           </div>
         </div>
       )}
 
-      <div className={styles.sectionGroup} style={{ marginTop: "32px" }}>
-        <h2 className={styles.sectionTitle}>Voucher Saya</h2>
+      <div className={`${styles.sectionGroup} ${!isCheckoutMode ? styles.sectionGroupSpaced : ""}`}>
+        {!isCheckoutMode && <h2 className={styles.sectionTitle}>{vouchersConfig.headings.myVouchersTitle}</h2>}
 
         {!isCheckoutMode && (
           <div className={styles.tabBar}>
@@ -173,17 +164,17 @@ const MyVouchers = ({
                   statusText={statusTextMap[cv.status] || "Diklaim"}
                   disabled={isCheckoutMode && isApplied}
                   onActionClick={isCheckoutMode && !isApplied ? () => onSelectVoucher(cv) : undefined}
-                  buttonText={isCheckoutMode && isApplied ? "Terpakai" : "Pakai Voucher"}
+                  buttonText={isCheckoutMode && isApplied ? vouchersConfig.actions.used : vouchersConfig.actions.useVoucher}
                 />
               );
             })
           ) : (
             <p className={styles.emptyState}>
               {isCheckoutMode
-                ? "Tidak ada voucher aktif yang bisa digunakan."
+                ? vouchersConfig.emptyStates.noActiveCheckout
                 : activeTab === "all"
-                  ? "Belum ada voucher diklaim."
-                  : `Tidak ada voucher ${TABS.find((t) => t.key === activeTab)?.label.toLowerCase()}.`}
+                  ? vouchersConfig.emptyStates.noClaimed
+                  : vouchersConfig.emptyStates.noCategoryTemplate.replace("{category}", TABS.find((t) => t.key === activeTab)?.label.toLowerCase() || "")}
             </p>
           )}
         </div>

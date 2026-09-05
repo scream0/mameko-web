@@ -1,4 +1,5 @@
 {
+  "currencyPrefix": "Rp ",
   "sections": {
     "growthRate": "Pertumbuhan MoM",
     "topVariants": "Varian Parfum Terlaris",
@@ -7,6 +8,7 @@
   },
   "headers": {
     "productName": "Nama Produk & Varian",
+    "remainingStock": "Sisa Stok",
     "status": "Status Stok",
     "action": "Rekomendasi Tindakan"
   },
@@ -15,6 +17,23 @@
     "pending": "Tertunda",
     "failed": "Gagal",
     "settlement": "Selesai"
+  },
+  "inventory": {
+    "turnoverLevels": {
+      "fast": "Fast-Moving",
+      "normal": "Normal / Slow"
+    },
+    "recommendations": {
+      "restock": "Segera Restock",
+      "safe": "Stok Aman"
+    }
+  },
+  "units": {
+    "pcs": "pcs"
+  },
+  "fallbacks": {
+    "completed": "Selesai",
+    "noOrders": "Belum ada pesanan"
   },
   "labels": {
     "unitsSold": "unit",
@@ -28,5 +47,13 @@
     "trendDown": "▼ Menurun dari bulan lalu",
     "currentMonthLabel": "Pendapatan Bulan Ini",
     "lastMonthPrefix": "Bulan lalu: Rp "
-  }
+  },
+  "chartPalette": [
+    "#d4af37",
+    "#10b981",
+    "#3b82f6",
+    "#f59e0b",
+    "#ef4444",
+    "#8b5cf6"
+  ]
 }

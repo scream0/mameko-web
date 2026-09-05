@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import styles from "./OverviewUser.module.css";
-import { auth } from "@/lib/supabaseClient";
+import { auth, db } from "@/lib/supabaseClient";
 import { useStore } from "@/context/StoreContext";
 import { getDiscountedPrice } from "@/utils/promo";
 import { shouldSkipAuthEvent } from "@/utils/authHelpers";
@@ -12,15 +12,7 @@ import overviewConfig from "@/data/ui/overviewUserConfig.json";
 import { OverviewUserSkeleton } from "@/components/UI/Skeleton/SkeletonLayouts";
 
 // Mapping status agar kelas warna badge sinkron dengan OrdersSection
-const STATUS_INFO = {
-  pending: { label: "Menunggu Pembayaran", badgeClass: "statusPending" },
-  success: { label: "Pembayaran Diterima", badgeClass: "statusSuccess" },
-  processing: { label: "Sedang Diracik", badgeClass: "statusProcessing" },
-  shipping: { label: "Dalam Pengiriman", badgeClass: "statusShipping" },
-  completed: { label: "Pesanan Selesai", badgeClass: "statusCompleted" },
-  settlement: { label: "Pembayaran Diterima", badgeClass: "statusSuccess" },
-  capture: { label: "Pembayaran Diterima", badgeClass: "statusSuccess" },
-};
+const STATUS_INFO = overviewConfig.status;
 
 function getStatusInfo(rawStatus: any) {
   const key = (rawStatus || "pending").toLowerCase();
@@ -141,7 +133,7 @@ export default function OverviewUser({ setActiveTab }) {
           if (
             !fetchedFullName &&
             orderResult.primaryAddress &&
-            orderResult.primaryAddress !== "Belum diatur"
+            orderResult.primaryAddress !== overviewConfig.fallbacks.primaryAddressUnset
           ) {
             fetchedFullName = orderResult.primaryAddress
               .split(" - ")[0]
@@ -253,7 +245,7 @@ export default function OverviewUser({ setActiveTab }) {
             {overviewConfig.metrics.totalSpent.title}
           </p>
           <h3 className={styles.metricValue}>
-            {loading ? "..." : formatRupiah(stats.totalSpent)}
+            {loading ? overviewConfig.fallbacks.loadingPlaceholder : formatRupiah(stats.totalSpent)}
           </h3>
           <p className={styles.metricDesc}>
             {overviewConfig.metrics.totalSpent.desc}
@@ -264,7 +256,7 @@ export default function OverviewUser({ setActiveTab }) {
             {overviewConfig.metrics.totalOrders.title}
           </p>
           <h3 className={styles.metricValue}>
-            {loading ? "..." : stats.totalOrders}
+            {loading ? overviewConfig.fallbacks.loadingPlaceholder : stats.totalOrders}
           </h3>
           <p className={styles.metricDesc}>
             {overviewConfig.metrics.totalOrders.desc}
@@ -275,7 +267,7 @@ export default function OverviewUser({ setActiveTab }) {
             {overviewConfig.metrics.processingOrders.title}
           </p>
           <h3 className={styles.metricValue}>
-            {loading ? "..." : stats.processingOrders}
+            {loading ? overviewConfig.fallbacks.loadingPlaceholder : stats.processingOrders}
           </h3>
           <p className={styles.metricDesc}>
             {overviewConfig.metrics.processingOrders.desc}
@@ -306,14 +298,14 @@ export default function OverviewUser({ setActiveTab }) {
                   order.items.length > 0
                 ) {
                   const firstItem = order.items[0];
-                  const productName = firstItem.product_name || firstItem.name || "Produk";
-                  const variantName = firstItem.variant_name || firstItem.size || "Standard";
+                  const productName = firstItem.product_name || firstItem.name || overviewConfig.fallbacks.defaultItemProduct;
+                  const variantName = firstItem.variant_name || firstItem.size || overviewConfig.fallbacks.defaultItemVariant;
                   itemName = `${productName} (${variantName})`;
                   if (order.items.length > 1) {
-                    itemName += ` +${order.items.length - 1} lainnya`;
+                    itemName += ` +${order.items.length - 1} ${overviewConfig.fallbacks.moreItemsSuffix}`;
                   }
                 }
-                if (!itemName) itemName = "Extrait de Parfum";
+                if (!itemName) itemName = overviewConfig.fallbacks.defaultCategory;
 
                 const statusInfo = getStatusInfo(order.status);
 
@@ -384,10 +376,14 @@ export default function OverviewUser({ setActiveTab }) {
               const rawPrice = Number(
                 firstVariant.price || prod.price || 0,
               );
-              const discounted = getDiscountedPrice(rawPrice, activePromo);
+              const discounted = getDiscountedPrice(rawPrice, activePromo, {
+                productId: prod.id || prod._id,
+                size: firstVariant.size,
+              });
               const priceDisplay = discounted.hasDiscount
                 ? Number(discounted.price).toLocaleString("id-ID")
                 : rawPrice.toLocaleString("id-ID");
+
               return (
                 <div key={prod.id || prod._id} className={styles.curatedItem}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}

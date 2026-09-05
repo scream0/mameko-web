@@ -2,7 +2,9 @@
   "brand": {
     "name": "MAKE ME",
     "suffix": "KOOL",
-    "badge": "OWNER PANEL"
+    "badge": "OWNER PANEL",
+    "greetingPrefix": "Halo",
+    "greetingSuffix": "👋"
   },
   "nav": [
     {
@@ -34,6 +36,26 @@
       "label": "Pengaturan"
     }
   ],
+  "navMeta": {
+    "overview": "Pertumbuhan & ikhtisar",
+    "orders": "Manajemen pesanan",
+    "products": "Katalog & stok",
+    "analytics": "Wawasan kinerja",
+    "notifications": "Peringatan & sistem",
+    "vouchers": "Diskon & voucher",
+    "settings": "Kontrol toko",
+    "reviews": "Ulasan pelanggan"
+  },
+  "mobile": {
+    "menuOpen": "Menu",
+    "menuClose": "Tutup",
+    "logout": "Keluar"
+  },
+  "roles": {
+    "superadmin": "Super Admin",
+    "admin": "Admin",
+    "user": "User"
+  },
   "stats": [
     "BRAND MATRICES",
     "SECURITY NODE",
@@ -44,7 +66,7 @@
     "analytics": "[ PERFORMANCE INSIGHTS & METRICS ]"
   },
   "loading": "LOADING EXECUTIVE SYSTEM...",
-  "logoutText": "Sign Out Control",
+  "logoutText": "Keluar Akun",
   "copy": {
     "brandCaption": "Pusat kendali operasional toko",
     "header": {

@@ -9,6 +9,17 @@
     "variant": "Pilih Ukuran / Varian:",
     "quantityMinus": "−",
     "quantityPlus": "+",
-    "addToCart": "Masukkan ke Keranjang"
+    "addToCart": "Masukkan ke Keranjang",
+    "outOfStock": "Stok Habis",
+    "stockPrefix": "Stok: ",
+    "soldOut": "Habis",
+    "customer": "Pelanggan"
+  },
+  "reviews": {
+    "title": "Ulasan Pembeli",
+    "loading": "Memuat ulasan...",
+    "empty": "Belum ada ulasan untuk produk ini.",
+    "loadMore": "Muat Lebih Banyak Ulasan",
+    "loadingMore": "Memuat..."
   }
 }

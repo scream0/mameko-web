@@ -1,0 +1,149 @@
+{
+  "header": {
+    "eyebrow": "Manajemen Pesanan",
+    "title": "Lacak setiap pesanan, status, dan pengiriman di satu tempat."
+  },
+  "automation": {
+    "label": "⚡ Jalankan Otomasi Pesanan",
+    "processing": "⏳ Memproses...",
+    "title": "Batalkan otomatis pesanan belum bayar >24 jam dan selesaikan pesanan terkirim >14 hari"
+  },
+  "tabs": {
+    "orders": "Daftar Pesanan",
+    "returns": "Pengembalian Dana (Refund)",
+    "withdrawals": "Penarikan (Withdrawals)"
+  },
+  "search": {
+    "placeholder": "Cari ID pesanan atau pelanggan",
+    "button": "Cari",
+    "refresh": "Segarkan"
+  },
+  "statusOptions": [
+    { "value": "all", "label": "Semua status" },
+    { "value": "pending", "label": "Menunggu" },
+    { "value": "verifying", "label": "Menunggu Verifikasi" },
+    { "value": "paid", "label": "Dibayar" },
+    { "value": "processing", "label": "Diproses" },
+    { "value": "shipped", "label": "Dikirim" },
+    { "value": "delivered", "label": "Selesai" },
+    { "value": "return_requested", "label": "Pengajuan Return" },
+    { "value": "returning", "label": "Return Dikirim" },
+    { "value": "returned", "label": "Return Selesai" },
+    { "value": "cancelled", "label": "Dibatalkan" }
+  ],
+  "summary": {
+    "ordersCount": "pesanan",
+    "pagePrefix": "Halaman",
+    "pageMiddle": "dari"
+  },
+  "bulk": {
+    "selectAll": "Pilih semua",
+    "apply": "Terapkan status massal",
+    "updating": "Memperbarui...",
+    "printSlip": "Cetak Slip Pengiriman",
+    "printInvoice": "Cetak Faktur"
+  },
+  "tableHeaders": {
+    "order": "Pesanan",
+    "customer": "Pelanggan",
+    "total": "Total",
+    "status": "Status",
+    "shipping": "Pengiriman",
+    "createdAt": "Dibuat"
+  },
+  "pagination": {
+    "previous": "Sebelumnya",
+    "page": "Halaman",
+    "next": "Selanjutnya"
+  },
+  "empty": {
+    "loading": "Memuat pesanan…",
+    "noOrders": "Tidak ada pesanan yang sesuai filter."
+  },
+  "drawer": {
+    "eyebrow": "Detail Pesanan",
+    "statusLabel": "Status Pesanan",
+    "operationalActions": "Tindakan Operasional",
+    "statusTexts": {
+      "cancelled": "⛔ Dibatalkan",
+      "verifying": "🔍 Menunggu Verifikasi Struk",
+      "pending": "⏳ Belum Dibayar",
+      "paid": "📦 Perlu Dikirim (Lunas)",
+      "shipped": "🚚 Sedang Dikirim",
+      "delivered": "✅ Pesanan Selesai"
+    },
+    "verification": {
+      "manualTransferDesc": "Pembeli memilih transfer manual ke rekening toko. Periksa struk lalu konfirmasi lunas untuk memproses.",
+      "midtransDesc": "Pembayaran diproses otomatis oleh gerbang Midtrans. Tidak perlu konfirmasi manual.",
+      "confirmPaid": "✅ Konfirmasi Pembayaran Lunas",
+      "cancelOrder": "❌ Batalkan Pesanan",
+      "checkMidtrans": "🔄 Cek Status Midtrans"
+    },
+    "shipping": {
+      "title": "Pembayaran lunas. Pilih metode pengiriman pesanan:",
+      "option1Title": "🚚 Opsi 1: Pickup Otomatis (Biteship)",
+      "option1Desc": "Kurir menjemput ke alamat toko & resi terbit otomatis.",
+      "requestPickupBtn": "Request Pickup",
+      "option2TitleAuto": "📦 Opsi 2: Antar ke Konter / Drop Outlet",
+      "option2TitleManual": "📦 Antar ke Konter / Drop Outlet (Input Resi)",
+      "option2DescAuto": "Gunakan ini saat mengantar ke counter agen atau saldo Biteship kosong.",
+      "option2DescManual": "Masukkan nomor resi fisik setelah menyerahkan paket ke kurir.",
+      "resiPlaceholder": "Ketik nomor resi fisik dari struk counter...",
+      "sendBtn": "Kirim Pesanan",
+      "waybillLabel": "Nomor Resi Pengiriman:",
+      "noWaybill": "Belum ada resi",
+      "trackPackage": "📍 Lacak Paket ↗",
+      "syncCourier": "🔄 Sinkron Status Kurir",
+      "markDelivered": "✅ Tandai Selesai (Delivered)"
+    },
+    "customerInfo": {
+      "heading": "Penerima & Alamat Pengiriman",
+      "noEmail": "Tidak ada email"
+    },
+    "items": {
+      "heading": "Rincian Barang & Pembayaran",
+      "shippingCost": "Ongkos Kirim",
+      "freeShipping": "Gratis",
+      "discount": "Diskon",
+      "totalPayment": "Total Pembayaran",
+      "method": "Metode",
+      "manualTransferMethod": "Transfer Manual (Rekening Toko)",
+      "midtransMethod": "Midtrans Otomatis",
+      "viewReceipt": "📄 Lihat Struk ↗"
+    },
+    "history": {
+      "heading": "Riwayat Status & Pengiriman",
+      "systemUpdate": "Diperbarui oleh sistem",
+      "courierUpdate": "Lokasi/Status diperbarui kurir"
+    }
+  },
+  "print": {
+    "eyebrow": "Pratinjau cetak",
+    "slipTitle": "Slip Pengiriman",
+    "invoiceTitle": "Faktur Belanja",
+    "printBtn": "Cetak",
+    "closeBtn": "Tutup",
+    "paidStamp": "LUNAS",
+    "invoiceHeading": "FAKTUR PENJUALAN",
+    "billedTo": "Tagihan Kepada:",
+    "shippingAddress": "Alamat Pengiriman:",
+    "paymentMethod": "Metode Pembayaran:",
+    "table": {
+      "product": "Produk",
+      "qty": "Qty",
+      "unitPrice": "Harga Satuan",
+      "total": "Total"
+    },
+    "summary": {
+      "subtotal": "Subtotal Produk:",
+      "shipping": "Ongkos Kirim:",
+      "discount": "Diskon:",
+      "grandTotal": "Total Tagihan:"
+    },
+    "recipient": "Penerima:",
+    "phone": "No. HP:",
+    "address": "Alamat:",
+    "courier": "Kurir:",
+    "waybill": "Resi:"
+  }
+}

@@ -23,6 +23,11 @@
     "hamburger": {
       "iconOpen": "menu",
       "iconClose": "x"
+    },
+    "mobileDrawer": {
+      "closeAriaLabel": "Tutup Menu Navigasi",
+      "iconClose": "x",
+      "navLinkIcon": "chevron-right"
     }
   },
   "authSection": {

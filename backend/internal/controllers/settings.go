@@ -3,12 +3,15 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
+	"time"
 	"xar-backend-go/internal/config"
 	"xar-backend-go/internal/models"
 
 	"github.com/gofiber/fiber/v2"
 )
+
 
 var defaultSettingsJSON = `{
 	"storeName": "MAMEKO Perfume",
@@ -47,8 +50,8 @@ var defaultSettingsJSON = `{
 			"bodyText": "Kami percaya bahwa apa yang Anda kenakan adalah representasi paling jujur dari identitas diri. Setiap rilisan diracik secara manual dalam jumlah terbatas untuk memastikan eksklusivitas."
 		},
 		"features": [
-			{ "number": "01", title: "Premium Concentration", desc: "Konsentrat tertinggi untuk ketahanan aroma sepanjang hari." },
-			{ "number": "02", title: "Artisanal Blend", desc: "Racikan manual yang menjaga keaslian setiap karakter aroma." }
+			{ "number": "01", "title": "Premium Concentration", "desc": "Konsentrat tertinggi untuk ketahanan aroma sepanjang hari." },
+			{ "number": "02", "title": "Artisanal Blend", "desc": "Racikan manual yang menjaga keaslian setiap karakter aroma." }
 		]
 	},
 	"product": {
@@ -179,6 +182,16 @@ func GetSettings(c *fiber.Ctx) error {
 	if val, ok := rowMap["currency"].(string); ok && val != "" {
 		s.Currency = val
 	}
+	if val, ok := rowMap["low_stock_threshold"]; ok && val != nil {
+		if i, err := strconv.Atoi(fmt.Sprintf("%v", val)); err == nil && i > 0 {
+			s.LowStockThreshold = i
+		}
+	}
+	if val, ok := rowMap["adminLocale"].(string); ok && val != "" {
+		s.AdminLocale = val
+	} else if val, ok := rowMap["admin_locale"].(string); ok && val != "" {
+		s.AdminLocale = val
+	}
 	if val, ok := rowMap["store_city_id"]; ok && val != nil {
 		s.StoreCityID = strings.TrimSpace(fmt.Sprintf("%v", val))
 	}
@@ -230,6 +243,55 @@ func GetSettings(c *fiber.Ctx) error {
 			s.ActiveCouriers = b
 		}
 	}
+	if val, ok := rowMap["promo_banner_enabled"].(bool); ok {
+		s.PromoBannerEnabled = val
+	} else if valStr, ok := rowMap["promo_banner_enabled"].(string); ok {
+		s.PromoBannerEnabled = strings.EqualFold(valStr, "true") || valStr == "t" || valStr == "1"
+	}
+	if val, ok := rowMap["promo_banner_text"].(string); ok {
+		s.PromoBannerText = val
+	}
+	if val, ok := rowMap["promo_discount_type"].(string); ok && val != "" {
+		s.PromoDiscountType = val
+	}
+	if val, ok := rowMap["promo_discount_value"]; ok && val != nil {
+		if f, err := strconv.ParseFloat(fmt.Sprintf("%v", val), 64); err == nil {
+			s.PromoDiscountValue = f
+		}
+	}
+	cleanDate := func(raw interface{}) string {
+		if raw == nil {
+			return ""
+		}
+		if t, ok := raw.(time.Time); ok {
+			return t.Format("2006-01-02")
+		}
+		str := strings.TrimSpace(fmt.Sprintf("%v", raw))
+		if len(str) >= 10 && str[4] == '-' && str[7] == '-' {
+			return str[:10]
+		}
+		return ""
+	}
+	s.PromoStartDate = cleanDate(rowMap["promo_start_date"])
+	s.PromoEndDate = cleanDate(rowMap["promo_end_date"])
+
+	if val, ok := rowMap["promo_code"].(string); ok {
+		s.PromoCode = val
+	}
+	if val, ok := rowMap["promo_destination"].(string); ok {
+		s.PromoDestination = val
+	}
+
+	s.PromoTargetType = "all"
+	if val, ok := rowMap["promo_target_type"].(string); ok && val != "" {
+		s.PromoTargetType = val
+	}
+	s.PromoTargetVariants = json.RawMessage("[]")
+	if val, ok := rowMap["promo_target_variants"]; ok && val != nil {
+		if b, err := json.Marshal(val); err == nil {
+			s.PromoTargetVariants = b
+		}
+	}
 
 	return c.JSON(s)
 }
@@ -249,12 +311,12 @@ func UpdateSettings(c *fiber.Ctx) error {
 		})
 	}
 
-	safeJSON := func(b []byte) string {
-		s := string(b)
-		if s == "" || s == "null" {
+	safeJSON := func(raw json.RawMessage) string {
+		str := string(raw)
+		if str == "" || str == "null" {
 			return "{}"
 		}
-		return s
+		return str
 	}
 
 	heroStr := safeJSON(req.Hero)
@@ -263,23 +325,56 @@ func UpdateSettings(c *fiber.Ctx) error {
 	contactStr := safeJSON(req.Contact)
 	footerStr := safeJSON(req.Footer)
 	
+	if req.LowStockThreshold <= 0 {
+		req.LowStockThreshold = 10
+	}
+	if req.AdminLocale == "" {
+		req.AdminLocale = "id"
+	}
+	if req.PromoDiscountType == "" {
+		req.PromoDiscountType = "percentage"
+	}
+	if req.PromoTargetType == "" {
+		req.PromoTargetType = "all"
+	}
+
+	var rawBody map[string]interface{}
+	_ = json.Unmarshal(c.Body(), &rawBody)
+
+	_, hasPromoBanner := rawBody["promoBannerEnabled"]
+	_, hasPromoDiscount := rawBody["promoDiscountValue"]
+	_, hasPromoCode := rawBody["promoCode"]
+	_, hasPromoTarget := rawBody["promoTargetType"]
+	hasPromoUpdates := hasPromoBanner || hasPromoDiscount || hasPromoCode || hasPromoTarget
+
 	couriersStr := string(req.ActiveCouriers)
 	if couriersStr == "" || couriersStr == "null" {
 		couriersStr = "[]"
 	}
 
+	targetVariantsStr := string(req.PromoTargetVariants)
+	if targetVariantsStr == "" || targetVariantsStr == "null" {
+		targetVariantsStr = "[]"
+	}
+
 	query := `
 		INSERT INTO store_config (
-			id, store_name, store_email, currency, low_stock_threshold,
+			id, store_name, store_email, currency, low_stock_threshold, "adminLocale",
 			store_city_id, store_city_name, enable_midtrans, enable_manual_transfer,
 			midtrans_is_production, biteship_is_production, biteship_auto_order,
 			hero, about, product, contact, footer, active_couriers,
+			promo_banner_enabled, promo_banner_text, promo_discount_type, promo_discount_value,
+			promo_start_date, promo_end_date, promo_code, promo_destination,
+			promo_target_type, promo_target_variants,
 			updated_at
 		) VALUES (
-			'main', $1, $2, $3, $4,
-			$5, $6, $7, $8,
-			$9, $10, $11,
-			$12::jsonb, $13::jsonb, $14::jsonb, $15::jsonb, $16::jsonb, $17::jsonb,
+			'main', $1, $2, $3, $4, $5,
+			$6, $7, $8, $9,
+			$10, $11, $12,
+			$13::jsonb, $14::jsonb, $15::jsonb, $16::jsonb, $17::jsonb, $18::jsonb,
+			$19, $20, $21, $22,
+			NULLIF($23, '')::timestamptz, NULLIF($24, '')::timestamptz, $25, $26,
+			$27, $28::jsonb,
 			NOW()
 		)
 		ON CONFLICT (id) DO UPDATE SET
@@ -287,6 +382,7 @@ func UpdateSettings(c *fiber.Ctx) error {
 			store_email = EXCLUDED.store_email,
 			currency = EXCLUDED.currency,
 			low_stock_threshold = EXCLUDED.low_stock_threshold,
+			"adminLocale" = EXCLUDED."adminLocale",
 			store_city_id = EXCLUDED.store_city_id,
 			store_city_name = EXCLUDED.store_city_name,
 			enable_midtrans = EXCLUDED.enable_midtrans,
@@ -300,15 +396,29 @@ func UpdateSettings(c *fiber.Ctx) error {
 			contact = EXCLUDED.contact,
 			footer = EXCLUDED.footer,
 			active_couriers = EXCLUDED.active_couriers,
+			promo_banner_enabled = CASE WHEN $29::boolean THEN EXCLUDED.promo_banner_enabled ELSE store_config.promo_banner_enabled END,
+			promo_banner_text = CASE WHEN $29::boolean THEN EXCLUDED.promo_banner_text ELSE store_config.promo_banner_text END,
+			promo_discount_type = CASE WHEN $29::boolean THEN EXCLUDED.promo_discount_type ELSE store_config.promo_discount_type END,
+			promo_discount_value = CASE WHEN $29::boolean THEN EXCLUDED.promo_discount_value ELSE store_config.promo_discount_value END,
+			promo_start_date = CASE WHEN $29::boolean THEN EXCLUDED.promo_start_date ELSE store_config.promo_start_date END,
+			promo_end_date = CASE WHEN $29::boolean THEN EXCLUDED.promo_end_date ELSE store_config.promo_end_date END,
+			promo_code = CASE WHEN $29::boolean THEN EXCLUDED.promo_code ELSE store_config.promo_code END,
+			promo_destination = CASE WHEN $29::boolean THEN EXCLUDED.promo_destination ELSE store_config.promo_destination END,
+			promo_target_type = CASE WHEN $29::boolean THEN EXCLUDED.promo_target_type ELSE store_config.promo_target_type END,
+			promo_target_variants = CASE WHEN $29::boolean THEN EXCLUDED.promo_target_variants ELSE store_config.promo_target_variants END,
 			updated_at = NOW()
 	`
 
 	_, err := config.DB.Exec(
 		query,
-		req.StoreName, req.StoreEmail, req.Currency, req.LowStockThreshold,
+		req.StoreName, req.StoreEmail, req.Currency, req.LowStockThreshold, req.AdminLocale,
 		req.StoreCityID, req.StoreCityName, req.EnableMidtrans, req.EnableManualTransfer,
 		req.MidtransIsProduction, req.BiteshipIsProduction, req.BiteshipAutoOrder,
 		heroStr, aboutStr, productStr, contactStr, footerStr, couriersStr,
+		req.PromoBannerEnabled, req.PromoBannerText, req.PromoDiscountType, req.PromoDiscountValue,
+		req.PromoStartDate, req.PromoEndDate, req.PromoCode, req.PromoDestination,
+		req.PromoTargetType, targetVariantsStr,
+		hasPromoUpdates,
 	)
 
 	if err != nil {
@@ -322,3 +432,4 @@ func UpdateSettings(c *fiber.Ctx) error {
 		"message": "Settings updated successfully",
 	})
 }
+

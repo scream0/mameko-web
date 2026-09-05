@@ -1,6 +1,6 @@
 @echo off
 echo Starting XAR Backend and Cloudflare Tunnel...
-cd /d "D:\Xar Project\xar project react.js\xar-project\backend"
+cd /d "%~dp0"
 
 echo Starting Go Backend...
 start "XAR Backend API" /min cmd /c "go run cmd\api\main.go > backend.log 2>&1"

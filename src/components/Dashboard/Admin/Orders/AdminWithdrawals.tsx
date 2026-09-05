@@ -116,12 +116,12 @@ export default function AdminWithdrawals() {
                   <td>{new Date(w.created_at).toLocaleString('id-ID')}</td>
                   <td>
                     <div><b>{w.profiles?.full_name || w.profiles?.username || 'User'}</b></div>
-                    <div style={{ fontSize: '12px', color: '#666' }}>
+                    <div className={styles.subTextMuted}>
                       {w.profiles?.bank_name} - {w.profiles?.bank_account_number} <br/>
                       (A/N: {w.profiles?.bank_account_name})
                     </div>
                   </td>
-                  <td style={{ fontWeight: 'bold' }}>{money(w.amount)}</td>
+                  <td className={styles.boldText}>{money(w.amount)}</td>
                   <td>
                     <span className={`${styles.statusBadge} ${styles[w.status] || ''}`}>
                       {w.status}
@@ -129,7 +129,7 @@ export default function AdminWithdrawals() {
                   </td>
                   <td>
                     {w.status === 'pending' && (
-                      <div style={{ display: 'flex', gap: '8px' }}>
+                      <div className={styles.actionButtonRow}>
                         <button 
                           className={styles.actionBtnPrimary} 
                           onClick={() => openPrompt(w.id, 'approve')}
@@ -158,7 +158,7 @@ export default function AdminWithdrawals() {
         <div className={styles.modalOverlay} onClick={closePrompt}>
           <div className={styles.modalCard} onClick={(e) => e.stopPropagation()}>
             <h4>Konfirmasi Penarikan</h4>
-            <p style={{ marginBottom: '0.5rem', fontSize: '0.85rem' }}>{promptModal.message}</p>
+            <p className={styles.modalMessage}>{promptModal.message}</p>
             <textarea 
               className={styles.modalInput}
               value={promptModal.note}

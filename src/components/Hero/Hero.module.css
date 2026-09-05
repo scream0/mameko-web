@@ -117,6 +117,11 @@
   z-index: 1;
   pointer-events: none;
   transition: background 0.1s ease-out;
+  background: radial-gradient(
+    600px circle at var(--spotlight-x, 50%) var(--spotlight-y, 50%),
+    var(--spotlight-color, rgba(229, 228, 226, 0.1)),
+    transparent 80%
+  );
 }
 
 .heroOverlay {
@@ -149,38 +154,32 @@
   position: relative;
   z-index: 4;
   width: 100%;
-  max-width: 1400px;
+  max-width: 1320px;
   margin: 0 auto;
-  padding: 0 5%;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1.15fr 0.85fr;
   align-items: center;
-  gap: 60px;
+  gap: 3.5rem;
+  min-height: 85vh;
 }
 
+/* Kaca Kristal (Content Box) - Glassmorphism Premium */
 .content {
   position: relative;
-  width: 100%;
-  max-width: 600px;
-  padding: 3rem 2.8rem;
-
-  /* Latar belakang kaca tebal yang adaptif & berkelas */
-  background: rgba(var(--surface-primary-rgb), 0.35);
-  backdrop-filter: blur(24px) saturate(150%);
-  -webkit-backdrop-filter: blur(24px) saturate(150%);
-
-  border-radius: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
-
+  background: rgba(var(--surface-primary-rgb), 0.25);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-top-color: rgba(255, 255, 255, 0.2);
+  border-left-color: rgba(255, 255, 255, 0.16);
+  border-radius: 28px;
+  padding: 3.5rem 3.5rem 3rem;
+  box-shadow:
+    0 30px 60px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2);
   overflow: hidden;
-
-  /* Panel cuma fade-in opacity (TANPA translateY) supaya nggak numpuk gerakan
-     sama .reveal di children (tagline/title/desc/buttons) yang sudah slide-up
-     sendiri. Kalau dua-duanya translateY bareng, hasilnya "double motion". */
-  animation: heroPanelFadeIn 0.9s ease;
-  animation-delay: 0.1s;
-  animation-fill-mode: both;
+  animation: heroPanelFadeIn 1s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 /* Garis pantulan cahaya kristal (specular highlight) di tepi atas kotak */
@@ -239,7 +238,7 @@
   position: relative;
   width: 100%;
   height: 550px;
-  animation: heroVisualFadeIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) var(--reveal-delay, 0ms);
+  animation: heroVisualFadeIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) 300ms;
   animation-fill-mode: both;
 }
 
@@ -283,36 +282,51 @@
   width: 80%;
   height: 80%;
   background: radial-gradient(circle, rgba(var(--primary-accent-rgb), 0.3), transparent 70%);
-  filter: blur(60px);
+  filter: blur(35px);
   z-index: -1;
+  pointer-events: none;
 }
 
 @keyframes floatImage {
-
-  0%,
-  100% {
-    transform: translateY(0) rotate(0deg);
+  0% {
+    transform: translateY(0px) rotate(0deg);
   }
 
   50% {
-    transform: translateY(-15px) rotate(1.5deg);
+    transform: translateY(-12px) rotate(0.4deg);
+  }
+
+  100% {
+    transform: translateY(0px) rotate(0deg);
   }
 }
 
-/* --- Text reveal animation (staggered fade-in + slide-up) ---
-   Dipakai di heroTagline, heroTitle, heroDesc, heroButtons lewat
-   className tambahan `reveal` + `revealed`, dengan --reveal-delay
-   per elemen (diset inline dari komponen). Ini satu-satunya lapis
-   translateY di dalam .content, jadi gerakannya nggak dobel sama
-   animasi fade panel di atas. */
+/* ====================================================
+   TYPOGRAPHY & REVEAL ANIMATIONS
+   ==================================================== */
 .reveal {
   opacity: 0;
   transform: translateY(24px);
   transition:
     opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
     transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
-  transition-delay: var(--reveal-delay, 0ms);
   will-change: opacity, transform;
+}
+
+.delay0 {
+  transition-delay: 0ms;
+}
+
+.delay1 {
+  transition-delay: 120ms;
+}
+
+.delay2 {
+  transition-delay: 240ms;
+}
+
+.delay3 {
+  transition-delay: 360ms;
 }
 
 .reveal.revealed {

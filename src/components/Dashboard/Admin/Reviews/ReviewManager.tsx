@@ -2,6 +2,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import styles from "./ReviewManager.module.css";
+import { useScrollLock } from "@/hooks/useScrollLock";
 import { supabase, auth } from "@/lib/supabaseClient";
 import toast from "react-hot-toast";
 import reviewConfig from "@/data/ui/reviewManagerConfig.json";
@@ -40,6 +41,7 @@ export default function ReviewManager() {
   const [filter, setFilter] = useState("all");
   const [updatingId, setUpdatingId] = useState(null);
   const [deleteReviewId, setDeleteReviewId] = useState(null);
+  useScrollLock(Boolean(deleteReviewId));
   const [selectedIds, setSelectedIds] = useState([]);
   const [isBulkProcessing, setIsBulkProcessing] = useState(false);
 
@@ -332,8 +334,7 @@ export default function ReviewManager() {
             </button>
             <button
               onClick={() => setSelectedIds([])}
-              className={styles.cancelBtn}
-              style={{ padding: "6px 12px", fontSize: "0.75rem" }}
+              className={`${styles.cancelBtn} ${styles.cancelBtnSmall}`}
             >
               Batal Pilih
             </button>
@@ -350,7 +351,7 @@ export default function ReviewManager() {
           <table className={styles.reviewsTable}>
             <thead>
               <tr>
-                <th style={{ width: "40px", textAlign: "center" }}>
+                <th className={styles.checkboxTh}>
                   <input
                     type="checkbox"
                     checked={isAllFilteredSelected}
@@ -370,13 +371,9 @@ export default function ReviewManager() {
                 return (
                   <tr
                     key={review.id}
-                    style={{
-                      backgroundColor: isSelected
-                        ? "rgba(var(--primary-accent-rgb), 0.08)"
-                        : "transparent",
-                    }}
+                    className={isSelected ? styles.selectedRow : ""}
                   >
-                    <td style={{ textAlign: "center" }}>
+                    <td className={styles.checkboxTd}>
                       <input
                         type="checkbox"
                         checked={isSelected}
@@ -390,20 +387,12 @@ export default function ReviewManager() {
                     <td className={styles.commentCell}>
                       <p>{review.comment}</p>
                       {review.reviewPhoto && (
-                        <div style={{ marginTop: "6px" }}>
+                        <div className={styles.photoContainer}>
                           <a
                             href={review.reviewPhoto}
                             target="_blank"
                             rel="noopener noreferrer"
-                            style={{
-                              display: "inline-flex",
-                              alignItems: "center",
-                              gap: "4px",
-                              fontSize: "0.75rem",
-                              color: "var(--primary-accent)",
-                              textDecoration: "underline",
-                              fontWeight: 600,
-                            }}
+                            className={styles.photoLink}
                           >
                             📷 Lihat Foto Produk
                           </a>

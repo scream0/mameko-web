@@ -1,6 +1,7 @@
 // @ts-nocheck
 "use client";
 import styles from "./ConfirmationModal.module.css";
+import { useScrollLock } from "@/hooks/useScrollLock";
 
 export default function ConfirmationModal({
   isOpen,
@@ -9,6 +10,8 @@ export default function ConfirmationModal({
   title,
   message,
 }) {
+  useScrollLock(Boolean(isOpen));
+
   if (!isOpen) {
     return null;
   }

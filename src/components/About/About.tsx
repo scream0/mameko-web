@@ -6,7 +6,7 @@ import { getPublicSettings } from "@/services/settingsService";
 import styles from "./About.module.css";
 import aboutData from "@/data/ui/aboutConfig.json"; // Fallback default JSON
 
-// Komponen kecil untuk fitur (tetap dipertahankan)
+// Komponen kecil untuk fitur
 const FeatureItem = ({ number, title, desc }) => (
   <div className={styles.featureItem}>
     <span className={styles.featureNumber}>{number}</span>
@@ -51,10 +51,12 @@ export function About() {
   }, []);
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchAbout = async () => {
       try {
         const data = await getPublicSettings({ force: true });
-        if (!data) return;
+        if (!data || !isMounted) return;
 
         // Gambar About dari settings DB
         if (data?.about?.image) setAboutImage(data.about.image);
@@ -81,6 +83,16 @@ export function About() {
     };
 
     fetchAbout();
+
+    const handleSettingsUpdate = () => {
+      fetchAbout();
+    };
+    window.addEventListener("store-settings-updated", handleSettingsUpdate);
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener("store-settings-updated", handleSettingsUpdate);
+    };
   }, []);
 
   return (
@@ -136,4 +148,3 @@ export function About() {
     </section>
   );
 }
-

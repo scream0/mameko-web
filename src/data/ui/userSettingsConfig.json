@@ -1,0 +1,47 @@
+{
+  "header": {
+    "backBtn": "Kembali ke Profil",
+    "title": "Pengaturan Akun",
+    "subtitle": "Kelola informasi pribadi dan buku alamat pengiriman Anda."
+  },
+  "summary": {
+    "defaultName": "Pengguna MAMEKO",
+    "defaultEmail": "email@domain.com",
+    "avatarAlt": "Foto Profil"
+  },
+  "groups": {
+    "account": "Informasi & Buku Alamat",
+    "danger": "Zona Sesi & Akun"
+  },
+  "items": {
+    "profile": {
+      "title": "Edit Informasi Profil",
+      "desc": "Ubah nama, avatar, data diri, atau rekening bank Anda.",
+      "action": "Ubah"
+    },
+    "address": {
+      "title": "Buku Alamat Pengiriman",
+      "limitSuffix": "/3",
+      "primaryLabel": "Utama: ",
+      "emptyDesc": "Atur alamat utama untuk pengiriman.",
+      "action": "Kelola"
+    },
+    "logout": {
+      "label": "Keluar Akun (Logout)",
+      "ariaLabel": "Keluar dari akun"
+    },
+    "deleteAccount": {
+      "label": "Hapus Akun Secara Permanen",
+      "deleting": "Menghapus Akun..."
+    }
+  },
+  "modals": {
+    "deleteAccount": {
+      "title": "Hapus Akun Secara Permanen?",
+      "message": "Tindakan ini tidak dapat dibatalkan. Semua data profil, riwayat pesanan, wishlist, dan buku alamat Anda akan dihapus secara permanen dari server kami.",
+      "cancelBtn": "Batal",
+      "confirmBtn": "Ya, Hapus Akun",
+      "deleting": "Menghapus..."
+    }
+  }
+}

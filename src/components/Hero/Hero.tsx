@@ -73,7 +73,6 @@ export function Hero() {
         const data = await getPublicSettings({ force: true });
         if (!data || !isMounted) return;
 
-        // Gabungkan hero dari DB dengan default JSON (fallback field parsial)
         if (data?.hero) {
           setResolvedHero({
             ...heroData,
@@ -99,6 +98,11 @@ export function Hero() {
               },
             },
           });
+
+          if (spotlightRef.current) {
+            const sc = data.hero?.effects?.spotlightColor || heroData.effects?.spotlightColor || "rgba(229, 228, 226, 0.1)";
+            spotlightRef.current.style.setProperty("--spotlight-color", sc);
+          }
         }
       } catch (error) {
         console.error("Failed to load hero settings", error);
@@ -106,19 +110,26 @@ export function Hero() {
     };
 
     loadSettings();
+
+    const handleSettingsUpdate = () => {
+      loadSettings();
+    };
+    window.addEventListener("store-settings-updated", handleSettingsUpdate);
+
     return () => {
       isMounted = false;
+      window.removeEventListener("store-settings-updated", handleSettingsUpdate);
     };
   }, []);
 
-  // 4. Trigger reveal animation setelah mount (sedikit delay biar browser sempat paint dulu)
+  // 4. Trigger reveal animation setelah mount
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
 
     if (prefersReducedMotion) {
-      setIsRevealed(true); // langsung tampil tanpa animasi
+      setIsRevealed(true);
       return;
     }
 
@@ -146,34 +157,15 @@ export function Hero() {
 
   // Ambil URL gambar latar belakang dari resolvedHero (jika ada)
   const heroBackgroundImage = resolvedHero?.image;
-  const spotlightColor =
-    resolvedHero?.effects?.spotlightColor || "rgba(229, 228, 226, 0.1)";
 
   return (
     <section id="home" className={`${styles.hero} ${isDimmed ? styles.dimmed : ""}`}>
       {/* Aurora Background Mesh */}
       <div className={styles.auroraBg}></div>
 
-      {/* Latar Belakang Gambar Fullscreen (sekarang opsional/redup) */}
-      {/* {heroBackgroundImage && (
-        <div
-          className={styles.heroBackground}
-          style={{
-            backgroundImage: `url(${heroBackgroundImage})`,
-          }}
-        ></div>
-      )} */}
-
       <div
         ref={spotlightRef}
         className={styles.heroSpotlight}
-        style={{
-          background: `radial-gradient(
-      600px circle at var(--spotlight-x, 50%) var(--spotlight-y, 50%),
-      ${spotlightColor},
-      transparent 80%
-    )`,
-        }}
       ></div>
 
       <div className={styles.heroOverlay}></div>
@@ -189,29 +181,25 @@ export function Hero() {
         >
           <div className={styles.contentGlow} aria-hidden="true" />
           <p
-            className={`${styles.heroTagline} ${styles.reveal} ${isRevealed ? styles.revealed : ""}`}
-            style={{ "--reveal-delay": "0ms" }}
+            className={`${styles.heroTagline} ${styles.reveal} ${styles.delay0} ${isRevealed ? styles.revealed : ""}`}
           >
             {resolvedHero?.tagline}
           </p>
           <h1
-            className={`${styles.heroTitle} ${styles.reveal} ${isRevealed ? styles.revealed : ""}`}
-            style={{ "--reveal-delay": "120ms" }}
+            className={`${styles.heroTitle} ${styles.reveal} ${styles.delay1} ${isRevealed ? styles.revealed : ""}`}
           >
             {resolvedHero?.title?.main} <br />
             <span>{resolvedHero?.title?.highlight}</span>
           </h1>
           <p
-            className={`${styles.heroDesc} ${styles.reveal} ${isRevealed ? styles.revealed : ""}`}
-            style={{ "--reveal-delay": "240ms" }}
+            className={`${styles.heroDesc} ${styles.reveal} ${styles.delay2} ${isRevealed ? styles.revealed : ""}`}
           >
             {resolvedHero?.description?.prefix}
             <em>{resolvedHero?.description?.italic}</em>
             {resolvedHero?.description?.suffix}
           </p>
           <div
-            className={`${styles.heroButtons} ${styles.reveal} ${isRevealed ? styles.revealed : ""}`}
-            style={{ "--reveal-delay": "360ms" }}
+            className={`${styles.heroButtons} ${styles.reveal} ${styles.delay3} ${isRevealed ? styles.revealed : ""}`}
           >
             <a
               href={resolvedHero?.buttons?.primary?.href}
@@ -231,10 +219,7 @@ export function Hero() {
 
         {/* Right Side: Floating Visual */}
         {heroBackgroundImage && (
-          <div
-            className={styles.heroVisualWrapper}
-            style={{ "--reveal-delay": "300ms" }}
-          >
+          <div className={styles.heroVisualWrapper}>
             <div
               ref={visualRef}
               className={styles.heroVisual}

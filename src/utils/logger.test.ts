@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createSafeErrorLog, redactSecrets } from "./logger.js";
+import { createSafeErrorLog, redactSecrets } from "./logger.ts";
 
 test("redactSecrets hides sensitive key names", () => {
   const payload = {

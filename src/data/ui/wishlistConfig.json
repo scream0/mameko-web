@@ -7,14 +7,29 @@
   "emptyTitle": "Wishlist masih kosong",
   "emptyText": "Tekan ikon hati pada produk di katalog untuk menyimpannya di sini.",
   "loadingText": "Memuat wishlist...",
+  "badge": {
+    "defaultCategory": "Extrait de Parfum",
+    "noImage": "No Image"
+  },
   "buttons": {
     "explore": "Jelajahi Katalog",
     "addToCart": "Tambah ke Keranjang",
-    "remove": "Hapus"
+    "remove": "Hapus",
+    "removeTitle": "Hapus dari wishlist",
+    "clearAll": "Kosongkan",
+    "clearAllTitle": "Kosongkan Wishlist"
+  },
+  "modals": {
+    "clear": {
+      "title": "Kosongkan Wishlist",
+      "message": "Apakah Anda yakin ingin mengosongkan seluruh wishlist?"
+    }
   },
   "toasts": {
     "removeSuccess": "Dihapus dari wishlist.",
-    "addedSuccess": "Produk ditambahkan ke keranjang!"
+    "clearSuccess": "Wishlist berhasil dikosongkan.",
+    "addedSuccess": "Produk ditambahkan ke keranjang!",
+    "outOfStock": "Produk sedang habis."
   },
   "stock": {
     "available": "Tersedia",
@@ -22,4 +37,3 @@
     "outOfStock": "Stok Habis"
   }
 }
-

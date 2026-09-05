@@ -870,7 +870,7 @@ func RequestOrderReturn(c *fiber.Ctx) error {
 		// Dapatkan nomor admin dari settings (jika ada) atau gunakan ENV (atau default)
 		adminPhone := "081234567890" // default placeholder
 		var dbPhone string
-		err := config.DB.QueryRow(`SELECT whatsapp_number FROM settings LIMIT 1`).Scan(&dbPhone)
+		err := config.DB.QueryRow(`SELECT contact->>'whatsappNumber' FROM store_config WHERE id = 'main' LIMIT 1`).Scan(&dbPhone)
 		if err == nil && dbPhone != "" {
 			adminPhone = dbPhone
 		}

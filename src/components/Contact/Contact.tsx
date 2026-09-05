@@ -39,10 +39,12 @@ export function Contact() {
   }, []);
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchContact = async () => {
       try {
         const data = await getPublicSettings({ force: true });
-        if (!data?.contact) return;
+        if (!data?.contact || !isMounted) return;
         setContactInfo({
           ...contactData,
           ...data.contact,
@@ -78,6 +80,16 @@ export function Contact() {
     };
 
     fetchContact();
+
+    const handleSettingsUpdate = () => {
+      fetchContact();
+    };
+    window.addEventListener("store-settings-updated", handleSettingsUpdate);
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener("store-settings-updated", handleSettingsUpdate);
+    };
   }, []);
 
   const handleInputChange = (e: any) => {
@@ -217,4 +229,3 @@ function InputBox({ id, label, type = "text", value, onChange }) {
     </div>
   );
 }
-

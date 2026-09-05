@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import styles from "./VoucherCard.module.css";
 import { AppIcon } from "@/components/UI/Icon/AppIcon";
 import toast from "react-hot-toast";
+import vouchersConfig from "@/data/ui/vouchersConfig.json";
 
 const formatDiscount = (voucher: any) => {
   if (!voucher) return "";
@@ -14,7 +15,7 @@ const formatDiscount = (voucher: any) => {
     case "fixed":
       return `Rp${new Intl.NumberFormat("id-ID").format(value)}`;
     case "shipping":
-      return "Gratis Ongkir";
+      return vouchersConfig.card.shippingDiscount;
     default:
       return `${value}`;
   }
@@ -72,7 +73,7 @@ export default function VoucherCard({ voucher, onActionClick, buttonText, status
     if (!v.code) return;
     navigator.clipboard.writeText(v.code);
     setCopied(true);
-    toast.success("Kode disalin!");
+    toast.success(vouchersConfig.toasts.codeCopied);
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -87,7 +88,7 @@ export default function VoucherCard({ voucher, onActionClick, buttonText, status
           <AppIcon name={getVoucherIcon(v.type)} className={styles.voucherIcon} />
         </div>
         <div className={styles.discountValue}>{formatDiscount(v)}</div>
-        {v.type !== "shipping" && <div className={styles.discountLabel}>DISKON</div>}
+        {v.type !== "shipping" && <div className={styles.discountLabel}>{vouchersConfig.card.discountLabel}</div>}
       </div>
 
       <div className={styles.dashedDivider} />
@@ -97,20 +98,20 @@ export default function VoucherCard({ voucher, onActionClick, buttonText, status
           <h3 className={styles.title}>{v.title}</h3>
           {isUrgent && !isInactive && (
             <span className={styles.urgentBadge}>
-              {daysLeft === 0 ? "Berakhir hari ini" : `${daysLeft} hari lagi`}
+              {daysLeft === 0 ? vouchersConfig.card.expiresToday : vouchersConfig.card.daysLeftTemplate.replace("{days}", String(daysLeft))}
             </span>
           )}
         </div>
 
         {v.min_purchase > 0 && (
           <p className={styles.minPurchase}>
-            Min. belanja Rp{new Intl.NumberFormat("id-ID").format(v.min_purchase)}
+            {vouchersConfig.card.minPurchase} Rp{new Intl.NumberFormat("id-ID").format(v.min_purchase)}
           </p>
         )}
 
         {formatDate(v.valid_until) && (
           <p className={styles.expiry}>
-            <AppIcon name="clock" size={12} /> Berlaku hingga {formatDate(v.valid_until)}
+            <AppIcon name="clock" size={12} /> {vouchersConfig.card.validUntil} {formatDate(v.valid_until)}
           </p>
         )}
 
@@ -143,7 +144,7 @@ export default function VoucherCard({ voucher, onActionClick, buttonText, status
               disabled={disabled}
               type="button"
             >
-              {buttonText || (disabled ? "Diklaim" : "Klaim")}
+              {buttonText || (disabled ? vouchersConfig.actions.claimed : vouchersConfig.actions.claim)}
             </button>
           )}
         </div>

@@ -1,0 +1,165 @@
+{
+  "header": {
+    "backLink": "Daftar Pesanan",
+    "customerPrefix": "Pemesan: ",
+    "defaultCustomer": "Pelanggan MAMEKO",
+    "copyIdTitle": "Salin Nomor Pesanan",
+    "copied": "Tersalin",
+    "copy": "Salin",
+    "copiedToast": "Nomor pesanan berhasil disalin!",
+    "payNowBtn": "Bayar Sekarang",
+    "downloadInvoiceBtn": "Unduh Invoice"
+  },
+  "status": {
+    "pending": { "label": "Menunggu Pembayaran", "badgeClass": "statusPending", "icon": "clock" },
+    "unpaid": { "label": "Menunggu Pembayaran", "badgeClass": "statusPending", "icon": "clock" },
+    "verifying": { "label": "Verifikasi Pembayaran", "badgeClass": "statusPending", "icon": "clock" },
+    "success": { "label": "Sedang Dikemas", "badgeClass": "statusProcessing", "icon": "package" },
+    "paid": { "label": "Sedang Dikemas", "badgeClass": "statusProcessing", "icon": "package" },
+    "settlement": { "label": "Sedang Dikemas", "badgeClass": "statusProcessing", "icon": "package" },
+    "capture": { "label": "Sedang Dikemas", "badgeClass": "statusProcessing", "icon": "package" },
+    "processing": { "label": "Sedang Dikemas", "badgeClass": "statusProcessing", "icon": "package" },
+    "shipping": { "label": "Dalam Pengiriman", "badgeClass": "statusShipping", "icon": "truck" },
+    "shipped": { "label": "Dalam Pengiriman", "badgeClass": "statusShipping", "icon": "truck" },
+    "delivered": { "label": "Pesanan Selesai", "badgeClass": "statusCompleted", "icon": "shield-check" },
+    "completed": { "label": "Pesanan Selesai", "badgeClass": "statusCompleted", "icon": "shield-check" },
+    "cancelled": { "label": "Dibatalkan", "badgeClass": "statusCancelled", "icon": "x" },
+    "canceled": { "label": "Dibatalkan", "badgeClass": "statusCancelled", "icon": "x" },
+    "return_requested": { "label": "Pengajuan Return", "badgeClass": "statusWarning", "icon": "rotate-ccw" },
+    "returning": { "label": "Barang Dikirim Balik", "badgeClass": "statusShipping", "icon": "truck" },
+    "returned": { "label": "Return Selesai", "badgeClass": "statusCompleted", "icon": "shield-check" }
+  },
+  "returnStatus": {
+    "pending": { "label": "⏳ Return Diproses", "badgeClass": "statusReturn", "icon": "rotate-ccw", "noteTitle": "Catatan Retur (Pending):" },
+    "approved": { "label": "✅ Return Disetujui", "badgeClass": "statusCompleted", "icon": "shield-check", "noteTitle": "Catatan Retur (Disetujui):" },
+    "rejected": { "label": "❌ Return Ditolak", "badgeClass": "statusCancelled", "icon": "x", "noteTitle": "Catatan Retur (Ditolak):" }
+  },
+  "historyActors": {
+    "cancelledByUser": "Dibatalkan oleh Pengguna",
+    "cancelledByAdmin": "Dibatalkan oleh Admin",
+    "cancelledBySystem": "Dibatalkan Otomatis oleh Sistem",
+    "cancelledDefault": "Pesanan Dibatalkan",
+    "cancelledNote": "Pesanan telah dibatalkan.",
+    "completedByUser": "Dikonfirmasi Selesai oleh Pembeli",
+    "completedBySystem": "Selesai Otomatis oleh Sistem",
+    "completedByAdmin": "Diselesaikan oleh Admin",
+    "paidWebhook": "Pembayaran Terverifikasi (Midtrans)",
+    "paidAdmin": "Pembayaran Dikonfirmasi oleh Admin",
+    "returnedApproved": "Return Selesai (Disetujui)",
+    "returnRequested": "Pengajuan Return Diproses",
+    "returnRejectedCompleted": "Return Ditolak (Pesanan Selesai)",
+    "defaultNote": "Pembaruan status pesanan.",
+    "justNow": "Baru saja",
+    "creationLabel": "Pesanan Dibuat",
+    "creationNote": "Pesanan berhasil dibuat dan menunggu pembayaran."
+  },
+  "banners": {
+    "countdown": {
+      "titleActive": "Batas Waktu Pembayaran: 24 Jam",
+      "descActive": "Selesaikan pembayaran sebelum batas waktu berakhir agar pesanan tidak dibatalkan otomatis.",
+      "titleExpired": "Batas Waktu Pembayaran Telah Habis",
+      "descExpired": "Pesanan ini otomatis dibatalkan oleh sistem karena melebihi batas waktu 24 jam."
+    },
+    "cancellation": {
+      "defaultTitle": "Pesanan Dibatalkan",
+      "defaultDesc": "Pesanan ini telah dibatalkan dan tidak dapat diproses lebih lanjut."
+    },
+    "shippedNotice": {
+      "title": "Pesanan Sedang Dikirim",
+      "desc": "Pesanan akan otomatis selesai dalam 14 hari sejak pengiriman jika Anda tidak melakukan konfirmasi penerimaan manual atau mengajukan pengembalian."
+    }
+  },
+  "manualTransfer": {
+    "title": "Instruksi Transfer Manual",
+    "instructionPrefix": "Silakan transfer tepat sebesar ",
+    "instructionSuffix": " ke salah satu rekening berikut:",
+    "emptyAccounts": "(Belum ada rekening yang diatur. Silakan hubungi admin.)",
+    "copyAccountTitle": "Salin Nomor Rekening",
+    "copyAccountSuccess": "Nomor rekening berhasil disalin!",
+    "uploadProofTitle": "Upload Bukti Pembayaran",
+    "selectPhotoBtn": "Pilih Foto Struk / Screenshot",
+    "changePhotoBtn": "Ganti Foto",
+    "submitProofBtn": "Kirim Bukti Pembayaran",
+    "submittingProof": "Mengunggah...",
+    "proofUploaded": "Bukti pembayaran sudah diunggah dan sedang diverifikasi admin.",
+    "whatsappCTA": "Kabari Admin via WhatsApp",
+    "whatsappTextTemplate": "Halo Admin, saya sudah mentransfer dan meng-upload bukti pembayaran untuk pesanan {orderNumber}. Tolong diverifikasi ya!"
+  },
+  "transactionSummary": {
+    "title": "Ringkasan Transaksi",
+    "orderDate": "Tanggal Pemesanan",
+    "paymentMethod": "Metode Pembayaran",
+    "defaultPaymentMethod": "Midtrans Payment",
+    "subtotalItemTemplate": "Subtotal Item ({count} produk)",
+    "shippingCost": "Biaya Pengiriman",
+    "storeDiscount": "Diskon Toko",
+    "voucherDiscount": "Diskon Voucher",
+    "totalPaid": "Total Pembayaran"
+  },
+  "shippingInfo": {
+    "title": "Informasi Pengiriman",
+    "courierAndService": "Kurir & Layanan",
+    "trackingNumber": "Nomor Resi Pengiriman",
+    "emptyResiText": "Resi akan diperbarui setelah kurir menjemput paket.",
+    "destinationAddress": "Alamat Tujuan",
+    "addressEmpty": "Alamat belum tersedia",
+    "copyResi": "Salin Resi",
+    "copiedResi": "Disalin",
+    "copyResiSuccess": "Nomor resi berhasil disalin!",
+    "trackPackageBtn": "Lacak Paket Pengiriman",
+    "noResiToast": "Nomor resi belum tersedia untuk pesanan ini."
+  },
+  "items": {
+    "title": "Item Pesanan",
+    "defaultProductName": "Parfum MAMEKO",
+    "variantPrefix": "Varian: ",
+    "defaultVariant": "Standard",
+    "reviewProduct": "Ulas Produk",
+    "reviewed": "Diulas",
+    "emptyItems": "Tidak ada rincian item tambahan."
+  },
+  "timeline": {
+    "title": "Riwayat Status",
+    "defaultSystemNote": "Pesanan tercatat di dalam sistem MAMEKO."
+  },
+  "invoice": {
+    "loading": "Menyiapkan Invoice PDF...",
+    "success": "Invoice PDF berhasil diunduh.",
+    "error": "Terjadi kesalahan saat membuat PDF.",
+    "moduleError": "Gagal memuat modul PDF.",
+    "filenamePrefix": "Invoice-MAMEKO-"
+  },
+  "reviewModal": {
+    "title": "Ulas Produk",
+    "productLabel": "Produk",
+    "ratingLabel": "Rating (1 - 5 Bintang)",
+    "commentLabel": "Komentar Ulasan",
+    "commentPlaceholder": "Bagaimana pengalaman Anda dengan aroma parfum ini?",
+    "uploadPhotoLabel": "Unggah Foto Ulasan (Opsional)",
+    "dropzoneMainText": "Pilih foto produk atau seret ke sini",
+    "dropzoneSubText": "Format JPG, PNG, WebP (Maksimal 5 MB)",
+    "removePhoto": "Hapus Foto",
+    "cancelBtn": "Batal",
+    "submitBtn": "Kirim Ulasan & Foto",
+    "submittingBtn": "Mengirim Ulasan...",
+    "toasts": {
+      "invalidType": "Format foto harus JPG, PNG, atau WebP.",
+      "maxSize": "Ukuran foto maksimal 5 MB.",
+      "submitting": "Mengirim ulasan Anda...",
+      "uploadingPhoto": "Mengunggah foto ulasan...",
+      "uploadPhotoError": "Gagal mengunggah foto. Silakan coba lagi nanti.",
+      "savingReview": "Menyimpan ulasan...",
+      "success": "Terima kasih! Ulasan Anda berhasil dikirim.",
+      "error": "Gagal mengirim ulasan."
+    }
+  },
+  "loadingAndError": {
+    "loadingText": "Memuat rincian pesanan...",
+    "failedTitle": "Gagal Memuat Pesanan",
+    "notFoundTitle": "Pesanan Tidak Ditemukan",
+    "defaultErrorSubtitle": "Detail pesanan yang Anda cari tidak tersedia, memiliki format ID yang tidak sesuai, atau sudah dihapus.",
+    "missingOrderId": "ID Pesanan tidak ditemukan di URL.",
+    "orderNotFound404": "Pesanan \"{orderId}\" tidak ditemukan (404).",
+    "backToOrders": "Kembali ke Daftar Pesanan"
+  }
+}

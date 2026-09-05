@@ -18,10 +18,10 @@ import styles from "./AdvancedAnalytics.module.css";
 import config from "@/data/ui/advancedAnalyticsConfig.json";
 import { auth } from "@/lib/supabaseClient";
 
-const COLORS = ["#3b82f6", "#10b981", "#fbbf24", "#ef4444", "#8b5cf6"];
+const COLORS = config.chartPalette || ["#d4af37", "#10b981", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6"];
 
-const FALLBACK_STATUS = [{ name: "Selesai", value: 100 }];
-const FALLBACK_VARIANTS = [{ name: "Belum ada pesanan", sold: 0 }];
+const FALLBACK_STATUS = [{ name: config.fallbacks?.completed || "Selesai", value: 100 }];
+const FALLBACK_VARIANTS = [{ name: config.fallbacks?.noOrders || "Belum ada pesanan", sold: 0 }];
 
 export default function AdvancedAnalytics() {
   const [metrics, setMetrics] = useState({
@@ -58,120 +58,84 @@ export default function AdvancedAnalytics() {
       const d = getOrderDate(order);
       const amount = getOrderAmount(order);
 
-      if (d && !isNaN(d.getTime())) {
-        const status = (
-          order.status ||
-          order.transaction_status ||
-          "completed"
-        ).toLowerCase();
-        const isValidStatus = [
-          "paid",
-          "settlement",
-          "completed",
-          "delivered",
-          "capture",
-          "success",
-          "pending",
-          "processing",
-          "shipped",
-          "shipping",
-          "",
-        ].includes(status);
-
-        if (isValidStatus) {
-          if (
-            d.getMonth() === currentMonth &&
-            d.getFullYear() === currentYear
-          ) {
-            currentRev += amount;
-          } else if (
-            d.getMonth() === (currentMonth === 0 ? 11 : currentMonth - 1) &&
-            d.getFullYear() ===
-              (currentMonth === 0 ? currentYear - 1 : currentYear)
-          ) {
-            lastRev += amount;
-          }
+      if (d) {
+        if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
+          currentRev += amount;
+        } else if (
+          d.getMonth() === (currentMonth === 0 ? 11 : currentMonth - 1) &&
+          d.getFullYear() === (currentMonth === 0 ? currentYear - 1 : currentYear)
+        ) {
+          lastRev += amount;
         }
       }
     });
 
     let growth = 0;
     if (lastRev > 0) {
-      growth = Math.round(((currentRev - lastRev) / lastRev) * 100);
+      growth = ((currentRev - lastRev) / lastRev) * 100;
     } else if (currentRev > 0) {
       growth = 100;
     }
 
     setMetrics({
-      momGrowth: growth,
+      momGrowth: Number(growth.toFixed(1)),
       currentMonthRev: currentRev,
       lastMonthRev: lastRev,
     });
   }, []);
 
-  const processOrderStatus = useCallback((orders: any) => {
-    const statusMap = { paid: 0, pending: 0, failed: 0, settlement: 0 };
+  const processStatusDistribution = useCallback((orders: any) => {
+    const statusCounts: Record<string, number> = {};
 
     orders.forEach((order: any) => {
-      const status = (
-        order.status ||
-        order.transaction_status ||
-        "pending"
-      ).toLowerCase();
+      let rawStatus = order.status || order.order_status || order.orderStatus || "pending";
+      rawStatus = String(rawStatus).toLowerCase();
 
-      if (
-        status === "settlement" ||
-        status === "completed" ||
-        status === "success" ||
-        status === "paid" ||
-        status === "delivered" ||
-        status === "capture"
-      ) {
-        statusMap.paid += 1;
-      } else if (statusMap[status] !== undefined) {
-        statusMap[status] += 1;
-      } else {
-        statusMap.pending += 1;
-      }
+      let label = config.statusLabels[rawStatus] || rawStatus;
+      label = label.charAt(0).toUpperCase() + label.slice(1);
+
+      statusCounts[label] = (statusCounts[label] || 0) + 1;
     });
 
-    const formatted = Object.keys(statusMap)
-      .filter((key) => statusMap[key] > 0)
-      .map((key) => ({
-        name: config.statusLabels[key] || key,
-        value: statusMap[key],
-      }));
+    const formatted = Object.keys(statusCounts).map((k) => ({
+      name: k,
+      value: statusCounts[k],
+    }));
 
-    setStatusData(formatted);
+    setStatusData(formatted.length > 0 ? formatted : FALLBACK_STATUS);
   }, []);
 
   const processTopVariants = useCallback((orders: any) => {
-    const variantMap = {};
+    const variantMap: Record<string, number> = {};
 
     orders.forEach((order: any) => {
-      const status = (order.status || order.transaction_status || "pending").toLowerCase();
-      const isValidStatus = [
-        "paid",
-        "settlement",
-        "completed",
-        "delivered",
-        "capture",
-        "success",
-        "processing",
-        "shipped",
-        "shipping"
-      ].includes(status);
+      let rawItems = order.items;
+      if (typeof rawItems === "string") {
+        try {
+          rawItems = JSON.parse(rawItems);
+        } catch {
+          rawItems = [];
+        }
+      }
 
-      if (!isValidStatus) return;
+      if (Array.isArray(rawItems)) {
+        rawItems.forEach((item: any) => {
+          const prodName =
+            item.title ||
+            item.product_name ||
+            item.productName ||
+            item.name ||
+            config.labels.defaultVariantName;
+          const variantName =
+            item.variant ||
+            item.size ||
+            item.variant_name ||
+            item.variantName ||
+            config.labels.defaultVariantSize;
+          const key = `${prodName} (${variantName})`;
+          const qty = Number(item.qty || item.quantity || 1);
 
-      const items = order.items || (order.order ? [order.order] : []);
-      if (Array.isArray(items)) {
-        items.forEach((item) => {
-          const name = `${item.name || item.product_name || config.labels.defaultVariantName} (${item.size || item.variant_name || item.concentration || item.variant || config.labels.defaultVariantSize})`;
-          const qty = Number(item.quantity || item.qty || 1);
-
-          if (!variantMap[name]) variantMap[name] = 0;
-          variantMap[name] += qty;
+          variantMap[key] = (variantMap[key] || 0) + qty;
         });
       }
     });
@@ -195,8 +159,12 @@ export default function AdvancedAnalytics() {
           report.push({
             name: `${prod.name} - ${v.size}`,
             stock: totalStock,
-            turnover: isFast ? "Fast-Moving" : "Normal / Slow",
-            recommendation: isFast ? "Segera Restock" : "Stok Aman",
+            turnover: isFast
+              ? config.inventory.turnoverLevels.fast
+              : config.inventory.turnoverLevels.normal,
+            recommendation: isFast
+              ? config.inventory.recommendations.restock
+              : config.inventory.recommendations.safe,
           });
         });
       }
@@ -228,17 +196,12 @@ export default function AdvancedAnalytics() {
           ? productsResult
           : productsResult.data || productsResult.products || [];
 
-        if (orders.length > 0) {
-          processMoMGrowth(orders);
-          processOrderStatus(orders);
-          processTopVariants(orders);
-        }
-
-        if (products.length > 0) {
-          processInventoryTurnover(products);
-        }
-      } catch (error) {
-        console.error("Gagal mengambil analitik lanjutan:", error);
+        processMoMGrowth(orders);
+        processStatusDistribution(orders);
+        processTopVariants(orders);
+        processInventoryTurnover(products);
+      } catch (err) {
+        console.error("Gagal memuat analitik lanjutan:", err);
       } finally {
         setLoading(false);
       }
@@ -247,7 +210,7 @@ export default function AdvancedAnalytics() {
     fetchAdvancedData();
   }, [
     processMoMGrowth,
-    processOrderStatus,
+    processStatusDistribution,
     processTopVariants,
     processInventoryTurnover,
   ]);
@@ -260,21 +223,13 @@ export default function AdvancedAnalytics() {
     <div className={styles.advancedContainer}>
       <div className={styles.metricsGrid}>
         <div className={styles.metricCard}>
-          <span className={styles.metricLabel}>
-            {config.sections.growthRate}
-          </span>
+          <span className={styles.metricLabel}>{config.sections.growthRate}</span>
           <span className={styles.metricValue}>
-            {metrics.momGrowth >= 0
-              ? `+${metrics.momGrowth}%`
-              : `${metrics.momGrowth}%`}
+            {metrics.momGrowth >= 0 ? `+${metrics.momGrowth}%` : `${metrics.momGrowth}%`}
           </span>
           <span
             className={`${styles.metricTrend} ${
-              metrics.momGrowth > 0
-                ? styles.trendPositive
-                : metrics.momGrowth < 0
-                  ? styles.trendNegative
-                  : styles.trendNeutral
+              metrics.momGrowth >= 0 ? styles.trendPositive : styles.trendNegative
             }`}
           >
             {metrics.momGrowth >= 0
@@ -287,7 +242,7 @@ export default function AdvancedAnalytics() {
             {config.labels.currentMonthLabel}
           </span>
           <span className={styles.metricValue}>
-            Rp {metrics.currentMonthRev.toLocaleString("id-ID")}
+            {config.currencyPrefix}{metrics.currentMonthRev.toLocaleString("id-ID")}
           </span>
           <span className={`${styles.metricTrend} ${styles.trendNeutral}`}>
             {config.labels.lastMonthPrefix}
@@ -386,7 +341,7 @@ export default function AdvancedAnalytics() {
             <thead>
               <tr>
                 <th>{config.headers.productName}</th>
-                <th>Sisa Stok</th>
+                <th>{config.headers.remainingStock}</th>
                 <th>{config.headers.status}</th>
                 <th>{config.headers.action}</th>
               </tr>
@@ -396,11 +351,11 @@ export default function AdvancedAnalytics() {
                 inventoryList.map((item, idx) => (
                   <tr key={idx}>
                     <td className={styles.tableItemName}>{item.name}</td>
-                    <td>{item.stock} pcs</td>
+                    <td>{item.stock} {config.units.pcs}</td>
                     <td>
                       <span
                         className={
-                          item.turnover === "Fast-Moving"
+                          item.turnover === config.inventory.turnoverLevels.fast
                             ? styles.badgeFast
                             : styles.badgeSlow
                         }
@@ -413,7 +368,7 @@ export default function AdvancedAnalytics() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="4" className={styles.emptyTableText}>
+                  <td colSpan={4} className={styles.emptyTableText}>
                     {config.labels.emptyInventory}
                   </td>
                 </tr>

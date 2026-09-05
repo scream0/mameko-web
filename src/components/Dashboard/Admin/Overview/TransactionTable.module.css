@@ -556,3 +556,32 @@
 .badgeCancelled { background:rgba(var(--danger-color-rgb,220,38,38),.09); color:var(--danger-color); border:1px solid rgba(var(--danger-color-rgb,220,38,38),.22); }
 .bulkBar{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.7rem .9rem;border-radius:10px;background:rgba(var(--primary-accent-rgb),.08);border:1px solid rgba(var(--primary-accent-rgb),.18);font-size:.78rem}.bulkBar>div{display:flex;gap:.5rem}.bulkBar button{border:1px solid var(--primary-accent);background:var(--primary-accent);color:var(--primary-accent-text);border-radius:999px;padding:.45rem .65rem;font:600 .65rem var(--font-sans);text-transform:uppercase;cursor:pointer}.ordersTable input[type="checkbox"]{accent-color:var(--primary-accent);cursor:pointer}@media(max-width:640px){.bulkBar{align-items:flex-start;flex-direction:column}}
 .saveViewBtn{border:1px solid var(--border-color);background:transparent;color:var(--text-primary);border-radius:999px;padding:.7rem .9rem;font:600 .7rem var(--font-sans);cursor:pointer;white-space:nowrap}.savedViews{display:flex;gap:.45rem;flex-wrap:wrap}.savedViews button{border:1px solid var(--border-color);background:var(--surface-secondary);color:var(--text-secondary);border-radius:999px;padding:.35rem .65rem;font:.68rem var(--font-sans);cursor:pointer}
+
+.loadMoreContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.loadMoreBtn {
+  padding: 0.75rem 2rem;
+  border: 1px solid var(--border-color);
+  background: var(--surface-secondary);
+  color: var(--text-primary);
+  border-radius: 999px;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.75rem;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  transition: all 0.25s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .loadMoreBtn:hover {
+    background: var(--surface-primary);
+    border-color: var(--primary-accent);
+    color: var(--primary-accent);
+  }
+}

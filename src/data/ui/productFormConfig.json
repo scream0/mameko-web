@@ -13,14 +13,31 @@
     "mainImage": "Gambar Utama Produk",
     "name": "Nama Produk",
     "category": "Kategori",
+    "status": "Status Publikasi",
+    "dimensions": {
+      "length": "Panjang (cm)",
+      "width": "Lebar (cm)",
+      "height": "Tinggi (cm)"
+    },
+    "weight": "Berat (gram)",
+    "stockLocation": "Lokasi Stok",
+    "shippingOrigin": "Asal Pengiriman (Biteship)",
     "variants": "Varian Produk (Ukuran, Harga, Stok, Gambar)",
     "description": "Deskripsi Produk"
+  },
+  "statusOptions": {
+    "published": "Dipublikasikan",
+    "draft": "Draf"
   },
   "placeholders": {
     "name": "Contoh: Parfum Kopi Xar",
     "size": "Ukuran (cth: 30ml)",
+    "sku": "SKU",
     "price": "Harga (Rp)",
     "stock": "Stok",
+    "dimension": "10",
+    "weight": "Contoh: 250",
+    "stockLocation": "Contoh: Gudang Utama",
     "description": "Jelaskan keunikan, bahan, dan cerita di balik produk Anda..."
   },
   "buttons": {

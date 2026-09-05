@@ -6,22 +6,33 @@
   "loadingText": "Memuat pusat notifikasi...",
   "emptyTitle": "Tidak ada notifikasi",
   "emptyText": "Notifikasi sistem tentang operasional toko akan muncul di sini.",
+  "linkIndicator": "Lihat Detail",
+  "timeAgo": {
+    "justNow": "Baru saja",
+    "minute": "menit lalu",
+    "hour": "jam lalu",
+    "day": "hari lalu"
+  },
   "tabs": {
     "all": "Semua",
     "order": "Pesanan",
     "payment": "Pembayaran",
+    "stock": "Stok",
     "system": "Sistem",
     "promo": "Promo"
   },
   "typeLabels": {
     "order": "Pesanan",
     "payment": "Pembayaran",
+    "stock": "Stok Produk",
     "system": "Sistem",
     "promo": "Promo"
   },
   "buttons": {
     "markAllRead": "Tandai Semua Dibaca",
-    "create": "Buat Notifikasi"
+    "create": "Buat Notifikasi",
+    "saving": "Menyimpan...",
+    "deleteAria": "Hapus notifikasi"
   },
   "modal": {
     "createTitle": "Buat Notifikasi",
@@ -37,12 +48,20 @@
       { "value": "/dashboard?tab=profile", "label": "Pengaturan Profil" }
     ],
     "typeLabel": "Tipe",
-    "typeOptions": ["order", "payment", "promo", "system"],
+    "typeOptions": ["order", "payment", "stock", "promo", "system"],
     "audienceLabel": "Target",
     "audienceOptions": ["user", "all", "admin"],
     "submit": "Kirim",
     "cancel": "Batal",
     "close": "Tutup"
+  },
+  "deleteModal": {
+    "title": "Hapus Notifikasi",
+    "message": "Apakah Anda yakin ingin menghapus notifikasi ini?"
+  },
+  "validation": {
+    "required": "Judul dan pesan wajib diisi.",
+    "sessionExpired": "Sesi Anda telah berakhir. Silakan muat ulang."
   },
   "toasts": {
     "createSuccess": "Notifikasi berhasil dibuat.",
@@ -51,4 +70,3 @@
     "deleteSuccess": "Notifikasi dihapus."
   }
 }
-

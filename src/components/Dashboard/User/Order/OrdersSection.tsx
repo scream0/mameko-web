@@ -11,86 +11,14 @@ import { AppIcon } from "@/components/UI/Icon/AppIcon";
 import { OrdersSkeleton } from "@/components/UI/Skeleton/SkeletonLayouts";
 import { formatAddressDisplay } from "@/utils/address";
 import { sortOrdersByNewestFirst } from "./orderSorting";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import ReturnsCenter from "@/components/Dashboard/User/Returns/ReturnsCenter"; // Sesuaikan path jika berbeda
 import ConfirmationModal from "@/components/UI/Modal/ConfirmationModal";
-
-// Mapping status mentah dari database/Admin -> label & tahap yang ditampilkan
-const STATUS_INFO = {
-  pending: {
-    label: "Menunggu Pembayaran",
-    badgeClass: "statusPending",
-  },
-  verifying: {
-    label: "Sedang Diverifikasi",
-    badgeClass: "statusProcessing",
-  },
-  unpaid: {
-    label: "Menunggu Pembayaran",
-    badgeClass: "statusPending",
-  },
-  paid: {
-    label: "Sedang Dikemas",
-    badgeClass: "statusProcessing",
-  },
-  success: {
-    label: "Sedang Dikemas",
-    badgeClass: "statusProcessing",
-  },
-  settlement: {
-    label: "Sedang Dikemas",
-    badgeClass: "statusProcessing",
-  },
-  capture: {
-    label: "Sedang Dikemas",
-    badgeClass: "statusProcessing",
-  },
-  processing: {
-    label: "Sedang Dikemas",
-    badgeClass: "statusProcessing",
-  },
-  shipping: {
-    label: "Dalam Pengiriman",
-    badgeClass: "statusShipping",
-  },
-  shipped: {
-    label: "Dalam Pengiriman",
-    badgeClass: "statusShipping",
-  },
-  delivered: {
-    label: "Pesanan Selesai",
-    badgeClass: "statusCompleted",
-  },
-  completed: {
-    label: "Pesanan Selesai",
-    badgeClass: "statusCompleted",
-  },
-  cancelled: {
-    label: "Dibatalkan",
-    badgeClass: "statusCancelled",
-  },
-  canceled: {
-    label: "Dibatalkan",
-    badgeClass: "statusCancelled",
-  },
-  return_requested: {
-    label: "Pengajuan Return",
-    badgeClass: "statusReturn",
-  },
-  returning: {
-    label: "Barang Dikirim Balik",
-    badgeClass: "statusShipping",
-  },
-  returned: {
-    label: "Return Selesai",
-    badgeClass: "statusCompleted",
-  },
-};
 
 function getStatusInfo(rawStatus: any) {
   const key = (rawStatus || "pending").toLowerCase();
   return (
-    STATUS_INFO[key] || {
+    ordersConfig.status[key] || {
       label: (rawStatus || "PENDING").toUpperCase(),
       badgeClass: "statusProcessing",
     }
@@ -100,12 +28,12 @@ function getStatusInfo(rawStatus: any) {
 function formatOrderDoc(item: any, primaryAddress: any) {
   const rawStatus = (item.status || "pending").toLowerCase();
 
-  let displayName = item.product_name || item.name || "Extrait de Parfum";
+  let displayName = item.product_name || item.name || ordersConfig.card.defaultCategory;
   if (item.items && Array.isArray(item.items) && item.items.length > 0) {
     const firstItem = item.items[0];
-    displayName = `${firstItem.product_name || firstItem.name || "Produk"} (${firstItem.variant_name || firstItem.size || "Standard"})`;
+    displayName = `${firstItem.product_name || firstItem.name || ordersConfig.card.defaultItemName} (${firstItem.variant_name || firstItem.size || ordersConfig.card.defaultVariant})`;
     if (item.items.length > 1) {
-      displayName += ` +${item.items.length - 1} produk lainnya`;
+      displayName += ` +${item.items.length - 1} ${ordersConfig.card.moreProductsSuffix}`;
     }
   }
 
@@ -113,9 +41,9 @@ function formatOrderDoc(item: any, primaryAddress: any) {
     item.shippingAddress || item.shipping_address || item.address;
   const formattedAddress = orderAddressObj
     ? formatAddressDisplay(orderAddressObj)
-    : primaryAddress || "Belum diatur";
+    : primaryAddress || ordersConfig.card.primaryAddressUnset;
 
-  const rawAmount = Number(item.amount || item.gross_amount || item.price || 0);
+  const rawAmount = Number(item.amount || item.gross_amount || item.total_amount || item.grand_total || item.price || 0);
 
   const reviewedItemIds = Array.isArray(item.reviewedItemIds)
     ? item.reviewedItemIds
@@ -132,8 +60,8 @@ function formatOrderDoc(item: any, primaryAddress: any) {
     statusHistory: Array.isArray(item.statusHistory) ? item.statusHistory : [],
     concentration:
       item.concentration ||
-      (item.items?.[0] ? `Varian: ${item.items[0].variant_name || item.items[0].size || "Standard"}` : "30% Bibit (50 ml)"),
-    notes: item.notes || "-",
+      (item.items?.[0] ? `Varian: ${item.items[0].variant_name || item.items[0].size || ordersConfig.card.defaultVariant}` : ordersConfig.card.defaultConcentration),
+    notes: item.notes || ordersConfig.card.defaultNotes,
     price: `Rp ${rawAmount.toLocaleString("id-ID")}`,
     rawPrice: rawAmount,
     status: rawStatus,
@@ -149,11 +77,11 @@ function formatOrderDoc(item: any, primaryAddress: any) {
           month: "short",
           year: "numeric",
         })
-        : "Hari ini",
+        : ordersConfig.card.today,
     paymentMethod:
       item.payment_type ||
       item.paymentType ||
-      "Midtrans QRIS / Virtual Account",
+      ordersConfig.card.defaultPaymentMethod,
     shippingAddress: formattedAddress,
     return_status: item.return_status || item.returnStatus || "",
     return_admin_note: item.return_admin_note || item.returnAdminNote || "",
@@ -164,12 +92,26 @@ function formatOrderDoc(item: any, primaryAddress: any) {
 }
 
 export default function OrdersSection() {
-  const [filter, setFilter] = useState("all");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const statusParam = searchParams.get("status") || searchParams.get("filter");
+
+  const [filter, setFilter] = useState(
+    statusParam && ["all", "pending", "unpaid", "processing", "shipping", "shipped", "delivered", "completed", "cancelled", "history", "return"].includes(statusParam)
+      ? statusParam === "completed" ? "delivered" : statusParam
+      : "all"
+  );
+
+  useEffect(() => {
+    if (statusParam && ["all", "pending", "unpaid", "processing", "shipping", "shipped", "delivered", "completed", "cancelled", "history", "return"].includes(statusParam)) {
+      setFilter(statusParam === "completed" ? "delivered" : statusParam);
+    }
+  }, [statusParam]);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const { addToCart } = useStore();
-  const router = useRouter();
   const [visibleCount, setVisibleCount] = useState(5);
 
   const [currentUser, setCurrentUser] = useState(null);
@@ -312,7 +254,7 @@ export default function OrdersSection() {
       } catch (error) {
         console.error("Gagal memuat pesanan dari API:", error);
         if (isActive) {
-          toast.error("Gagal memuat data pesanan.");
+          toast.error(ordersConfig.toasts.fetchOrdersError || "Gagal memuat data pesanan.");
           setOrders([]);
         }
       } finally {
@@ -381,20 +323,35 @@ export default function OrdersSection() {
     const processing = orders.filter((o) => ["paid", "success", "processing", "settlement", "capture", "verifying"].includes(o.status)).length;
     const shipping = orders.filter((o) => ["shipping", "shipped"].includes(o.status)).length;
     const history = orders.filter((o) => ["completed", "delivered", "cancelled", "canceled", "return_requested", "returning", "returned", "return_rejected"].includes(o.status)).length;
+    const returnCount = orders.filter((o) =>
+      ["return_requested", "returning", "returned", "return_rejected"].includes(o.status) ||
+      Boolean(o.return_status)
+    ).length;
 
-    return { total, pending, processing, shipping, history };
+    return { total, pending, processing, shipping, history, returnCount };
   }, [orders]);
 
-  const filterTabs = useMemo(
-    () => [
-      { key: "all", label: "Semua", icon: "grid", count: orderStats.total },
-      { key: "pending", label: "Belum Bayar", icon: "wallet", count: orderStats.pending },
-      { key: "processing", label: "Sedang Dikemas", icon: "package", count: orderStats.processing },
-      { key: "shipping", label: "Dikirim", icon: "truck", count: orderStats.shipping },
-      { key: "history", label: "Riwayat Pesanan", icon: "clock", count: orderStats.history },
-    ],
-    [orderStats],
-  );
+  const filterTabs = useMemo(() => {
+    const tabs = ordersConfig.filterTabs || [
+      { key: "all", label: "Semua", icon: "grid" },
+      { key: "pending", label: "Belum Bayar", icon: "wallet" },
+      { key: "processing", label: "Sedang Dikemas", icon: "package" },
+      { key: "shipping", label: "Dikirim", icon: "truck" },
+      { key: "history", label: "Riwayat Pesanan", icon: "clock" },
+      { key: "return", label: "Retur", icon: "rotate-ccw" },
+    ];
+
+    return tabs.map((tab) => {
+      let count = 0;
+      if (tab.key === "all") count = orderStats.total;
+      else if (tab.key === "pending") count = orderStats.pending;
+      else if (tab.key === "processing") count = orderStats.processing;
+      else if (tab.key === "shipping") count = orderStats.shipping;
+      else if (tab.key === "history") count = orderStats.history;
+      else if (tab.key === "return") count = orderStats.returnCount;
+      return { ...tab, count };
+    });
+  }, [orderStats]);
 
   const handlePayOrder = async (order: any) => {
     if (isPayingId) return;
@@ -402,7 +359,7 @@ export default function OrdersSection() {
     let snapToken = order.snap_token;
 
     if (!snapToken) {
-      toast.loading("Menghubungkan sistem pembayaran...", { id: "snap-pay-loader" });
+      toast.loading(ordersConfig.toasts.connectPayment || "Menghubungkan sistem pembayaran...", { id: "snap-pay-loader" });
       try {
         const { data: { session } } = await auth.getSession();
         const token = session?.access_token;
@@ -421,13 +378,13 @@ export default function OrdersSection() {
         toast.dismiss("snap-pay-loader");
 
         if (!res.ok) {
-          throw new Error(data.error || "Gagal menghasilkan token pembayaran.");
+          throw new Error(data.error || ordersConfig.toasts.tokenGenerateError || "Gagal menghasilkan token pembayaran.");
         }
 
         snapToken = data.snap_token;
       } catch (err) {
         toast.dismiss("snap-pay-loader");
-        toast.error(err.message || "Gagal memuat sistem pembayaran.");
+        toast.error(err.message || ordersConfig.toasts.paymentSystemError || "Gagal memuat sistem pembayaran.");
         setIsPayingId(null);
         return;
       }
@@ -436,18 +393,18 @@ export default function OrdersSection() {
     setIsPayingId(null);
 
     if (!snapToken) {
-      toast.error("Token pembayaran tidak ditemukan. Silakan buka detail pesanan.");
+      toast.error(ordersConfig.toasts.tokenNotFound || "Token pembayaran tidak ditemukan. Silakan buka detail pesanan.");
       return;
     }
 
     if (typeof window.snap === "undefined") {
-      toast.error("Modul pembayaran sedang dimuat, coba sesaat lagi.");
+      toast.error(ordersConfig.toasts.snapModuleLoading || "Modul pembayaran sedang dimuat, coba sesaat lagi.");
       return;
     }
 
     window.snap.pay(snapToken, {
       onSuccess: async function (result: any) {
-        toast.success("Pembayaran Berhasil! Pesanan sekarang sedang dikemas.");
+        toast.success(ordersConfig.toasts.paySuccess || "Pembayaran Berhasil! Pesanan sekarang sedang dikemas.");
         try {
           const { data: { session } } = await auth.getSession();
           const token = session?.access_token;
@@ -476,22 +433,22 @@ export default function OrdersSection() {
         setFilter("processing");
       },
       onPending: function () {
-        toast("Menunggu pembayaran Anda diselesaikan.", { icon: "⏳" });
+        toast(ordersConfig.toasts.payPending || "Menunggu pembayaran Anda diselesaikan.", { icon: "⏳" });
       },
       onClose: function () {
-        toast("Popup pembayaran ditutup.", { icon: "ℹ️" });
+        toast(ordersConfig.toasts.payClosed || "Popup pembayaran ditutup.", { icon: "ℹ️" });
       },
     });
   };
 
   const handleReOrder = async (order: any) => {
-    const toastId = toast.loading("Memeriksa ketersediaan stok produk...");
+    const toastId = toast.loading(ordersConfig.toasts.checkingStock || "Memeriksa ketersediaan stok produk...");
     try {
-      if (!currentUser) throw new Error("Pengguna tidak terautentikasi.");
+      if (!currentUser) throw new Error(ordersConfig.toasts.unauthenticated || "Pengguna tidak terautentikasi.");
 
       const productsRes = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/products", { cache: "no-store" });
       const productsResult = await productsRes.json();
-      if (!productsRes.ok) throw new Error("Gagal memeriksa stok produk.");
+      if (!productsRes.ok) throw new Error(ordersConfig.toasts.checkStockError || "Gagal memeriksa stok produk.");
 
       const latestProducts =
         productsResult.data || productsResult.products || [];
@@ -511,7 +468,7 @@ export default function OrdersSection() {
       let addedCount = 0;
 
       for (const item of orderItems) {
-        const itemName = item.name || item.product_name || "Produk";
+        const itemName = item.name || item.product_name || ordersConfig.card.defaultItemName;
         const pId = String(item.id || item.productId || item.product_id || "");
         const orderedSize = String(item.size || item.variant_name || "").trim();
         const orderedQty = Number(item.quantity || item.qty || 1);
@@ -523,7 +480,7 @@ export default function OrdersSection() {
         );
 
         if (!foundProduct) {
-          toast.error(`Produk "${itemName}" sudah tidak tersedia.`);
+          toast.error((ordersConfig.toasts.productUnavailable || 'Produk "{name}" sudah tidak tersedia.').replace("{name}", itemName));
           continue;
         }
 
@@ -549,7 +506,9 @@ export default function OrdersSection() {
 
         if (currentStock <= 0) {
           toast.error(
-            `Stok "${itemName} (${orderedSize || "Standard"})" sudah habis.`,
+            (ordersConfig.toasts.stockEmpty || 'Stok "{name} ({size})" sudah habis.')
+              .replace("{name}", itemName)
+              .replace("{size}", orderedSize || ordersConfig.card.defaultVariant),
           );
           continue;
         }
@@ -557,12 +516,14 @@ export default function OrdersSection() {
         const finalQty = Math.min(orderedQty, currentStock);
         if (finalQty < orderedQty) {
           toast(
-            `Stok terbatas! Jumlah "${itemName}" disesuaikan jadi ${finalQty}.`,
+            (ordersConfig.toasts.stockAdjusted || 'Stok terbatas! Jumlah "{name}" disesuaikan jadi {qty}.')
+              .replace("{name}", itemName)
+              .replace("{qty}", finalQty),
           );
         }
 
         const variantData = targetVariant || {
-          size: orderedSize || "Standard",
+          size: orderedSize || ordersConfig.card.defaultVariant,
           price: Number(item.price || foundProduct.price || 0),
           stock: currentStock,
         };
@@ -576,13 +537,13 @@ export default function OrdersSection() {
       toast.dismiss(toastId);
 
       if (addedCount > 0) {
-        toast.success("Produk berhasil dimasukkan ke keranjang!");
+        toast.success(ordersConfig.toasts.reorderSuccess || "Produk berhasil dimasukkan ke keranjang!");
       } else {
-        toast.error("Gagal menambahkan produk ke keranjang karena stok habis.");
+        toast.error(ordersConfig.toasts.reorderEmpty || "Gagal menambahkan produk ke keranjang karena stok habis.");
       }
     } catch (err) {
       console.error("Re-Order Error:", err);
-      toast.error(err.message || "Gagal memproses pesanan ulang.", {
+      toast.error(err.message || ordersConfig.toasts.reorderError || "Gagal memproses pesanan ulang.", {
         id: toastId,
       });
     }
@@ -606,13 +567,13 @@ export default function OrdersSection() {
     setSelectedOrderToCancel(null);
 
     setIsCancelling(true);
-    const toastId = toast.loading("Membatalkan pesanan...");
+    const toastId = toast.loading(ordersConfig.modals.cancel.loading || "Membatalkan pesanan...");
     try {
       const { data: { session } } = await auth.getSession();
       const token = session?.access_token;
       const userId = currentUser?.id || currentUser?.uid;
 
-      if (!userId) throw new Error("Pengguna tidak terautentikasi.");
+      if (!userId) throw new Error(ordersConfig.toasts.unauthenticated || "Pengguna tidak terautentikasi.");
 
       const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + `/api/user/orders/${order.id}/cancel?userId=${userId}`, {
         method: "POST",
@@ -625,16 +586,16 @@ export default function OrdersSection() {
 
       const result = await res.json();
       if (!res.ok)
-        throw new Error(result.error || "Gagal membatalkan pesanan.");
+        throw new Error(result.error || ordersConfig.modals.cancel.error || "Gagal membatalkan pesanan.");
 
-      toast.success("Pesanan berhasil dibatalkan.", { id: toastId });
+      toast.success(ordersConfig.modals.cancel.success || "Pesanan berhasil dibatalkan.", { id: toastId });
 
       setOrders((prev) =>
         prev.map((o) => (o.id === order.id ? { ...o, status: "cancelled" } : o))
       );
     } catch (err) {
       console.error("Cancel Order Error:", err);
-      toast.error(err.message || "Gagal membatalkan pesanan.", { id: toastId });
+      toast.error(err.message || ordersConfig.modals.cancel.error || "Gagal membatalkan pesanan.", { id: toastId });
     } finally {
       setIsCancelling(false);
     }
@@ -651,14 +612,14 @@ export default function OrdersSection() {
     setOrderToConfirm(null);
 
     setIsConfirming(true);
-    const toastId = toast.loading("Mengonfirmasi penerimaan pesanan...");
+    const toastId = toast.loading(ordersConfig.modals.confirm.loading || "Mengonfirmasi penerimaan pesanan...");
 
     try {
       const { data: { session } } = await auth.getSession();
       const token = session?.access_token;
       const userId = currentUser?.id || currentUser?.uid;
 
-      if (!userId) throw new Error("Pengguna tidak terautentikasi.");
+      if (!userId) throw new Error(ordersConfig.toasts.unauthenticated || "Pengguna tidak terautentikasi.");
 
       const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + `/api/user/orders/${order.id}/confirm?userId=${userId}`, {
         method: "POST",
@@ -670,17 +631,17 @@ export default function OrdersSection() {
 
       const result = await res.json();
       if (!res.ok) {
-        throw new Error(result.error || "Gagal mengonfirmasi pesanan.");
+        throw new Error(result.error || ordersConfig.modals.confirm.error || "Gagal mengonfirmasi pesanan.");
       }
 
-      toast.success("Pesanan berhasil dikonfirmasi diterima.", { id: toastId });
+      toast.success(ordersConfig.modals.confirm.success || "Pesanan berhasil dikonfirmasi diterima.", { id: toastId });
 
       setOrders((prev) =>
         prev.map((o) => (o.id === order.id ? { ...o, status: "delivered" } : o))
       );
     } catch (err) {
       console.error("Confirm Order Error:", err);
-      toast.error(err.message || "Gagal mengonfirmasi pesanan.", { id: toastId });
+      toast.error(err.message || ordersConfig.modals.confirm.error || "Gagal mengonfirmasi pesanan.", { id: toastId });
     } finally {
       setIsConfirming(false);
     }
@@ -713,12 +674,12 @@ export default function OrdersSection() {
 
     const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
     if (!allowedTypes.includes(file.type)) {
-      toast.error("Format foto harus JPG, PNG, atau WebP.");
+      toast.error(ordersConfig.toasts.invalidPhotoFormat || "Format foto harus JPG, PNG, atau WebP.");
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      toast.error("Ukuran foto maksimal 5 MB.");
+      toast.error(ordersConfig.toasts.photoMaxSize || "Ukuran foto maksimal 5 MB.");
       return;
     }
 
@@ -747,7 +708,7 @@ export default function OrdersSection() {
     }
 
     setIsSubmittingReview(true);
-    const toastId = toast.loading("Mengirim ulasan Anda...");
+    const toastId = toast.loading(ordersConfig.toasts.submittingReview || "Mengirim ulasan Anda...");
 
     try {
       const { data: { session } } = await auth.getSession();
@@ -756,7 +717,7 @@ export default function OrdersSection() {
 
       let reviewPhoto = null;
       if (reviewPhotoFile) {
-        toast.loading("Mengunggah foto ulasan...", { id: toastId });
+        toast.loading(ordersConfig.toasts.uploadingReviewPhoto || "Mengunggah foto ulasan...", { id: toastId });
         const uploadData = new FormData();
         uploadData.append("file", reviewPhotoFile);
         uploadData.append("userId", userId);
@@ -769,16 +730,16 @@ export default function OrdersSection() {
         });
         const uploadResult = await uploadRes.json();
         if (!uploadRes.ok) {
-          let errorMsg = uploadResult.error || "Gagal mengunggah foto ulasan.";
+          let errorMsg = uploadResult.error || ordersConfig.toasts.uploadPhotoError || "Gagal mengunggah foto ulasan.";
           if (errorMsg.toLowerCase().includes("cloudinary")) {
-            errorMsg = "Gagal mengunggah foto. Silakan coba lagi nanti.";
+            errorMsg = ordersConfig.toasts.uploadPhotoError || "Gagal mengunggah foto. Silakan coba lagi nanti.";
           }
           throw new Error(errorMsg);
         }
         reviewPhoto = uploadResult.secure_url;
       }
 
-      toast.loading("Menyimpan ulasan...", { id: toastId });
+      toast.loading(ordersConfig.toasts.savingReview || "Menyimpan ulasan...", { id: toastId });
       const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/user/reviews", {
         method: "POST",
         headers: {
@@ -803,10 +764,10 @@ export default function OrdersSection() {
       const result = await res.json();
 
       if (!res.ok) {
-        throw new Error(result.error || "Gagal mengirim ulasan.");
+        throw new Error(result.error || ordersConfig.toasts.reviewError || "Gagal mengirim ulasan.");
       }
 
-      toast.success("Terima kasih! Ulasan Anda berhasil dikirim.", {
+      toast.success(ordersConfig.toasts.reviewSuccess || "Terima kasih! Ulasan Anda berhasil dikirim.", {
         id: toastId,
       });
 
@@ -829,7 +790,7 @@ export default function OrdersSection() {
       closeReviewModal();
     } catch (error) {
       console.error("Gagal mengirim ulasan:", error);
-      toast.error(error.message, { id: toastId });
+      toast.error(error.message || ordersConfig.toasts.reviewError || "Gagal mengirim ulasan.", { id: toastId });
     } finally {
       setIsSubmittingReview(false);
     }
@@ -847,7 +808,7 @@ export default function OrdersSection() {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        toast.error("Ukuran foto maksimal 5MB");
+        toast.error(ordersConfig.modals.return.toasts.maxSize || "Ukuran foto maksimal 5 MB.");
         return;
       }
       setReturnEvidenceFile(file);
@@ -865,7 +826,7 @@ export default function OrdersSection() {
   };
 
   const openReturnModal = async (order: any) => {
-    const toastId = toast.loading("Memeriksa kelengkapan profil...");
+    const toastId = toast.loading(ordersConfig.modals.return.bankCheckLoading || "Memeriksa kelengkapan profil...");
     try {
       const { data: { session } } = await auth.getSession();
       const token = session?.access_token;
@@ -882,7 +843,7 @@ export default function OrdersSection() {
         
         if (!bankName || !bankAcc || !bankHolder) {
           toast.dismiss(toastId);
-          toast.error("Silakan lengkapi informasi Rekening Bank di Pengaturan Profil terlebih dahulu untuk keperluan pencairan dana retur.", { duration: 5000 });
+          toast.error(ordersConfig.modals.return.bankRequired || "Silakan lengkapi informasi Rekening Bank di Pengaturan Profil terlebih dahulu untuk keperluan pencairan dana retur.", { duration: 5000 });
           return;
         }
       }
@@ -903,7 +864,7 @@ export default function OrdersSection() {
     if (!returnModalOrder || !currentUser || isSubmittingReturn) return;
 
     setIsSubmittingReturn(true);
-    const toastId = toast.loading("Mengajukan return pesanan...");
+    const toastId = toast.loading(ordersConfig.modals.return.toasts.submitting || "Mengajukan return pesanan...");
 
     try {
       const { data: { session } } = await auth.getSession();
@@ -912,7 +873,7 @@ export default function OrdersSection() {
 
       let evidenceUrl = null;
       if (returnEvidenceFile) {
-        toast.loading("Mengunggah bukti foto...", { id: toastId });
+        toast.loading(ordersConfig.toasts.uploadingReviewPhoto || "Mengunggah bukti foto...", { id: toastId });
         const uploadData = new FormData();
         uploadData.append("file", returnEvidenceFile);
         uploadData.append("userId", userId);
@@ -925,16 +886,16 @@ export default function OrdersSection() {
         });
         const uploadResult = await uploadRes.json();
         if (!uploadRes.ok) {
-          let errorMsg = uploadResult.error || "Gagal mengunggah foto bukti.";
+          let errorMsg = uploadResult.error || ordersConfig.toasts.uploadPhotoError || "Gagal mengunggah foto bukti.";
           if (errorMsg.toLowerCase().includes("cloudinary")) {
-            errorMsg = "Gagal mengunggah foto. Silakan coba lagi nanti.";
+            errorMsg = ordersConfig.toasts.uploadPhotoError || "Gagal mengunggah foto. Silakan coba lagi nanti.";
           }
           throw new Error(errorMsg);
         }
         evidenceUrl = uploadResult.secure_url;
       }
 
-      toast.loading("Menyimpan pengajuan retur...", { id: toastId });
+      toast.loading(ordersConfig.modals.return.submittingBtn || "Menyimpan pengajuan retur...", { id: toastId });
       const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + `/api/user/orders/${returnModalOrder.id}/return`, {
         method: "POST",
         headers: {
@@ -946,10 +907,10 @@ export default function OrdersSection() {
 
       const result = await res.json();
       if (!res.ok) {
-        throw new Error(result.error || "Gagal mengajukan return pesanan.");
+        throw new Error(result.error || ordersConfig.modals.return.toasts.error || "Gagal mengajukan return pesanan.");
       }
 
-      toast.success("Pengajuan return berhasil dikirim.", { id: toastId });
+      toast.success(ordersConfig.modals.return.toasts.success || "Pengajuan return berhasil dikirim.", { id: toastId });
 
       setOrders((prev) =>
         prev.map((o) =>
@@ -963,7 +924,7 @@ export default function OrdersSection() {
       setReturnEvidencePreview(null);
     } catch (error) {
       console.error("Gagal mengajukan return:", error);
-      toast.error(error.message || "Gagal mengajukan return.", { id: toastId });
+      toast.error(error.message || ordersConfig.modals.return.toasts.error || "Gagal mengajukan return.", { id: toastId });
     } finally {
       setIsSubmittingReturn(false);
     }
@@ -985,7 +946,7 @@ export default function OrdersSection() {
               name="search"
               size={16}
               strokeWidth={2}
-              style={{ color: "#71717a" }}
+              className={styles.searchIcon}
             />
             <input
               type="text"
@@ -1007,6 +968,8 @@ export default function OrdersSection() {
                 onClick={() => {
                   setFilter(tab.key);
                   setVisibleCount(5);
+                  const url = tab.key === "all" ? "/dashboard?tab=orders" : `/dashboard?tab=orders&status=${tab.key}`;
+                  router.replace(url);
                 }}
                 className={`${styles.filterBtn} ${isActive ? styles.filterBtnActive : ""}`}
               >
@@ -1025,7 +988,7 @@ export default function OrdersSection() {
 
       {/* Tampilan Kondisional: Jika tab "return" diklik, tampilkan ReturnsCenter */}
       {filter === "return" ? (
-        <ReturnsCenter />
+        <ReturnsCenter onNavigateOrders={() => setFilter("all")} />
       ) : (
         /* Orders List Container */
         <div className={styles.ordersListContainer}>
@@ -1037,7 +1000,7 @@ export default function OrdersSection() {
                 name="package"
                 size={36}
                 strokeWidth={1.5}
-                style={{ color: "#71717a", marginBottom: "0.5rem" }}
+                className={styles.emptyPackageIcon}
               />
               <p className={styles.emptyText}>{ordersConfig.emptyText}</p>
             </div>
@@ -1047,13 +1010,14 @@ export default function OrdersSection() {
               const isPending = ["pending", "unpaid"].includes(order.status);
               const isDelivered = ["shipping", "shipped", "delivered", "completed"].includes(order.status);
 
-              // Cek masa garansi pengembalian 48 jam
+              // Cek masa garansi pengembalian (default 7 hari dari ordersConfig)
               const isReturnPeriodValid = () => {
                 if (!isFinished) return true; // jika masih dikirim, masih valid
                 const lastUpdate = new Date(order.updated_at || order.updatedAt || order.created_at || order.createdAt || Date.now());
                 const now = new Date();
-                const diffHours = (now - lastUpdate) / (1000 * 60 * 60);
-                return diffHours <= 48;
+                const diffHours = (now.getTime() - lastUpdate.getTime()) / (1000 * 60 * 60);
+                const maxHours = (ordersConfig.returnPeriodDays || 7) * 24;
+                return diffHours <= maxHours;
               };
 
               const returnStatus = order.return_status || "";
@@ -1063,11 +1027,11 @@ export default function OrdersSection() {
               // Override status badge if there's a return in progress
               let statusInfo = getStatusInfo(order.status);
               if (returnStatus === "pending") {
-                statusInfo = { label: "⏳ Return Diproses", badgeClass: "statusReturn" };
+                statusInfo = { label: ordersConfig.returnStatus?.pending?.label || "⏳ Return Diproses", badgeClass: "statusReturn" };
               } else if (returnStatus === "approved") {
-                statusInfo = { label: "✅ Return Disetujui", badgeClass: "statusCompleted" };
+                statusInfo = { label: ordersConfig.returnStatus?.approved?.label || "✅ Return Disetujui", badgeClass: "statusCompleted" };
               } else if (returnStatus === "rejected") {
-                statusInfo = { label: "❌ Return Ditolak", badgeClass: "statusCancelled" };
+                statusInfo = { label: ordersConfig.returnStatus?.rejected?.label || "❌ Return Ditolak", badgeClass: "statusCancelled" };
               }
               const reviewableItems =
                 order.items && order.items.length > 0
@@ -1087,34 +1051,37 @@ export default function OrdersSection() {
                     </div>
                     <h4 className={styles.orderName}>{order.name}</h4>
                     <p className={styles.orderSpec}>
-                      Spesifikasi: {order.concentration}
+                      {ordersConfig.card.specPrefix || "Spesifikasi: "}{order.concentration}
                     </p>
                     {Boolean(order.waybill_id || order.shipping_receipt_number || order.shipping_detail?.tracking_number || order.shippingDetail?.trackingNumber) && (
-                      <p style={{ margin: "4px 0", fontSize: "0.82rem", color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: "6px" }}>
-                        <span style={{ fontWeight: 600, color: "var(--primary-color)" }}>🚚 Resi:</span>
-                        <code style={{ background: "rgba(0,0,0,0.06)", padding: "2px 6px", borderRadius: "4px", fontWeight: 700, letterSpacing: "0.5px" }}>
+                      <p className={styles.resiSnippetRow}>
+                        <span className={styles.resiSnippetLabel}>{ordersConfig.card.resiPrefix || "🚚 Resi: "}</span>
+                        <code className={styles.resiSnippetCode}>
                           {order.waybill_id || order.shipping_receipt_number || order.shipping_detail?.tracking_number || order.shippingDetail?.trackingNumber}
                         </code>
                       </p>
                     )}
-                    <p className={styles.orderNotes}>Catatan: {order.notes}</p>
-                    <p className={styles.orderDate}>Tanggal: {order.date}</p>
+                    <p className={styles.orderNotes}>{ordersConfig.card.notesPrefix || "Catatan: "}{order.notes}</p>
+                    <p className={styles.orderDate}>{ordersConfig.card.datePrefix || "Tanggal: "}{order.date}</p>
 
                     {/* Return Status Info */}
                     {order.return_status && (
-                      <div style={{
-                        marginTop: '10px',
-                        padding: '10px 14px',
-                        borderRadius: '8px',
-                        fontSize: '0.83rem',
-                        background: order.return_status === 'approved' ? 'rgba(16,185,129,0.08)' : order.return_status === 'rejected' ? 'rgba(239,68,68,0.08)' : 'rgba(245,158,11,0.08)',
-                        borderLeft: `3px solid ${order.return_status === 'approved' ? '#10b981' : order.return_status === 'rejected' ? '#ef4444' : '#f59e0b'}`,
-                      }}>
+                      <div className={`${styles.returnStatusBanner} ${
+                        order.return_status === 'approved'
+                          ? styles.returnStatusBannerApproved
+                          : order.return_status === 'rejected'
+                          ? styles.returnStatusBannerRejected
+                          : styles.returnStatusBannerPending
+                      }`}>
                         <strong>
-                          {order.return_status === 'approved' ? '✅ Return Disetujui' : order.return_status === 'rejected' ? '❌ Return Ditolak' : '⏳ Return Sedang Diproses'}
+                          {order.return_status === 'approved'
+                            ? (ordersConfig.returnStatus?.approved?.banner || '✅ Return Disetujui')
+                            : order.return_status === 'rejected'
+                            ? (ordersConfig.returnStatus?.rejected?.banner || '❌ Return Ditolak')
+                            : (ordersConfig.returnStatus?.pending?.banner || '⏳ Return Sedang Diproses')}
                         </strong>
                         {order.return_admin_note && (
-                          <span> — {order.return_admin_note}</span>
+                          <span className={styles.returnStatusNote}> — {order.return_admin_note}</span>
                         )}
                       </div>
                     )}
@@ -1137,8 +1104,8 @@ export default function OrdersSection() {
                               }
                             >
                               {reviewed
-                                ? `✓ ${item.product_name || item.name} sudah diulas`
-                                : `Ulas ${item.product_name || item.name}`}
+                                ? (ordersConfig.buttons.reviewedItem || "✓ {name} sudah diulas").replace("{name}", item.product_name || item.name)
+                                : (ordersConfig.buttons.reviewItem || "Ulas {name}").replace("{name}", item.product_name || item.name)}
                             </button>
                           );
                         })}
@@ -1164,7 +1131,7 @@ export default function OrdersSection() {
                               className={styles.payBtn}
                             >
                               <AppIcon name="creditcard" size={14} />
-                              <span>{isPayingId === order.id ? "Memuat..." : "Bayar Sekarang"}</span>
+                              <span>{isPayingId === order.id ? (ordersConfig.buttons.loadingPay || "Memuat...") : (ordersConfig.buttons.payNow || "Bayar Sekarang")}</span>
                             </button>
                           )}
                           <button
@@ -1172,7 +1139,7 @@ export default function OrdersSection() {
                             disabled={isCancelling}
                             className={styles.cancelBtn}
                           >
-                            Batalkan
+                            {ordersConfig.buttons.cancel || "Batalkan"}
                           </button>
                         </>
                       )}
@@ -1182,7 +1149,7 @@ export default function OrdersSection() {
                           disabled={isConfirming}
                           className={styles.confirmBtn}
                         >
-                          {isConfirming ? "Memproses..." : "Konfirmasi Diterima"}
+                          {isConfirming ? (ordersConfig.buttons.processingConfirm || "Memproses...") : (ordersConfig.buttons.confirmReceived || "Konfirmasi Diterima")}
                         </button>
                       )}
                       {canReturn && (
@@ -1190,7 +1157,19 @@ export default function OrdersSection() {
                           onClick={() => openReturnModal(order)}
                           className={styles.returnBtn}
                         >
-                          Ajukan Return
+                          {ordersConfig.buttons.applyReturn || "Ajukan Return"}
+                        </button>
+                      )}
+                      {(hasAnyReturn || ["return_requested", "returning", "returned", "return_rejected"].includes(order.status)) && (
+                        <button
+                          onClick={() => {
+                            setFilter("return");
+                            router.replace("/dashboard?tab=orders&status=return");
+                          }}
+                          className={styles.trackReturnBtn}
+                        >
+                          <AppIcon name="rotate-ccw" size={14} />
+                          <span>{ordersConfig.buttons.trackReturn || "Pantau Retur"}</span>
                         </button>
                       )}
                       <button
@@ -1212,7 +1191,7 @@ export default function OrdersSection() {
                 onClick={() => setVisibleCount((prev) => prev + 5)}
                 className={styles.loadMoreBtn}
               >
-                Muat Lebih Banyak <AppIcon name="chevron-down" size={16} />
+                {ordersConfig.buttons.loadMore || "Muat Lebih Banyak"} <AppIcon name="chevron-down" size={16} />
               </button>
             </div>
           )}
@@ -1387,7 +1366,7 @@ export default function OrdersSection() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className={styles.modalHeader}>
-              <h3 className={styles.modalTitle}>Pengajuan Return Pesanan</h3>
+              <h3 className={styles.modalTitle}>{ordersConfig.modals.return.title || "Pengajuan Return Pesanan"}</h3>
               <button
                 onClick={() => setReturnModalOrder(null)}
                 className={styles.modalCloseBtn}
@@ -1398,26 +1377,26 @@ export default function OrdersSection() {
 
             <form onSubmit={handleReturnSubmit} className={styles.modalBody}>
               <div>
-                <span className={styles.modalFieldLabel}>ID Pesanan</span>
+                <span className={styles.modalFieldLabel}>{ordersConfig.modals.return.orderIdLabel || "ID Pesanan"}</span>
                 <strong>{returnModalOrder.order_number || returnModalOrder.id}</strong>
               </div>
               <div>
-                <span className={styles.modalFieldLabel}>Produk / Detail</span>
+                <span className={styles.modalFieldLabel}>{ordersConfig.modals.return.productLabel || "Produk / Detail"}</span>
                 <strong>{returnModalOrder.name}</strong>
               </div>
               <div>
-                <span className={styles.modalFieldLabel}>Alasan Return</span>
+                <span className={styles.modalFieldLabel}>{ordersConfig.modals.return.reasonLabel || "Alasan Return"}</span>
                 <textarea
                   rows={3}
                   required
-                  placeholder="Tuliskan alasan pengembalian/return produk secara detail..."
+                  placeholder={ordersConfig.modals.return.reasonPlaceholder || "Tuliskan alasan pengembalian/return produk secara detail..."}
                   value={returnReason}
                   onChange={(e) => setReturnReason(e.target.value)}
                   className={styles.formTextarea}
                 />
               </div>
               <div className={styles.photoUploadContainer}>
-                <span className={styles.modalFieldLabel}>Foto Bukti Barang (Opsional namun sangat disarankan)</span>
+                <span className={styles.modalFieldLabel}>{ordersConfig.modals.return.evidenceLabel || "Foto Bukti Barang (Opsional namun sangat disarankan)"}</span>
                 {returnEvidencePreview ? (
                   <div className={styles.photoPreviewWrapper}>
                     <img
@@ -1432,7 +1411,7 @@ export default function OrdersSection() {
                         className={styles.removePhotoBtn}
                       >
                         <AppIcon name="trash" size={13} />
-                        <span>Hapus Foto</span>
+                        <span>{ordersConfig.modals.return.removePhoto || "Hapus Foto"}</span>
                       </button>
                     </div>
                   </div>
@@ -1449,10 +1428,10 @@ export default function OrdersSection() {
                     </div>
                     <div className={styles.dropzoneTextGroup}>
                       <span className={styles.dropzoneMainText}>
-                        Pilih foto bukti barang atau seret ke sini
+                        {ordersConfig.modals.return.dropzoneMain || "Pilih foto bukti barang atau seret ke sini"}
                       </span>
                       <span className={styles.dropzoneSubText}>
-                        Format JPG, PNG, WebP (Maksimal 5 MB)
+                        {ordersConfig.modals.return.dropzoneSub || "Format JPG, PNG, WebP (Maksimal 5 MB)"}
                       </span>
                     </div>
                   </label>
@@ -1463,7 +1442,7 @@ export default function OrdersSection() {
                 className={styles.modalCloseActionBtn}
                 disabled={isSubmittingReturn}
               >
-                {isSubmittingReturn ? "Mengirim Pengajuan..." : "Kirim Pengajuan Return"}
+                {isSubmittingReturn ? (ordersConfig.modals.return.submittingBtn || "Mengirim Pengajuan...") : (ordersConfig.modals.return.submitBtn || "Kirim Pengajuan Return")}
               </button>
             </form>
           </div>
@@ -1477,16 +1456,26 @@ export default function OrdersSection() {
           setSelectedOrderToCancel(null);
         }}
         onConfirm={confirmCancelOrder}
-        title="Batalkan Pesanan"
-        message={`Batalkan pesanan ${(selectedOrderToCancel?.order_number || selectedOrderToCancel?.id || "").length === 36 ? (selectedOrderToCancel?.order_number || selectedOrderToCancel?.id).split("-")[0].toUpperCase() : (selectedOrderToCancel?.order_number || selectedOrderToCancel?.id)}? Tindakan ini tidak bisa dibatalkan.`}
+        title={ordersConfig.modals.cancel.title || "Batalkan Pesanan"}
+        message={(ordersConfig.modals.cancel.messageTemplate || "Batalkan pesanan {orderNumber}? Tindakan ini tidak bisa dibatalkan.").replace(
+          "{orderNumber}",
+          (selectedOrderToCancel?.order_number || selectedOrderToCancel?.id || "").length === 36
+            ? (selectedOrderToCancel?.order_number || selectedOrderToCancel?.id).split("-")[0].toUpperCase()
+            : (selectedOrderToCancel?.order_number || selectedOrderToCancel?.id)
+        )}
       />
 
       <ConfirmationModal
         isOpen={!!orderToConfirm}
         onClose={() => setOrderToConfirm(null)}
         onConfirm={confirmReceivedAction}
-        title="Konfirmasi Pesanan"
-        message={`Konfirmasi bahwa pesanan ${(orderToConfirm?.order_number || orderToConfirm?.id || "").length === 36 ? (orderToConfirm?.order_number || orderToConfirm?.id).split("-")[0].toUpperCase() : (orderToConfirm?.order_number || orderToConfirm?.id)} sudah diterima?`}
+        title={ordersConfig.modals.confirm.title || "Konfirmasi Pesanan"}
+        message={(ordersConfig.modals.confirm.messageTemplate || "Konfirmasi bahwa pesanan {orderNumber} sudah diterima?").replace(
+          "{orderNumber}",
+          (orderToConfirm?.order_number || orderToConfirm?.id || "").length === 36
+            ? (orderToConfirm?.order_number || orderToConfirm?.id).split("-")[0].toUpperCase()
+            : (orderToConfirm?.order_number || orderToConfirm?.id)
+        )}
       />
     </div>
   );

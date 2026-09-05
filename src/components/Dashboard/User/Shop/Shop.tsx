@@ -4,39 +4,78 @@ import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import Image from "next/image";
 import { useStore } from "@/context/StoreContext";
 import { getDiscountedPrice } from "@/utils/promo";
+import { getPublicSettings } from "@/services/settingsService";
 import styles from "./Shop.module.css";
-
 import { AppIcon } from "@/components/UI/Icon/AppIcon";
 import { supabase } from "@/lib/supabaseClient";
-
-// Import Skeleton
 import { ShopSkeleton } from "@/components/UI/Skeleton/SkeletonLayouts";
-
-// Import Konfigurasi JSON
 import shopConfig from "@/data/ui/shopConfig.json";
 
 const PRODUCTS_PER_PAGE = 12;
-const EMPTY_PRODUCTS = [];
 
 export default function Shop({ searchQuery = "", onBukaDetail, initialData }) {
   const { addToCart, activePromo } = useStore();
 
-  // If initialData is provided, use it for the initial state.
-  const [products, setProducts] = useState(initialData?.products || []);
+  const [products, setProducts] = useState(
+    (initialData?.products || []).filter((p: any) => p.status !== "draft")
+  );
   const [orderItemsMap, setOrderItemsMap] = useState(initialData?.salesMap || {});
   const [allReviews, setAllReviews] = useState(initialData?.reviews || []);
-  const [loading, setLoading] = useState(!initialData); // Not loading if data is passed
+  const [loading, setLoading] = useState(!initialData);
   const [sortBy, setSortBy] = useState("default");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalProducts, setTotalProducts] = useState(initialData?.totalProducts || 0);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
 
-  // Settings from DB
-  const [resolvedHeader, setResolvedHeader] = useState(initialData?.publicSettings?.product?.header || { tagline: "our curated collection", title: { main: "Produk", highlight: "Kami" } });
+  // Settings from DB / Config fallback
+  const [resolvedHeader, setResolvedHeader] = useState(
+    initialData?.publicSettings?.product?.header || {
+      tagline: shopConfig.header?.fallbackTagline || "our curated collection",
+      title: {
+        main: shopConfig.header?.fallbackTitleMain || "Produk",
+        highlight: shopConfig.header?.fallbackTitleHighlight || "Kami",
+      },
+    }
+  );
 
   const [wishlist, setWishlist] = useState([]);
 
-  // Scroll Animation
+  // Debounced search query
+  const [debouncedSearch, setDebouncedSearch] = useState(searchQuery);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Unified public settings fetch (runs once on mount)
+  useEffect(() => {
+    let isMounted = true;
+    const loadSettings = async () => {
+      try {
+        const data = await getPublicSettings();
+        if (!data || !isMounted) return;
+        if (data?.product?.header) {
+          setResolvedHeader({
+            tagline: data.product.header.tagline || shopConfig.header?.fallbackTagline || "our curated collection",
+            title: {
+              main: data.product.header.title?.main || shopConfig.header?.fallbackTitleMain || "Produk",
+              highlight: data.product.header.title?.highlight || shopConfig.header?.fallbackTitleHighlight || "Kami",
+            },
+          });
+        }
+      } catch (err) {
+        console.error("Gagal memuat pengaturan produk di katalog:", err);
+      }
+    };
+    loadSettings();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Scroll Reveal Animation
   const shopRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -48,7 +87,7 @@ export default function Shop({ searchQuery = "", onBukaDetail, initialData }) {
           observer.disconnect();
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.08 }
     );
 
     if (shopRef.current) {
@@ -57,7 +96,7 @@ export default function Shop({ searchQuery = "", onBukaDetail, initialData }) {
     return () => observer.disconnect();
   }, []);
 
-  // Populate wishlist from localStorage on client-side after mount to avoid hydration mismatch
+  // Populate wishlist from localStorage (client-side only to prevent hydration mismatch)
   useEffect(() => {
     try {
       const saved = localStorage.getItem("shop_wishlist");
@@ -65,11 +104,11 @@ export default function Shop({ searchQuery = "", onBukaDetail, initialData }) {
         setWishlist(JSON.parse(saved));
       }
     } catch {
-      // If parsing fails, do nothing, wishlist remains empty
+      // Ignore parsing error
     }
   }, []);
 
-  const toggleWishlist = (productId, e: any) => {
+  const toggleWishlist = (productId: string, e: any) => {
     e.stopPropagation();
     const isExist = wishlist.includes(productId);
     const updated = isExist
@@ -85,147 +124,149 @@ export default function Shop({ searchQuery = "", onBukaDetail, initialData }) {
     window.dispatchEvent(
       new CustomEvent("wishlist-updated", {
         detail: { count: updated.length, items: updated },
-      }),
+      })
     );
 
-    // Dynamic import for toast to ensure it's client-side only
-    import("react-hot-toast").then(toast => {
-        toast.default.success(
-          isExist
-            ? shopConfig.toasts?.wishlistRemove || "Dihapus dari wishlist."
-            : shopConfig.toasts?.wishlistAdd ||
-                "Berhasil ditambahkan ke wishlist!",
-        );
+    import("react-hot-toast").then((toast) => {
+      toast.default.success(
+        isExist
+          ? shopConfig.toasts?.wishlistRemove || "Dihapus dari wishlist."
+          : shopConfig.toasts?.wishlistAdd || "Berhasil ditambahkan ke wishlist!"
+      );
     });
   };
 
-  const fetchShopData = useCallback(async (shouldFetchProducts = true, append = false) => {
-    if (shouldFetchProducts) {
-      if (!append) {
-        setLoading(true);
-      } else {
-        setIsFetchingMore(true);
+  const fetchShopData = useCallback(
+    async (shouldFetchProducts = true, append = false) => {
+      if (shouldFetchProducts) {
+        if (!append) {
+          setLoading(true);
+        } else {
+          setIsFetchingMore(true);
+        }
       }
-    }
 
-    const queryParams = new URLSearchParams();
-    if (searchQuery) queryParams.append("search", searchQuery);
-    queryParams.append("sortBy", sortBy);
-    queryParams.append("page", currentPage.toString());
-    queryParams.append("limit", PRODUCTS_PER_PAGE.toString());
+      const queryParams = new URLSearchParams();
+      if (debouncedSearch) queryParams.append("search", debouncedSearch);
+      queryParams.append("sortBy", sortBy);
+      queryParams.append("page", currentPage.toString());
+      queryParams.append("limit", PRODUCTS_PER_PAGE.toString());
+      queryParams.append("status", "published");
 
-    const fetches = [];
-    if (shouldFetchProducts) {
-        fetches.push(fetch((process.env.NEXT_PUBLIC_API_URL || "") + `/api/products?${queryParams.toString()}`, { cache: "default" }));
-    } else {
+      const fetches = [];
+      if (shouldFetchProducts) {
+        fetches.push(
+          fetch(
+            (process.env.NEXT_PUBLIC_API_URL || "") +
+              `/api/products?${queryParams.toString()}`,
+            { cache: "default" }
+          )
+        );
+      } else {
         fetches.push(Promise.resolve(null));
-    }
-    fetches.push(fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/products/sales/public", { cache: "no-store" }));
-    fetches.push(fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/reviews?public=true", { cache: "no-store" }));
+      }
+      fetches.push(
+        fetch(
+          (process.env.NEXT_PUBLIC_API_URL || "") + "/api/products/sales/public",
+          { cache: "no-store" }
+        )
+      );
+      fetches.push(
+        fetch(
+          (process.env.NEXT_PUBLIC_API_URL || "") + "/api/reviews?public=true",
+          { cache: "no-store" }
+        )
+      );
 
-    const [productsResult, salesResult, reviewsResult] = await Promise.allSettled(fetches);
+      const [productsResult, salesResult, reviewsResult] =
+        await Promise.allSettled(fetches);
 
-    // Process Products
-    if (productsResult.status === 'fulfilled' && productsResult.value) {
+      // Process Products
+      if (productsResult.status === "fulfilled" && productsResult.value) {
         const res = productsResult.value;
         const contentType = res.headers.get("content-type");
         if (res.ok && contentType && contentType.includes("application/json")) {
-            const result = await res.json();
-            const fetchedProducts = result.data || result.products || result || [];
-            setProducts((prev: any) => (append ? [...prev, ...fetchedProducts] : fetchedProducts));
-            setTotalProducts(result.total || 0);
+          const result = await res.json();
+          const rawProducts = result.data || result.products || result || [];
+          const fetchedProducts = rawProducts.filter(
+            (p: any) => p.status !== "draft"
+          );
+          setProducts((prev: any) =>
+            append ? [...prev, ...fetchedProducts] : fetchedProducts
+          );
+          setTotalProducts(result.total || 0);
         } else if (res) {
-            const errorText = await res.text();
-            console.error("Gagal memuat produk:", errorText);
+          const errorText = await res.text();
+          console.error("Gagal memuat produk:", errorText);
         }
-    } else if(productsResult.status === 'rejected') {
+      } else if (productsResult.status === "rejected") {
         console.error("Gagal memuat produk:", productsResult.reason);
-    }
+      }
 
-    // Process Sales Data
-    if (salesResult.status === 'fulfilled') {
+      // Process Sales Data
+      if (salesResult.status === "fulfilled") {
         const res = salesResult.value;
         const contentType = res.headers.get("content-type");
         if (res.ok && contentType && contentType.includes("application/json")) {
-            const result = await res.json();
-            setOrderItemsMap(result.sales || {});
+          const result = await res.json();
+          setOrderItemsMap(result.sales || {});
         } else {
-           console.warn("Catatan: Data penjualan belum tersedia, respons tidak valid.");
+          console.warn(shopConfig.messages?.salesUnavailable || "Data penjualan belum tersedia.");
         }
-    } else {
-        console.warn("Catatan: Data penjualan belum tersedia.", salesResult.reason.message);
-    }
+      }
 
-    // Process Reviews
-    if (reviewsResult.status === 'fulfilled') {
+      // Process Reviews
+      if (reviewsResult.status === "fulfilled") {
         const res = reviewsResult.value;
         const contentType = res.headers.get("content-type");
         if (res.ok && contentType && contentType.includes("application/json")) {
-            const result = await res.json();
-            setAllReviews(result.reviews || []);
+          const result = await res.json();
+          setAllReviews(result.reviews || []);
         } else {
-            console.warn("Catatan: Data ulasan belum tersedia, respons tidak valid.");
+          console.warn(shopConfig.messages?.reviewsUnavailable || "Data ulasan belum tersedia.");
         }
-    } else {
-        console.warn("Catatan: Data ulasan belum tersedia.", reviewsResult.reason.message);
-    }
+      }
 
-    setLoading(false);
-    setIsFetchingMore(false);
-  }, [searchQuery, sortBy, currentPage, shopConfig.toasts?.fetchError]);
+      setLoading(false);
+      setIsFetchingMore(false);
+    },
+    [debouncedSearch, sortBy, currentPage]
+  );
 
-  // This effect now handles client-side data fetching ONLY when parameters change.
+  // Trigger data fetch on filter / pagination change
   useEffect(() => {
-    // Skip initial fetch if data is already provided by the server.
-    const isInitialLoad = initialData && currentPage === 1 && sortBy === 'default' && !searchQuery;
+    const isInitialLoad =
+      initialData && currentPage === 1 && sortBy === "default" && !debouncedSearch;
     if (isInitialLoad) {
-      return; // Do nothing on the first render if we have server-provided data.
+      return;
     }
 
-    // When search or sort changes, reset page to 1
-    if (currentPage !== 1 && (searchQuery || sortBy !== "default")) {
+    if (currentPage !== 1 && (debouncedSearch || sortBy !== "default")) {
       setCurrentPage(1);
     } else {
-      // Fetch all data if it's a subsequent load (pagination, filter change)
       fetchShopData(true, currentPage > 1);
     }
-  }, [searchQuery, sortBy, currentPage, fetchShopData, initialData]);
+  }, [debouncedSearch, sortBy, currentPage, fetchShopData, initialData]);
 
-  // Client-side fetch for latest settings (to immediately reflect admin changes)
+  // Realtime subscription
   useEffect(() => {
-    const fetchLatestSettings = async () => {
-      try {
-        const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/settings?public=true", { cache: "no-store" });
-        if (res.ok) {
-          const data = await res.json();
-          if (data?.product?.header) {
-            setResolvedHeader({
-              tagline: data.product.header.tagline || "our curated collection",
-              title: {
-                main: data.product.header.title?.main || "Produk",
-                highlight: data.product.header.title?.highlight || "Kami"
-              }
-            });
-          }
-        }
-      } catch (error) {
-        console.error("Gagal mengambil pengaturan terbaru", error);
-      }
-    };
-    fetchLatestSettings();
-  }, []);
-
-  // Supabase Realtime, deferred to prevent blocking initial render.
-  useEffect(() => {
-    let channel;
+    let channel: any;
     const timer = setTimeout(() => {
       const refreshCatalog = () => fetchShopData(true);
       channel = supabase
         .channel("storefront-catalog")
-        .on("postgres_changes", { event: "*", schema: "public", table: "products" }, refreshCatalog)
-        .on("postgres_changes", { event: "*", schema: "public", table: "reviews" }, refreshCatalog)
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "products" },
+          refreshCatalog
+        )
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "reviews" },
+          refreshCatalog
+        )
         .subscribe();
-    }, 1000); // Delay of 1 second
+    }, 1000);
 
     return () => {
       clearTimeout(timer);
@@ -235,7 +276,7 @@ export default function Shop({ searchQuery = "", onBukaDetail, initialData }) {
     };
   }, [fetchShopData]);
 
-  // Handle product-stock-updated event
+  // Storage/stock updated event listener
   useEffect(() => {
     const handleStorageChange = () => fetchShopData(true);
     window.addEventListener("product-stock-updated", handleStorageChange);
@@ -247,8 +288,6 @@ export default function Shop({ searchQuery = "", onBukaDetail, initialData }) {
   const handleLoadMore = () => {
     setCurrentPage((prevPage) => prevPage + 1);
   };
-
-  const currentProducts = useMemo(() => products, [products]);
 
   const getVariantStock = (variant: any) =>
     Number(variant?.stock ?? variant?.stok ?? 0);
@@ -269,112 +308,146 @@ export default function Shop({ searchQuery = "", onBukaDetail, initialData }) {
 
   const getFirstAvailableVariantIndex = (product: any) => {
     const idx = (product.variants || []).findIndex(
-      (v: any) => getVariantStock(v) > 0,
+      (v: any) => getVariantStock(v) > 0
     );
     return idx !== -1 ? idx : 0;
   };
 
+  const sortOptions = shopConfig.sortOptions || [
+    { id: "default", label: "Terbaru" },
+    { id: "price-low", label: "Harga Terendah" },
+    { id: "price-high", label: "Harga Tertinggi" },
+    { id: "name", label: "Nama (A-Z)" },
+  ];
+
   return (
-    <div className={`${styles.shopContainer} ${isVisible ? styles.visible : ""}`} ref={shopRef}>
-
-      <div className={styles.shopHeader}>
+    <div
+      className={`${styles.shopContainer} ${isVisible ? styles.visible : ""}`}
+      ref={shopRef}
+    >
+      {/* Header */}
+      <header className={styles.shopHeader}>
         <p className={styles.shopTagline}>{resolvedHeader.tagline}</p>
-        <h2>{resolvedHeader.title?.main} <span>{resolvedHeader.title?.highlight}</span></h2>
-      </div>
+        <h2>
+          {resolvedHeader.title?.main}{" "}
+          <span>{resolvedHeader.title?.highlight}</span>
+        </h2>
+      </header>
 
-      {/* Filter Tabs (Fungsional) */}
-      <div className={styles.filterTabsWrapper}>
-        <button
-          onClick={() => {
-            setSortBy("default");
-            setCurrentPage(1);
-          }}
-          className={`${styles.filterTabBtn} ${sortBy === "default" ? styles.activeFilterTab : ""}`}
-        >
-          {shopConfig.filters?.sortDefault || "Terbaru"}
-        </button>
-        <button
-          onClick={() => {
-            setSortBy("price-low");
-            setCurrentPage(1);
-          }}
-          className={`${styles.filterTabBtn} ${sortBy === "price-low" ? styles.activeFilterTab : ""}`}
-        >
-          {shopConfig.filters?.sortPriceLow || "Harga Terendah"}
-        </button>
-        <button
-          onClick={() => {
-            setSortBy("price-high");
-            setCurrentPage(1);
-          }}
-          className={`${styles.filterTabBtn} ${sortBy === "price-high" ? styles.activeFilterTab : ""}`}
-        >
-          {shopConfig.filters?.sortPriceHigh || "Harga Tertinggi"}
-        </button>
-        <button
-          onClick={() => {
-            setSortBy("name");
-            setCurrentPage(1);
-          }}
-          className={`${styles.filterTabBtn} ${sortBy === "name" ? styles.activeFilterTab : ""}`}
-        >
-          {shopConfig.filters?.sortName || "Nama"}
-        </button>
-      </div>
+      {/* Filter Tabs (Pill Buttons) */}
+      <nav
+        className={styles.filterTabsWrapper}
+        role="tablist"
+        aria-label="Filter Urutan Produk"
+      >
+        {sortOptions.map((option) => (
+          <button
+            key={option.id}
+            role="tab"
+            aria-selected={sortBy === option.id}
+            onClick={() => {
+              setSortBy(option.id);
+              setCurrentPage(1);
+            }}
+            className={`${styles.filterTabBtn} ${
+              sortBy === option.id ? styles.activeFilterTab : ""
+            }`}
+          >
+            {option.label}
+          </button>
+        ))}
+      </nav>
 
+      {/* Product List */}
       {loading ? (
         <ShopSkeleton count={PRODUCTS_PER_PAGE} />
-      ) : currentProducts.length === 0 && !isFetchingMore ? (
+      ) : products.length === 0 && !isFetchingMore ? (
         <div className={styles.stateContainer}>
-          <p>{shopConfig.messages?.empty || "Produk tidak ditemukan."}</p>
+          <p>{shopConfig.messages?.empty || "Belum ada produk yang tersedia."}</p>
         </div>
       ) : (
         <>
           <div className={styles.productGrid}>
-            {currentProducts.map((product: any) => {
+            {products.map((product: any) => {
               const pId = String(product.id || product._id || "");
               const totalSold =
                 orderItemsMap[pId] || Number(product.total_sold || 0);
-              const displayPrice =
-                product.variants?.[0]?.price || product.price || 0;
+
+              const availableVariantIdx = getFirstAvailableVariantIndex(product);
+              const activeVariant =
+                product.variants?.[availableVariantIdx] || product.variants?.[0];
+
+              // Base price correctly derived from active variant or product
+              const displayPrice = Number(
+                activeVariant?.price ?? product.price ?? 0
+              );
               const priceFormatted = displayPrice
-                ? `Rp ${Number(displayPrice).toLocaleString("id-ID")}`
+                ? `Rp ${displayPrice.toLocaleString("id-ID")}`
                 : shopConfig.card?.fallbackPrice || "Rp 0";
+
               const outOfStock = isProductOutOfStock(product);
               const totalStockLeft = getProductTotalStock(product);
               const isWishlisted = wishlist.includes(pId);
-              const productReviews = allReviews.filter((review: any) => String(review.productId) === pId);
-              const averageRating = productReviews.length ? (productReviews.reduce((sum, review: any) => sum + Number(review.rating || 0), 0) / productReviews.length).toFixed(1) : null;
+
+              // Reviews match safely with productId or product_id
+              const productReviews = allReviews.filter(
+                (review: any) =>
+                  String(review.productId || review.product_id) === pId
+              );
+              const averageRating = productReviews.length
+                ? (
+                    productReviews.reduce(
+                      (sum, review: any) => sum + Number(review.rating || 0),
+                      0
+                    ) / productReviews.length
+                  ).toFixed(1)
+                : null;
+
+              const productImg =
+                product.image_url || product.imageUrl || product.image;
+
+              // Calculate discount based on active variant
+              const discounted = getDiscountedPrice(displayPrice, activePromo, {
+                productId: pId,
+                size: activeVariant?.size,
+              });
 
               return (
-                <div
+                <article
                   key={pId}
-                  className={`${styles.productCard} ${outOfStock ? styles.outOfStock : ""}`}
+                  className={`${styles.productCard} ${
+                    outOfStock ? styles.outOfStock : ""
+                  }`}
                   onClick={() => onBukaDetail(product)}
                 >
+                  {/* Image Section */}
                   <div className={styles.productCardImageWrapper}>
-                    {product.image_url ? (
+                    {productImg ? (
                       <Image
-                        src={product.image_url}
+                        src={productImg}
                         alt={product.name}
                         className={styles.productCardImg}
-                        width={300}
-                        height={300}
+                        width={320}
+                        height={320}
                       />
                     ) : (
                       <div className={styles.productCardPlaceholder}>
-                        {shopConfig.card?.placeholderImageText || "No Image"}
+                        {shopConfig.card?.placeholderImageText || "MAMEKO PARFUM"}
                       </div>
                     )}
+
                     <span className={styles.cardCategoryBadge}>
                       {product.category ||
                         shopConfig.card?.defaultCategory ||
                         "Parfum"}
                     </span>
+
                     <button
-                      className={`${styles.wishlistBtn} ${isWishlisted ? styles.wishlistActive : ""}`}
+                      className={`${styles.wishlistBtn} ${
+                        isWishlisted ? styles.wishlistActive : ""
+                      }`}
                       onClick={(e) => toggleWishlist(pId, e)}
-                      aria-label="Wishlist"
+                      aria-label={shopConfig.aria?.wishlist || "Wishlist"}
                     >
                       <svg viewBox="0 0 24 24">
                         <path
@@ -385,91 +458,124 @@ export default function Shop({ searchQuery = "", onBukaDetail, initialData }) {
                         />
                       </svg>
                     </button>
+
                     {outOfStock && (
                       <span className={styles.outOfStockBadge}>
                         {shopConfig.card?.soldOutBadge || "Habis"}
                       </span>
                     )}
                   </div>
+
+                  {/* Body Section */}
                   <div className={styles.productCardBody}>
                     <div className={styles.cardTopInfo}>
                       <h3 className={styles.productName}>{product.name}</h3>
                       <button
-                        className={`${styles.cartIconBtn} ${outOfStock ? styles.cartIconBtnDisabled : ""}`}
+                        className={`${styles.cartIconBtn} ${
+                          outOfStock ? styles.cartIconBtnDisabled : ""
+                        }`}
                         onClick={(e) => {
                           e.stopPropagation();
                           if (!outOfStock) {
-                            const variant = product.variants?.[getFirstAvailableVariantIndex(product)] || { size: "Standard", price: product.price || 0, stock: 10 };
-                            addToCart(product, variant, 1);
+                            const variantToAdd = activeVariant || {
+                              size:
+                                shopConfig.card?.defaultVariant || "Standard",
+                              price: displayPrice,
+                              stock: 10,
+                            };
+                            addToCart(product, variantToAdd, 1);
                           }
                         }}
                         disabled={outOfStock}
                         aria-label={
                           shopConfig.card?.addToCartTitle ||
+                          shopConfig.aria?.addToCart ||
                           "Tambah ke keranjang"
                         }
                       >
                         <AppIcon name="shopping-cart" />
                       </button>
                     </div>
+
+                    {/* Price & Discounts */}
                     <div className={styles.cardPriceRow}>
-                      {(() => {
-                        if (outOfStock) return <span className={styles.cardPrice}>{shopConfig.card?.outOfStockTitle || "Stok Habis"}</span>;
-                        const discounted = getDiscountedPrice(displayPrice, activePromo);
-                        return (
-                          <>
-                            {discounted.hasDiscount && (
-                              <span className={styles.cardOriginalPrice}>
-                                {priceFormatted}
-                              </span>
-                            )}
-                            <span className={styles.cardPrice}>
-                              {`Rp ${Number(discounted.price).toLocaleString("id-ID")}`}
+                      {outOfStock ? (
+                        <span className={styles.cardPrice}>
+                          {shopConfig.card?.outOfStockTitle || "Stok Habis"}
+                        </span>
+                      ) : (
+                        <>
+                          {discounted.hasDiscount && (
+                            <span className={styles.cardOriginalPrice}>
+                              {priceFormatted}
                             </span>
-                            {discounted.hasDiscount && (
-                              <span className={styles.cardDiscountBadge}>
-                                Hemat {`Rp ${Number(discounted.savings).toLocaleString("id-ID")}`}
-                              </span>
-                            )}
-                          </>
-                        );
-                      })()}
+                          )}
+                          <span className={styles.cardPrice}>
+                            {`Rp ${Number(discounted.price).toLocaleString(
+                              "id-ID"
+                            )}`}
+                          </span>
+                          {discounted.hasDiscount && (
+                            <span className={styles.cardDiscountBadge}>
+                              {shopConfig.card?.savingsPrefix || "Hemat "}
+                              {`Rp ${Number(discounted.savings).toLocaleString(
+                                "id-ID"
+                              )}`}
+                            </span>
+                          )}
+                        </>
+                      )}
                     </div>
-                    <div className={styles.reviewSummary}>{averageRating ? `★ ${averageRating} (${productReviews.length})` : "Belum ada ulasan"}</div>
+
+                    {/* Review Summary */}
+                    <div className={styles.reviewSummary}>
+                      {averageRating
+                        ? `★ ${averageRating} (${productReviews.length})`
+                        : shopConfig.reviews?.noReviewsYet || "Belum ada ulasan"}
+                    </div>
+
+                    {/* Footer / Stock Indicator */}
                     <div className={styles.cardFooterInfo}>
                       <span
                         className={
                           outOfStock
                             ? styles.soldCount
                             : totalStockLeft <= 5
-                              ? styles.stockIndicatorLow
-                              : styles.stockIndicator
+                            ? styles.stockIndicatorLow
+                            : styles.stockIndicator
                         }
                       >
                         {outOfStock
-                          ? `Terjual ${totalSold}`
-                          : `Sisa ${totalStockLeft} lagi!`}
+                          ? `${shopConfig.card?.soldPrefix || "Terjual "}${totalSold}`
+                          : `${
+                              shopConfig.card?.stockRemainingPrefix || "Sisa "
+                            }${totalStockLeft}${
+                              shopConfig.card?.stockRemainingSuffix || " lagi!"
+                            }`}
                       </span>
                       <span className={styles.viewDetailText}>
                         {shopConfig.card?.viewDetail || "Detail"}
                       </span>
                     </div>
                   </div>
-                </div>
+                </article>
               );
             })}
           </div>
-          {currentProducts.length < totalProducts && (currentPage * PRODUCTS_PER_PAGE < totalProducts) && (
-            <div className={styles.paginationWrapper}>
-              <button
-                onClick={handleLoadMore}
-                disabled={isFetchingMore}
-                className={styles.loadMoreBtn}
-              >
-                {shopConfig.buttons?.loadMore || "Muat Lebih Banyak"}
-              </button>
-            </div>
-          )}
+
+          {/* Pagination Load More */}
+          {products.length < totalProducts &&
+            currentPage * PRODUCTS_PER_PAGE < totalProducts && (
+              <div className={styles.paginationWrapper}>
+                <button
+                  onClick={handleLoadMore}
+                  disabled={isFetchingMore}
+                  className={styles.loadMoreBtn}
+                >
+                  {shopConfig.buttons?.loadMore || "Lihat Lebih Banyak"}
+                </button>
+              </div>
+            )}
         </>
       )}
     </div>

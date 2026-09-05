@@ -863,7 +863,7 @@
   position: absolute;
   top: -8px;
   right: -10px;
-  background-color: #ef4444;
+  background-color: var(--danger-color, #ef4444);
   color: white;
   font-size: 0.7rem;
   font-weight: bold;
@@ -872,4 +872,560 @@
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
   pointer-events: none;
   animation: pulse 2s infinite;
+}
+
+/* Header & Automation Button */
+.headerTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.automationBtn {
+  background: var(--surface-primary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.automationBtn:hover:not(:disabled) {
+  background: var(--surface-secondary);
+  border-color: var(--primary-accent);
+}
+
+.automationBtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.tabBtnRelative {
+  position: relative;
+}
+
+/* Print Slip & Invoice Elements */
+.printHeaderActions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.printContainerRelative {
+  position: relative;
+}
+
+.invoicePaidStamp {
+  position: absolute;
+  top: 20px;
+  right: 35%;
+  transform: rotate(-15deg);
+  color: var(--success-color, #10b981);
+  border: 4px solid var(--success-color, #10b981);
+  border-radius: 8px;
+  padding: 0.5rem 1.5rem;
+  font-size: 2.5rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 6px;
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.printOrderNumber {
+  margin-top: 4px;
+}
+
+.printMetaRight {
+  text-align: right;
+}
+
+.printBodyWrap {
+  margin-bottom: 1rem;
+}
+
+.printTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.printTableHeaderRow {
+  border-bottom: 2px solid #000;
+}
+
+.printTableThLeft {
+  text-align: left;
+  padding: 0.5rem 0;
+}
+
+.printTableThCenter {
+  text-align: center;
+  padding: 0.5rem 0;
+}
+
+.printTableThRight {
+  text-align: right;
+  padding: 0.5rem 0;
+}
+
+.printTableRow {
+  border-bottom: 1px solid #ddd;
+}
+
+.printTableTdItem {
+  padding: 0.5rem 0;
+}
+
+.printTableTdCenter {
+  text-align: center;
+  padding: 0.5rem 0;
+}
+
+.printTableTdRight {
+  text-align: right;
+  padding: 0.5rem 0;
+}
+
+.printBillSummaryWrap {
+  display: flex;
+  justify-content: flex-end;
+  font-size: 0.9rem;
+}
+
+.printBillSummaryBox {
+  width: 250px;
+}
+
+.printBillRow {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.4rem;
+}
+
+.printBillDiscountRow {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.4rem;
+  color: var(--danger-color, #ef4444);
+}
+
+.printBillTotalRow {
+  display: flex;
+  justify-content: space-between;
+  border-top: 2px solid #000;
+  padding-top: 0.4rem;
+  margin-top: 0.2rem;
+}
+
+/* Order Detail Drawer Styles */
+.orderDrawer {
+  max-width: 560px;
+}
+
+.orderDrawerHeader {
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.orderDrawerEyebrow {
+  margin: 0;
+}
+
+.orderDrawerTitle {
+  margin: 4px 0 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.orderDrawerDate {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.statusBannerCancelled {
+  color: var(--danger-color, #ef4444);
+}
+
+.statusBannerSuccess {
+  color: var(--success-color, #10b981);
+}
+
+.statusBannerShipped {
+  color: #8b5cf6;
+}
+
+.statusBannerDefault {
+  color: var(--text-secondary);
+}
+
+.actionButtonRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btnActionDisabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btnActionBlue {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.btnActionBlue:hover {
+  background-color: rgba(59, 130, 246, 0.2);
+}
+
+.actionGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.actionOptionFlex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.actionOptionTitle {
+  font-size: 0.85rem;
+  display: block;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.actionOptionSub {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.actionOptionTitleBlock {
+  font-size: 0.85rem;
+  display: block;
+  margin-bottom: 4px;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.actionOptionDescBlock {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  display: block;
+  margin-bottom: 8px;
+}
+
+.shippingInputRow {
+  display: flex;
+  gap: 6px;
+}
+
+.shippingInputFlex {
+  flex: 1;
+}
+
+.trackingCardRow {
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.trackingLabel {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  display: block;
+}
+
+.trackingNumber {
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.trackingLink {
+  font-size: 0.8rem;
+  color: var(--primary-accent);
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.actionBoxDescMuted {
+  margin: 0;
+  font-style: italic;
+}
+
+.drawerCardMargin {
+  margin-bottom: 1rem;
+}
+
+.drawerCardHeaderFlex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.drawerCardH4 {
+  margin: 0;
+}
+
+.courierBadge {
+  font-size: 0.75rem;
+  padding: 3px 8px;
+  border-radius: 8px;
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-color);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.customerName {
+  margin: 0 0 2px 0;
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--text-primary);
+}
+
+.customerContact {
+  margin: 0 0 6px 0;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.drawerH4Bottom {
+  margin: 0 0 10px 0;
+}
+
+.drawerItemList {
+  margin-bottom: 10px;
+  border-bottom: 1px dashed var(--border-color);
+  padding-bottom: 8px;
+}
+
+.drawerItemRow {
+  padding: 6px 0;
+  font-size: 0.85rem;
+  display: flex;
+  justify-content: space-between;
+}
+
+.itemTextPrimary {
+  color: var(--text-primary);
+}
+
+.costBreakdown {
+  font-size: 0.82rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.costRowSecondary {
+  display: flex;
+  justify-content: space-between;
+  color: var(--text-secondary);
+}
+
+.costRowDiscount {
+  display: flex;
+  justify-content: space-between;
+  color: var(--success-color, #10b981);
+}
+
+.costRowGrandTotal {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin-top: 4px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.paymentMethodRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.paymentProofLink {
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  text-decoration: none;
+}
+
+.timelineCardTop {
+  margin-top: 0.75rem;
+}
+
+.timelineDotWebhook {
+  background: #3b82f6 !important;
+  border-color: #bfdbfe !important;
+}
+
+.timelineTitleWebhook {
+  text-transform: capitalize;
+}
+
+.subTextMuted {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.boldText {
+  font-weight: 700;
+}
+
+.modalMessage {
+  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.evidenceLink {
+  color: var(--primary-accent);
+  font-size: 0.85rem;
+  text-decoration: underline;
+  display: inline-block;
+  margin-top: 4px;
+}
+
+.bankInfoBox {
+  margin-top: 8px;
+  font-size: 0.8rem;
+  padding: 6px;
+  background: var(--surface-secondary);
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+}
+
+/* ==========================================================================
+   RESPONSIVE MEDIA QUERIES (TABLET & MOBILE)
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .headerTop {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .automationBtn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .controls {
+    flex-direction: column;
+    width: 100%;
+    align-items: stretch;
+  }
+
+  .searchForm {
+    width: 100%;
+  }
+
+  .searchForm input {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .summaryBar {
+    border-radius: 12px;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .bulkBar {
+    border-radius: 12px;
+  }
+
+  .drawer {
+    max-width: 90vw;
+  }
+}
+
+@media (max-width: 480px) {
+  .adminTabs {
+    overflow-x: auto;
+    white-space: nowrap;
+    padding-bottom: 4px;
+    gap: 0.5rem;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .tabBtn {
+    padding: 0.6rem 0.75rem;
+    font-size: 0.8rem;
+  }
+
+  .controls {
+    gap: 0.5rem;
+  }
+
+  .filterSelect,
+  .statusSelect {
+    width: 100%;
+  }
+
+  .tableWrap {
+    margin: 0 -0.5rem;
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+  }
+
+  .drawerBackdrop {
+    align-items: flex-end;
+  }
+
+  .drawer {
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 92vh;
+    border-radius: 16px 16px 0 0 !important;
+  }
+
+  .actionOptionFlex {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .shippingInputRow {
+    flex-direction: column;
+  }
+
+  .actionButtonRow button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .printBillSummaryBox {
+    width: 100%;
+  }
 }

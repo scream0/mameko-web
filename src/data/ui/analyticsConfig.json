@@ -9,7 +9,29 @@
     "yearly": "Tahunan"
   },
   "buttons": {
+    "exportCsv": "Export CSV",
     "exportPdf": "📥 Export Laporan PDF"
+  },
+  "units": {
+    "orders": "pesanan"
+  },
+  "emptyStates": {
+    "noTransactionData": "Belum ada data transaksi dari database",
+    "noYearlyData": "Belum ada data rincian tahunan"
+  },
+  "alerts": {
+    "elementNotFound": "Elemen laporan tidak ditemukan.",
+    "pdfError": "Terjadi kesalahan saat membuat PDF.",
+    "noDataExport": "Tidak ada data untuk diekspor"
+  },
+  "csv": {
+    "periodHeader": "Periode",
+    "salesHeader": "Total Penjualan",
+    "filenamePrefix": "Data_Analitik_"
+  },
+  "pdfHeader": {
+    "title": "Laporan Analitik & Penjualan",
+    "printedAt": "Dicetak pada: "
   },
   "yearlyTable": {
     "title": "RINCIAN KINERJA TAHUNAN",

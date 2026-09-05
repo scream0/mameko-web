@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { useStore } from "@/context/StoreContext";
 import Shop from '@/components/Dashboard/User/Shop/Shop';
+import { supabase } from "@/lib/supabaseClient";
 import type { InitialDataType, Product } from '@/types/data'; // Import shared types
 
 const Modal = dynamic(() => import("@/components/UI/Modal/ProductModal").then((mod) => mod.Modal), {
@@ -25,6 +26,26 @@ export function HomePageClient({ initialData }: { initialData: InitialDataType }
   const [selectedProduct, setSelectedProduct] = useState<ProductLike | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { addToCart, rupiah } = useStore();
+
+  // Supabase Realtime listener untuk store_config di landing page
+  useEffect(() => {
+    const channel = supabase
+      .channel("landing-store-config-sync")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "store_config" },
+        () => {
+          if (typeof window !== "undefined") {
+            window.dispatchEvent(new CustomEvent("store-settings-updated"));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   const bukaDetail = (item: ProductLike) => {
     setSelectedProduct(item);

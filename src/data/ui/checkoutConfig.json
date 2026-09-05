@@ -1,0 +1,116 @@
+{
+  "header": {
+    "backToShop": "← Kembali ke Belanja",
+    "title": "Checkout"
+  },
+  "steps": {
+    "address": "Alamat",
+    "payment": "Pembayaran"
+  },
+  "address": {
+    "title": "Alamat Pengiriman",
+    "addNew": "+ Tambah Baru",
+    "loading": "Memuat alamat...",
+    "empty": "Belum ada alamat tersimpan.",
+    "addNow": "+ Tambah Alamat Sekarang",
+    "defaultLabel": "Alamat",
+    "defaultLabelName": "Rumah",
+    "districtPrefix": "Kec. ",
+    "primaryBadge": "Utama",
+    "editBtn": "Edit",
+    "notesPrefix": "📌 Patokan: ",
+    "incompleteWarning": "⚠️ Lengkapi kota & kode pos"
+  },
+  "shippingReadiness": {
+    "chooseAddress": "Pilih alamat pengiriman",
+    "chooseAddressDesc": "Alamat yang lengkap akan membantu sistem menentukan ongkir secara akurat.",
+    "areaServed": "Area terlayani",
+    "areaServedDesc": "siap menerima pengiriman kurir.",
+    "detectingArea": "Mendeteksi wilayah",
+    "detectingAreaDesc": "Sistem mendeteksi wilayah tujuan untuk menghitung tarif pengiriman.",
+    "addressIncomplete": "Alamat belum lengkap",
+    "addressIncompleteDesc": "Lengkapi kota dan kode pos agar sistem bisa menghitung ongkos kirim."
+  },
+  "courier": {
+    "title": "Pilih Kurir",
+    "selectAddressFirst": "Pilih alamat pengiriman terlebih dahulu",
+    "warningTitle": "Perhatian",
+    "estimatedBadge": "Estimasi",
+    "calculating": "Menghitung tarif pengiriman...",
+    "empty": "Belum ada opsi pengiriman yang bisa kami sarankan untuk alamat ini.",
+    "etdTemplate": "Estimasi tiba: {etd} hari",
+    "fallbackMessageGeneric": "Tarif real-time belum tersedia. Menampilkan opsi estimasi lokal.",
+    "fallbackMessageIncomplete": "Lengkapi alamat untuk kalkulasi ongkir otomatis.",
+    "fallbackMessageUndetected": "Wilayah tujuan belum terdeteksi penuh di Ongkir. Menggunakan estimasi lokal.",
+    "fallbackMessageError": "Kami menampilkan opsi pengiriman estimasi lokal karena layanan tarif sedang tidak tersedia."
+  },
+  "voucher": {
+    "title": "Voucher Toko",
+    "counterTemplate": "{used}/{max} Dipakai",
+    "inputPlaceholder": "Punya kode promo? (Cth: MERDEKA99)",
+    "applyBtn": "Terapkan",
+    "applyAria": "Terapkan Kode Voucher",
+    "discountBadge": "🏷️ Diskon Produk",
+    "shippingBadge": "🚚 Gratis Ongkir",
+    "savingsPrefix": "Hemat ",
+    "removeBtn": "Hapus",
+    "selectBtn": "Pilih / Masukkan Voucher Toko",
+    "addAnotherBtn": "Tambah 1 Voucher Lagi (Diskon / Ongkir)",
+    "availableBadgeTemplate": "{count} voucher tersedia >",
+    "pickerAria": "Pilih Voucher Belanja atau Ongkir",
+    "changeBtn": "Ubah Voucher yang Dipilih",
+    "modalTitle": "Pilih Voucher Saya",
+    "modalHint": "Gunakan maks. 2 voucher (1 Diskon Belanja + 1 Gratis Ongkir)."
+  },
+  "payment": {
+    "title": "Metode Pembayaran",
+    "midtransTitle": "⚡ Otomatis (Midtrans)",
+    "midtransDesc": "QRIS, Virtual Account (BCA, BRI, Mandiri, BNI), e-Wallet",
+    "manualTitle": "🏦 Transfer Bank Manual",
+    "manualDesc": "Transfer ke rekening bank toko & upload bukti transfer"
+  },
+  "summary": {
+    "title": "Ringkasan Belanja",
+    "subtotalLabel": "Subtotal Produk",
+    "storeDiscountLabel": "Diskon Toko",
+    "discountLabel": "Diskon Voucher",
+    "shippingLabel": "Ongkos Kirim",
+    "totalLabel": "Total Pembayaran",
+    "processingBtn": "Memproses Pembayaran...",
+    "payNowPrefix": "Bayar Sekarang • ",
+    "selectAddressSub": "Pilih alamat terlebih dahulu",
+    "selectCourierSub": "Pilih kurir terlebih dahulu"
+  },
+  "emptyCart": {
+    "title": "Keranjang Belanja Kosong",
+    "desc": "Tambahkan produk terlebih dahulu sebelum checkout",
+    "shopNowBtn": "Belanja Sekarang"
+  },
+  "loading": {
+    "text": "Memuat halaman checkout..."
+  },
+  "toasts": {
+    "fetchVouchersError": "Gagal memuat voucher checkout",
+    "fetchAddressError": "Gagal memuat alamat",
+    "phoneVerified": "Nomor telepon diverifikasi!",
+    "addressFieldsRequired": "Harap lengkapi semua kolom: nama, telepon, alamat, provinsi, kota, dan kode pos.",
+    "maxAddressesReached": "Maksimal hanya dapat menyimpan 3 alamat. Hapus salah satu alamat di halaman profil jika ingin menambahkan yang baru.",
+    "phoneVerificationRequired": "Harap verifikasi nomor telepon penerima terlebih dahulu.",
+    "addressSaveSuccess": "Alamat berhasil disimpan!",
+    "addressSaveFailed": "Gagal menyimpan alamat",
+    "minPurchaseRequired": "Minimum belanja untuk voucher ini adalah {amount}",
+    "shippingVoucherAlreadyApplied": "Kamu sudah pakai 1 voucher gratis ongkir. Hapus dulu untuk menggantinya.",
+    "discountVoucherAlreadyApplied": "Kamu sudah pakai 1 voucher diskon. Hapus dulu untuk menggantinya.",
+    "maxVouchersReached": "Maksimal {max} voucher bisa dipakai sekaligus",
+    "voucherApplied": "Voucher {code} berhasil diterapkan!",
+    "voucherCodeRequired": "Masukkan kode voucher terlebih dahulu",
+    "voucherNotFound": "Kode voucher tidak ditemukan atau sudah tidak berlaku",
+    "voucherRemoved": "Voucher dibatalkan",
+    "selectAddressPrompt": "Pilih alamat pengiriman",
+    "selectCourierPrompt": "Pilih kurir pengiriman",
+    "sendOtpLoading": "Mengirim kode verifikasi WhatsApp...",
+    "sendOtpFailed": "Gagal mengirim OTP",
+    "verifyOtpLoading": "Memverifikasi OTP...",
+    "verifyOtpInvalid": "OTP tidak valid"
+  }
+}

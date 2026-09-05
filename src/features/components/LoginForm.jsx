@@ -3,14 +3,30 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import loginConfig from "@/data/ui/loginConfig.json";
 import styles from "./LoginForm.module.css";
 import { useStore } from "@/context/StoreContext";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { getSafeAuthRedirect } from "@/utils/authRedirect";
+import Script from "next/script";
 
 export default function LoginForm() {
   const { setCustomer } = useStore();
   const searchParams = useSearchParams();
   const callbackUrl = getSafeAuthRedirect(searchParams.get("callbackUrl"));
+
+  const { form } = loginConfig || {};
+  const {
+    settings = {},
+    labels = {},
+    buttons = {},
+    validation = {},
+    messages = {},
+    defaults = {},
+    googleAuth = {},
+    fields = [],
+  } = form || {};
+
+  const cooldownSeconds = Number(settings.resendCooldownSeconds) || 60;
+  const otpLength = Number(settings.otpLength) || 6;
 
   const [email, setEmail] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -18,16 +34,20 @@ export default function LoginForm() {
 
   useEffect(() => {
     setIsClient(true);
-    const savedEmail = localStorage.getItem("rememberedEmail");
-    if (savedEmail) {
-      setEmail(savedEmail);
-      setRememberMe(true);
+    try {
+      const savedEmail = localStorage.getItem("rememberedEmail");
+      if (savedEmail) {
+        setEmail(savedEmail);
+        setRememberMe(true);
+      }
+    } catch (e) {
+      console.error("Gagal membaca rememberedEmail:", e);
     }
   }, []);
 
   // OTP State
   const [otpSent, setOtpSent] = useState(false);
-  const [otpArray, setOtpArray] = useState(["", "", "", "", "", ""]);
+  const [otpArray, setOtpArray] = useState(Array(otpLength).fill(""));
   const inputRefs = useRef([]);
 
   // Timer State
@@ -36,8 +56,6 @@ export default function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-
-  const { form } = loginConfig || {};
 
   // Resend Timer Logic
   useEffect(() => {
@@ -109,51 +127,57 @@ export default function LoginForm() {
       if (signInError) throw signInError;
 
       setCustomer({
-        name: data.user?.user_metadata?.name || "User Google",
+        name: data.user?.user_metadata?.name || defaults.googleFallbackName || "User Google",
         email: data.user?.email,
         phone: data.user?.user_metadata?.phone || "",
       });
 
       await handlePostLoginRedirect(data.user.id);
     } catch (err) {
-      setError(err.message || "Gagal masuk menggunakan Google.");
+      setError(err.message || messages.googleAuthFailed || "Gagal masuk menggunakan Google.");
       setIsLoading(false);
     }
-  }, [handlePostLoginRedirect, setCustomer]);
+  }, [handlePostLoginRedirect, setCustomer, defaults.googleFallbackName, messages.googleAuthFailed]);
+
+  const initGoogleButton = useCallback(() => {
+    const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+    if (googleClientId && window.google && window.google.accounts) {
+      window.google.accounts.id.initialize({
+        client_id: googleClientId,
+        callback: handleGoogleCredentialResponse,
+      });
+
+      const buttonElement = document.getElementById("googleButtonDiv");
+      if (buttonElement) {
+        buttonElement.innerHTML = "";
+        const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+        const theme = isDark ? "filled_black" : (googleAuth.theme || "outline");
+        
+        window.google.accounts.id.renderButton(buttonElement, {
+          theme,
+          size: googleAuth.size || "large",
+          text: googleAuth.text || "continue_with",
+          shape: googleAuth.shape || "rectangular",
+          width: Math.min(buttonElement.offsetWidth || 340, 360),
+        });
+      }
+    }
+  }, [handleGoogleCredentialResponse, googleAuth]);
 
   useEffect(() => {
-    const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-    if (googleClientId) {
-      const checkGoogleLoaded = setInterval(() => {
-        if (window.google && window.google.accounts) {
-          clearInterval(checkGoogleLoaded);
-          window.google.accounts.id.initialize({
-            client_id: googleClientId,
-            callback: handleGoogleCredentialResponse,
-          });
-
-          const buttonElement = document.getElementById("googleButtonDiv");
-          if (buttonElement) {
-            window.google.accounts.id.renderButton(buttonElement, {
-              theme: "outline", // White background, visible and clean
-              size: "large",
-              width: buttonElement.offsetWidth || 350,
-            });
-          }
-        }
-      }, 100);
-
-      return () => clearInterval(checkGoogleLoaded);
+    if (!otpSent) {
+      const timer = setTimeout(initGoogleButton, 200);
+      return () => clearTimeout(timer);
     }
-  }, [handleGoogleCredentialResponse]);
+  }, [otpSent, initGoogleButton]);
 
   // ==========================================
   // OTP BOX HANDLERS & AUTO-SUBMIT
   // ==========================================
   const handleVerifyOtp = useCallback(async (codeToVerify) => {
     const otpCode = codeToVerify || otpArray.join("");
-    if (otpCode.length < 6) {
-      setError("Silakan masukkan kode OTP 6 digit.");
+    if (otpCode.length < otpLength) {
+      setError(validation.otpLengthRequired || `Silakan masukkan kode OTP ${otpLength} digit.`);
       return;
     }
 
@@ -184,34 +208,38 @@ export default function LoginForm() {
         phone: data.user?.user_metadata?.phone || "",
       });
 
-      if (rememberMe) {
-        localStorage.setItem("rememberedEmail", email);
-      } else {
-        localStorage.removeItem("rememberedEmail");
+      try {
+        if (rememberMe) {
+          localStorage.setItem("rememberedEmail", email);
+        } else {
+          localStorage.removeItem("rememberedEmail");
+        }
+      } catch (e) {
+        console.error("Gagal memperbarui rememberedEmail:", e);
       }
 
-      setSuccessMessage("Berhasil masuk! Mengalihkan...");
+      setSuccessMessage(messages.loginSuccess || "Berhasil masuk! Mengalihkan...");
       await handlePostLoginRedirect(data.user.id);
     } catch (err) {
       const errMsg = err?.message || "";
       if (errMsg.includes("expired") || errMsg.includes("invalid") || errMsg.includes("Token")) {
-        setError("Kode OTP salah atau telah kedaluwarsa. Silakan minta kode baru.");
+        setError(messages.invalidOtp || "Kode OTP salah atau telah kedaluwarsa. Silakan minta kode baru.");
       } else {
-        setError(errMsg || "Kode OTP salah atau gagal diverifikasi.");
+        setError(errMsg || messages.otpFailed || "Kode OTP salah atau gagal diverifikasi.");
       }
       setIsLoading(false);
     }
-  }, [email, otpArray, rememberMe, setCustomer, handlePostLoginRedirect]);
+  }, [email, otpArray, otpLength, rememberMe, setCustomer, handlePostLoginRedirect, validation.otpLengthRequired, messages.invalidOtp, messages.otpFailed, messages.loginSuccess]);
 
   const handleOtpChange = (index, value) => {
-    // Hanya terima satu digit angka saja
+    // Hanya terima satu digit angka
     const digit = value.replace(/\D/g, "").slice(-1);
     const newOtpArray = [...otpArray];
     newOtpArray[index] = digit;
     setOtpArray(newOtpArray);
 
     // Auto-advance ke kotak berikutnya
-    if (digit && index < 5) {
+    if (digit && index < otpLength - 1) {
       inputRefs.current[index + 1]?.focus();
     }
 
@@ -223,32 +251,29 @@ export default function LoginForm() {
 
   const handleOtpKeyDown = (index, e) => {
     if (e.key === "Backspace" && !otpArray[index] && index > 0) {
-      // Move focus to previous input on backspace if current is empty
       inputRefs.current[index - 1]?.focus();
     }
   };
 
   const handleOtpPaste = (e) => {
     e.preventDefault();
-    const pasteData = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6).split("");
+    const pasteData = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, otpLength).split("");
     if (pasteData.length > 0) {
       const newOtpArray = [...otpArray];
       pasteData.forEach((char, i) => {
-        if (i < 6) {
+        if (i < otpLength) {
           newOtpArray[i] = char;
         }
       });
       setOtpArray(newOtpArray);
 
-      // Focus on the next empty box or the last one
-      const nextEmptyIndex = newOtpArray.findIndex(val => val === "");
+      const nextEmptyIndex = newOtpArray.findIndex((val) => val === "");
       if (nextEmptyIndex !== -1) {
         inputRefs.current[nextEmptyIndex]?.focus();
       } else {
-        inputRefs.current[5]?.focus();
+        inputRefs.current[otpLength - 1]?.focus();
       }
 
-      // Auto-submit jika hasil paste memenuhi 6 digit
       if (newOtpArray.every((d) => d !== "")) {
         handleVerifyOtp(newOtpArray.join(""));
       }
@@ -258,7 +283,7 @@ export default function LoginForm() {
   const requestOtpCode = async () => {
     const cleanEmail = email.trim().toLowerCase();
     if (!cleanEmail || !cleanEmail.includes("@")) {
-      setError("Masukkan alamat email yang valid.");
+      setError(validation.invalidEmail || "Masukkan alamat email yang valid.");
       return;
     }
 
@@ -276,15 +301,15 @@ export default function LoginForm() {
       });
       if (signInError) throw signInError;
       
-      setSuccessMessage("Kode OTP telah dikirim ke email Anda. Silakan periksa kotak masuk (atau spam).");
+      setSuccessMessage(messages.otpSentSuccess || "Kode OTP telah dikirim ke email Anda. Silakan periksa kotak masuk (atau spam).");
       setOtpSent(true);
-      setResendTimer(60); // 1 menit
+      setResendTimer(cooldownSeconds);
     } catch (err) {
       const errMsg = err?.message || "";
       if (errMsg.includes("rate_limit") || err?.status === 429) {
-        setError("Terlalu banyak permintaan OTP. Mohon tunggu 1 menit sebelum mencoba lagi.");
+        setError(messages.tooManyRequests || "Terlalu banyak permintaan OTP. Mohon tunggu 1 menit sebelum mencoba lagi.");
       } else {
-        setError(errMsg || "Gagal mengirim kode OTP. Pastikan email valid.");
+        setError(errMsg || messages.otpRequestFailed || "Gagal mengirim kode OTP. Pastikan email valid.");
       }
     } finally {
       setIsLoading(false);
@@ -298,7 +323,7 @@ export default function LoginForm() {
     e.preventDefault();
     
     if (!email) {
-      setError("Email wajib diisi.");
+      setError(validation.emailRequired || "Email wajib diisi.");
       return;
     }
 
@@ -309,9 +334,15 @@ export default function LoginForm() {
     }
   };
 
+  const emailPlaceholder = fields.find((f) => f.name === "email")?.placeholder || form?.emailPlaceholder || "EMAIL ADDRESS";
+
   return (
     <div className={styles.formWrapper}>
-      <script src="https://accounts.google.com/gsi/client" async defer></script>
+      <Script
+        src="https://accounts.google.com/gsi/client"
+        strategy="afterInteractive"
+        onLoad={initGoogleButton}
+      />
 
       <div className={styles.loginCard}>
         <h2 className={styles.loginTitle}>{form?.title || "WELCOME BACK"}</h2>
@@ -319,11 +350,11 @@ export default function LoginForm() {
         {!otpSent && (
           <>
             <div className={styles.socialWrapper}>
-              <div id="googleButtonDiv"></div>
+              <div id="googleButtonDiv" className={styles.googleBtnWrapper}></div>
             </div>
 
             <div className={styles.divider}>
-              <span>{form?.labels?.oauthDivider || "ATAU LANJUTKAN DENGAN EMAIL"}</span>
+              <span>{labels.oauthDivider || "ATAU LANJUTKAN DENGAN EMAIL"}</span>
             </div>
           </>
         )}
@@ -332,14 +363,14 @@ export default function LoginForm() {
           {error && <div className={styles.errorMessage}>{error}</div>}
           {successMessage && <div className={styles.successMessage}>{successMessage}</div>}
 
-          {/* Email Field - Hidden visually if OTP is sent, but keeps it around if needed */}
+          {/* Email Field */}
           {!otpSent && (
             <div className={styles.inputWrapper}>
               <input
                 type="email"
                 name="email"
                 autoComplete="email"
-                placeholder={form?.fields?.find(f => f.name === 'email')?.placeholder || "EMAIL ADDRESS"}
+                placeholder={emailPlaceholder}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className={styles.inputField}
@@ -349,34 +380,34 @@ export default function LoginForm() {
             </div>
           )}
 
-          {/* OTP Field (Muncul saat kode terkirim) */}
+          {/* OTP Field */}
           <div className={`${styles.inputWrapper} ${otpSent ? styles.fieldVisible : styles.fieldHidden}`}>
-             {otpSent && (
-               <p className={styles.otpNoticeText}>
-                 Masukkan kode yang dikirim ke <br/>
-                 <strong className={styles.otpNoticeEmail}>{email}</strong>
-               </p>
-             )}
-             <div className={styles.otpContainer}>
-               {otpArray.map((digit, index) => (
-                 <input
-                   key={index}
-                   type="tel"
-                   inputMode="numeric"
-                   pattern="[0-9]*"
-                   maxLength={1}
-                   value={digit}
-                   ref={(el) => (inputRefs.current[index] = el)}
-                   onChange={(e) => handleOtpChange(index, e.target.value)}
-                   onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                   onPaste={handleOtpPaste}
-                   className={styles.otpInputBox}
-                   disabled={isLoading || !otpSent}
-                   autoComplete="one-time-code"
-                   suppressHydrationWarning
-                 />
-               ))}
-             </div>
+            {otpSent && (
+              <p className={styles.otpNoticeText}>
+                {labels.otpNoticePrefix || "Masukkan kode yang dikirim ke"} <br />
+                <strong className={styles.otpNoticeEmail}>{email}</strong>
+              </p>
+            )}
+            <div className={styles.otpContainer}>
+              {otpArray.map((digit, index) => (
+                <input
+                  key={index}
+                  type="tel"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={1}
+                  value={digit}
+                  ref={(el) => (inputRefs.current[index] = el)}
+                  onChange={(e) => handleOtpChange(index, e.target.value)}
+                  onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                  onPaste={handleOtpPaste}
+                  className={styles.otpInputBox}
+                  disabled={isLoading || !otpSent}
+                  autoComplete="one-time-code"
+                  suppressHydrationWarning
+                />
+              ))}
+            </div>
           </div>
 
           {!otpSent && isClient && (
@@ -389,7 +420,7 @@ export default function LoginForm() {
                   disabled={isLoading}
                 />
                 <span className={styles.customCheckmark}></span>
-                {form?.labels?.rememberMe || "Remember Me"}
+                {labels.rememberMe || "Remember Me"}
               </label>
             </div>
           )}
@@ -397,16 +428,24 @@ export default function LoginForm() {
           <button
             type="submit"
             className={`${styles.btnLogin} ${isLoading ? styles.btnLoading : ""}`}
-            disabled={isLoading || (otpSent && otpArray.join("").length < 6)}
+            disabled={isLoading || (otpSent && otpArray.join("").length < otpLength)}
           >
-            {isLoading ? <span className={styles.spinner}></span> : (!otpSent ? (form?.buttons?.sendOtp || "KIRIM KODE OTP") : (form?.buttons?.verifyOtp || "VERIFIKASI OTP"))}
+            {isLoading ? (
+              <span className={styles.spinner}></span>
+            ) : !otpSent ? (
+              buttons.sendOtp || "KIRIM KODE OTP"
+            ) : (
+              buttons.verifyOtp || "VERIFIKASI OTP"
+            )}
           </button>
 
           {otpSent && (
             <>
               {resendTimer > 0 ? (
                 <span className={styles.resendTimerText}>
-                  Kirim Ulang Kode ({formatTime(resendTimer)})
+                  {labels.resendCountdown
+                    ? labels.resendCountdown.replace("{time}", formatTime(resendTimer))
+                    : `Kirim Ulang Kode (${formatTime(resendTimer)})`}
                 </span>
               ) : (
                 <button
@@ -415,7 +454,7 @@ export default function LoginForm() {
                   onClick={requestOtpCode}
                   disabled={isLoading}
                 >
-                  Kirim Ulang Kode OTP
+                  {buttons.resendOtp || "Kirim Ulang Kode OTP"}
                 </button>
               )}
 
@@ -424,14 +463,14 @@ export default function LoginForm() {
                 className={`${styles.switchModeBtn} ${styles.changeEmailBtn}`}
                 onClick={() => {
                   setOtpSent(false);
-                  setOtpArray(["", "", "", "", "", ""]);
+                  setOtpArray(Array(otpLength).fill(""));
                   setResendTimer(0);
                   setError("");
                   setSuccessMessage("");
                 }}
                 disabled={isLoading}
               >
-                Ubah Alamat Email
+                {buttons.changeEmail || "Ubah Alamat Email"}
               </button>
             </>
           )}

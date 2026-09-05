@@ -13,8 +13,8 @@ const getBaseUrl = () => {
  */
 export async function getInitialProducts() {
   try {
-    const res = await fetch(`${getBaseUrl()}/api/products?page=1&limit=${PRODUCTS_PER_PAGE}`, {
-      cache: "force-cache", 
+    const res = await fetch(`${getBaseUrl()}/api/products?page=1&limit=${PRODUCTS_PER_PAGE}&status=published`, {
+      next: { revalidate: 30 },
     });
     
     if (!res.ok) {
@@ -22,7 +22,8 @@ export async function getInitialProducts() {
     }
 
     const result = await res.json();
-    const data = result.data || result.products || [];
+    const rawData = result.data || result.products || [];
+    const data = rawData.filter((p: any) => p.status !== "draft");
 
     const parsedData = data.map((product: any) => {
       let parsedVariants = product.variants;

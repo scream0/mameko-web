@@ -6,8 +6,10 @@ import modalData from "@/data/ui/productModalConfig.json";
 import { AppIcon } from "@/components/UI/Icon/AppIcon";
 import { useStore } from "@/context/StoreContext";
 import { getDiscountedPrice } from "@/utils/promo";
+import { useScrollLock } from "@/hooks/useScrollLock";
 
 export function Modal({ isOpen, item, onClose, onAddToCart, rupiah }) {
+  useScrollLock(Boolean(isOpen && item));
   const { activePromo } = useStore();
   const [currentSize, setCurrentSize] = useState("");
   const [modalQty, setModalQty] = useState(1);
@@ -157,7 +159,10 @@ export function Modal({ isOpen, item, onClose, onAddToCart, rupiah }) {
                   : item.price
                     ? Number(item.price)
                     : 0;
-                const discounted = getDiscountedPrice(rawPrice, activePromo);
+                const discounted = getDiscountedPrice(rawPrice, activePromo, {
+                  productId: item.id || item._id,
+                  size: selectedVariant?.size || item.size,
+                });
                 if (rawPrice <= 0) return <span className={styles.modalPriceValue}>Stok Habis</span>;
                 return (
                   <>
@@ -205,18 +210,14 @@ export function Modal({ isOpen, item, onClose, onAddToCart, rupiah }) {
                           disabled={isOutOfStock}
                           checked={currentSize === v.size}
                           onChange={() => handleSizeChange(v)}
-                          style={{ display: "none" }}
+                          className={styles.hiddenInput}
                         />
-                        <div
-                          style={{
-                            display: "flex",
-                            flexDirection: "column",
-                            alignItems: "center",
-                          }}
-                        >
+                        <div className={styles.variantPillContent}>
                           <span>{v.size}</span>
-                          <small style={{ fontSize: "0.65rem", opacity: 0.8 }}>
-                            {isOutOfStock ? "Habis" : `Stok: ${stock}`}
+                          <small className={styles.variantStockText}>
+                            {isOutOfStock
+                              ? (modalData?.labels?.soldOut || "Habis")
+                              : `${modalData?.labels?.stockPrefix || "Stok: "}${stock}`}
                           </small>
                         </div>
                       </label>
@@ -225,6 +226,7 @@ export function Modal({ isOpen, item, onClose, onAddToCart, rupiah }) {
                 </div>
               </div>
             )}
+
 
             {/* Qty & Add to Cart */}
             <div className={styles.modalActionRow}>
@@ -262,22 +264,26 @@ export function Modal({ isOpen, item, onClose, onAddToCart, rupiah }) {
               >
                 {selectedVariant
                   ? modalData?.labels?.addToCart || "Tambah ke Keranjang"
-                  : "Stok Habis"}
+                  : (modalData?.labels?.outOfStock || "Stok Habis")}
               </button>
             </div>
 
             {/* --- REVIEWS SECTION --- */}
             <div className={styles.reviewsSection}>
-              <h4 className={styles.reviewsTitle}>Ulasan Pembeli</h4>
+              <h4 className={styles.reviewsTitle}>
+                {modalData?.reviews?.title || "Ulasan Pembeli"}
+              </h4>
               {loadingReviews ? (
-                <p className={styles.noReviews}>Memuat ulasan...</p>
+                <p className={styles.noReviews}>
+                  {modalData?.reviews?.loading || "Memuat ulasan..."}
+                </p>
               ) : reviews.length > 0 ? (
                 <div className={styles.reviewList}>
                   {reviews.map((rev) => (
                     <div key={rev.id} className={styles.reviewItem}>
                       <div className={styles.reviewHeader}>
                         <span className={styles.reviewUser}>
-                          {rev.userName || "Pelanggan"}
+                          {rev.userName || (modalData?.labels?.customer || "Pelanggan")}
                         </span>
                         <span className={styles.reviewDate}>
                           {new Date(rev.createdAt).toLocaleDateString("id-ID", {
@@ -294,10 +300,7 @@ export function Modal({ isOpen, item, onClose, onAddToCart, rupiah }) {
                             name="star"
                             size={12}
                             strokeWidth={i < rev.rating ? 2.5 : 1}
-                            style={{
-                              fill: i < rev.rating ? "#fbbf24" : "none",
-                              color: i < rev.rating ? "#fbbf24" : "#9ca3af",
-                            }}
+                            className={i < rev.rating ? styles.starFilled : styles.starEmpty}
                           />
                         ))}
                       </div>
@@ -314,17 +317,20 @@ export function Modal({ isOpen, item, onClose, onAddToCart, rupiah }) {
                   ))}
                   {hasMoreReviews && (
                     <button
-                      className={styles.modalAddToCartBtn}
-                      style={{ marginTop: '1rem', background: 'var(--surface-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}
+                      className={styles.loadMoreReviewsBtn}
                       onClick={handleLoadMoreReviews}
                       disabled={loadingReviews}
                     >
-                      {loadingReviews ? "Memuat..." : "Muat Lebih Banyak Ulasan"}
+                      {loadingReviews
+                        ? (modalData?.reviews?.loadingMore || "Memuat...")
+                        : (modalData?.reviews?.loadMore || "Muat Lebih Banyak Ulasan")}
                     </button>
                   )}
                 </div>
               ) : (
-                <p className={styles.noReviews}>Belum ada ulasan untuk produk ini.</p>
+                <p className={styles.noReviews}>
+                  {modalData?.reviews?.empty || "Belum ada ulasan untuk produk ini."}
+                </p>
               )}
             </div>
 

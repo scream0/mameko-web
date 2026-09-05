@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef } from "react";
+import styles from "./HeroParticles.module.css";
 
 type Particle = {
   x: number;
@@ -145,15 +146,7 @@ export function HeroParticles() {
   return (
     <canvas
       ref={canvasRef}
-      style={{
-        position: "absolute",
-        top: 0,
-        left: 0,
-        width: "100%",
-        height: "100%",
-        zIndex: 1,
-        pointerEvents: "none",
-      }}
+      className={styles.heroParticlesCanvas}
     />
   );
 }

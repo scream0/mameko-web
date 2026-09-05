@@ -2,8 +2,10 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { AppIcon } from "@/components/UI/Icon/AppIcon";
+import { useScrollLock } from "@/hooks/useScrollLock";
 
 export default function UserChatModal({ isOpen, onClose, user }: any) {
+  useScrollLock(Boolean(isOpen));
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);

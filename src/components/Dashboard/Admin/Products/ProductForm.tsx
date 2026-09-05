@@ -84,60 +84,60 @@ export default function ProductForm({ product, onSuccess, onCancel }: any) {
         </Select>
 
         <Select
-            label="Status"
+            label={config.labels?.status || "Status Publikasi"}
             value={formData.status}
             onChange={(e: any) => handleFormChange('status', e.target.value)}
         >
-            <option value="published">Published</option>
-            <option value="draft">Draft</option>
+            <option value="published">{config.statusOptions?.published || "Dipublikasikan"}</option>
+            <option value="draft">{config.statusOptions?.draft || "Draf"}</option>
         </Select>
 
         <div className={styles.dimensionGroup}>
             <Input
-            label="Panjang (cm)"
-            type="number"
-            min="0"
-            placeholder="10"
-            value={formData.length}
-            onChange={(e: any) => handleFormChange("length", e.target.value)}
+              label={config.labels?.dimensions?.length || "Panjang (cm)"}
+              type="number"
+              min="0"
+              placeholder={config.placeholders?.dimension || "10"}
+              value={formData.length}
+              onChange={(e: any) => handleFormChange("length", e.target.value)}
             />
             <Input
-            label="Lebar (cm)"
-            type="number"
-            min="0"
-            placeholder="10"
-            value={formData.width}
-            onChange={(e: any) => handleFormChange("width", e.target.value)}
+              label={config.labels?.dimensions?.width || "Lebar (cm)"}
+              type="number"
+              min="0"
+              placeholder={config.placeholders?.dimension || "10"}
+              value={formData.width}
+              onChange={(e: any) => handleFormChange("width", e.target.value)}
             />
             <Input
-            label="Tinggi (cm)"
-            type="number"
-            min="0"
-            placeholder="10"
-            value={formData.height}
-            onChange={(e: any) => handleFormChange("height", e.target.value)}
+              label={config.labels?.dimensions?.height || "Tinggi (cm)"}
+              type="number"
+              min="0"
+              placeholder={config.placeholders?.dimension || "10"}
+              value={formData.height}
+              onChange={(e: any) => handleFormChange("height", e.target.value)}
             />
         </div>
 
         <Input
-          label="Berat (gram)"
+          label={config.labels?.weight || "Berat (gram)"}
           type="number"
           min="0"
-          placeholder="Contoh: 250"
+          placeholder={config.placeholders?.weight || "Contoh: 250"}
           value={formData.weight}
           onChange={(e: any) => handleFormChange("weight", e.target.value)}
         />
 
         <Input
-          label="Lokasi Stok"
-          placeholder="Contoh: Gudang Utama"
+          label={config.labels?.stockLocation || "Lokasi Stok"}
+          placeholder={config.placeholders?.stockLocation || "Contoh: Gudang Utama"}
           value={formData.stockLocation}
           onChange={(e: any) => handleFormChange("stockLocation", e.target.value)}
           required
         />
 
         <div className={`${styles.inputGroup} ${styles.fullWidth}`}>
-            <label className={styles.fieldLabel}>Asal Pengiriman (Biteship)</label>
+            <label className={styles.fieldLabel}>{config.labels?.shippingOrigin || "Asal Pengiriman (Biteship)"}</label>
             <BiteshipAreaSelect
                 value={{
                     province: formData.province,
@@ -169,7 +169,7 @@ export default function ProductForm({ product, onSuccess, onCancel }: any) {
             {variants.map((v, index: any) => (
                 <div key={index} className={styles.variantRow}>
                     <input placeholder={config.placeholders.size} value={v.size || ""} onChange={e => handleVariantChange(index, "size", e.target.value)} className={styles.variantInput} required/>
-                    <input placeholder="SKU" value={v.sku || ""} onChange={e => handleVariantChange(index, "sku", e.target.value)} className={styles.variantInput} />
+                    <input placeholder={config.placeholders?.sku || "SKU"} value={v.sku || ""} onChange={e => handleVariantChange(index, "sku", e.target.value)} className={styles.variantInput} />
                     <input type="number" placeholder={config.placeholders.price} value={v.price ?? ""} onChange={e => handleVariantChange(index, "price", e.target.value)} className={styles.variantInput} required/>
                     <input type="number" placeholder={config.placeholders.stock} value={v.stock ?? 0} onChange={e => handleVariantChange(index, "stock", e.target.value)} className={styles.variantInput} required/>
                     {/* Simplified variant image input for brevity */}

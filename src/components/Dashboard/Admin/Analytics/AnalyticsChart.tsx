@@ -233,7 +233,7 @@ export default function AnalyticsChart() {
     const headerElement = document.getElementById("analytics-pdf-header");
 
     if (!reportElement) {
-      alert("Elemen laporan tidak ditemukan.");
+      alert(analyticsConfig.alerts.elementNotFound);
       return;
     }
 
@@ -258,7 +258,7 @@ export default function AnalyticsChart() {
       await html2pdf().set(opt).from(reportElement).save();
     } catch (error) {
       console.error("Gagal mengekspor PDF:", error);
-      alert("Terjadi kesalahan saat membuat PDF.");
+      alert(analyticsConfig.alerts.pdfError);
     } finally {
       // Sembunyikan kembali header
       if (headerElement) headerElement.style.display = "none";
@@ -267,12 +267,12 @@ export default function AnalyticsChart() {
 
   const handleExportCsv = () => {
     if (!chartData || chartData.length === 0) {
-      alert("Tidak ada data untuk diekspor");
+      alert(analyticsConfig.alerts.noDataExport);
       return;
     }
 
     const csvRows = [];
-    csvRows.push(["Periode", "Total Penjualan"]);
+    csvRows.push([analyticsConfig.csv.periodHeader, analyticsConfig.csv.salesHeader]);
 
     chartData.forEach(row => {
       csvRows.push([row.name, row.sales]);
@@ -283,7 +283,7 @@ export default function AnalyticsChart() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", `Data_Analitik_${timeframe}_${new Date().getTime()}.csv`);
+    link.setAttribute("download", `${analyticsConfig.csv.filenamePrefix}${timeframe}_${new Date().getTime()}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -314,8 +314,8 @@ export default function AnalyticsChart() {
               {analyticsConfig.tabs.yearly}
             </button>
           </div>
-          <button onClick={handleExportCsv} className={styles.exportBtn} style={{ marginRight: '8px' }}>
-            Export CSV
+          <button onClick={handleExportCsv} className={`${styles.exportBtn} ${styles.exportBtnCsv}`}>
+            {analyticsConfig.buttons.exportCsv}
           </button>
           <button onClick={handleExportPdf} className={styles.exportBtn}>
             {analyticsConfig.buttons.exportPdf}
@@ -339,8 +339,9 @@ export default function AnalyticsChart() {
               </defs>
               <CartesianGrid
                 strokeDasharray="3 3"
+                vertical={false}
                 stroke="var(--border-color)"
-                opacity={0.4}
+                opacity={0.6}
               />
               <XAxis
                 dataKey="name"
@@ -348,15 +349,18 @@ export default function AnalyticsChart() {
                 fontSize={11}
                 tickLine={false}
                 axisLine={false}
-                dy={8}
               />
               <YAxis
                 stroke="var(--text-secondary)"
                 fontSize={11}
                 tickLine={false}
                 axisLine={false}
-                tickFormatter={(value) =>
-                  `${analyticsConfig.currencyPrefix}${value >= 1000 ? value / 1000 + "k" : value}`
+                tickFormatter={(val) =>
+                  val >= 1000000
+                    ? `${(val / 1000000).toFixed(1)}M`
+                    : val >= 1000
+                    ? `${(val / 1000).toFixed(0)}k`
+                    : val
                 }
               />
               <Tooltip
@@ -369,8 +373,8 @@ export default function AnalyticsChart() {
                   padding: "10px 14px",
                 }}
                 itemStyle={{ color: "var(--primary-accent, #fbbf24)", fontWeight: 600 }}
-                formatter={(value) => [
-                  `${analyticsConfig.currencyPrefix}${value.toLocaleString("id-ID")}`,
+                formatter={(value: any) => [
+                  `${analyticsConfig.currencyPrefix}${Number(value || 0).toLocaleString("id-ID")}`,
                   analyticsConfig.tooltipLabel,
                 ]}
               />
@@ -386,7 +390,7 @@ export default function AnalyticsChart() {
           </ResponsiveContainer>
         ) : (
           <div className={styles.emptyState}>
-            Belum ada data transaksi dari database
+            {analyticsConfig.emptyStates.noTransactionData}
           </div>
         )}
       </div>
@@ -413,7 +417,7 @@ export default function AnalyticsChart() {
                     <td className={styles.yearCell}>
                       {row.year}
                     </td>
-                    <td>{row.totalTransactions} pesanan</td>
+                    <td>{row.totalTransactions} {analyticsConfig.units.orders}</td>
                     <td className={styles.revenueCell}>
                       {analyticsConfig.currencyPrefix}
                       {row.totalRevenue.toLocaleString("id-ID")}
@@ -427,8 +431,8 @@ export default function AnalyticsChart() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="5" className={styles.emptyTableCell}>
-                    Belum ada data rincian tahunan
+                  <td colSpan={5} className={styles.emptyTableCell}>
+                    {analyticsConfig.emptyStates.noYearlyData}
                   </td>
                 </tr>
               )}

@@ -1,0 +1,49 @@
+{
+  "tabs": [
+    { "key": "all", "label": "Semua" },
+    { "key": "active", "label": "Aktif" },
+    { "key": "used", "label": "Terpakai" },
+    { "key": "expired", "label": "Kadaluarsa" }
+  ],
+  "status": {
+    "active": "Aktif",
+    "used": "Digunakan",
+    "expired": "Kadaluarsa",
+    "claimed": "Diklaim"
+  },
+  "actions": {
+    "claim": "Klaim",
+    "claiming": "Mengklaim...",
+    "claimed": "Sudah Diklaim",
+    "useVoucher": "Pakai Voucher",
+    "used": "Terpakai",
+    "copy": "Salin",
+    "copied": "Tersalin!"
+  },
+  "headings": {
+    "availableTitle": "Voucher Tersedia",
+    "myVouchersTitle": "Voucher Saya"
+  },
+  "emptyStates": {
+    "noAvailable": "Tidak ada voucher tersedia saat ini.",
+    "noActiveCheckout": "Tidak ada voucher aktif yang bisa digunakan.",
+    "noClaimed": "Belum ada voucher diklaim.",
+    "noCategoryTemplate": "Tidak ada voucher {category}."
+  },
+  "toasts": {
+    "claiming": "Mengklaim voucher...",
+    "requireLogin": "Anda harus login.",
+    "claimSuccess": "Berhasil!",
+    "claimFailed": "Gagal mengklaim.",
+    "codeCopied": "Kode disalin!"
+  },
+  "card": {
+    "shippingDiscount": "Gratis Ongkir",
+    "discountLabel": "DISKON",
+    "expiresToday": "Berakhir hari ini",
+    "daysLeftTemplate": "{days} hari lagi",
+    "minPurchase": "Min. belanja",
+    "upTo": "Hingga",
+    "validUntil": "Berlaku s/d"
+  }
+}

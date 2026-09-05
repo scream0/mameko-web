@@ -9,7 +9,7 @@ import styles from "./NotificationsSection.module.css";
 import notificationsConfig from "@/data/ui/notificationsConfig.json";
 import { NotificationsSkeleton } from "@/components/UI/Skeleton/SkeletonLayouts";
 import ConfirmationModal from "@/components/UI/Modal/ConfirmationModal";
-import { Package, CreditCard, Gift, Bell } from "lucide-react";
+import { AppIcon } from "@/components/UI/Icon/AppIcon";
 
 // Format waktu menjadi "Baru saja", "5 menit lalu", dst.
 function timeAgo(dateString: any) {
@@ -29,11 +29,11 @@ function timeAgo(dateString: any) {
 
 const capitalize = (s: any) => s.charAt(0).toUpperCase() + s.slice(1);
 
-const TYPE_ICON = {
-  order: <Package size={18} />,
-  payment: <CreditCard size={18} />,
-  promo: <Gift size={18} />,
-  system: <Bell size={18} />,
+const TYPE_ICON: Record<string, JSX.Element> = {
+  order: <AppIcon name="package" size={18} />,
+  payment: <AppIcon name="creditcard" size={18} />,
+  promo: <AppIcon name="gift" size={18} />,
+  system: <AppIcon name="bell" size={18} />,
 };
 
 export default function NotificationsSection({ onUnreadCountChange }: any) {
@@ -66,7 +66,7 @@ export default function NotificationsSection({ onUnreadCountChange }: any) {
           console.error("Gagal parse JSON:", e);
         }
       }
-      if (!res.ok) throw new Error(result.error || "Gagal memuat notifikasi.");
+      if (!res.ok) throw new Error(result.error || notificationsConfig.toasts.fetchError);
       
       // Map dari struktur database ke frontend (camelCase)
       const mappedNotifications = (result.notifications || []).map((n: any) => ({
@@ -156,7 +156,7 @@ export default function NotificationsSection({ onUnreadCountChange }: any) {
               setNotifications((prev) =>
                 prev.map((n) => {
                   if (n.id === mapped.id) {
-                    return { ...n, ...mapped, isRead: n.isRead };
+                    return { ...n, ...mapped };
                   }
                   return n;
                 })
@@ -188,12 +188,12 @@ export default function NotificationsSection({ onUnreadCountChange }: any) {
         },
         body: JSON.stringify({ action: "mark_all_read" }),
       });
-      if (!res.ok) throw new Error("Gagal memperbarui notifikasi.");
+      if (!res.ok) throw new Error(notificationsConfig.toasts.updateError);
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
       toast.success(notificationsConfig.toasts.markAllReadSuccess);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Gagal tandai semua dibaca:", err);
-      toast.error(err.message || "Gagal memperbarui notifikasi.");
+      toast.error(err.message || notificationsConfig.toasts.updateError);
     } finally {
       setSubmittingMarkAllRead(false);
     }
@@ -252,13 +252,13 @@ export default function NotificationsSection({ onUnreadCountChange }: any) {
       );
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error || "Gagal menghapus notifikasi.");
+        throw new Error(errData.error || notificationsConfig.toasts.deleteError);
       }
       setNotifications((prev) => prev.filter((n) => n.id !== notification.id));
       toast.success(notificationsConfig.toasts.deleteSuccess);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Gagal menghapus notifikasi:", err);
-      toast.error(err.message || "Gagal menghapus notifikasi.");
+      toast.error(err.message || notificationsConfig.toasts.deleteError);
     } finally {
       setDeletingId(null);
     }
@@ -319,7 +319,9 @@ export default function NotificationsSection({ onUnreadCountChange }: any) {
               className={styles.markReadBtn}
               disabled={submittingMarkAllRead}
             >
-              {submittingMarkAllRead ? "Menandai..." : notificationsConfig.buttons.markAllRead}
+              {submittingMarkAllRead
+                ? notificationsConfig.buttons.markingAllRead
+                : notificationsConfig.buttons.markAllRead}
             </button>
           </div>
         </div>
@@ -375,7 +377,7 @@ export default function NotificationsSection({ onUnreadCountChange }: any) {
                     styles.iconSystem
                   }`}
                 >
-                  {TYPE_ICON[notification.type] || <Bell size={18} />}
+                  {TYPE_ICON[notification.type] || <AppIcon name="bell" size={18} />}
                 </div>
                 <div className={styles.notificationContent}>
                   <div className={styles.notificationTitleRow}>
@@ -396,7 +398,9 @@ export default function NotificationsSection({ onUnreadCountChange }: any) {
                       {timeAgo(notification.createdAt)}
                     </span>
                     {notification.link && (
-                      <span className={styles.linkIndicator}>Lihat Detail &rarr;</span>
+                      <span className={styles.linkIndicator}>
+                        {notificationsConfig.linkIndicator}
+                      </span>
                     )}
                   </div>
                 </div>
@@ -407,10 +411,14 @@ export default function NotificationsSection({ onUnreadCountChange }: any) {
                       e.stopPropagation();
                       deleteNotification(notification);
                     }}
-                    aria-label="Hapus notifikasi"
+                    aria-label={notificationsConfig.buttons.deleteAria}
                     disabled={deletingId === notification.id}
                   >
-                    {deletingId === notification.id ? "..." : "✕"}
+                    {deletingId === notification.id ? (
+                      notificationsConfig.buttons.deleting
+                    ) : (
+                      <AppIcon name="x" size={14} />
+                    )}
                   </button>
                 )}
               </div>
@@ -423,8 +431,8 @@ export default function NotificationsSection({ onUnreadCountChange }: any) {
         isOpen={!!notificationToDelete}
         onClose={() => setNotificationToDelete(null)}
         onConfirm={confirmDeleteNotification}
-        title="Hapus Notifikasi"
-        message="Apakah Anda yakin ingin menghapus notifikasi ini?"
+        title={notificationsConfig.deleteModal.title}
+        message={notificationsConfig.deleteModal.message}
       />
     </div>
   );

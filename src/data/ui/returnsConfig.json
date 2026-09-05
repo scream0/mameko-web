@@ -1,0 +1,48 @@
+{
+  "header": {
+    "eyebrow": "Layanan Purna Jual",
+    "title": "Riwayat Pengajuan Retur & Refund",
+    "description": "Pantau status pengajuan retur barang atau pengembalian dana belanja Anda. Pengajuan retur dapat dilakukan dari kartu pesanan yang telah berstatus Selesai."
+  },
+  "list": {
+    "title": "Status Pengajuan",
+    "orderPrefix": "Pesanan #",
+    "loading": "Memuat riwayat pengajuan retur...",
+    "emptyTitle": "Belum Ada Pengajuan Retur",
+    "emptyDesc": "Anda belum memiliki riwayat permohonan retur atau pengembalian dana.",
+    "ctaOrders": "Lihat Semua Pesanan"
+  },
+  "card": {
+    "reasonLabel": "Alasan:",
+    "dateLabel": "Diajukan:",
+    "evidenceBtn": "Lihat Foto Bukti",
+    "evidenceModalTitle": "Bukti Foto Pengajuan",
+    "adminNoteTitle": "Catatan Admin MAMEKO:",
+    "closeModal": "Tutup"
+  },
+  "status": {
+    "pending": {
+      "label": "Menunggu Review",
+      "classKey": "pending"
+    },
+    "return_requested": {
+      "label": "Menunggu Review",
+      "classKey": "pending"
+    },
+    "approved": {
+      "label": "Disetujui",
+      "classKey": "approved"
+    },
+    "rejected": {
+      "label": "Ditolak",
+      "classKey": "rejected"
+    },
+    "returned": {
+      "label": "Selesai",
+      "classKey": "returned"
+    }
+  },
+  "toasts": {
+    "fetchError": "Gagal memuat riwayat pengajuan retur."
+  }
+}

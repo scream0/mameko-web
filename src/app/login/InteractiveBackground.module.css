@@ -1,0 +1,71 @@
+/* ====================================================
+   INTERACTIVE BACKGROUND CSS (Luxury Glow Beams)
+   ==================================================== */
+
+.container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.glowPrimary {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-top: -225px;
+  margin-left: -225px;
+  width: 450px;
+  height: 450px;
+  background: radial-gradient(circle, rgba(var(--primary-accent-rgb), 0.22) 0%, rgba(var(--primary-accent-rgb), 0) 70%);
+  filter: blur(50px);
+  border-radius: 50%;
+  will-change: transform;
+}
+
+.glowSecondary {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-top: -175px;
+  margin-left: -175px;
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, rgba(var(--primary-accent-rgb), 0.35) 0%, rgba(255, 255, 255, 0) 60%);
+  filter: blur(60px);
+  border-radius: 50%;
+  will-change: transform;
+}
+
+/* Mobile optimization: smaller radii, softer blur to protect mobile GPU & battery */
+@media (max-width: 640px) {
+  .glowPrimary {
+    width: 280px;
+    height: 280px;
+    margin-top: -140px;
+    margin-left: -140px;
+    filter: blur(35px);
+    opacity: 0.75;
+  }
+
+  .glowSecondary {
+    width: 220px;
+    height: 220px;
+    margin-top: -110px;
+    margin-left: -110px;
+    filter: blur(40px);
+    opacity: 0.75;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glowPrimary,
+  .glowSecondary {
+    will-change: auto;
+    transform: none !important;
+  }
+}

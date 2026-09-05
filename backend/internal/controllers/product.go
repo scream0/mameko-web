@@ -131,10 +131,19 @@ func GetProducts(c *fiber.Ctx) error {
 		argIdx++
 	}
 
-	if status != "" && status != "all" {
-		whereClauses = append(whereClauses, fmt.Sprintf("status = $%d", argIdx))
-		args = append(args, status)
-		argIdx++
+	if status == "all" {
+		// Admin explicit: menampilkan semua produk termasuk draft
+	} else if status != "" {
+		if status == "published" {
+			whereClauses = append(whereClauses, "(status = 'published' OR status IS NULL OR status = '')")
+		} else {
+			whereClauses = append(whereClauses, fmt.Sprintf("status = $%d", argIdx))
+			args = append(args, status)
+			argIdx++
+		}
+	} else {
+		// Default publik: jangan pernah tampilkan produk draft di etalase toko
+		whereClauses = append(whereClauses, "(status = 'published' OR status IS NULL OR status = '')")
 	}
 
 	whereSQL := ""

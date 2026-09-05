@@ -76,8 +76,8 @@
 
 .logoutTabBtn {
   background: transparent;
-  border: 1px solid rgba(220, 38, 38, 0.45);
-  color: #dc2626;
+  border: 1px solid rgba(var(--danger-color-rgb, 220, 38, 38), 0.45);
+  color: var(--danger-color, #dc2626);
   padding: 0.5rem 1rem;
   border-radius: 999px;
   font-family: var(--font-sans);
@@ -93,9 +93,9 @@
 }
 
 .logoutTabBtn:hover {
-  background: #dc2626;
-  border-color: #dc2626;
-  color: #ffffff;
+  background: var(--danger-color, #dc2626);
+  border-color: var(--danger-color, #dc2626);
+  color: var(--primary-accent-text, #ffffff);
 }
 
 /* ---- Form Sections ---- */
@@ -174,200 +174,6 @@
   padding: 1rem;
 }
 
-.logoutDialog {
-  width: min(420px, 100%);
-  border: 1px solid var(--border-color);
-  border-radius: 16px;
-  background: rgba(var(--surface-primary-rgb), 0.98);
-  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.2);
-  padding: 1.5rem;
-}
-
-.dialogTitle {
-  margin: 0;
-  font: 400 1.15rem var(--font-serif);
-  color: var(--text-primary);
-}
-
-.dialogDescription {
-  margin: 0.6rem 0 0;
-  color: var(--text-secondary);
-  font-size: 0.88rem;
-  line-height: 1.5;
-}
-
-.dialogActions {
-  margin-top: 1.25rem;
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
-}
-
-.dialogSecondaryBtn,
-.dialogPrimaryBtn {
-  border-radius: 20px;
-  padding: 0.5rem 0.9rem;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  cursor: pointer;
-}
-
-.dialogSecondaryBtn {
-  background: var(--surface-secondary);
-  border: 1px solid var(--border-color);
-  color: var(--text-secondary);
-}
-
-.dialogPrimaryBtn {
-  background: rgba(var(--danger-color-rgb, 220, 38, 38), 0.12);
-  border: 1px solid rgba(var(--danger-color-rgb, 220, 38, 38), 0.3);
-  color: var(--danger-color);
-}
-
-.inputGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 1.25rem;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.inputGroup:last-child {
-  margin-bottom: 0;
-}
-
-.fieldLabel {
-  font-family: var(--font-sans);
-  font-size: 0.7rem;
-  font-weight: 500;
-  letter-spacing: 1.5px;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-}
-
-.inputField,
-.selectField {
-  background: rgba(var(--surface-primary-rgb), 0.96);
-  border: 1px solid var(--border-color);
-  padding: 0.8rem 0.95rem;
-  color: var(--text-primary);
-  border-radius: 999px;
-  font-family: var(--font-sans);
-  font-size: 0.9rem;
-  outline: none;
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
-  transition: all 0.25s ease;
-}
-
-.textAreaField {
-  background: rgba(var(--surface-primary-rgb), 0.96);
-  border: 1px solid var(--border-color);
-  padding: 0.8rem 0.95rem;
-  color: var(--text-primary);
-  border-radius: 12px;
-  font-family: var(--font-sans);
-  font-size: 0.9rem;
-  outline: none;
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
-  resize: vertical;
-  transition: all 0.25s ease;
-}
-
-.inputField::placeholder,
-.selectField::placeholder,
-.textAreaField::placeholder {
-  color: var(--text-secondary);
-  opacity: 0.6;
-}
-
-.inputField:focus,
-.selectField:focus,
-.textAreaField:focus {
-  border-color: var(--primary-accent);
-  box-shadow: 0 0 0 2px rgba(var(--primary-accent-rgb), 0.15);
-}
-
-.selectField {
-  cursor: pointer;
-}
-
-.fieldDesc {
-  font-family: var(--font-sans);
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  margin-top: 6px;
-  letter-spacing: 0.5px;
-}
-
-.toggleRow {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.65rem;
-  padding: 0.7rem 0.85rem;
-  border: 1px solid var(--border-color);
-  border-radius: 999px;
-  width: fit-content;
-  background: rgba(var(--surface-primary-rgb), 0.96);
-}
-
-.toggleInput {
-  accent-color: var(--primary-accent);
-  width: 1rem;
-  height: 1rem;
-}
-
-.toggleLabel {
-  font-family: var(--font-sans);
-  font-size: 0.84rem;
-  color: var(--text-primary);
-}
-
-.fileInput {
-  background: rgba(var(--surface-primary-rgb), 0.96);
-  border: 1px dashed var(--border-color);
-  padding: 0.9rem 1rem;
-  color: var(--text-primary);
-  border-radius: 12px;
-  font-family: var(--font-sans);
-  font-size: 0.9rem;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.fileInput::file-selector-button {
-  background: var(--primary-accent);
-  color: var(--primary-accent-text);
-  border: none;
-  border-radius: 999px;
-  padding: 0.55rem 0.9rem;
-  margin-right: 0.8rem;
-  cursor: pointer;
-  font-family: var(--font-sans);
-  font-weight: 600;
-  font-size: 0.78rem;
-  letter-spacing: 0.6px;
-  text-transform: uppercase;
-}
-
-.previewCard {
-  margin-top: 0.8rem;
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  overflow: hidden;
-  background: var(--surface-secondary);
-}
-
-.previewImage {
-  width: 100%;
-  padding: 1rem;
-}
 
 .logoutDialog {
   width: min(420px, 100%);
@@ -612,8 +418,8 @@
 
 .removeBtn {
   background: transparent;
-  border: 1px solid #ef4444;
-  color: #ef4444;
+  border: 1px solid var(--danger-color, #ef4444);
+  color: var(--danger-color, #ef4444);
   border-radius: 999px;
   padding: 0.4rem 0.85rem;
   font-size: 0.72rem;
@@ -625,8 +431,8 @@
 
 @media (hover: hover) and (pointer: fine) {
   .removeBtn:hover {
-    background: #ef4444;
-    color: #fff;
+    background: var(--danger-color, #ef4444);
+    color: var(--primary-accent-text, #ffffff);
   }
 }
 
@@ -673,88 +479,390 @@
   transform: none !important;
 }
 
-/* ---- Mobile responsive ---- */
+/* ---- Responsive Media Queries (Tablet & Mobile) ---- */
 @media (max-width: 768px) {
+  .settingsContainer {
+    padding: 1.25rem 1rem;
+    border-radius: 12px;
+  }
 
   .row2,
   .row3 {
     grid-template-columns: 1fr;
     gap: 0;
   }
+
+  .tabNav {
+    gap: 0.4rem;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    padding-bottom: 0.75rem;
+  }
+
+  .tabBtn,
+  .logoutTabBtn {
+    flex-shrink: 0;
+    padding: 0.45rem 0.85rem;
+    font-size: 0.74rem;
+  }
+
+  .paymentSubCard {
+    margin-left: 0;
+    padding: 1rem;
+  }
+
+  .checkboxDesc {
+    margin-left: 0;
+  }
 }
 
-/* ---- Tab Navigasi ---- */
-.tabNav {
+@media (max-width: 480px) {
+  .settingsContainer {
+    padding: 1rem 0.75rem;
+    border-radius: 10px;
+  }
+
+  .settingsTitle {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .formSection {
+    padding: 0.9rem;
+    border-radius: 10px;
+  }
+
+  .citySelectRow {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .cityResetBtn {
+    width: 100%;
+    padding: 0.5rem 0.8rem;
+  }
+
+  .couriersGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .couriersActionBtnGroup {
+    flex-direction: column;
+  }
+
+  .couriersEnvironmentSelect {
+    max-width: 100%;
+  }
+
+  .saveBtn {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.76rem;
+  }
+}
+
+
+/* ---- Store Tab: Biteship Area & City Select ---- */
+.citySelectRow {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 1.25rem;
-  padding-bottom: 0.9rem;
-  border-bottom: 1px solid var(--border-color);
+  gap: 8px;
 }
 
-.tabBtn {
-  background: rgba(var(--surface-primary-rgb), 0.96);
+.cityInputReadOnly {
+  background-color: var(--surface-secondary) !important;
+  cursor: not-allowed;
+  flex: 1;
+}
+
+.cityResetBtn {
+  padding: 0 14px;
+  background: transparent;
   border: 1px solid var(--border-color);
-  color: var(--text-secondary);
-  padding: 0.5rem 1rem;
-  border-radius: 999px;
-  font-family: var(--font-sans);
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.25s ease;
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+  font-size: 0.82rem;
+  font-weight: 600;
 }
 
-.tabBtn:hover {
+.cityResetBtn:hover {
   border-color: var(--primary-accent);
   color: var(--primary-accent);
 }
 
-.tabBtnActive {
-  background: var(--primary-accent);
-  border-color: var(--primary-accent);
-  color: var(--primary-accent-text);
+.areaSearchWrapper {
+  margin-top: 12px;
+  position: relative;
 }
 
-/* Override hover agar teks tetap kontras saat tab aktif di-hover */
-.tabBtnActive:hover {
-  color: var(--primary-accent-text);
-  opacity: 0.85;
+.areaSearchingBadge {
+  position: absolute;
+  right: 14px;
+  top: 12px;
+  font-size: 12px;
+  color: var(--text-secondary);
 }
 
-.tabBtnActive:hover {
-  color: var(--primary-accent-text);
-  opacity: 0.88;
+.areaDropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--surface-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+  z-index: 50;
+  padding: 0;
+  margin: 6px 0 0 0;
+  list-style: none;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
-.tabBtnActive:hover {
-  color: var(--primary-accent-text);
-  opacity: 0.88;
+.areaOptionItem {
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 13.5px;
+  border-bottom: 1px solid var(--border-color);
+  transition: background 0.15s ease;
 }
 
-.logoutTabBtn {
-  background: transparent;
-  border: 1px solid rgba(220, 38, 38, 0.45);
-  color: #dc2626;
-  padding: 0.5rem 1rem;
-  border-radius: 999px;
-  font-family: var(--font-sans);
-  font-size: 0.78rem;
+.areaOptionItem:last-child {
+  border-bottom: none;
+}
+
+.areaOptionItem:hover {
+  background: var(--surface-secondary);
+}
+
+.areaPostalCode {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.areaEmptyNotice {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--surface-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 14px;
+  z-index: 50;
+  margin: 6px 0 0 0;
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+/* ---- Payment Tab: Checkboxes, Sub-cards & Bank Accounts ---- */
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  cursor: pointer;
   font-weight: 600;
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  user-select: none;
+}
+
+.checkboxInput {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary-accent);
+  cursor: pointer;
+}
+
+.checkboxDesc {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin-top: 0.5rem;
+  margin-left: 1.8rem;
+  line-height: 1.5;
+}
+
+.paymentSubCard {
+  margin-top: 1rem;
+  margin-left: 1.8rem;
+  padding: 1.25rem;
+  background: var(--surface-secondary);
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+}
+
+.paymentSubTitle {
+  margin: 0 0 1rem 0;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: 0.5px;
+}
+
+.bankAccountCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.1rem;
+  background: var(--surface-primary);
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  border: 1px solid var(--border-color);
+}
+
+.bankAccountDeleteBtn {
+  align-self: flex-start;
+  padding: 0.45rem 0.9rem;
+  font-size: 12px;
+  font-weight: 600;
+  background: rgba(var(--danger-color-rgb, 239, 68, 68), 0.15);
+  color: var(--danger-color, #ef4444);
+  border: 1px solid rgba(var(--danger-color-rgb, 239, 68, 68), 0.35);
+  border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
 }
 
-.logoutTabBtn:hover {
-  background: #dc2626;
-  border-color: #dc2626;
-  color: #ffffff;
+.bankAccountDeleteBtn:hover {
+  background: var(--danger-color, #ef4444);
+  color: var(--primary-accent-text, #ffffff);
+}
+
+/* ---- Couriers Tab: Biteship & Courier Grid ---- */
+.couriersDesc {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.couriersEnvironmentSelect {
+  max-width: 320px;
+  margin-top: 0.5rem;
+}
+
+.autoAwbRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.autoAwbTitle {
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--text-primary);
+  margin: 0 0 0.25rem 0;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+}
+
+.autoAwbDesc {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.couriersActionBtnGroup {
+  display: flex;
+  gap: 0.65rem;
+  margin-bottom: 1.25rem;
+}
+
+.courierClearBtn {
+  border-color: rgba(var(--danger-color-rgb, 239, 68, 68), 0.45) !important;
+  color: var(--danger-color, #ef4444) !important;
+}
+
+.courierClearBtn:hover {
+  background: rgba(var(--danger-color-rgb, 239, 68, 68), 0.15) !important;
+}
+
+.couriersGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.courierToggleLabel {
+  cursor: pointer;
+  user-select: none;
+}
+
+.courierActiveNotice {
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  margin-top: 1.25rem;
+}
+
+.courierErrorBadge {
+  color: var(--danger-color, #ef4444);
+  margin-left: 0.5rem;
+}
+
+/* ---- Product Tab: Live Preview Box ---- */
+.previewContainer {
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+  background: var(--surface-secondary);
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+}
+
+.previewHeaderNotice {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--text-secondary);
+  font-weight: 700;
+  margin-bottom: 0.8rem;
+}
+
+.previewInnerBox {
+  text-align: center;
+  padding: 1.5rem;
+  background: var(--surface-primary);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.previewTagline {
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 2.5px;
+  color: var(--primary-accent);
+  margin: 0 0 8px 0;
+  font-weight: 600;
+}
+
+.previewHeading {
+  font-family: var(--font-serif);
+  font-size: 1.8rem;
+  margin: 0;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.previewHighlight {
+  color: var(--primary-accent);
+}
+
+/* ---- Account Tab ---- */
+.accountSectionHeader {
+  margin-bottom: 2rem;
+}
+
+.accountDivider {
+  border-top: 1px solid var(--border-color);
+  padding-top: 2rem;
 }

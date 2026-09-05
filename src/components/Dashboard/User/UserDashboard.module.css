@@ -513,7 +513,7 @@
     right: 0;
     background: var(--surface-primary);
     border-top: 1px solid var(--border-color);
-    padding: 8px 12px env(safe-area-inset-bottom, 8px);
+    padding: 8px 12px calc(8px + env(safe-area-inset-bottom, 0px));
     justify-content: space-around;
     align-items: center;
     z-index: 100;
@@ -588,119 +588,192 @@
   }
 
   .mainContent {
-    padding-bottom: 90px !important;
+    padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px)) !important;
   }
 
   .viewWrapper {
-    padding-bottom: 2.5rem !important;
+    padding-bottom: calc(3rem + env(safe-area-inset-bottom, 0px)) !important;
   }
-  }
+}
 
-  /* Navbar Atas Melayang (Floating/Overlay Navbar) */
+/* Visibility classes for tabs eliminating inline styles */
+.visibleNotificationView {
+  display: block;
+}
+
+.hiddenNotificationView {
+  display: none !important;
+}
+
+/* ====================================================
+   NAVBAR ATAS MELAYANG (FLOATING MODERN GLASS NAVBAR)
+   ==================================================== */
+.shopNavbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: rgba(var(--surface-primary-rgb), 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 0.75rem 1.25rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  position: sticky;
+  top: 16px;
+  z-index: 100;
+  margin: 1.25rem 1.5rem 0.5rem;
+  transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+:global([data-theme="dark"]) .shopNavbar {
+  background: rgba(var(--surface-primary-rgb), 0.75);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+}
+
+@media (max-width: 1023px) {
   .shopNavbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    background: var(--surface-primary);
-    border: 1px solid var(--border-color);
-    border-radius: 18px;
-    padding: 0.75rem 1rem;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-
-    /* Posisi Melayang di atas */
-    position: sticky;
-    top: 16px;
-    z-index: 100;
-    margin: 1rem;
+    margin: 1rem 1rem 0.5rem;
+    padding: 0.65rem 1rem;
+    border-radius: 14px;
   }
+}
 
-  :global([data-theme="dark"]) .shopNavbar {
-    background: var(--surface-primary);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+@media (max-width: 639px) {
+  .shopNavbar {
+    margin: 0.75rem 0.75rem 0.25rem;
+    padding: 0.5rem 0.75rem;
+    gap: 8px;
+    border-radius: 12px;
   }
+}
 
-  .navbarSearchWrapper {
+.navbarSearchWrapper {
   position: relative;
   flex: 1;
   display: flex;
   align-items: center;
-  }
+  min-width: 0;
+}
 
-  .searchIcon {
+.searchIcon {
   position: absolute;
   left: 12px;
   width: 16px;
   height: 16px;
   stroke: var(--text-secondary);
   pointer-events: none;
-  }
+  transition: stroke 0.2s ease;
+}
 
-  .searchInputNavbar {
+.searchInputNavbar {
   width: 100%;
   background: var(--surface-secondary);
   border: 1px solid var(--border-color);
   color: var(--text-primary);
-  padding: 0.55rem 0.85rem 0.55rem 38px;
-  border-radius: 6px;
+  padding: 0.55rem 2rem 0.55rem 38px;
+  border-radius: 8px;
   font-family: var(--font-sans);
-  font-size: 0.8rem;
-  transition: all 0.3s ease;
+  font-size: 0.82rem;
+  transition: all 0.25s ease;
   outline: none;
-  }
+}
 
-  .searchInputNavbar::placeholder {
+.searchInputNavbar::placeholder {
   color: var(--text-secondary);
-  opacity: 0.6;
-  }
+  opacity: 0.7;
+}
 
-  .searchInputNavbar:focus {
+.searchInputNavbar:focus {
   border-color: var(--primary-accent);
   box-shadow: 0 0 0 2px rgba(var(--primary-accent-rgb), 0.15);
-  }
+  background: var(--surface-primary);
+}
 
-  .navbarActions {
+.clearSearchBtn {
+  position: absolute;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.clearSearchBtn:hover {
+  color: var(--text-primary);
+  background: rgba(var(--primary-accent-rgb), 0.1);
+}
+
+.navbarActions {
   display: flex;
   align-items: center;
   gap: 8px;
-  }
+  flex-shrink: 0;
+}
 
-  .chatIconBtnNavbar,
-  .cartIconBtnNavbar {
+.chatIconBtnNavbar,
+.cartIconBtnNavbar,
+.themeIconBtnNavbar {
   background: var(--surface-secondary);
   border: 1px solid var(--border-color);
   color: var(--text-primary);
-  width: 36px;
-  height: 36px;
-  border-radius: 6px;
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   position: relative;
-  transition: all 0.3s ease;
-  }
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
-  @media (hover: hover) and (pointer: fine) {
+@media (hover: hover) and (pointer: fine) {
   .chatIconBtnNavbar:hover,
-  .cartIconBtnNavbar:hover {
+  .cartIconBtnNavbar:hover,
+  .themeIconBtnNavbar:hover {
     background: var(--surface-primary);
     border-color: var(--primary-accent);
     color: var(--primary-accent);
-  }
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   }
 
-  .cartQuantityBadge {
+  .themeIconBtnNavbar:hover .svgIcon {
+    transform: rotate(20deg);
+  }
+}
+
+.themeIconBtnNavbar .svgIcon {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cartQuantityBadge {
   position: absolute;
   top: -5px;
   right: -5px;
   background: var(--primary-accent);
   color: var(--primary-accent-text);
-  font-size: 0.6rem;
-  font-weight: bold;
-  padding: 1px 4px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  padding: 1px 5px;
   border-radius: 9999px;
-  min-width: 16px;
+  min-width: 17px;
   text-align: center;
-  border: 1px solid var(--surface-primary);
-  }
+  border: 1.5px solid var(--surface-primary);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+  animation: badgePop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes badgePop {
+  0% { transform: scale(0.5); }
+  100% { transform: scale(1); }
+}

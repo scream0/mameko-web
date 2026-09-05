@@ -386,11 +386,45 @@
   transform: scale(0.98);
 }
 
-/* Responsif Mobile */
+/* Responsif Mobile & Tablet */
 @media (max-width: 768px) {
   .variantRow {
     grid-template-columns: 1fr;
     gap: 10px;
     padding: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dimensionGroup {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .buttonGroup {
+    flex-direction: column-reverse;
+    gap: 10px;
+  }
+
+  .submitBtn,
+  .cancelBtn {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    font-size: 0.78rem;
+  }
+
+  .imageUploadWrapper {
+    padding: 16px;
+    min-height: 130px;
+  }
+
+  .variantsBox {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .addVariantBtn {
+    width: 100%;
+    text-align: center;
   }
 }

@@ -11,6 +11,7 @@ import styles from "./Navbar.module.css";
 import config from "@/data/ui/navbarConfig.json";
 import { Logo } from "@/components/UI/Logo/logo";
 import { AppIcon } from "@/components/UI/Icon/AppIcon";
+import { useScrollLock } from "@/hooks/useScrollLock";
 
 const CartSidebar = dynamic(
   () => import("../UI/Sidebar/CartSidebar").then((mod) => mod.CartSidebar),
@@ -55,15 +56,9 @@ export function Navbar() {
 
   const userMenuRef = useRef(null);
 
-  useEffect(() => {
-    const shouldLock =
-      activePanel === "navbar" || activePanel === "search" || isCartOpen;
-    document.body.style.overflow = shouldLock ? "hidden" : "unset";
-
-    return () => {
-      document.body.style.overflow = "unset";
-    };
-  }, [activePanel, isCartOpen]);
+  useScrollLock(
+    activePanel === "navbar" || activePanel === "search" || isCartOpen
+  );
 
   useEffect(() => {
     let rafId = null;
@@ -220,75 +215,117 @@ export function Navbar() {
 
         <div
           className={`${styles.navbarNav} ${activePanel === "navbar" ? styles.active : ""}`}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setActivePanel(null);
+            }
+          }}
           onMouseLeave={handleMouseLeave}
         >
-          <div className={styles.navHoverPill} style={hoverStyle} />
-          {config.menuItems.map((item, index) => (
-            <Link
-              key={index}
-              href={item.href}
-              onClick={(e) => handleNavClick(e, item.href)}
-              onMouseEnter={(e) => handleMouseEnter(e, index)}
-              className={isLinkActive(item.href) ? styles.navLinkActive : ""}
-              aria-current={isLinkActive(item.href) ? "page" : undefined}
-            >
-              {item.label}
-            </Link>
-          ))}
+          <div
+            className={styles.mobileDrawerPane}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header Drawer Khusus Mobile (Logo + Tombol Close) */}
+            <div className={styles.mobileDrawerHeader}>
+              <Link
+                href={config.logo.href}
+                className={styles.mobileDrawerLogo}
+                onClick={() => setActivePanel(null)}
+              >
+                <Logo className={styles.mobileLogoSvg} />
+                {config.logo.text}
+                <span>{config.logo.subtext}</span>.
+              </Link>
+              <button
+                className={styles.mobileCloseBtn}
+                onClick={() => setActivePanel(null)}
+                aria-label={config?.features?.mobileDrawer?.closeAriaLabel || "Tutup Menu Navigasi"}
+              >
+                <AppIcon
+                  name={config?.features?.mobileDrawer?.iconClose || "x"}
+                  className={styles.closeIconSvg}
+                />
+              </button>
+            </div>
 
-          <div className={styles.mobileAuthSection}>
-            {user ? (
-              <>
-                <div className={styles.mobileUserInfo}>
-                  {userAvatar && !imageError ? (
-                    <img
-                      src={userAvatar}
-                      alt="User Avatar"
-                      className={styles.avatarImgMobile}
-                      onError={() => setImageError(true)}
-                    />
-                  ) : (
-                    <div className={styles.avatarPlaceholderMobile}>
-                      <AppIcon name="user" className={styles.svgIcon} />
-                    </div>
-                  )}
-                  <span className={styles.mobileUserName}>{userName}</span>
-                </div>
-                {authItems.map((item, index) =>
-                  item.type === "link" ? (
-                    <Link
-                      key={index}
-                      href={item.href}
-                      className={styles.mobileAuthLink}
-                      onClick={() => setActivePanel(null)}
-                    >
-                      {item.label}
-                    </Link>
-                  ) : (
-                    <button
-                      key={index}
-                      onClick={() => {
-                        logout();
-                        setActivePanel(null);
-                      }}
-                      className={`${styles.mobileAuthLink} ${styles.mobileLogoutBtn}`}
-                    >
-                      {item.label}
-                    </button>
-                  ),
-                )}
-              </>
-            ) : (
-              unauthItem && (
+            <div className={styles.navHoverPill} style={hoverStyle} />
+
+            <div className={styles.mobileNavList}>
+              {config.menuItems.map((item, index) => (
                 <Link
-                  href={unauthItem.href}
-                  className={styles.mobileLoginBtn}
-                  onClick={() => setActivePanel(null)}
+                  key={index}
+                  href={item.href}
+                  onClick={(e) => handleNavClick(e, item.href)}
+                  onMouseEnter={(e) => handleMouseEnter(e, index)}
+                  className={`${styles.mobileNavLink} ${isLinkActive(item.href) ? styles.navLinkActive : ""}`}
+                  aria-current={isLinkActive(item.href) ? "page" : undefined}
                 >
-                  {unauthItem.label}
+                  <span>{item.label}</span>
+                  <span className={styles.navLinkArrow}>
+                    <AppIcon
+                      name={config?.features?.mobileDrawer?.navLinkIcon || "chevron-right"}
+                      className={styles.arrowIconSvg}
+                    />
+                  </span>
                 </Link>
-              )
-            )}
+              ))}
+            </div>
+
+            <div className={styles.mobileAuthSection}>
+              {user ? (
+                <>
+                  <div className={styles.mobileUserInfo}>
+                    {userAvatar && !imageError ? (
+                      <img
+                        src={userAvatar}
+                        alt="User Avatar"
+                        className={styles.avatarImgMobile}
+                        onError={() => setImageError(true)}
+                      />
+                    ) : (
+                      <div className={styles.avatarPlaceholderMobile}>
+                        <AppIcon name="user" className={styles.svgIcon} />
+                      </div>
+                    )}
+                    <span className={styles.mobileUserName}>{userName}</span>
+                  </div>
+                  {authItems.map((item, index) =>
+                    item.type === "link" ? (
+                      <Link
+                        key={index}
+                        href={item.href}
+                        className={styles.mobileAuthLink}
+                        onClick={() => setActivePanel(null)}
+                      >
+                        {item.label}
+                      </Link>
+                    ) : (
+                      <button
+                        key={index}
+                        onClick={() => {
+                          logout();
+                          setActivePanel(null);
+                        }}
+                        className={`${styles.mobileAuthLink} ${styles.mobileLogoutBtn}`}
+                      >
+                        {item.label}
+                      </button>
+                    ),
+                  )}
+                </>
+              ) : (
+                unauthItem && (
+                  <Link
+                    href={unauthItem.href}
+                    className={styles.mobileLoginBtn}
+                    onClick={() => setActivePanel(null)}
+                  >
+                    {unauthItem.label}
+                  </Link>
+                )
+              )}
+            </div>
           </div>
         </div>
 
@@ -360,20 +397,10 @@ export function Navbar() {
                 {isUserMenuOpen && (
                   <div className={styles.userDropdown}>
                     <div className={styles.dropdownHeader}>
-                      <span
-                        className={styles.dropdownUserName}
-                        style={{
-                          fontWeight: "600",
-                          display: "block",
-                          marginBottom: "2px",
-                        }}
-                      >
+                      <span className={styles.dropdownUserName}>
                         {userName}
                       </span>
-                      <span
-                        className={styles.dropdownUserEmail}
-                        style={{ fontSize: "0.8rem", opacity: 0.8 }}
-                      >
+                      <span className={styles.dropdownUserEmail}>
                         {user.email}
                       </span>
                     </div>

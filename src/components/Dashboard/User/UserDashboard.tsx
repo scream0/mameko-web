@@ -2,6 +2,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useStore } from "@/context/StoreContext";
+import { useTheme } from "@/context/ThemeContext";
 import styles from "./UserDashboard.module.css";
 import { useUserDashboardData } from "@/hooks/useUserDashboardData";
 import { auth } from "@/lib/supabaseClient";
@@ -37,6 +38,7 @@ export default function UserDashboard({ user }) {
   const searchParams = useSearchParams();
   const { userName, loading, error, retry } = useUserDashboardData();
   const [notificationCount, setNotificationCount] = useState(0);
+  const { theme, toggleTheme, isThemeReady } = useTheme();
 
   const { isCartOpen, setIsCartOpen, cartQuantity, addToCart, rupiah } = useStore();
   const [searchQuery, setSearchQuery] = useState("");
@@ -48,12 +50,21 @@ export default function UserDashboard({ user }) {
   const currentTabParam = searchParams.get("tab");
   
   // Tentukan active tab secara aman tanpa memicu redirect paksa di awal
-  const activeTab = VALID_TABS.includes(currentTabParam)
+  const activeTab = currentTabParam === "wallet"
+    ? "profile"
+    : currentTabParam === "returns"
+    ? "orders"
+    : VALID_TABS.includes(currentTabParam)
     ? currentTabParam
     : DEFAULT_TAB;
 
-  // Hapus useEffect router.replace yang memicu loop/refresh tidak perlu di awal load.
-  // Cukup tangani perubahan tab lewat interaksi klik menu.
+  useEffect(() => {
+    if (currentTabParam === "wallet") {
+      router.replace("/dashboard?tab=profile&subtab=wallet");
+    } else if (currentTabParam === "returns") {
+      router.replace("/dashboard?tab=orders&status=return");
+    }
+  }, [currentTabParam, router]);
 
   useEffect(() => {
     if (!user) {
@@ -115,7 +126,7 @@ export default function UserDashboard({ user }) {
 
   const handleBukaDetail = (product: any) => {
     if (!product || !product.id) {
-      toast.error("Produk tidak valid.");
+      toast.error(userConfig.toasts.invalidProduct || "Produk tidak valid.");
       return;
     }
     setSelectedProduct(product);
@@ -123,7 +134,7 @@ export default function UserDashboard({ user }) {
   };
 
   const handleLogout = async () => {
-    toast.loading("Keluar dari sesi...", { id: "user-logout" });
+    toast.loading(userConfig.toasts.loggingOut || "Keluar dari sesi...", { id: "user-logout" });
     await logoutUser();
   };
 
@@ -182,9 +193,13 @@ export default function UserDashboard({ user }) {
         </nav>
 
         <div className={styles.sidebarFooter}>
-          <button onClick={handleLogout} className={styles.logoutBtn} aria-label="Keluar dari akun">
+          <button
+            onClick={handleLogout}
+            className={styles.logoutBtn}
+            aria-label={userConfig.aria.logout || userConfig.logoutText}
+          >
             <AppIcon name="log-out" size={18} />
-            <span>Keluar Akun</span>
+            <span>{userConfig.logoutText}</span>
           </button>
         </div>
       </aside>
@@ -192,29 +207,77 @@ export default function UserDashboard({ user }) {
       {/* Main Content */}
       <main className={styles.mainContent}>
         {/* Navbar Atas Melayang */}
-        <div className={styles.shopNavbar}>
+        <header className={styles.shopNavbar}>
           <div className={styles.navbarSearchWrapper}>
             <AppIcon name="search" className={styles.searchIcon} />
             <input
               type="text"
-              placeholder="Cari parfum..."
+              placeholder={userConfig.navbar?.searchPlaceholder || "Cari parfum..."}
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                if (activeTab !== "shop" && e.target.value.trim() !== "") {
+                  handleTabChange("shop");
+                }
+              }}
               className={styles.searchInputNavbar}
             />
+            {searchQuery && (
+              <button
+                type="button"
+                className={styles.clearSearchBtn}
+                onClick={() => setSearchQuery("")}
+                aria-label={userConfig.navbar?.clearSearchAria || "Hapus pencarian"}
+              >
+                <AppIcon name="x" size={14} />
+              </button>
+            )}
           </div>
           <div className={styles.navbarActions}>
+            {/* Theme Switcher Button */}
             <button
+              type="button"
+              className={styles.themeIconBtnNavbar}
+              onClick={toggleTheme}
+              aria-label={
+                theme === "dark"
+                  ? userConfig.navbar?.themeToggle?.lightMode || "Ganti ke mode terang"
+                  : userConfig.navbar?.themeToggle?.darkMode || "Ganti ke mode gelap"
+              }
+              title={
+                theme === "dark"
+                  ? userConfig.navbar?.themeToggle?.lightMode || "Ganti ke mode terang"
+                  : userConfig.navbar?.themeToggle?.darkMode || "Ganti ke mode gelap"
+              }
+            >
+              {isThemeReady ? (
+                <AppIcon
+                  name={theme === "dark" ? "sun" : "moon"}
+                  className={styles.svgIcon}
+                />
+              ) : (
+                <AppIcon name="sun" className={styles.svgIcon} />
+              )}
+            </button>
+
+            {/* Chat Button */}
+            <button
+              type="button"
               className={styles.chatIconBtnNavbar}
               onClick={() => setIsChatOpen(true)}
-              aria-label="Chat"
+              aria-label={userConfig.navbar?.chatAria || "Chat"}
+              title={userConfig.navbar?.chatAria || "Chat"}
             >
               <AppIcon name="message-circle" className={styles.svgIcon} />
             </button>
+
+            {/* Cart Button */}
             <button
+              type="button"
               className={styles.cartIconBtnNavbar}
               onClick={() => setIsCartOpen(true)}
-              aria-label="Keranjang"
+              aria-label={userConfig.navbar?.cartAria || userConfig.aria?.cart || "Keranjang"}
+              title={userConfig.navbar?.cartAria || userConfig.aria?.cart || "Keranjang"}
             >
               <AppIcon name="shopping-cart" className={styles.svgIcon} />
               {cartQuantity > 0 && (
@@ -224,7 +287,7 @@ export default function UserDashboard({ user }) {
               )}
             </button>
           </div>
-        </div>
+        </header>
 
         {error && (
           <div className={styles.errorBanner} role="alert">
@@ -244,7 +307,7 @@ export default function UserDashboard({ user }) {
             <OverviewSection setActiveTab={handleTabChange} />
           )}
           {activeTab === "orders" && <OrdersSection />}
-          <div style={{ display: activeTab === "notifications" ? "block" : "none" }}>
+          <div className={activeTab === "notifications" ? styles.visibleNotificationView : styles.hiddenNotificationView}>
             <NotificationsSection onUnreadCountChange={setNotificationCount} />
           </div>
           {activeTab === "profile" && <ProfileSection />}
@@ -252,7 +315,7 @@ export default function UserDashboard({ user }) {
       </main>
 
       {/* Mobile Floating Bottom Navigation (Android Style) */}
-      <nav className={styles.mobileBottomNav} aria-label="Mobile Bottom Navigation">
+      <nav className={styles.mobileBottomNav} aria-label={userConfig.aria?.mobileNav || "Mobile Bottom Navigation"}>
         {filteredNav.map((item) => {
           const isActive = activeTab === item.id;
           const badgeCount =

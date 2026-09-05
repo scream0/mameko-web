@@ -1,5 +1,6 @@
 // @ts-nocheck
 "use client";
+
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useStore } from "@/context/StoreContext";
@@ -8,6 +9,7 @@ import styles from "./WishlistSection.module.css";
 import wishlistConfig from "@/data/ui/wishlistConfig.json";
 import { AppIcon } from "@/components/UI/Icon/AppIcon";
 import ConfirmationModal from "@/components/UI/Modal/ConfirmationModal";
+import { WishlistSkeleton } from "@/components/UI/Skeleton/SkeletonLayouts";
 
 function readWishlist() {
   if (typeof window === "undefined") {
@@ -28,6 +30,9 @@ export default function WishlistSection() {
   const [wishlist, setWishlist] = useState(readWishlist);
   const [searchQuery, setSearchQuery] = useState("");
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+
+  // Prevent flash of empty state while catalog is loading
+  const isCatalogLoading = wishlist.length > 0 && (!products || products.length === 0);
 
   const syncWishlist = () => {
     setWishlist(readWishlist());
@@ -112,7 +117,7 @@ export default function WishlistSection() {
     );
   };
 
-  const handleRemove = (productId, e: any) => {
+  const handleRemove = (productId: any, e: any) => {
     e.stopPropagation();
     const nextWishlist = wishlist.filter(
       (id: any) => String(id) !== String(productId),
@@ -124,7 +129,7 @@ export default function WishlistSection() {
         detail: { count: nextWishlist.length, items: nextWishlist },
       }),
     );
-    toast.success(wishlistConfig.toasts.removeSuccess || "Produk dihapus dari wishlist");
+    toast.success(wishlistConfig.toasts.removeSuccess || "Dihapus dari wishlist.");
   };
 
   const confirmClearAll = () => {
@@ -135,23 +140,23 @@ export default function WishlistSection() {
         detail: { count: 0, items: [] },
       }),
     );
-    toast.success("Wishlist berhasil dikosongkan");
+    toast.success(wishlistConfig.toasts.clearSuccess || "Wishlist berhasil dikosongkan.");
   };
 
   const handleClearAll = () => {
     setShowClearConfirm(true);
   };
 
-  const handleAddToCart = (product, e: any) => {
+  const handleAddToCart = (product: any, e: any) => {
     e.stopPropagation();
     const status = getStockStatus(product);
     if (status === "outOfStock") {
-      toast.error(wishlistConfig.stock.outOfStock || "Produk habis");
+      toast.error(wishlistConfig.toasts.outOfStock || "Produk sedang habis.");
       return;
     }
     const variant = getFirstAvailableVariant(product);
     addToCart(product, variant, 1);
-    toast.success(wishlistConfig.toasts.addedSuccess || "Berhasil ditambahkan ke keranjang");
+    toast.success(wishlistConfig.toasts.addedSuccess || "Produk ditambahkan ke keranjang!");
   };
 
   const handleCardClick = (product: any) => {
@@ -189,32 +194,44 @@ export default function WishlistSection() {
               <AppIcon name="search" size={16} className={styles.searchIcon} />
               <input
                 type="text"
-                placeholder={wishlistConfig.searchPlaceholder || "Cari koleksi parfum..."}
+                placeholder={wishlistConfig.searchPlaceholder || "Cari di wishlist..."}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className={styles.searchInput}
               />
             </div>
             {wishlistProducts.length > 0 && (
-              <button onClick={handleClearAll} className={styles.clearAllBtn} title="Kosongkan Wishlist">
+              <button
+                onClick={handleClearAll}
+                className={styles.clearAllBtn}
+                title={wishlistConfig.buttons.clearAllTitle}
+              >
                 <AppIcon name="trash" size={15} />
-                <span>Kosongkan</span>
+                <span>{wishlistConfig.buttons.clearAll}</span>
               </button>
             )}
           </div>
         </div>
       </div>
 
-      {/* Product Grid / Empty State */}
-      {filteredProducts.length === 0 ? (
+      {/* Content Area: Skeleton while catalog loads -> Empty State -> Product Grid */}
+      {isCatalogLoading ? (
+        <div className={styles.productGrid}>
+          <WishlistSkeleton count={wishlist.length || 4} />
+        </div>
+      ) : filteredProducts.length === 0 ? (
         <div className={`card ${styles.centerStateCard}`}>
           <div className={styles.emptyIconWrapper}>
             <AppIcon name="heart" size={36} className={styles.emptySvg} />
           </div>
-          <h4 className={styles.emptyTitle}>{wishlistConfig.emptyTitle || "Wishlist Anda Masih Kosong"}</h4>
-          <p className={styles.emptyText}>{wishlistConfig.emptyText || "Simpan aroma parfum favorit Anda ke sini untuk memudahkan akses pembelian di kemudian hari."}</p>
+          <h4 className={styles.emptyTitle}>
+            {wishlistConfig.emptyTitle || "Wishlist masih kosong"}
+          </h4>
+          <p className={styles.emptyText}>
+            {wishlistConfig.emptyText || "Tekan ikon hati pada produk di katalog untuk menyimpannya di sini."}
+          </p>
           <button onClick={handleExplore} className={styles.exploreBtn}>
-            {wishlistConfig.buttons.explore || "Jelajahi Koleksi"}
+            {wishlistConfig.buttons.explore || "Jelajahi Katalog"}
           </button>
         </div>
       ) : (
@@ -246,23 +263,23 @@ export default function WishlistSection() {
                     />
                   ) : (
                     <div className={styles.productPlaceholder}>
-                      <span>No Image</span>
+                      <span>{wishlistConfig.badge.noImage || "No Image"}</span>
                     </div>
                   )}
                   <span className={styles.categoryBadge}>
-                    {product.category || "Extrait de Parfum"}
+                    {product.category || wishlistConfig.badge.defaultCategory || "Extrait de Parfum"}
                   </span>
                   <button
                     className={styles.removeBtn}
                     onClick={(e) => handleRemove(pId, e)}
                     aria-label={wishlistConfig.buttons.remove || "Hapus"}
-                    title="Hapus dari wishlist"
+                    title={wishlistConfig.buttons.removeTitle || "Hapus dari wishlist"}
                   >
                     <AppIcon name="x" size={14} />
                   </button>
                   {stockStatus === "outOfStock" && (
                     <span className={styles.outOfStockBadge}>
-                      {wishlistConfig.stock.outOfStock || "Habis"}
+                      {wishlistConfig.stock.outOfStock || "Stok Habis"}
                     </span>
                   )}
                 </div>
@@ -281,9 +298,9 @@ export default function WishlistSection() {
                       {stockStatus === "available" &&
                         (wishlistConfig.stock.available || "Tersedia")}
                       {stockStatus === "lowStock" &&
-                        (wishlistConfig.stock.lowStock || "Stok Terbatas")}
+                        (wishlistConfig.stock.lowStock || "Stok Menipis")}
                       {stockStatus === "outOfStock" &&
-                        (wishlistConfig.stock.outOfStock || "Habis")}
+                        (wishlistConfig.stock.outOfStock || "Stok Habis")}
                     </span>
                   </div>
                   <button
@@ -292,7 +309,7 @@ export default function WishlistSection() {
                     disabled={stockStatus === "outOfStock"}
                   >
                     <AppIcon name="shopping-bag" size={15} />
-                    <span>{wishlistConfig.buttons.addToCart || "+ Keranjang"}</span>
+                    <span>{wishlistConfig.buttons.addToCart || "Tambah ke Keranjang"}</span>
                   </button>
                 </div>
               </div>
@@ -300,13 +317,14 @@ export default function WishlistSection() {
           })}
         </div>
       )}
-      
+
+      {/* Clear Confirmation Modal */}
       <ConfirmationModal
         isOpen={showClearConfirm}
         onClose={() => setShowClearConfirm(false)}
         onConfirm={confirmClearAll}
-        title="Kosongkan Wishlist"
-        message="Apakah Anda yakin ingin mengosongkan seluruh wishlist?"
+        title={wishlistConfig.modals.clear.title}
+        message={wishlistConfig.modals.clear.message}
       />
     </div>
   );

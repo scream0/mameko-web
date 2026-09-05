@@ -1,5 +1,10 @@
 {
   "title": "OVERVIEW ANALYTICS",
+  "subTabs": {
+    "stats": "📊 Statistik",
+    "reviews": "⭐ Ulasan",
+    "chat": "💬 Chat"
+  },
   "cards": {
     "revenue": "Total Pendapatan",
     "orders": "Total Transaksi",
@@ -30,42 +35,23 @@
       "cancelled": "Cancelled"
     },
     "table": {
-      "orderId": "Order ID",
-      "customer": "Pemesan",
+      "orderId": "ID Pesanan",
+      "customer": "Pelanggan",
       "total": "Total",
-      "status": "Status",
-      "action": "Aksi Seller"
+      "courier": "Kurir",
+      "status": "Status"
     },
     "buttons": {
-      "process": "Proses Pesanan",
-      "ship": "Kirim Barang",
-      "success": "Selesaikan",
-      "prev": "Sebelumnya",
-      "next": "Berikutnya"
+      "export": "Export CSV",
+      "saveView": "Save view",
+      "loadMore": "Muat Lebih Banyak",
+      "allLoaded": "Semua pesanan telah dimuat."
     }
   },
-  "tableHeaders": ["Order ID", "Pemesan", "Total", "Kurir", "Status"],
-  "actions": {
-    "confirmPayment": "Konfirmasi Bayar",
-    "confirming": "Mengonfirmasi...",
-    "processOrder": "Proses Pesanan",
-    "processing": "Memproses...",
-    "shipItem": "Kirim Barang",
-    "shipping": "Mengirim...",
-    "completeOrder": "Selesaikan",
-    "completing": "Menyelesaikan...",
-    "completed": "Selesai"
-  },
-  "pagination": {
-    "prev": "Sebelumnya",
-    "next": "Berikutnya"
-  },
-  "modal": {
-    "title": "Input Nomor Resi",
-    "subtitle": "Masukkan nomor resi pengiriman untuk pesanan",
-    "placeholder": "Contoh: JX1234567890",
-    "cancel": "Batal",
-    "confirm": "Konfirmasi Kirim",
-    "loading": "Menyimpan..."
+  "tableHeaders": ["ID Pesanan", "Pelanggan", "Total", "Kurir", "Status"],
+  "toasts": {
+    "viewSaved": "Filter view saved.",
+    "loadError": "Gagal memuat data pesanan",
+    "statsError": "Gagal memuat data dashboard"
   }
 }

@@ -75,6 +75,26 @@
   }
 }
 
+.profileNavWrapper {
+  position: relative;
+  width: 100%;
+}
+
+.topNavActions {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 10;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.topNavBtnActive {
+  color: var(--primary-accent) !important;
+  border-color: var(--primary-accent) !important;
+  background: var(--surface-primary) !important;
+}
+
 .sectionHeaderCard {
   background: var(--surface-primary);
   border: 1px solid var(--border-color);
@@ -84,6 +104,26 @@
   flex-direction: column;
   gap: 6px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.headerCardInner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.headerName {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.headerRole {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  margin: 4px 0 0 0;
 }
 
 .sectionHeaderTitle {
@@ -174,7 +214,7 @@
 .modalOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   display: flex;
@@ -245,6 +285,282 @@
 
 .closeModalBtn:hover {
   color: var(--text-primary);
+}
+
+/* ====================================================
+   Address Manager Modal Elements
+   ==================================================== */
+.addressManagerContent {
+  max-width: 600px;
+}
+
+.addressList {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 10px 0;
+}
+
+.emptyAddressText {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+  padding: 1.5rem 0;
+}
+
+.addressCard {
+  padding: 14px;
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: border-color 0.2s ease;
+}
+
+.addressCard:hover {
+  border-color: var(--primary-accent);
+}
+
+.addressCardTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.addressLabelGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.addressLabel {
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--text-primary);
+}
+
+.primaryTag {
+  font-size: 0.65rem;
+  background: rgba(var(--primary-accent-rgb), 0.15);
+  color: var(--primary-accent);
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.addressCardActions {
+  display: flex;
+  gap: 6px;
+}
+
+.btnSetPrimary {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btnSetPrimary:hover {
+  color: var(--text-primary);
+  border-color: var(--text-primary);
+}
+
+.btnEditAddress {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btnEditAddress:hover {
+  border-color: var(--primary-accent);
+  color: var(--primary-accent);
+}
+
+.btnDeleteAddress {
+  background: rgba(var(--danger-color-rgb, 220, 38, 38), 0.1);
+  border: 1px solid rgba(var(--danger-color-rgb, 220, 38, 38), 0.3);
+  color: var(--danger-color, #ef4444);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btnDeleteAddress:hover {
+  background: rgba(var(--danger-color-rgb, 220, 38, 38), 0.2);
+}
+
+.recipientDetails {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.streetDetails {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.fullWidthAddBtn {
+  width: 100%;
+  margin-top: 6px;
+}
+
+.maxLimitNote {
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  font-style: italic;
+  margin: 6px 0 0 0;
+}
+
+/* ====================================================
+   Bank Account Section
+   ==================================================== */
+.bankSectionWrapper {
+  margin-top: 20px;
+  margin-bottom: 10px;
+  border-top: 1px solid var(--border-color);
+  padding-top: 15px;
+}
+
+.bankSectionTitle {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 15px;
+}
+
+/* ====================================================
+   WhatsApp OTP Modal
+   ==================================================== */
+.otpModalContent {
+  max-width: 420px;
+}
+
+.otpHeaderCenter {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.otpIconWrapper {
+  width: 60px;
+  height: 60px;
+  background-color: var(--primary-accent);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px auto;
+  color: var(--primary-accent-text);
+  font-size: 24px;
+  box-shadow: 0 4px 12px rgba(var(--primary-accent-rgb), 0.25);
+}
+
+.otpInstruction {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.otpPhoneBold {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.otpInputsGrid {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.otpDigitInput {
+  width: 46px;
+  height: 56px;
+  font-size: 24px;
+  text-align: center;
+  border-radius: 12px;
+  border: 2px solid var(--border-color);
+  background-color: var(--surface-primary);
+  color: var(--text-primary);
+  font-weight: 700;
+  transition: all 0.2s ease;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.otpDigitInput:focus {
+  border-color: var(--primary-accent);
+  box-shadow: 0 0 0 4px rgba(var(--primary-accent-rgb), 0.15);
+  transform: translateY(-2px);
+}
+
+.otpTimerBox {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
+.otpResendBtn {
+  background: none;
+  border: none;
+  color: var(--primary-accent);
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: underline;
+  padding: 0;
+}
+
+.otpResendBtn:hover {
+  opacity: 0.8;
+}
+
+.otpFooter {
+  border-top: none;
+  padding-top: 0;
+  gap: 10px;
+}
+
+.otpFooterBtn {
+  flex: 1;
+}
+
+.otpStatusRow {
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.otpVerifiedTag {
+  font-size: 0.75rem;
+  color: var(--success-color, #10b981);
+  font-weight: 600;
 }
 
 /* ====================================================
@@ -380,6 +696,19 @@
   gap: 12px;
 }
 
+.avatarUploadPreview {
+  width: 60px;
+  height: 60px;
+}
+
+.fileUploadHidden {
+  display: none;
+}
+
+.cursorPointer {
+  cursor: pointer;
+}
+
 .formGroupCheckbox {
   display: flex;
   align-items: center;
@@ -434,4 +763,21 @@
     grid-template-columns: 1fr;
     gap: 0;
   }
-}
+  .otpInputsGrid {
+    gap: 6px;
+  }
+  .otpDigitInput {
+    width: 40px;
+    height: 50px;
+    font-size: 20px;
+    border-radius: 8px;
+  }
+  .addressCardTop {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .addressCardActions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}

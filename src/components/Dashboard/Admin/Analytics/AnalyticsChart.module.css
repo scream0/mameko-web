@@ -95,6 +95,18 @@
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+.exportBtnCsv {
+  background: transparent;
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.exportBtnCsv:hover {
+  background: var(--surface-secondary);
+  border-color: var(--primary-accent);
+  color: var(--primary-accent);
+}
+
 .exportBtn:hover {
   background: var(--primary-accent);
   color: var(--primary-accent-text);
@@ -228,17 +240,71 @@
   }
 }
 
-/* Responsif untuk layar kecil */
+/* Responsif untuk tablet dan layar kecil */
 @media (max-width: 768px) {
   .chartContainer {
     padding: 1.25rem;
+    gap: 18px;
   }
   .headerRow {
     flex-direction: column;
     align-items: flex-start;
+    gap: 14px;
   }
   .actionGroup {
     width: 100%;
+    justify-content: flex-start;
+    gap: 8px;
+  }
+  .chartWrapper {
+    height: 240px;
+  }
+}
+
+/* Responsif untuk smartphone / mobile */
+@media (max-width: 480px) {
+  .chartContainer {
+    padding: 1rem 0.85rem;
+    border-radius: 12px;
+    gap: 16px;
+  }
+  .chartTitle {
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+  }
+  .actionGroup {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .tabGroup {
+    width: 100%;
+    display: flex;
     justify-content: space-between;
+  }
+  .tabBtn {
+    flex: 1;
+    text-align: center;
+    padding: 6px 4px;
+    font-size: 0.7rem;
+  }
+  .exportBtn {
+    width: 100%;
+    text-align: center;
+    padding: 8px 12px;
+    font-size: 0.75rem;
+  }
+  .chartWrapper {
+    height: 210px;
+  }
+  .sectionSubtitle {
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+  }
+  .yearlyTable th,
+  .yearlyTable td {
+    padding: 10px 12px;
+    font-size: 0.75rem;
+    white-space: nowrap;
   }
 }

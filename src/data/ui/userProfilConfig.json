@@ -1,7 +1,16 @@
 {
   "header": {
     "title": "Profil Pengguna",
-    "subtitle": "Kelola informasi personal, keamanan, dan daftar alamat pengiriman"
+    "subtitle": "Kelola informasi personal, keamanan, dan daftar alamat pengiriman",
+    "fallbackUserName": "Pengguna",
+    "fallbackEmail": "VIP Collector",
+    "fallbackMemberTier": "VIP Collector"
+  },
+  "nav": {
+    "wishlist": "Wishlist Saya",
+    "wallet": "Dompet & Penarikan Dana",
+    "settings": "Pengaturan Akun",
+    "backToProfile": "Kembali ke Profil"
   },
   "buttons": {
     "editProfile": "Edit Profil",
@@ -41,22 +50,54 @@
         "female": "Perempuan"
       },
       "newsletterLabel": "Terima info & promo eksklusif",
+      "bank": {
+        "title": "Informasi Rekening Bank (Untuk Penarikan Dana)",
+        "bankName": "Nama Bank",
+        "bankNamePlaceholder": "Contoh: BCA, Mandiri, BRI",
+        "accountNumber": "Nomor Rekening",
+        "accountNumberPlaceholder": "Masukkan nomor rekening valid",
+        "accountName": "Nama Pemilik Rekening",
+        "accountNamePlaceholder": "Sesuai buku tabungan"
+      },
       "cancel": "Batal",
       "save": "Simpan",
       "saving": "Menyimpan..."
     },
     "address": {
-      "addTitle": "Tambah Alamat",
+      "addTitle": "Tambah Alamat Baru",
       "editTitle": "Edit Alamat",
-      "label": "Label Alamat",
+      "recipientSection": "Kontak Penerima",
+      "areaSection": "Wilayah Pengiriman",
+      "streetSection": "Alamat Lengkap & Patokan",
       "recipientName": "Nama Penerima",
+      "recipientNamePlaceholder": "Nama penerima",
       "recipientPhone": "Telepon Penerima",
+      "recipientPhonePlaceholder": "08xxxxxxxxxx",
+      "phoneVerified": "Nomor terverifikasi",
+      "phoneUnverified": "Belum diverifikasi",
+      "sendOtpBtn": "Kirim OTP via WA",
+      "sendingOtp": "Mengirim...",
+      "areaLabel": "Kecamatan / Kota / Kode Pos",
       "street": "Alamat Lengkap",
-      "city": "Kota/Kabupaten",
-      "postalCode": "Kode Pos",
+      "streetPlaceholder": "Nama jalan, nomor rumah, RT/RW, Blok, nama gedung...",
+      "label": "Label Alamat",
+      "labelPlaceholder": "Rumah / Kantor / Kos",
+      "defaultLabel": "Rumah",
+      "notes": "Catatan Kurir (Opsional)",
+      "notesPlaceholder": "Warna pagar, titip satpam, dll",
       "cancel": "Batal",
       "save": "Simpan Alamat",
       "saving": "Menyimpan..."
+    },
+    "addressManager": {
+      "title": "Buku Alamat Saya",
+      "empty": "Belum ada alamat tersimpan. Silakan tambahkan alamat pengiriman Anda.",
+      "primaryBadge": "UTAMA",
+      "setPrimary": "Jadikan Utama",
+      "edit": "Edit",
+      "delete": "Hapus",
+      "addBtn": "+ Tambah Alamat Baru",
+      "maxLimit": "Batas maksimal 3 alamat telah tercapai. Hapus salah satu alamat jika ingin menambahkan yang baru."
     },
     "password": {
       "title": "Ganti Password",
@@ -66,35 +107,62 @@
       "cancel": "Batal",
       "submit": "Ubah Password",
       "submitting": "Memperbarui..."
+    },
+    "otp": {
+      "title": "Verifikasi WhatsApp",
+      "instruction": "Masukkan 6-digit kode OTP yang telah kami kirimkan ke nomor WhatsApp",
+      "timerText": "Kirim Ulang Kode",
+      "resendBtn": "Kirim Ulang Kode OTP",
+      "cancel": "Batal",
+      "verify": "Verifikasi",
+      "verifying": "Memverifikasi..."
     }
   },
   "states": {
     "emptyAddress": "Belum ada alamat tersimpan."
   },
   "prompts": {
+    "removeAvatarTitle": "Hapus Avatar",
     "removeAvatarConfirm": "Yakin ingin menghapus foto profil?",
     "deleteAccountConfirm": "PERINGATAN: Ini akan menghapus seluruh data akun Anda secara permanen. Yakin?",
+    "deleteAddressTitle": "Hapus Alamat",
     "deleteAddressConfirm": "Hapus alamat ini?"
   },
   "toasts": {
     "fetchError": "Gagal memuat data profil.",
     "uploadingAvatar": "Mengunggah avatar baru...",
     "uploadSuccess": "Avatar berhasil diunggah!",
+    "uploadAvatarError": "Gagal mengunggah gambar.",
     "removeAvatarLoading": "Menghapus avatar...",
     "removeAvatarSuccess": "Avatar berhasil dihapus.",
+    "deleteAvatarError": "Gagal menghapus avatar.",
     "saveProfileLoading": "Menyimpan profil...",
     "saveProfileSuccess": "Profil berhasil diperbarui!",
+    "usernameRequired": "Username tidak boleh kosong.",
+    "sendingOtp": "Mengirim kode verifikasi WhatsApp...",
+    "sendOtpError": "Gagal mengirim OTP",
+    "resendOtpSuccess": "Kode OTP baru telah dikirim",
+    "resendOtpError": "Gagal mengirim ulang OTP",
+    "verifyingOtp": "Memverifikasi OTP...",
+    "otpInvalid": "OTP tidak valid",
+    "phoneVerifiedSuccess": "Nomor telepon diverifikasi!",
     "passwordMismatch": "Password baru tidak cocok.",
     "passwordLength": "Password baru minimal 6 karakter.",
     "passwordLoading": "Memverifikasi & mengubah password...",
     "passwordSuccess": "Password berhasil diubah!",
+    "currentPasswordWrong": "Password saat ini salah.",
+    "updatePasswordError": "Gagal memperbarui password.",
     "deleteAccountLoading": "Menghapus akun...",
     "deleteAccountSuccess": "Akun berhasil dihapus. Mengalihkan...",
+    "logoutLoading": "Keluar dari sesi...",
+    "maxAddressesReached": "Maksimal hanya dapat menyimpan 3 alamat.",
     "saveAddressLoading": "Menyimpan alamat...",
     "saveAddressSuccess": "Alamat berhasil disimpan!",
     "deleteAddressLoading": "Menghapus alamat...",
     "deleteAddressSuccess": "Alamat dihapus.",
+    "addressNotFound": "Alamat tidak ditemukan.",
     "setPrimaryLoading": "Memperbarui alamat utama...",
-    "setPrimarySuccess": "Alamat utama diperbarui!"
+    "setPrimarySuccess": "Alamat utama berhasil diubah.",
+    "setPrimaryError": "Gagal mengubah alamat utama."
   }
 }

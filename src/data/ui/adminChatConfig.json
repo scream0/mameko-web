@@ -1,0 +1,25 @@
+{
+  "sidebarHeader": "Daftar Percakapan",
+  "emptySidebar": "Belum ada chat",
+  "backBtnAria": "Kembali",
+  "chattingWith": "Chatting dengan",
+  "online": "Online",
+  "offline": "Offline",
+  "typing": "Mengetik...",
+  "emptyConversationTitle": "Pilih Percakapan",
+  "emptyConversationDesc": "Pilih pelanggan dari daftar di sebelah kiri untuk mulai membaca dan membalas pesan.",
+  "inputPlaceholder": "Ketik balasan untuk",
+  "quickRepliesLabel": "Pilihan cepat:",
+  "quickReplies": [
+    "Halo! Ada yang bisa kami bantu mengenai pesanan Anda?",
+    "Pesanan Anda sedang kami proses dan segera dikirim ya.",
+    "Nomor resi telah kami update pada detail pesanan Anda.",
+    "Terima kasih telah berbelanja di toko kami! 🙏"
+  ],
+  "footerDisclaimer": "Pesan langsung dikirimkan ke perangkat pelanggan secara realtime.",
+  "toasts": {
+    "sendError": "Gagal mengirim pesan",
+    "uploadError": "Gagal mengunggah gambar",
+    "fetchError": "Gagal memuat percakapan"
+  }
+}

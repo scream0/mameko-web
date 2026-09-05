@@ -94,6 +94,7 @@ export default function SettingsView() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
   const [activeTab, setActiveTab] = useState("store");
+  const [rawSettings, setRawSettings] = useState<any>(null);
   const lastUserIdRef = useRef(null);
   
   // State untuk file gambar About & Hero
@@ -242,6 +243,7 @@ export default function SettingsView() {
         }
 
         const data = await getAdminSettings(session);
+        setRawSettings(data);
         setSettings(mapSettingsToState(data));
         setAboutImagePreviewUrl(data?.about?.image || "");
         setHeroImagePreviewUrl(data?.hero?.image || "");
@@ -271,6 +273,7 @@ export default function SettingsView() {
         if (session) {
           try {
             const data = await getAdminSettings(session);
+            setRawSettings(data);
             setSettings(mapSettingsToState(data));
             setAboutImagePreviewUrl(data?.about?.image || "");
             setHeroImagePreviewUrl(data?.hero?.image || "");
@@ -510,6 +513,20 @@ export default function SettingsView() {
         },
         copyright: { text: strictValue(s.footer.copyright?.text) },
       },
+      ...(rawSettings?.promoBannerEnabled !== undefined
+        ? {
+            promoBannerEnabled: Boolean(rawSettings.promoBannerEnabled),
+            promoBannerText: rawSettings.promoBannerText || "",
+            promoDiscountType: rawSettings.promoDiscountType || "percentage",
+            promoDiscountValue: Number(rawSettings.promoDiscountValue) || 0,
+            promoStartDate: rawSettings.promoStartDate || "",
+            promoEndDate: rawSettings.promoEndDate || "",
+            promoCode: rawSettings.promoCode || "",
+            promoDestination: rawSettings.promoDestination || "#product",
+            promoTargetType: rawSettings.promoTargetType || "all",
+            promoTargetVariants: rawSettings.promoTargetVariants || [],
+          }
+        : {}),
     };
   };
 
@@ -567,15 +584,15 @@ export default function SettingsView() {
         <button
           type="button"
           onClick={() => {
-            toast.loading("Keluar dari panel admin...", { id: "admin-logout" });
+            toast.loading(cfg.account?.logoutLoading || "Keluar dari panel admin...", { id: "admin-logout" });
             logoutUser();
           }}
           className={styles.logoutTabBtn}
-          aria-label="Keluar dari akun admin"
-          title="Keluar dari akun admin"
+          aria-label={cfg.account?.logoutAria || "Keluar dari akun admin"}
+          title={cfg.account?.logoutAria || "Keluar dari akun admin"}
         >
           <AppIcon name="log-out" size={14} />
-          <span>Keluar Akun</span>
+          <span>{cfg.account?.logoutBtn || "Keluar Akun"}</span>
         </button>
       </div>
 
@@ -663,19 +680,20 @@ export default function SettingsView() {
                 couriers: { ...prev.couriers, biteshipAutoOrder: autoOrder },
               }))
             }
+            cfg={cfg}
           />
         )}
 
         {activeTab === "account" && (
           <div className={styles.tabContent}>
-            <div style={{ marginBottom: "2rem" }}>
-              <h4 className={styles.sectionTitle}>Manajemen Akun</h4>
+            <div className={styles.accountSectionHeader}>
+              <h4 className={styles.sectionTitle}>{cfg.account?.title || "Manajemen Akun"}</h4>
               <p className={styles.helpText}>
-                Anda dapat mengelola pengguna admin di bagian bawah.
+                {cfg.account?.helpText || "Anda dapat mengelola pengguna admin di bagian bawah."}
               </p>
             </div>
             
-            <div style={{ borderTop: "1px solid var(--border-color)", paddingTop: "2rem" }}>
+            <div className={styles.accountDivider}>
               <UserManagement />
             </div>
           </div>
@@ -745,11 +763,11 @@ function StoreTab({ settings, handleInputChange, cfg }) {
     <>
       <div className={styles.formSection}>
         <h4 className={styles.sectionTitle}>
-          {cfg.sections?.storeInfo || "Informasi Toko"}
+          {cfg.store?.sectionTitle || "Informasi Toko"}
         </h4>
         <div className={styles.inputGroup}>
           <label className={styles.fieldLabel}>
-            {cfg.labels?.storeName || "Nama Toko"}
+            {cfg.store?.storeNameLabel || "Nama Toko"}
           </label>
           <input
             type="text"
@@ -762,7 +780,7 @@ function StoreTab({ settings, handleInputChange, cfg }) {
         </div>
         <div className={styles.inputGroup}>
           <label className={styles.fieldLabel}>
-            {cfg.labels?.storeEmail || "Email Kontak"}
+            {cfg.store?.storeEmailLabel || "Email Kontak"}
           </label>
           <input
             type="email"
@@ -774,7 +792,7 @@ function StoreTab({ settings, handleInputChange, cfg }) {
         </div>
         <div className={styles.inputGroup}>
           <label className={styles.fieldLabel}>
-            {cfg.labels?.currency || "Mata Uang"}
+            {cfg.store?.currencyLabel || "Mata Uang"}
           </label>
           <select
             name="currency"
@@ -782,13 +800,13 @@ function StoreTab({ settings, handleInputChange, cfg }) {
             onChange={handleInputChange}
             className={styles.selectField}
           >
-            <option value="IDR">IDR (Indonesian Rupiah)</option>
-            <option value="USD">USD (US Dollar)</option>
+            <option value="IDR">{cfg.store?.currencyIdr || "IDR (Indonesian Rupiah)"}</option>
+            <option value="USD">{cfg.store?.currencyUsd || "USD (US Dollar)"}</option>
           </select>
         </div>
         <div className={styles.inputGroup}>
           <label className={styles.fieldLabel}>
-            {cfg.labels?.adminLocale || "Bahasa Dashboard Admin"}
+            {cfg.store?.adminLocaleLabel || "Bahasa Dashboard Admin"}
           </label>
           <select
             name="adminLocale"
@@ -797,16 +815,16 @@ function StoreTab({ settings, handleInputChange, cfg }) {
             className={styles.selectField}
           >
             <option value="id">
-              {cfg.options?.adminLocaleId || "Indonesia (ID)"}
+              {cfg.store?.adminLocaleId || "Indonesia (ID)"}
             </option>
             <option value="en">
-              {cfg.options?.adminLocaleEn || "English (EN)"}
+              {cfg.store?.adminLocaleEn || "English (EN)"}
             </option>
           </select>
         </div>
         <div className={styles.inputGroup}>
           <label className={styles.fieldLabel}>
-            {cfg.labels?.lowStockThreshold || "Batas Stok Menipis"}
+            {cfg.store?.lowStockLabel || "Batas Stok Menipis"}
           </label>
           <input
             type="number"
@@ -818,30 +836,29 @@ function StoreTab({ settings, handleInputChange, cfg }) {
             required
           />
         </div>
-        <div className={styles.inputGroup} style={{ position: "relative" }}>
+        <div className={styles.inputGroup}>
           <label className={styles.fieldLabel}>
-            Kota / Wilayah Toko (Asal Pengiriman Biteship)
+            {cfg.store?.cityRegionLabel || "Kota / Wilayah Toko (Asal Pengiriman Biteship)"}
           </label>
-          <div style={{ display: "flex", gap: "8px" }}>
+          <div className={styles.citySelectRow}>
             <input
               type="text"
               name="storeCityName"
               value={settings.storeCityName || ""}
               readOnly
-              className={styles.inputField}
-              style={{ backgroundColor: "var(--surface-secondary)", cursor: "not-allowed", flex: 1 }}
-              placeholder="Pilih wilayah melalui kolom pencarian di sebelah"
+              className={`${styles.inputField} ${styles.cityInputReadOnly}`}
+              placeholder={cfg.store?.cityPlaceholder || "Pilih wilayah melalui kolom pencarian di sebelah"}
             />
             <button 
               type="button" 
               onClick={() => handleInputChange({ target: { name: "storeCityName", value: "" } })}
-              style={{ padding: "0 12px", background: "transparent", border: "1px solid var(--border-color)", borderRadius: "6px", cursor: "pointer", color: "var(--text-secondary)" }}
+              className={styles.cityResetBtn}
             >
-              Reset
+              {cfg.store?.cityResetBtn || "Reset"}
             </button>
           </div>
           
-          <div style={{ marginTop: "12px", position: "relative" }}>
+          <div className={styles.areaSearchWrapper}>
             <input
               type="text"
               value={areaSearch}
@@ -851,50 +868,39 @@ function StoreTab({ settings, handleInputChange, cfg }) {
               }}
               onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
               className={styles.inputField}
-              placeholder="Ketik minimal 3 huruf nama kota/kecamatan asal (Cth: Sleman)..."
+              placeholder={cfg.store?.citySearchPlaceholder || "Ketik minimal 3 huruf nama kota/kecamatan asal..."}
             />
             {isSearching && (
-              <span style={{ position: "absolute", right: "12px", top: "10px", fontSize: "12px", color: "var(--text-secondary)" }}>
-                Mencari...
+              <span className={styles.areaSearchingBadge}>
+                {cfg.store?.searchingBadge || "Mencari..."}
               </span>
             )}
             {showDropdown && areaOptions.length > 0 && (
-              <ul style={{
-                position: "absolute", top: "100%", left: 0, right: 0, 
-                background: "var(--surface-primary)", border: "1px solid var(--border-color)", 
-                borderRadius: "6px", maxHeight: "200px", overflowY: "auto", 
-                zIndex: 50, padding: 0, margin: "4px 0 0 0", listStyle: "none",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
-              }}>
+              <ul className={styles.areaDropdown}>
                 {areaOptions.map((opt) => (
                   <li 
                     key={opt.id} 
                     onClick={() => handleSelectArea(opt)}
-                    style={{ padding: "10px 12px", cursor: "pointer", fontSize: "14px", borderBottom: "1px solid var(--border-color)" }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--surface-secondary)"}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                    className={styles.areaOptionItem}
                   >
                     <strong>{opt.name}</strong>
                     {opt.administrative_division_level_2 ? `, ${opt.administrative_division_level_2}` : ''}
                     {opt.administrative_division_level_1 ? `, ${opt.administrative_division_level_1}` : ''}
-                    <div style={{ fontSize: "12px", color: "var(--text-secondary)", marginTop: "2px" }}>Kode Pos: {opt.postal_code || "-"}</div>
+                    <div className={styles.areaPostalCode}>
+                      {cfg.store?.postalCodePrefix || "Kode Pos: "}{opt.postal_code || "-"}
+                    </div>
                   </li>
                 ))}
               </ul>
             )}
             {showDropdown && areaSearch.length >= 3 && areaOptions.length === 0 && !isSearching && (
-              <div style={{
-                position: "absolute", top: "100%", left: 0, right: 0, 
-                background: "var(--surface-primary)", border: "1px solid var(--border-color)", 
-                borderRadius: "6px", padding: "12px", zIndex: 50, margin: "4px 0 0 0",
-                fontSize: "14px", color: "var(--text-secondary)", textAlign: "center"
-              }}>
-                Wilayah tidak ditemukan.
+              <div className={styles.areaEmptyNotice}>
+                {cfg.store?.areaNotFound || "Wilayah tidak ditemukan."}
               </div>
             )}
           </div>
-          <small className={styles.fieldDesc} style={{ display: "block", marginTop: "0.4rem" }}>
-            Data wilayah ini tersinkronisasi otomatis dengan Biteship (Area ID: {settings.storeCityId || "Belum dipilih"}).
+          <small className={styles.fieldDesc}>
+            {cfg.store?.areaSyncNotice || "Data wilayah ini tersinkronisasi otomatis dengan Biteship"} (Area ID: {settings.storeCityId || (cfg.store?.notSelected || "Belum dipilih")}).
           </small>
         </div>
       </div>
@@ -912,34 +918,34 @@ function HeroTab({ settings, updateTab, handleHeroImageSelect, heroImagePreviewU
   return (
     <div className={styles.formSection}>
       <h4 className={styles.sectionTitle}>
-        {cfg.sections?.hero || "Hero Section"}
+        {cfg.hero?.sectionTitle || cfg.sections?.hero || "Hero Section"}
       </h4>
 
       {/* Bagian Upload Gambar Hero */}
       <div className={styles.row2}>
         <div className={styles.inputGroup}>
-          <label className={styles.fieldLabel}>Hero Gambar URL</label>
+          <label className={styles.fieldLabel}>{cfg.hero?.imageUrlLabel || "Hero Gambar URL"}</label>
           <input
             className={styles.inputField}
             value={s.image}
             onChange={(e) => set({ image: e.target.value })}
-            placeholder="https://..."
+            placeholder={cfg.hero?.imageUrlPlaceholder || "https://..."}
           />
         </div>
         <div className={styles.inputGroup}>
-          <label className={styles.fieldLabel}>Alt Gambar Hero</label>
+          <label className={styles.fieldLabel}>{cfg.hero?.imageAltLabel || "Alt Gambar Hero"}</label>
           <input
             className={styles.inputField}
             value={s.imageAlt}
             onChange={(e) => set({ imageAlt: e.target.value })}
-            placeholder="Deskripsi gambar..."
+            placeholder={cfg.hero?.imageAltPlaceholder || "Deskripsi gambar..."}
           />
         </div>
       </div>
 
       <div className={styles.inputGroup}>
         <label className={styles.fieldLabel}>
-          Unggah File Gambar Hero
+          {cfg.hero?.fileUploadLabel || "Unggah File Gambar Hero"}
         </label>
         <input
           type="file"
@@ -948,7 +954,7 @@ function HeroTab({ settings, updateTab, handleHeroImageSelect, heroImagePreviewU
           className={styles.fileInput}
         />
         <small className={styles.fieldDesc}>
-          Unggah gambar atau ilustrasi utama untuk Hero Section landing page.
+          {cfg.hero?.fileUploadDesc || "Unggah gambar atau ilustrasi utama untuk Hero Section landing page."}
         </small>
       </div>
 
@@ -964,7 +970,7 @@ function HeroTab({ settings, updateTab, handleHeroImageSelect, heroImagePreviewU
       )}
 
       <div className={styles.inputGroup}>
-        <label className={styles.fieldLabel}>Tagline</label>
+        <label className={styles.fieldLabel}>{cfg.hero?.taglineLabel || "Tagline"}</label>
         <input
           className={styles.inputField}
           value={s.tagline}
@@ -973,7 +979,7 @@ function HeroTab({ settings, updateTab, handleHeroImageSelect, heroImagePreviewU
       </div>
       <div className={styles.row2}>
         <div className={styles.inputGroup}>
-          <label className={styles.fieldLabel}>Judul Utama</label>
+          <label className={styles.fieldLabel}>{cfg.hero?.mainTitleLabel || "Judul Utama"}</label>
           <input
             className={styles.inputField}
             value={s.title?.main}
@@ -983,7 +989,7 @@ function HeroTab({ settings, updateTab, handleHeroImageSelect, heroImagePreviewU
           />
         </div>
         <div className={styles.inputGroup}>
-          <label className={styles.fieldLabel}>Judul Sorotan</label>
+          <label className={styles.fieldLabel}>{cfg.hero?.highlightTitleLabel || "Judul Sorotan"}</label>
           <input
             className={styles.inputField}
             value={s.title?.highlight}
@@ -994,7 +1000,7 @@ function HeroTab({ settings, updateTab, handleHeroImageSelect, heroImagePreviewU
         </div>
       </div>
       <div className={styles.inputGroup}>
-        <label className={styles.fieldLabel}>Deskripsi Awal</label>
+        <label className={styles.fieldLabel}>{cfg.hero?.descPrefixLabel || "Deskripsi Awal"}</label>
         <input
           className={styles.inputField}
           value={s.description?.prefix}
@@ -1004,7 +1010,7 @@ function HeroTab({ settings, updateTab, handleHeroImageSelect, heroImagePreviewU
         />
       </div>
       <div className={styles.inputGroup}>
-        <label className={styles.fieldLabel}>Kata Miring</label>
+        <label className={styles.fieldLabel}>{cfg.hero?.descItalicLabel || "Kata Miring"}</label>
         <input
           className={styles.inputField}
           value={s.description?.italic}
@@ -1014,7 +1020,7 @@ function HeroTab({ settings, updateTab, handleHeroImageSelect, heroImagePreviewU
         />
       </div>
       <div className={styles.inputGroup}>
-        <label className={styles.fieldLabel}>Deskripsi Akhir</label>
+        <label className={styles.fieldLabel}>{cfg.hero?.descSuffixLabel || "Deskripsi Akhir"}</label>
         <input
           className={styles.inputField}
           value={s.description?.suffix}
@@ -1025,7 +1031,7 @@ function HeroTab({ settings, updateTab, handleHeroImageSelect, heroImagePreviewU
       </div>
       <div className={styles.row2}>
         <div className={styles.inputGroup}>
-          <label className={styles.fieldLabel}>Tombol Utama Label</label>
+          <label className={styles.fieldLabel}>{cfg.hero?.btnPrimaryLabel || "Tombol Utama Label"}</label>
           <input
             className={styles.inputField}
             value={s.buttons?.primary?.label}
@@ -1040,7 +1046,7 @@ function HeroTab({ settings, updateTab, handleHeroImageSelect, heroImagePreviewU
           />
         </div>
         <div className={styles.inputGroup}>
-          <label className={styles.fieldLabel}>Tombol Utama Href</label>
+          <label className={styles.fieldLabel}>{cfg.hero?.btnPrimaryHref || "Tombol Utama Href"}</label>
           <input
             className={styles.inputField}
             value={s.buttons?.primary?.href}
@@ -1057,7 +1063,7 @@ function HeroTab({ settings, updateTab, handleHeroImageSelect, heroImagePreviewU
       </div>
       <div className={styles.row2}>
         <div className={styles.inputGroup}>
-          <label className={styles.fieldLabel}>Tombol Kedua Label</label>
+          <label className={styles.fieldLabel}>{cfg.hero?.btnSecondaryLabel || "Tombol Kedua Label"}</label>
           <input
             className={styles.inputField}
             value={s.buttons?.secondary?.label}
@@ -1072,7 +1078,7 @@ function HeroTab({ settings, updateTab, handleHeroImageSelect, heroImagePreviewU
           />
         </div>
         <div className={styles.inputGroup}>
-          <label className={styles.fieldLabel}>Tombol Kedua Href</label>
+          <label className={styles.fieldLabel}>{cfg.hero?.btnSecondaryHref || "Tombol Kedua Href"}</label>
           <input
             className={styles.inputField}
             value={s.buttons?.secondary?.href}
@@ -1102,11 +1108,11 @@ function AboutTab({ settings, updateTab, handleAboutImageSelect, aboutImagePrevi
     <>
       <div className={styles.formSection}>
         <h4 className={styles.sectionTitle}>
-          {cfg.sections?.about || "About Section"}
+          {cfg.about?.sectionTitle || cfg.sections?.about || "About Section"}
         </h4>
         <div className={styles.row2}>
           <div className={styles.inputGroup}>
-            <label className={styles.fieldLabel}>Gambar URL</label>
+            <label className={styles.fieldLabel}>{cfg.about?.imageUrlLabel || "Gambar URL"}</label>
             <input
               className={styles.inputField}
               value={s.image}
@@ -1114,7 +1120,7 @@ function AboutTab({ settings, updateTab, handleAboutImageSelect, aboutImagePrevi
             />
           </div>
           <div className={styles.inputGroup}>
-            <label className={styles.fieldLabel}>Alt Gambar</label>
+            <label className={styles.fieldLabel}>{cfg.about?.imageAltLabel || "Alt Gambar"}</label>
             <input
               className={styles.inputField}
               value={s.imageAlt}
@@ -1124,7 +1130,7 @@ function AboutTab({ settings, updateTab, handleAboutImageSelect, aboutImagePrevi
         </div>
         <div className={styles.inputGroup}>
           <label className={styles.fieldLabel}>
-            {cfg.labels?.aboutImage || "Gambar Section About"}
+            {cfg.about?.fileUploadLabel || "Gambar Section About"}
           </label>
           <input
             type="file"
@@ -1133,8 +1139,7 @@ function AboutTab({ settings, updateTab, handleAboutImageSelect, aboutImagePrevi
             className={styles.fileInput}
           />
           <small className={styles.fieldDesc}>
-            {cfg.descriptions?.aboutImage ||
-              "Unggah gambar untuk bagian About di landing page."}
+            {cfg.about?.fileUploadDesc || "Unggah gambar untuk bagian About di landing page."}
           </small>
         </div>
         {(aboutImagePreviewUrl || s.image) && (
@@ -1148,7 +1153,7 @@ function AboutTab({ settings, updateTab, handleAboutImageSelect, aboutImagePrevi
           </div>
         )}
         <div className={styles.inputGroup}>
-          <label className={styles.fieldLabel}>Tagline</label>
+          <label className={styles.fieldLabel}>{cfg.about?.taglineLabel || "Tagline"}</label>
           <input
             className={styles.inputField}
             value={s.content?.tagline}
@@ -1158,7 +1163,7 @@ function AboutTab({ settings, updateTab, handleAboutImageSelect, aboutImagePrevi
           />
         </div>
         <div className={styles.inputGroup}>
-          <label className={styles.fieldLabel}>Heading</label>
+          <label className={styles.fieldLabel}>{cfg.about?.headingLabel || "Heading"}</label>
           <input
             className={styles.inputField}
             value={s.content?.heading}
@@ -1168,7 +1173,7 @@ function AboutTab({ settings, updateTab, handleAboutImageSelect, aboutImagePrevi
           />
         </div>
         <div className={styles.inputGroup}>
-          <label className={styles.fieldLabel}>Lead Text</label>
+          <label className={styles.fieldLabel}>{cfg.about?.leadTextLabel || "Lead Text"}</label>
           <textarea
             className={styles.textAreaField}
             value={s.content?.leadText}
@@ -1179,7 +1184,7 @@ function AboutTab({ settings, updateTab, handleAboutImageSelect, aboutImagePrevi
           />
         </div>
         <div className={styles.inputGroup}>
-          <label className={styles.fieldLabel}>Body Text</label>
+          <label className={styles.fieldLabel}>{cfg.about?.bodyTextLabel || "Body Text"}</label>
           <textarea
             className={styles.textAreaField}
             value={s.content?.bodyText}
@@ -1192,12 +1197,12 @@ function AboutTab({ settings, updateTab, handleAboutImageSelect, aboutImagePrevi
       </div>
 
       <div className={styles.formSection}>
-        <h4 className={styles.sectionTitle}>Fitur</h4>
+        <h4 className={styles.sectionTitle}>{cfg.about?.featuresTitle || "Fitur Unggulan"}</h4>
         {s.features?.map((feat, idx: any) => (
           <div key={idx} className={styles.nestedCard}>
             <div className={styles.row2}>
               <div className={styles.inputGroup}>
-                <label className={styles.fieldLabel}>Nomor</label>
+                <label className={styles.fieldLabel}>{cfg.about?.featureNumberLabel || "Nomor"}</label>
                 <input
                   className={styles.inputField}
                   value={feat.number}
@@ -1211,7 +1216,7 @@ function AboutTab({ settings, updateTab, handleAboutImageSelect, aboutImagePrevi
                 />
               </div>
               <div className={styles.inputGroup}>
-                <label className={styles.fieldLabel}>Judul</label>
+                <label className={styles.fieldLabel}>{cfg.about?.featureTitleLabel || "Judul"}</label>
                 <input
                   className={styles.inputField}
                   value={feat.title}
@@ -1226,7 +1231,7 @@ function AboutTab({ settings, updateTab, handleAboutImageSelect, aboutImagePrevi
               </div>
             </div>
             <div className={styles.inputGroup}>
-              <label className={styles.fieldLabel}>Deskripsi</label>
+              <label className={styles.fieldLabel}>{cfg.about?.featureDescLabel || "Deskripsi"}</label>
               <input
                 className={styles.inputField}
                 value={feat.desc}
@@ -1248,7 +1253,7 @@ function AboutTab({ settings, updateTab, handleAboutImageSelect, aboutImagePrevi
                 })
               }
             >
-              Hapus fitur
+              {cfg.about?.removeFeatureBtn || "Hapus Fitur"}
             </button>
           </div>
         ))}
@@ -1268,7 +1273,7 @@ function AboutTab({ settings, updateTab, handleAboutImageSelect, aboutImagePrevi
             })
           }
         >
-          + Tambah Fitur
+          {cfg.about?.addFeatureBtn || "+ Tambah Fitur"}
         </button>
       </div>
     </>
@@ -1286,10 +1291,10 @@ function ContactTab({ settings, updateTab, cfg }) {
     <>
       <div className={styles.formSection}>
         <h4 className={styles.sectionTitle}>
-          {cfg.sections?.contact || "Contact Section"}
+          {cfg.contact?.sectionTitle || cfg.sections?.contact || "Contact Section"}
         </h4>
         <div className={styles.inputGroup}>
-          <label className={styles.fieldLabel}>Nomor WhatsApp</label>
+          <label className={styles.fieldLabel}>{cfg.contact?.whatsappLabel || "Nomor WhatsApp"}</label>
           <input
             className={styles.inputField}
             value={s.whatsappNumber}
@@ -1298,7 +1303,7 @@ function ContactTab({ settings, updateTab, cfg }) {
         </div>
         <div className={styles.row2}>
           <div className={styles.inputGroup}>
-            <label className={styles.fieldLabel}>Header Tagline</label>
+            <label className={styles.fieldLabel}>{cfg.contact?.headerTaglineLabel || "Header Tagline"}</label>
             <input
               className={styles.inputField}
               value={s.header?.tagline}
@@ -1310,7 +1315,7 @@ function ContactTab({ settings, updateTab, cfg }) {
         </div>
         <div className={styles.row2}>
           <div className={styles.inputGroup}>
-            <label className={styles.fieldLabel}>Judul Utama</label>
+            <label className={styles.fieldLabel}>{cfg.contact?.mainTitleLabel || "Judul Utama"}</label>
             <input
               className={styles.inputField}
               value={s.header?.title?.main}
@@ -1325,7 +1330,7 @@ function ContactTab({ settings, updateTab, cfg }) {
             />
           </div>
           <div className={styles.inputGroup}>
-            <label className={styles.fieldLabel}>Judul Sorotan</label>
+            <label className={styles.fieldLabel}>{cfg.contact?.highlightTitleLabel || "Judul Sorotan"}</label>
             <input
               className={styles.inputField}
               value={s.header?.title?.highlight}
@@ -1343,12 +1348,12 @@ function ContactTab({ settings, updateTab, cfg }) {
       </div>
 
       <div className={styles.formSection}>
-        <h4 className={styles.sectionTitle}>Info Items</h4>
+        <h4 className={styles.sectionTitle}>{cfg.contact?.infoItemsTitle || "Info Items"}</h4>
         {s.infoItems?.map((item, idx: any) => (
           <div key={idx} className={styles.nestedCard}>
             <div className={styles.row3}>
               <div className={styles.inputGroup}>
-                <label className={styles.fieldLabel}>Icon</label>
+                <label className={styles.fieldLabel}>{cfg.contact?.iconLabel || "Icon"}</label>
                 <input
                   className={styles.inputField}
                   value={item.icon}
@@ -1362,7 +1367,7 @@ function ContactTab({ settings, updateTab, cfg }) {
                 />
               </div>
               <div className={styles.inputGroup}>
-                <label className={styles.fieldLabel}>Judul</label>
+                <label className={styles.fieldLabel}>{cfg.contact?.titleLabel || "Judul"}</label>
                 <input
                   className={styles.inputField}
                   value={item.title}
@@ -1376,7 +1381,7 @@ function ContactTab({ settings, updateTab, cfg }) {
                 />
               </div>
               <div className={styles.inputGroup}>
-                <label className={styles.fieldLabel}>Nilai</label>
+                <label className={styles.fieldLabel}>{cfg.contact?.valueLabel || "Nilai"}</label>
                 <input
                   className={styles.inputField}
                   value={item.value}
@@ -1397,7 +1402,7 @@ function ContactTab({ settings, updateTab, cfg }) {
                 set({ infoItems: s.infoItems.filter((_, i: any) => i !== idx) })
               }
             >
-              Hapus
+              {cfg.contact?.removeInfoBtn || "Hapus"}
             </button>
           </div>
         ))}
@@ -1408,14 +1413,14 @@ function ContactTab({ settings, updateTab, cfg }) {
             set({ infoItems: [...s.infoItems, { icon: "mail", title: "", value: "" }] })
           }
         >
-          + Tambah Info
+          {cfg.contact?.addInfoBtn || "+ Tambah Info"}
         </button>
       </div>
 
       <div className={styles.formSection}>
-        <h4 className={styles.sectionTitle}>Alamat & Form</h4>
+        <h4 className={styles.sectionTitle}>{cfg.contact?.addressFormTitle || "Alamat & Form"}</h4>
         <div className={styles.inputGroup}>
-          <label className={styles.fieldLabel}>Judul Alamat</label>
+          <label className={styles.fieldLabel}>{cfg.contact?.addressTitleLabel || "Judul Alamat"}</label>
           <input
             className={styles.inputField}
             value={s.headquarters?.title}
@@ -1427,7 +1432,7 @@ function ContactTab({ settings, updateTab, cfg }) {
           />
         </div>
         <div className={styles.inputGroup}>
-          <label className={styles.fieldLabel}>Baris Alamat 1</label>
+          <label className={styles.fieldLabel}>{cfg.contact?.addressLine1Label || "Baris Alamat 1"}</label>
           <input
             className={styles.inputField}
             value={s.headquarters?.address?.[0]}
@@ -1442,7 +1447,7 @@ function ContactTab({ settings, updateTab, cfg }) {
           />
         </div>
         <div className={styles.inputGroup}>
-          <label className={styles.fieldLabel}>Baris Alamat 2</label>
+          <label className={styles.fieldLabel}>{cfg.contact?.addressLine2Label || "Baris Alamat 2"}</label>
           <input
             className={styles.inputField}
             value={s.headquarters?.address?.[1]}
@@ -1457,7 +1462,7 @@ function ContactTab({ settings, updateTab, cfg }) {
           />
         </div>
         <div className={styles.inputGroup}>
-          <label className={styles.fieldLabel}>Koordinat</label>
+          <label className={styles.fieldLabel}>{cfg.contact?.coordinatesLabel || "Koordinat"}</label>
           <input
             className={styles.inputField}
             value={s.headquarters?.coordinates}
@@ -1472,7 +1477,7 @@ function ContactTab({ settings, updateTab, cfg }) {
           />
         </div>
         <div className={styles.inputGroup}>
-          <label className={styles.fieldLabel}>Judul Form</label>
+          <label className={styles.fieldLabel}>{cfg.contact?.formTitleLabel || "Judul Form"}</label>
           <input
             className={styles.inputField}
             value={s.form?.title}
@@ -1481,7 +1486,7 @@ function ContactTab({ settings, updateTab, cfg }) {
         </div>
         <div className={styles.row2}>
           <div className={styles.inputGroup}>
-            <label className={styles.fieldLabel}>Label Nama</label>
+            <label className={styles.fieldLabel}>{cfg.contact?.nameLabel || "Label Nama"}</label>
             <input
               className={styles.inputField}
               value={s.form?.fields?.name}
@@ -1496,7 +1501,7 @@ function ContactTab({ settings, updateTab, cfg }) {
             />
           </div>
           <div className={styles.inputGroup}>
-            <label className={styles.fieldLabel}>Label Email</label>
+            <label className={styles.fieldLabel}>{cfg.contact?.emailLabel || "Label Email"}</label>
             <input
               className={styles.inputField}
               value={s.form?.fields?.email}
@@ -1513,7 +1518,7 @@ function ContactTab({ settings, updateTab, cfg }) {
         </div>
         <div className={styles.row2}>
           <div className={styles.inputGroup}>
-            <label className={styles.fieldLabel}>Label Phone</label>
+            <label className={styles.fieldLabel}>{cfg.contact?.phoneLabel || "Label Phone"}</label>
             <input
               className={styles.inputField}
               value={s.form?.fields?.phone}
@@ -1528,7 +1533,7 @@ function ContactTab({ settings, updateTab, cfg }) {
             />
           </div>
           <div className={styles.inputGroup}>
-            <label className={styles.fieldLabel}>Label Pesan</label>
+            <label className={styles.fieldLabel}>{cfg.contact?.messageLabel || "Label Pesan"}</label>
             <input
               className={styles.inputField}
               value={s.form?.fields?.message}
@@ -1544,7 +1549,7 @@ function ContactTab({ settings, updateTab, cfg }) {
           </div>
         </div>
         <div className={styles.inputGroup}>
-          <label className={styles.fieldLabel}>Teks Tombol</label>
+          <label className={styles.fieldLabel}>{cfg.contact?.submitTextLabel || "Teks Tombol Kirim"}</label>
           <input
             className={styles.inputField}
             value={s.form?.submitText}
@@ -1569,11 +1574,11 @@ function FooterTab({ settings, updateTab, cfg }) {
     <>
       <div className={styles.formSection}>
         <h4 className={styles.sectionTitle}>
-          {cfg.sections?.footer || "Footer"}
+          {cfg.footer?.sectionTitle || cfg.sections?.footer || "Footer"}
         </h4>
         <div className={styles.row3}>
           <div className={styles.inputGroup}>
-            <label className={styles.fieldLabel}>Logo Teks</label>
+            <label className={styles.fieldLabel}>{cfg.footer?.logoTextLabel || "Logo Teks"}</label>
             <input
               className={styles.inputField}
               value={s.branding?.logo?.text}
@@ -1588,7 +1593,7 @@ function FooterTab({ settings, updateTab, cfg }) {
             />
           </div>
           <div className={styles.inputGroup}>
-            <label className={styles.fieldLabel}>Logo Subtext</label>
+            <label className={styles.fieldLabel}>{cfg.footer?.logoSubtextLabel || "Logo Subtext"}</label>
             <input
               className={styles.inputField}
               value={s.branding?.logo?.subtext}
@@ -1603,7 +1608,7 @@ function FooterTab({ settings, updateTab, cfg }) {
             />
           </div>
           <div className={styles.inputGroup}>
-            <label className={styles.fieldLabel}>Logo Href</label>
+            <label className={styles.fieldLabel}>{cfg.footer?.logoHrefLabel || "Logo Href"}</label>
             <input
               className={styles.inputField}
               value={s.branding?.logo?.href}
@@ -1619,7 +1624,7 @@ function FooterTab({ settings, updateTab, cfg }) {
           </div>
         </div>
         <div className={styles.inputGroup}>
-          <label className={styles.fieldLabel}>Deskripsi Branding</label>
+          <label className={styles.fieldLabel}>{cfg.footer?.descriptionLabel || "Deskripsi Branding"}</label>
           <textarea
             className={styles.textAreaField}
             value={s.branding?.description}
@@ -1632,12 +1637,12 @@ function FooterTab({ settings, updateTab, cfg }) {
       </div>
 
       <div className={styles.formSection}>
-        <h4 className={styles.sectionTitle}>Social Links</h4>
+        <h4 className={styles.sectionTitle}>{cfg.footer?.socialSectionTitle || "Social Links"}</h4>
         {s.branding?.socials?.map((social, idx: any) => (
           <div key={idx} className={styles.nestedCard}>
             <div className={styles.row3}>
               <div className={styles.inputGroup}>
-                <label className={styles.fieldLabel}>Icon</label>
+                <label className={styles.fieldLabel}>{cfg.footer?.socialIconLabel || "Icon"}</label>
                 <input
                   className={styles.inputField}
                   value={social.icon}
@@ -1654,7 +1659,7 @@ function FooterTab({ settings, updateTab, cfg }) {
                 />
               </div>
               <div className={styles.inputGroup}>
-                <label className={styles.fieldLabel}>Label</label>
+                <label className={styles.fieldLabel}>{cfg.footer?.socialLabelLabel || "Label"}</label>
                 <input
                   className={styles.inputField}
                   value={social.label}
@@ -1671,7 +1676,7 @@ function FooterTab({ settings, updateTab, cfg }) {
                 />
               </div>
               <div className={styles.inputGroup}>
-                <label className={styles.fieldLabel}>Href</label>
+                <label className={styles.fieldLabel}>{cfg.footer?.socialHrefLabel || "Href"}</label>
                 <input
                   className={styles.inputField}
                   value={social.href}
@@ -1700,7 +1705,7 @@ function FooterTab({ settings, updateTab, cfg }) {
                 })
               }
             >
-              Hapus
+              {cfg.footer?.removeSocialBtn || "Hapus"}
             </button>
           </div>
         ))}
@@ -1719,14 +1724,14 @@ function FooterTab({ settings, updateTab, cfg }) {
             })
           }
         >
-          + Tambah Social
+          {cfg.footer?.addSocialBtn || "+ Tambah Social"}
         </button>
       </div>
 
       <div className={styles.formSection}>
-        <h4 className={styles.sectionTitle}>Navigasi Footer</h4>
+        <h4 className={styles.sectionTitle}>{cfg.footer?.navSectionTitle || "Navigasi Footer"}</h4>
         <div className={styles.inputGroup}>
-          <label className={styles.fieldLabel}>Judul Navigasi</label>
+          <label className={styles.fieldLabel}>{cfg.footer?.navTitleLabel || "Judul Navigasi"}</label>
           <input
             className={styles.inputField}
             value={s.navigation?.title}
@@ -1739,7 +1744,7 @@ function FooterTab({ settings, updateTab, cfg }) {
           <div key={idx} className={styles.nestedCard}>
             <div className={styles.row2}>
               <div className={styles.inputGroup}>
-                <label className={styles.fieldLabel}>Label</label>
+                <label className={styles.fieldLabel}>{cfg.footer?.navLinkLabel || "Label"}</label>
                 <input
                   className={styles.inputField}
                   value={link.label}
@@ -1756,7 +1761,7 @@ function FooterTab({ settings, updateTab, cfg }) {
                 />
               </div>
               <div className={styles.inputGroup}>
-                <label className={styles.fieldLabel}>Href</label>
+                <label className={styles.fieldLabel}>{cfg.footer?.navLinkHref || "Href"}</label>
                 <input
                   className={styles.inputField}
                   value={link.href}
@@ -1785,7 +1790,7 @@ function FooterTab({ settings, updateTab, cfg }) {
                 })
               }
             >
-              Hapus link
+              {cfg.footer?.removeNavBtn || "Hapus link"}
             </button>
           </div>
         ))}
@@ -1801,15 +1806,15 @@ function FooterTab({ settings, updateTab, cfg }) {
             })
           }
         >
-          + Tambah Link
+          {cfg.footer?.addNavBtn || "+ Tambah Link"}
         </button>
       </div>
 
       <div className={styles.formSection}>
-        <h4 className={styles.sectionTitle}>Pembayaran & Copyright</h4>
+        <h4 className={styles.sectionTitle}>{cfg.footer?.paymentSectionTitle || "Pembayaran & Copyright"}</h4>
         <div className={styles.row2}>
           <div className={styles.inputGroup}>
-            <label className={styles.fieldLabel}>Judul Pembayaran</label>
+            <label className={styles.fieldLabel}>{cfg.footer?.paymentTitleLabel || "Judul Pembayaran"}</label>
             <input
               className={styles.inputField}
               value={s.payment?.title}
@@ -1819,7 +1824,7 @@ function FooterTab({ settings, updateTab, cfg }) {
             />
           </div>
           <div className={styles.inputGroup}>
-            <label className={styles.fieldLabel}>Subtitle Pembayaran</label>
+            <label className={styles.fieldLabel}>{cfg.footer?.paymentSubtitleLabel || "Subtitle Pembayaran"}</label>
             <input
               className={styles.inputField}
               value={s.payment?.subtitle}
@@ -1830,7 +1835,7 @@ function FooterTab({ settings, updateTab, cfg }) {
           </div>
         </div>
         <div className={styles.inputGroup}>
-          <label className={styles.fieldLabel}>Metode (dipisah koma)</label>
+          <label className={styles.fieldLabel}>{cfg.footer?.paymentMethodsLabel || "Metode (dipisah koma)"}</label>
           <input
             className={styles.inputField}
             value={(s.payment?.methods || []).join(", ")}
@@ -1845,7 +1850,7 @@ function FooterTab({ settings, updateTab, cfg }) {
           />
         </div>
         <div className={styles.inputGroup}>
-          <label className={styles.fieldLabel}>Teks Copyright</label>
+          <label className={styles.fieldLabel}>{cfg.footer?.copyrightLabel || "Teks Copyright"}</label>
           <input
             className={styles.inputField}
             value={s.copyright?.text}
@@ -1866,10 +1871,10 @@ function PaymentTab({ settings, handleInputChange, bankAccounts, updateBankAccou
   return (
     <div className={styles.formSection}>
       <h4 className={styles.sectionTitle}>
-        {cfg.sections?.paymentKeys || "Kunci API Gateway Pembayaran"}
+        {cfg.payment?.sectionTitle || "Gateway Pembayaran & Transfer"}
       </h4>
       <div className={styles.inputGroup}>
-        <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer", fontWeight: "600", fontSize: "0.95rem" }}>
+        <label className={styles.checkboxLabel}>
           <input
             type="checkbox"
             name="enableMidtrans"
@@ -1878,24 +1883,24 @@ function PaymentTab({ settings, handleInputChange, bankAccounts, updateBankAccou
               const syntheticEvent = {
                 target: {
                   name: "enableMidtrans",
-                  value: e.target.checked
-                }
+                  value: e.target.checked,
+                },
               };
               handleInputChange(syntheticEvent);
             }}
-            style={{ width: "18px", height: "18px" }}
+            className={styles.checkboxInput}
           />
-          Aktifkan Midtrans (Pembayaran Otomatis)
+          {cfg.payment?.enableMidtransLabel || "Aktifkan Midtrans (Pembayaran Otomatis)"}
         </label>
-        <p style={{ color: "var(--text-secondary)", fontSize: "14px", marginTop: "0.5rem", marginLeft: "1.7rem" }}>
-          Pembayaran otomatis melalui Virtual Account, GoPay, QRIS, dsb. Pastikan Server Key & Client Key sudah diatur di file .env server Anda.
+        <p className={styles.checkboxDesc}>
+          {cfg.payment?.enableMidtransDesc || "Pembayaran otomatis melalui Virtual Account, GoPay, QRIS, dsb. Pastikan Server Key & Client Key sudah diatur di file .env server Anda."}
         </p>
       </div>
 
       {settings.enableMidtrans && (
-        <div className={styles.inputGroup} style={{ marginTop: "1rem", marginLeft: "1.7rem", padding: "1rem", background: "var(--surface-secondary)", borderRadius: "8px", border: "1px solid var(--border-color)" }}>
+        <div className={styles.paymentSubCard}>
           <label className={styles.fieldLabel}>
-            Lingkungan Midtrans (Mode)
+            {cfg.payment?.midtransModeLabel || "Lingkungan Midtrans (Mode)"}
           </label>
           <select
             name="midtransIsProduction"
@@ -1904,25 +1909,24 @@ function PaymentTab({ settings, handleInputChange, bankAccounts, updateBankAccou
               const syntheticEvent = {
                 target: {
                   name: "midtransIsProduction",
-                  value: e.target.value === "true"
-                }
+                  value: e.target.value === "true",
+                },
               };
               handleInputChange(syntheticEvent);
             }}
             className={styles.inputField}
-            style={{ marginTop: "0.5rem" }}
           >
-            <option value="false">Sandbox (Mode Uji Coba)</option>
-            <option value="true">Production (Mode Live Asli)</option>
+            <option value="false">{cfg.payment?.midtransSandbox || "Sandbox (Mode Uji Coba)"}</option>
+            <option value="true">{cfg.payment?.midtransProduction || "Production (Mode Live Asli)"}</option>
           </select>
-          <small className={styles.fieldDesc} style={{ display: "block", marginTop: "0.5rem" }}>
-            Pastikan <strong>MIDTRANS_SERVER_KEY_SANDBOX</strong> dan <strong>MIDTRANS_SERVER_KEY_PRODUCTION</strong> sudah diatur di .env!
+          <small className={styles.fieldDesc}>
+            {cfg.payment?.midtransEnvNotice || "Pastikan MIDTRANS_SERVER_KEY_SANDBOX dan MIDTRANS_SERVER_KEY_PRODUCTION sudah diatur di .env!"}
           </small>
         </div>
       )}
 
-      <div className={styles.inputGroup} style={{ marginTop: "1.5rem" }}>
-        <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer", fontWeight: "600", fontSize: "0.95rem" }}>
+      <div className={styles.inputGroup}>
+        <label className={styles.checkboxLabel}>
           <input
             type="checkbox"
             name="enableManualTransfer"
@@ -1931,32 +1935,36 @@ function PaymentTab({ settings, handleInputChange, bankAccounts, updateBankAccou
               const syntheticEvent = {
                 target: {
                   name: "enableManualTransfer",
-                  value: e.target.checked
-                }
+                  value: e.target.checked,
+                },
               };
               handleInputChange(syntheticEvent);
             }}
-            style={{ width: "18px", height: "18px" }}
+            className={styles.checkboxInput}
           />
-          Aktifkan Transfer Bank Manual
+          {cfg.payment?.enableManualTransferLabel || "Aktifkan Transfer Bank Manual"}
         </label>
-        <p style={{ color: "var(--text-secondary)", fontSize: "14px", marginTop: "0.5rem", marginLeft: "1.7rem" }}>
-          Sistem akan mengirimkan instruksi transfer manual (rekening bank dsb) kepada pelanggan, lalu admin memverifikasi bukti bayar secara manual.
+        <p className={styles.checkboxDesc}>
+          {cfg.payment?.enableManualTransferDesc || "Sistem akan menampilkan rekening bank kepada pelanggan saat checkout, lalu admin memverifikasi bukti bayar secara manual."}
         </p>
       </div>
 
       {settings.enableManualTransfer && (
-        <div className={styles.inputGroup} style={{ marginTop: "1rem", marginLeft: "1.7rem", padding: "1rem", background: "var(--surface-secondary)", borderRadius: "8px", border: "1px solid var(--border-color)" }}>
-          <h5 style={{ margin: "0 0 1rem 0", fontSize: "0.9rem", color: "var(--text-primary)" }}>Daftar Rekening Bank</h5>
+        <div className={styles.paymentSubCard}>
+          <h5 className={styles.paymentSubTitle}>
+            {cfg.payment?.bankAccountsTitle || "Daftar Rekening Bank Toko"}
+          </h5>
           {bankAccounts.map((account, idx: any) => (
-            <div key={account.id || idx} style={{ display: "flex", flexDirection: "column", gap: "0.5rem", padding: "1rem", background: "var(--surface-primary)", borderRadius: "6px", marginBottom: "1rem", border: "1px solid var(--border-color)" }}>
+            <div key={account.id || idx} className={styles.bankAccountCard}>
               <div className={styles.row2}>
-                <div className={styles.inputGroup} style={{ margin: 0 }}>
-                  <label className={styles.fieldLabel}>Nama Bank</label>
+                <div className={styles.inputGroup}>
+                  <label className={styles.fieldLabel}>
+                    {cfg.payment?.bankNameLabel || "Nama Bank"}
+                  </label>
                   <input
                     className={styles.inputField}
                     value={account.bankName}
-                    placeholder="BCA"
+                    placeholder={cfg.payment?.bankNamePlaceholder || "BCA"}
                     onChange={(e) => {
                       const newAccs = [...bankAccounts];
                       newAccs[idx].bankName = e.target.value;
@@ -1964,12 +1972,14 @@ function PaymentTab({ settings, handleInputChange, bankAccounts, updateBankAccou
                     }}
                   />
                 </div>
-                <div className={styles.inputGroup} style={{ margin: 0 }}>
-                  <label className={styles.fieldLabel}>No. Rekening</label>
+                <div className={styles.inputGroup}>
+                  <label className={styles.fieldLabel}>
+                    {cfg.payment?.accountNumberLabel || "No. Rekening"}
+                  </label>
                   <input
                     className={styles.inputField}
                     value={account.accountNumber}
-                    placeholder="1234567890"
+                    placeholder={cfg.payment?.accountNumberPlaceholder || "1234567890"}
                     onChange={(e) => {
                       const newAccs = [...bankAccounts];
                       newAccs[idx].accountNumber = e.target.value;
@@ -1978,12 +1988,14 @@ function PaymentTab({ settings, handleInputChange, bankAccounts, updateBankAccou
                   />
                 </div>
               </div>
-              <div className={styles.inputGroup} style={{ margin: 0 }}>
-                <label className={styles.fieldLabel}>Atas Nama</label>
+              <div className={styles.inputGroup}>
+                <label className={styles.fieldLabel}>
+                  {cfg.payment?.accountNameLabel || "Atas Nama"}
+                </label>
                 <input
                   className={styles.inputField}
                   value={account.accountName}
-                  placeholder="PT Mameko Store"
+                  placeholder={cfg.payment?.accountNamePlaceholder || "PT Mameko Store"}
                   onChange={(e) => {
                     const newAccs = [...bankAccounts];
                     newAccs[idx].accountName = e.target.value;
@@ -1993,28 +2005,27 @@ function PaymentTab({ settings, handleInputChange, bankAccounts, updateBankAccou
               </div>
               <button
                 type="button"
-                style={{ alignSelf: "flex-start", padding: "0.4rem 0.8rem", fontSize: "12px", background: "#ff4d4f", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer" }}
+                className={styles.bankAccountDeleteBtn}
                 onClick={() => {
                   const newAccs = bankAccounts.filter((_, i: any) => i !== idx);
                   updateBankAccounts(newAccs);
                 }}
               >
-                Hapus Rekening
+                {cfg.payment?.removeAccountBtn || "Hapus Rekening"}
               </button>
             </div>
           ))}
           <button
             type="button"
             className={styles.addRowBtn}
-            style={{ marginTop: "0.5rem" }}
             onClick={() => {
               updateBankAccounts([
                 ...bankAccounts,
-                { id: Date.now().toString(), bankName: "", accountNumber: "", accountName: "" }
+                { id: Date.now().toString(), bankName: "", accountNumber: "", accountName: "" },
               ]);
             }}
           >
-            + Tambah Rekening
+            {cfg.payment?.addAccountBtn || "+ Tambah Rekening"}
           </button>
         </div>
       )}
@@ -2025,7 +2036,7 @@ function PaymentTab({ settings, handleInputChange, bankAccounts, updateBankAccou
 /* ============================================================
    TAB: COURIERS — Biteship
    ============================================================ */
-function CouriersTab({ settings, updateCouriers, updateBiteshipMode, updateBiteshipAutoOrder }) {
+function CouriersTab({ settings, updateCouriers, updateBiteshipMode, updateBiteshipAutoOrder, cfg }) {
   const activeCouriers = settings.activeCouriers || [];
   const isProduction = settings.biteshipIsProduction ?? false;
   const isAutoOrder = settings.biteshipAutoOrder ?? false;
@@ -2059,7 +2070,7 @@ function CouriersTab({ settings, updateCouriers, updateBiteshipMode, updateBites
           ]);
         }
       } catch {
-        setFetchError("Gagal memuat daftar kurir dari Biteship.");
+        setFetchError(cfg.couriers?.fetchError || "Gagal memuat daftar kurir dari Biteship.");
         setCourierList([
           { code: "jne", name: "JNE" },
           { code: "jnt", name: "J&T Express" },
@@ -2072,7 +2083,7 @@ function CouriersTab({ settings, updateCouriers, updateBiteshipMode, updateBites
       }
     };
     fetchCouriers();
-  }, []);
+  }, [cfg.couriers?.fetchError]);
 
   const handleToggle = (code: any) => {
     const next = activeCouriers.includes(code)
@@ -2081,39 +2092,39 @@ function CouriersTab({ settings, updateCouriers, updateBiteshipMode, updateBites
     updateCouriers(next);
   };
 
-  const selectAll = () => updateCouriers(courierList.map((c) => c.code));
+  const selectAll = () => updateCouriers(courierList.map((c: any) => c.code));
   const clearAll = () => updateCouriers([]);
 
   return (
     <>
       {/* Mode Biteship */}
       <div className={styles.formSection}>
-        <h4 className={styles.sectionTitle}>Mode Biteship</h4>
-        <p style={{ color: "var(--text-secondary)", fontSize: "14px", marginBottom: "1rem" }}>
-          Pilih environment Biteship yang akan dipakai untuk kalkulasi ongkos kirim.
-          Pastikan API key sudah diatur di <strong>.env.local</strong>.
+        <h4 className={styles.sectionTitle}>{cfg.couriers?.modeTitle || "Mode Biteship (Pengiriman)"}</h4>
+        <p className={styles.couriersDesc}>
+          {cfg.couriers?.modeDesc || "Pilih environment Biteship yang akan dipakai untuk kalkulasi ongkos kirim. Pastikan API key sudah diatur di .env."}
         </p>
         <select
-          className={styles.inputField}
+          className={`${styles.inputField} ${styles.couriersEnvironmentSelect}`}
           value={isProduction ? "true" : "false"}
           onChange={(e) => updateBiteshipMode(e.target.value === "true")}
-          style={{ maxWidth: "320px" }}
         >
-          <option value="false">🧪 Sandbox (Testing)</option>
-          <option value="true">🚀 Production (Live)</option>
+          <option value="false">{cfg.couriers?.sandboxOption || "🧪 Sandbox (Testing)"}</option>
+          <option value="true">{cfg.couriers?.productionOption || "🚀 Production (Live)"}</option>
         </select>
-        <small className={styles.fieldDesc} style={{ display: "block", marginTop: "0.5rem" }}>
-          Sandbox → <code>BITESHIP_API_KEY_SANDBOX</code> &nbsp;|&nbsp; Production → <code>BITESHIP_API_KEY_PRODUCTION</code>
+        <small className={styles.fieldDesc}>
+          {cfg.couriers?.envNotice || "Sandbox → BITESHIP_API_KEY_SANDBOX | Production → BITESHIP_API_KEY_PRODUCTION"}
         </small>
       </div>
 
       {/* Auto Resi Biteship */}
       <div className={styles.formSection}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div className={styles.autoAwbRow}>
           <div>
-            <h4 className={styles.sectionTitle} style={{ marginBottom: "0.25rem" }}>Sistem Resi Otomatis (Auto-AWB)</h4>
-            <p style={{ color: "var(--text-secondary)", fontSize: "14px", margin: 0 }}>
-              Jika diaktifkan, tombol <strong>"Request Pickup (Biteship)"</strong> akan muncul di halaman kelola pesanan admin.
+            <h4 className={`${styles.sectionTitle} ${styles.autoAwbTitle}`}>
+              {cfg.couriers?.autoAwbTitle || "Sistem Resi Otomatis (Auto-AWB)"}
+            </h4>
+            <p className={styles.autoAwbDesc}>
+              {cfg.couriers?.autoAwbDesc || "Jika diaktifkan, tombol 'Request Pickup (Biteship)' akan muncul di halaman kelola pesanan admin."}
             </p>
           </div>
           <label className={styles.switch}>
@@ -2129,21 +2140,25 @@ function CouriersTab({ settings, updateCouriers, updateBiteshipMode, updateBites
 
       {/* Kurir Aktif */}
       <div className={styles.formSection}>
-        <h4 className={styles.sectionTitle}>Kurir Aktif untuk Checkout</h4>
-        <p style={{ color: "var(--text-secondary)", fontSize: "14px", marginBottom: "1rem" }}>
-          Centang kurir yang ingin ditampilkan kepada pelanggan saat checkout.
-          {fetchError && <span style={{ color: "#dc2626", marginLeft: "0.5rem" }}>({fetchError})</span>}
+        <h4 className={styles.sectionTitle}>{cfg.couriers?.activeCouriersTitle || "Kurir Aktif untuk Checkout"}</h4>
+        <p className={styles.couriersDesc}>
+          {cfg.couriers?.activeCouriersDesc || "Centang kurir yang ingin ditampilkan kepada pelanggan saat checkout."}
+          {fetchError && <span className={styles.courierErrorBadge}> ({fetchError})</span>}
         </p>
-        <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem" }}>
-          <button type="button" className={styles.addRowBtn} onClick={selectAll}>Pilih Semua</button>
-          <button type="button" className={styles.addRowBtn} onClick={clearAll} style={{ borderColor: "#dc2626", color: "#dc2626" }}>Hapus Semua</button>
+        <div className={styles.couriersActionBtnGroup}>
+          <button type="button" className={styles.addRowBtn} onClick={selectAll}>
+            {cfg.couriers?.selectAllBtn || "Pilih Semua"}
+          </button>
+          <button type="button" className={`${styles.addRowBtn} ${styles.courierClearBtn}`} onClick={clearAll}>
+            {cfg.couriers?.clearAllBtn || "Hapus Semua"}
+          </button>
         </div>
         {loadingCouriers ? (
-          <p style={{ color: "var(--text-secondary)", fontSize: "14px" }}>Memuat daftar kurir...</p>
+          <p className={styles.couriersDesc}>{cfg.couriers?.loadingCouriers || "Memuat daftar kurir..."}</p>
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "0.75rem" }}>
-            {courierList.map((c) => (
-              <label key={c.code} className={styles.toggleRow} style={{ cursor: "pointer", userSelect: "none" }}>
+          <div className={styles.couriersGrid}>
+            {courierList.map((c: any) => (
+              <label key={c.code} className={`${styles.toggleRow} ${styles.courierToggleLabel}`}>
                 <input
                   type="checkbox"
                   className={styles.toggleInput}
@@ -2155,8 +2170,9 @@ function CouriersTab({ settings, updateCouriers, updateBiteshipMode, updateBites
             ))}
           </div>
         )}
-        <p style={{ color: "var(--text-secondary)", fontSize: "12px", marginTop: "1rem" }}>
-          Kurir aktif: <strong>{activeCouriers.length > 0 ? activeCouriers.join(", ") : "Tidak ada"}</strong>
+        <p className={styles.courierActiveNotice}>
+          {cfg.couriers?.activeCountPrefix || "Kurir aktif: "}{" "}
+          <strong>{activeCouriers.length > 0 ? activeCouriers.join(", ") : (cfg.couriers?.noneActive || "Tidak ada")}</strong>
         </p>
       </div>
     </>
@@ -2173,24 +2189,28 @@ function ProductTab({ settings, updateTab, cfg }) {
   return (
     <div className={styles.formSection}>
       <h4 className={styles.sectionTitle}>
-        {cfg.sections?.product || "Katalog Produk"}
+        {cfg.product?.sectionTitle || cfg.sections?.product || "Katalog Produk (Landing Page)"}
       </h4>
 
       <div className={styles.inputGroup}>
-        <label className={styles.fieldLabel}>Tagline (Teks Kecil Atas)</label>
+        <label className={styles.fieldLabel}>
+          {cfg.product?.taglineLabel || "Tagline (Teks Kecil Atas)"}
+        </label>
         <input
           className={styles.inputField}
           value={s.header?.tagline || ""}
           onChange={(e) =>
             set({ header: { ...s.header, tagline: e.target.value } })
           }
-          placeholder="our curated collection"
+          placeholder={cfg.product?.taglinePlaceholder || "our curated collection"}
         />
       </div>
 
       <div className={styles.row2}>
         <div className={styles.inputGroup}>
-          <label className={styles.fieldLabel}>Judul Utama</label>
+          <label className={styles.fieldLabel}>
+            {cfg.product?.mainTitleLabel || "Judul Utama"}
+          </label>
           <input
             className={styles.inputField}
             value={s.header?.title?.main || ""}
@@ -2202,11 +2222,13 @@ function ProductTab({ settings, updateTab, cfg }) {
                 },
               })
             }
-            placeholder="Produk"
+            placeholder={cfg.product?.mainTitlePlaceholder || "Produk"}
           />
         </div>
         <div className={styles.inputGroup}>
-          <label className={styles.fieldLabel}>Judul Sorotan (Highlight)</label>
+          <label className={styles.fieldLabel}>
+            {cfg.product?.highlightTitleLabel || "Judul Sorotan (Highlight)"}
+          </label>
           <input
             className={styles.inputField}
             value={s.header?.title?.highlight || ""}
@@ -2218,8 +2240,26 @@ function ProductTab({ settings, updateTab, cfg }) {
                 },
               })
             }
-            placeholder="Kami"
+            placeholder={cfg.product?.highlightTitlePlaceholder || "Kami"}
           />
+        </div>
+      </div>
+
+      {/* Live Preview Box */}
+      <div className={styles.previewContainer}>
+        <span className={styles.previewHeaderNotice}>
+          {cfg.product?.previewNotice || "Preview Tampilan di Landing Page:"}
+        </span>
+        <div className={styles.previewInnerBox}>
+          <p className={styles.previewTagline}>
+            {s.header?.tagline || "our curated collection"}
+          </p>
+          <h2 className={styles.previewHeading}>
+            {s.header?.title?.main || "Produk"}{" "}
+            <span className={styles.previewHighlight}>
+              {s.header?.title?.highlight || "Kami"}
+            </span>
+          </h2>
         </div>
       </div>
     </div>

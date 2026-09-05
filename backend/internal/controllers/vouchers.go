@@ -241,7 +241,15 @@ func CreateVoucher(c *fiber.Ctx) error {
 		return c.Status(403).JSON(fiber.Map{"error": "Admin access required"})
 	}
 
-	var req models.Voucher
+	var req struct {
+		Code           string      `json:"code"`
+		Title          string      `json:"title"`
+		Type           string      `json:"type"`
+		DiscountAmount float64     `json:"discount_amount"`
+		MinPurchase    float64     `json:"min_purchase"`
+		ValidUntil     interface{} `json:"valid_until"`
+		UsageLimit     int         `json:"usage_limit"`
+	}
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(400).JSON(fiber.Map{"error": "Invalid JSON format"})
 	}
@@ -250,29 +258,52 @@ func CreateVoucher(c *fiber.Ctx) error {
 		return c.Status(400).JSON(fiber.Map{"error": "Code and Title are required"})
 	}
 
+	var validUntilArg interface{} = nil
+	if req.ValidUntil != nil {
+		strVal := strings.TrimSpace(fmt.Sprintf("%v", req.ValidUntil))
+		if strVal != "" && strVal != "<nil>" && strVal != "null" {
+			if t, err := time.Parse(time.RFC3339, strVal); err == nil {
+				validUntilArg = t
+			} else if t, err := time.Parse("2006-01-02", strVal); err == nil {
+				validUntilArg = t
+			} else {
+				validUntilArg = strVal
+			}
+		}
+	}
+
 	query := `
 		INSERT INTO vouchers (code, title, type, discount_amount, min_purchase, valid_until, usage_limit, is_active)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, true)
-		RETURNING id::text
+		RETURNING id::text, created_at, used_count
 	`
-	
-	// Handle empty string for valid_until (map to nil/NULL)
-	var validUntil interface{}
-	if req.ValidUntil != nil && !req.ValidUntil.IsZero() {
-		validUntil = req.ValidUntil
-	} else {
-		validUntil = nil
-	}
 
 	var newID string
-	err = config.DB.QueryRow(query, req.Code, req.Title, req.Type, req.DiscountAmount, req.MinPurchase, validUntil, req.UsageLimit).Scan(&newID)
-	
+	var createdAt *time.Time
+	var usedCount int
+	err = config.DB.QueryRow(query, req.Code, req.Title, req.Type, req.DiscountAmount, req.MinPurchase, validUntilArg, req.UsageLimit).Scan(&newID, &createdAt, &usedCount)
+
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "Failed to save voucher: " + err.Error()})
 	}
 
-	req.ID = newID
-	return c.JSON(fiber.Map{"success": true, "voucher": req})
+	createdVoucher := models.Voucher{
+		ID:             newID,
+		Code:           req.Code,
+		Title:          req.Title,
+		Type:           req.Type,
+		DiscountAmount: req.DiscountAmount,
+		MinPurchase:    req.MinPurchase,
+		UsageLimit:     req.UsageLimit,
+		UsedCount:      usedCount,
+		IsActive:       true,
+		CreatedAt:      createdAt,
+	}
+	if t, ok := validUntilArg.(time.Time); ok {
+		createdVoucher.ValidUntil = &t
+	}
+
+	return c.JSON(fiber.Map{"success": true, "voucher": createdVoucher})
 }
 
 // UpdateVoucher updates an existing voucher
@@ -318,6 +349,24 @@ func UpdateVoucher(c *fiber.Ctx) error {
 		return c.Status(400).JSON(fiber.Map{"error": "Voucher ID is required"})
 	}
 
+	var validUntilArg interface{} = nil
+	updateValidUntil := false
+	if req.ValidUntil != nil {
+		updateValidUntil = true
+		strVal := strings.TrimSpace(fmt.Sprintf("%v", req.ValidUntil))
+		if strVal != "" && strVal != "<nil>" && strVal != "null" {
+			if t, err := time.Parse(time.RFC3339, strVal); err == nil {
+				validUntilArg = t
+			} else if t, err := time.Parse("2006-01-02", strVal); err == nil {
+				validUntilArg = t
+			} else {
+				validUntilArg = strVal
+			}
+		} else {
+			validUntilArg = nil
+		}
+	}
+
 	query := `
 		UPDATE vouchers SET
 			code = COALESCE($1, code),
@@ -327,22 +376,28 @@ func UpdateVoucher(c *fiber.Ctx) error {
 			min_purchase = COALESCE($5, min_purchase),
 			usage_limit = COALESCE($6, usage_limit),
 			is_active = COALESCE($7, is_active),
-			valid_until = COALESCE($8, valid_until)
-		WHERE id::text = $9
+			valid_until = CASE WHEN $8::boolean THEN $9::timestamptz ELSE valid_until END
+		WHERE id::text = $10
+		RETURNING id::text, code, title, type, discount_amount, min_purchase, valid_until, usage_limit, used_count, is_active, created_at
 	`
 
-	_, err = config.DB.Exec(
+	var updated models.Voucher
+	err = config.DB.QueryRow(
 		query,
 		req.Code, req.Title, req.Type, req.DiscountAmount, req.MinPurchase,
-		req.UsageLimit, req.IsActive, req.ValidUntil,
+		req.UsageLimit, req.IsActive, updateValidUntil, validUntilArg,
 		targetID,
+	).Scan(
+		&updated.ID, &updated.Code, &updated.Title, &updated.Type,
+		&updated.DiscountAmount, &updated.MinPurchase, &updated.ValidUntil,
+		&updated.UsageLimit, &updated.UsedCount, &updated.IsActive, &updated.CreatedAt,
 	)
 
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "Failed to update voucher: " + err.Error()})
 	}
 
-	return c.JSON(fiber.Map{"success": true, "message": "Voucher updated successfully"})
+	return c.JSON(fiber.Map{"success": true, "message": "Voucher updated successfully", "voucher": updated})
 }
 
 // DeleteVoucher deletes a voucher

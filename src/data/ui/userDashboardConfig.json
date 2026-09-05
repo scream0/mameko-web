@@ -71,11 +71,25 @@
     "menu": "Menu Navigasi",
     "menuExpanded": "Tutup menu navigasi",
     "menuPanel": "Drawer navigasi akun pengguna",
-    "logoutDialog": "Dialog konfirmasi logout"
+    "logoutDialog": "Dialog konfirmasi logout",
+    "mobileNav": "Navigasi Bawah Ponsel",
+    "logout": "Keluar dari akun"
+  },
+  "navbar": {
+    "searchPlaceholder": "Cari parfum...",
+    "clearSearchAria": "Hapus pencarian",
+    "chatAria": "Buka Live Chat",
+    "cartAria": "Buka Keranjang Belanja",
+    "themeToggle": {
+      "lightMode": "Ganti ke mode terang",
+      "darkMode": "Ganti ke mode gelap"
+    }
   },
   "toasts": {
     "initError": "Gagal inisialisasi dokumen user baru:",
     "fetchError": "Gagal mengambil data profil dari database:",
-    "logoutError": "Gagal logout:"
+    "logoutError": "Gagal logout:",
+    "loggingOut": "Keluar dari sesi...",
+    "invalidProduct": "Produk tidak valid."
   }
 }

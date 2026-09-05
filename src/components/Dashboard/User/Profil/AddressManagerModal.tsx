@@ -1,61 +1,83 @@
 // @ts-nocheck
 import React from "react";
 import styles from "./UserProfil.module.css";
+import { useScrollLock } from "@/hooks/useScrollLock";
+import profileConfig from "@/data/ui/userProfilConfig.json";
 
 export default function AddressManagerModal({
   isOpen,
   onClose,
-  addresses,
+  addresses = [],
   onSetPrimary,
   onEdit,
   onDelete,
   onOpenAdd,
 }) {
+  useScrollLock(Boolean(isOpen));
+
   if (!isOpen) return null;
+
+  const cfg = profileConfig.modals.addressManager;
 
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
-      <div className={styles.modalContent} onClick={(e) => e.stopPropagation()} style={{ maxWidth: "600px" }}>
+      <div className={`${styles.modalContent} ${styles.addressManagerContent}`} onClick={(e) => e.stopPropagation()}>
         <div className={styles.modalHeader}>
-          <h3 className={styles.modalTitle}>Buku Alamat Saya ({addresses.length}/3)</h3>
+          <h3 className={styles.modalTitle}>
+            {cfg.title} ({addresses.length}/3)
+          </h3>
           <button onClick={onClose} className={styles.closeModalBtn}>✕</button>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "14px", padding: "10px 0" }}>
+        <div className={styles.addressList}>
           {addresses.length === 0 ? (
-            <p style={{ textAlign: "center", color: "var(--text-secondary)", fontSize: "0.85rem", padding: "1rem 0" }}>
-              Belum ada alamat tersimpan. Silakan tambahkan alamat pengiriman Anda.
+            <p className={styles.emptyAddressText}>
+              {cfg.empty}
             </p>
           ) : (
             addresses.map((addr: any) => (
-              <div key={addr.id} style={{ padding: "14px", background: "var(--surface-secondary)", border: "1px solid var(--border-color)", borderRadius: "8px", display: "flex", flexDirection: "column", gap: "8px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <span style={{ fontWeight: 700, fontSize: "0.85rem", color: "var(--text-primary)" }}>{addr.label || "Alamat"}</span>
+              <div key={addr.id} className={styles.addressCard}>
+                <div className={styles.addressCardTop}>
+                  <div className={styles.addressLabelGroup}>
+                    <span className={styles.addressLabel}>
+                      {addr.label || profileConfig.modals.address.defaultLabel}
+                    </span>
                     {addr.isPrimary && (
-                      <span style={{ fontSize: "0.65rem", background: "rgba(var(--primary-accent-rgb), 0.15)", color: "var(--primary-accent)", padding: "2px 6px", borderRadius: "4px", fontWeight: 700 }}>
-                        UTAMA
+                      <span className={styles.primaryTag}>
+                        {cfg.primaryBadge}
                       </span>
                     )}
                   </div>
-                  <div style={{ display: "flex", gap: "6px" }}>
+                  <div className={styles.addressCardActions}>
                     {!addr.isPrimary && (
-                      <button onClick={() => onSetPrimary(addr.id)} style={{ background: "transparent", border: "1px solid var(--border-color)", color: "var(--text-secondary)", fontSize: "0.7rem", padding: "3px 8px", borderRadius: "4px", cursor: "pointer" }}>
-                        Jadikan Utama
+                      <button
+                        type="button"
+                        onClick={() => onSetPrimary(addr.id)}
+                        className={styles.btnSetPrimary}
+                      >
+                        {cfg.setPrimary}
                       </button>
                     )}
-                    <button onClick={() => onEdit(addr)} style={{ background: "transparent", border: "1px solid var(--border-color)", color: "var(--text-primary)", fontSize: "0.7rem", padding: "3px 8px", borderRadius: "4px", cursor: "pointer" }}>
-                      Edit
+                    <button
+                      type="button"
+                      onClick={() => onEdit(addr)}
+                      className={styles.btnEditAddress}
+                    >
+                      {cfg.edit}
                     </button>
-                    <button onClick={() => onDelete(addr.id)} style={{ background: "rgba(var(--danger-color-rgb), 0.1)", border: "1px solid rgba(var(--danger-color-rgb), 0.3)", color: "var(--danger-color)", fontSize: "0.7rem", padding: "3px 8px", borderRadius: "4px", cursor: "pointer" }}>
-                      Hapus
+                    <button
+                      type="button"
+                      onClick={() => onDelete(addr.id)}
+                      className={styles.btnDeleteAddress}
+                    >
+                      {cfg.delete}
                     </button>
                   </div>
                 </div>
-                <p style={{ margin: 0, fontSize: "0.8rem", color: "var(--text-primary)", fontWeight: 500 }}>
+                <p className={styles.recipientDetails}>
                   {addr.recipientName} ({addr.recipientPhone})
                 </p>
-                <p style={{ margin: 0, fontSize: "0.75rem", color: "var(--text-secondary)", lineHeight: "1.4" }}>
+                <p className={styles.streetDetails}>
                   {addr.street}, {addr.city}, {addr.province} - {addr.postalCode}
                 </p>
               </div>
@@ -64,15 +86,15 @@ export default function AddressManagerModal({
 
           {addresses.length < 3 ? (
             <button
+              type="button"
               onClick={onOpenAdd}
-              className={styles.actionBtnPrimary}
-              style={{ width: "100%", marginTop: "6px" }}
+              className={`${styles.actionBtnPrimary} ${styles.fullWidthAddBtn}`}
             >
-              + Tambah Alamat Baru ({addresses.length}/3)
+              {cfg.addBtn} ({addresses.length}/3)
             </button>
           ) : (
-            <p style={{ textAlign: "center", fontSize: "0.75rem", color: "var(--text-secondary)", fontStyle: "italic", margin: "4px 0 0 0" }}>
-              Batas maksimal 3 alamat telah tercapai. Hapus salah satu alamat jika ingin menambahkan yang baru.
+            <p className={styles.maxLimitNote}>
+              {cfg.maxLimit}
             </p>
           )}
         </div>

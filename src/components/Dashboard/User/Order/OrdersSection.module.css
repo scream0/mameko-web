@@ -12,6 +12,12 @@
   animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+@media (max-width: 1023px) {
+  .workspaceInner {
+    padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+  }
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -518,6 +524,69 @@
 
 .returnBtn:hover {
   background: var(--border-color);
+}
+
+.trackReturnBtn {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.6rem 1rem;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
+  background: rgba(245, 158, 11, 0.12);
+  color: #d97706;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+:global([data-theme="dark"]) .trackReturnBtn {
+  color: #f59e0b;
+}
+
+.trackReturnBtn:hover {
+  background: #f59e0b;
+  color: #000000;
+  border-color: #f59e0b;
+}
+
+.returnStatusBanner {
+  margin-top: 10px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.83rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.returnStatusBannerPending {
+  background: rgba(245, 158, 11, 0.08);
+  border-left: 3px solid #f59e0b;
+  color: var(--text-primary);
+}
+
+.returnStatusBannerApproved {
+  background: rgba(16, 185, 129, 0.08);
+  border-left: 3px solid #10b981;
+  color: var(--text-primary);
+}
+
+.returnStatusBannerRejected {
+  background: rgba(239, 68, 68, 0.08);
+  border-left: 3px solid #ef4444;
+  color: var(--text-primary);
+}
+
+.returnStatusNote {
+  color: var(--text-secondary);
 }
 
 .cancelBtn {
@@ -1096,4 +1165,75 @@
   .filterBtn {
     flex: 1 1 calc(50% - 0.35rem);
   }
+}
+
+/* --- SEARCH & EMPTY ICONS (NO INLINE STYLES) --- */
+.searchIcon {
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.emptyPackageIcon {
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+/* --- RESI SNIPPET ROW --- */
+.resiSnippetRow {
+  margin: 6px 0;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.resiSnippetLabel {
+  font-weight: 600;
+  color: var(--primary-accent);
+}
+
+.resiSnippetCode {
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  font-family: monospace;
+}
+
+/* --- RETURN STATUS ADMIN BANNER --- */
+.returnStatusBanner {
+  margin-top: 10px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.83rem;
+  color: var(--text-primary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.returnStatusApproved {
+  background: rgba(16, 185, 129, 0.08);
+  border-left: 3px solid #10b981;
+}
+
+.returnStatusRejected {
+  background: rgba(239, 68, 68, 0.08);
+  border-left: 3px solid #ef4444;
+}
+
+.returnStatusPending {
+  background: rgba(245, 158, 11, 0.08);
+  border-left: 3px solid #f59e0b;
+}
+
+.returnStatusTitle {
+  font-weight: 700;
+}
+
+.returnStatusNote {
+  color: var(--text-secondary);
 }

@@ -361,3 +361,26 @@
   justify-content: center;
   flex-wrap: wrap;
 }
+
+@media (max-width: 768px) {
+  .cardsGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .cardsGrid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .statCard {
+    padding: 0.95rem;
+  }
+
+  .statValue {
+    font-size: 1.1rem;
+  }
+}
+

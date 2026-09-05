@@ -1,30 +1,46 @@
 {
   "header": {
     "title": "Koleksi Eksklusif MAMEKO",
-    "subtitle": "Temukan aroma signature mewah yang diracik khusus untuk kepribadian Anda"
+    "subtitle": "Temukan aroma signature mewah yang diracik khusus untuk kepribadian Anda",
+    "fallbackTagline": "our curated collection",
+    "fallbackTitleMain": "Produk",
+    "fallbackTitleHighlight": "Kami"
   },
   "filters": {
     "allLabel": "Semua Koleksi",
     "searchPlaceholder": "Cari nama parfum atau deskripsi aroma...",
-    "sortDefault": "Urutan Default",
-    "sortPriceLow": "Harga: Rendah ke Tinggi",
-    "sortPriceHigh": "Harga: Tinggi ke Rendah",
+    "sortDefault": "Terbaru",
+    "sortPriceLow": "Harga Terendah",
+    "sortPriceHigh": "Harga Tertinggi",
     "sortName": "Nama Produk (A-Z)"
   },
+  "sortOptions": [
+    { "id": "default", "label": "Terbaru" },
+    { "id": "price-low", "label": "Harga Terendah" },
+    { "id": "price-high", "label": "Harga Tertinggi" },
+    { "id": "name", "label": "Nama (A-Z)" }
+  ],
   "messages": {
     "loading": "Memuat katalog parfum...",
-    "empty": "Belum ada produk yang tersedia dalam kategori ini."
+    "empty": "Belum ada produk yang tersedia dalam kategori ini.",
+    "salesUnavailable": "Data penjualan belum tersedia.",
+    "reviewsUnavailable": "Data ulasan belum tersedia."
   },
   "card": {
-    "fallbackPrice": "Harga tidak tersedia",
+    "fallbackPrice": "Rp 0",
     "placeholderImageText": "MAMEKO PARFUM",
-    "defaultCategory": "Parfum Eksklusif",
+    "defaultCategory": "Parfum",
     "defaultDescription": "Parfum mewah racikan tangan dengan kualitas bahan terbaik yang tahan sepanjang hari.",
+    "defaultVariant": "Standard",
     "variantLabel": "Pilih Varian Ukuran & Konsentrasi:",
-    "soldOutBadge": "HABIS",
-    "viewDetail": "Detail →",
+    "soldOutBadge": "Habis",
+    "viewDetail": "Detail",
     "addToCartTitle": "Tambah ke Keranjang",
-    "outOfStockTitle": "Stok Habis"
+    "outOfStockTitle": "Stok Habis",
+    "savingsPrefix": "Hemat ",
+    "soldPrefix": "Terjual ",
+    "stockRemainingPrefix": "Sisa ",
+    "stockRemainingSuffix": " lagi!"
   },
   "buttons": {
     "loadMore": "Lihat Lebih Banyak",
@@ -36,8 +52,14 @@
     "wishlistAdd": "Berhasil ditambahkan ke wishlist!",
     "wishlistRemove": "Dihapus dari wishlist."
   },
+  "aria": {
+    "wishlist": "Tambah atau hapus dari wishlist",
+    "addToCart": "Tambah ke keranjang",
+    "viewDetail": "Buka detail produk"
+  },
   "reviews": {
     "title": "Ulasan Pelanggan",
-    "empty": "Belum ada ulasan untuk produk ini."
+    "empty": "Belum ada ulasan untuk produk ini.",
+    "noReviewsYet": "Belum ada ulasan"
   }
 }

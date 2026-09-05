@@ -36,10 +36,12 @@ export function Footer() {
   }, []);
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchFooter = async () => {
       try {
         const data = await getPublicSettings({ force: true });
-        if (!data?.footer) return;
+        if (!data?.footer || !isMounted) return;
         setFooterInfo({
           ...footerData,
           ...data.footer,
@@ -85,6 +87,16 @@ export function Footer() {
     };
 
     fetchFooter();
+
+    const handleSettingsUpdate = () => {
+      fetchFooter();
+    };
+    window.addEventListener("store-settings-updated", handleSettingsUpdate);
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener("store-settings-updated", handleSettingsUpdate);
+    };
   }, []);
 
   return (
@@ -199,4 +211,3 @@ function SocialLink({ href, icon, label }) {
     </div>
   );
 }
-

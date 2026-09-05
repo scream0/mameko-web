@@ -1,0 +1,61 @@
+{
+  "balance": {
+    "title": "Saldo Anda",
+    "withdrawBtn": "Tarik Dana",
+    "loadingPlaceholder": "Memuat saldo..."
+  },
+  "presets": [
+    { "label": "Rp 50.000", "value": 50000 },
+    { "label": "Rp 100.000", "value": 100000 },
+    { "label": "Rp 250.000", "value": 250000 },
+    { "label": "Tarik Semua", "value": "all" }
+  ],
+  "transactions": {
+    "title": "Riwayat Transaksi",
+    "empty": "Belum ada riwayat transaksi.",
+    "loading": "Memuat riwayat transaksi..."
+  },
+  "types": {
+    "refund": "Pengembalian Dana (Refund)",
+    "withdrawal": "Penarikan Dana"
+  },
+  "status": {
+    "completed": "Berhasil",
+    "pending": "Diproses",
+    "failed": "Gagal",
+    "rejected": "Ditolak"
+  },
+  "modal": {
+    "title": "Penarikan Dana",
+    "closeTitle": "Tutup modal penarikan",
+    "bankMissing": {
+      "warning": "Silakan lengkapi informasi Rekening Bank di menu Pengaturan Akun terlebih dahulu sebelum melakukan penarikan dana.",
+      "actionBtn": "Lengkapi Rekening Sekarang"
+    },
+    "bankLabels": {
+      "bank": "Bank:",
+      "account": "Rekening:",
+      "holder": "Atas Nama:"
+    },
+    "form": {
+      "amountLabel": "Nominal Penarikan (Rp)",
+      "amountPlaceholder": "Masukkan nominal",
+      "availablePrefix": "Saldo tersedia: ",
+      "quickSelectLabel": "Pilihan Cepat Nominal:"
+    },
+    "buttons": {
+      "cancel": "Batal",
+      "submit": "Tarik Dana",
+      "processing": "Memproses..."
+    }
+  },
+  "toasts": {
+    "invalidAmount": "Masukkan nominal yang valid.",
+    "insufficientBalance": "Saldo Anda tidak mencukupi untuk penarikan ini.",
+    "bankRequired": "Lengkapi info rekening bank di Pengaturan Profil terlebih dahulu.",
+    "processing": "Memproses pengajuan penarikan...",
+    "withdrawSuccess": "Pengajuan penarikan berhasil diajukan!",
+    "withdrawFailed": "Gagal mengajukan penarikan.",
+    "fetchError": "Gagal memuat informasi wallet."
+  }
+}

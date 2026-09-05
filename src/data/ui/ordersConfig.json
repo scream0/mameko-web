@@ -4,19 +4,82 @@
     "subtitle": "Pantau status peracikan, pengiriman, dan kelola pesanan Anda di sini."
   },
   "searchPlaceholder": "Cari berdasarkan ID pesanan atau nama produk...",
-  "tabs": ["all", "processing", "completed", "cancelled"],
+  "filterTabs": [
+    { "key": "all", "label": "Semua", "icon": "grid" },
+    { "key": "pending", "label": "Belum Bayar", "icon": "wallet" },
+    { "key": "processing", "label": "Sedang Dikemas", "icon": "package" },
+    { "key": "shipping", "label": "Dikirim", "icon": "truck" },
+    { "key": "history", "label": "Riwayat Pesanan", "icon": "clock" },
+    { "key": "return", "label": "Retur", "icon": "rotate-ccw" }
+  ],
+  "status": {
+    "pending": { "label": "Menunggu Pembayaran", "badgeClass": "statusPending" },
+    "verifying": { "label": "Sedang Diverifikasi", "badgeClass": "statusProcessing" },
+    "unpaid": { "label": "Menunggu Pembayaran", "badgeClass": "statusPending" },
+    "paid": { "label": "Sedang Dikemas", "badgeClass": "statusProcessing" },
+    "success": { "label": "Sedang Dikemas", "badgeClass": "statusProcessing" },
+    "settlement": { "label": "Sedang Dikemas", "badgeClass": "statusProcessing" },
+    "capture": { "label": "Sedang Dikemas", "badgeClass": "statusProcessing" },
+    "processing": { "label": "Sedang Dikemas", "badgeClass": "statusProcessing" },
+    "shipping": { "label": "Dalam Pengiriman", "badgeClass": "statusShipping" },
+    "shipped": { "label": "Dalam Pengiriman", "badgeClass": "statusShipping" },
+    "delivered": { "label": "Pesanan Selesai", "badgeClass": "statusCompleted" },
+    "completed": { "label": "Pesanan Selesai", "badgeClass": "statusCompleted" },
+    "cancelled": { "label": "Dibatalkan", "badgeClass": "statusCancelled" },
+    "canceled": { "label": "Dibatalkan", "badgeClass": "statusCancelled" },
+    "return_requested": { "label": "Pengajuan Return", "badgeClass": "statusReturn" },
+    "returning": { "label": "Barang Dikirim Balik", "badgeClass": "statusShipping" },
+    "returned": { "label": "Return Selesai", "badgeClass": "statusCompleted" }
+  },
+  "returnStatus": {
+    "pending": {
+      "label": "⏳ Return Diproses",
+      "badgeClass": "statusReturn",
+      "banner": "⏳ Return Sedang Diproses"
+    },
+    "approved": {
+      "label": "✅ Return Disetujui",
+      "badgeClass": "statusCompleted",
+      "banner": "✅ Return Disetujui"
+    },
+    "rejected": {
+      "label": "❌ Return Ditolak",
+      "badgeClass": "statusCancelled",
+      "banner": "❌ Return Ditolak"
+    }
+  },
+  "card": {
+    "defaultCategory": "Extrait de Parfum",
+    "defaultItemName": "Produk",
+    "defaultVariant": "Standard",
+    "moreProductsSuffix": "produk lainnya",
+    "defaultConcentration": "30% Bibit (50 ml)",
+    "defaultNotes": "-",
+    "defaultPaymentMethod": "Midtrans QRIS / Virtual Account",
+    "primaryAddressUnset": "Belum diatur",
+    "today": "Hari ini",
+    "specPrefix": "Spesifikasi: ",
+    "resiPrefix": "🚚 Resi: ",
+    "notesPrefix": "Catatan: ",
+    "datePrefix": "Tanggal: "
+  },
   "loadingText": "Memuat riwayat pesanan...",
   "emptyText": "Belum ada pesanan ditemukan.",
   "buttons": {
     "details": "Detail",
-    "review": "Ulas Produk",
-    "reviewSent": "Sudah Diulas",
+    "payNow": "Bayar Sekarang",
+    "loadingPay": "Memuat...",
+    "cancel": "Batalkan",
+    "confirmReceived": "Konfirmasi Diterima",
+    "processingConfirm": "Memproses...",
+    "applyReturn": "Ajukan Return",
+    "trackReturn": "Pantau Retur",
     "reorder": "Pesan Lagi",
-    "copyId": "Salin ID",
-    "downloadInvoice": "Unduh Invoice",
-    "cancelOrder": "Batalkan",
-    "loadMore": "Muat Lebih Banyak Pesanan"
+    "loadMore": "Muat Lebih Banyak",
+    "reviewedItem": "✓ {name} sudah diulas",
+    "reviewItem": "Ulas {name}"
   },
+  "returnPeriodDays": 7,
   "labels": {
     "orderId": "ID Transaksi",
     "product": "Produk",
@@ -31,22 +94,14 @@
     "commentLabel": "Komentar Ulasan",
     "commentPlaceholder": "Bagaimana pengalaman Anda dengan aroma parfum ini?",
     "uploadPhoto": "Unggah Foto Ulasan (Opsional)",
+    "photoPreviewAlt": "Preview foto ulasan",
+    "photoDefaultName": "foto-ulasan.jpg",
+    "removePhoto": "Hapus Foto",
+    "dropzoneMainText": "Pilih foto produk atau seret ke sini",
+    "dropzoneSubText": "Format JPG, PNG, WebP (Maksimal 5 MB)",
+    "cancelAction": "Batal",
     "submittingReview": "Mengirim Ulasan...",
     "submitReview": "Kirim Ulasan & Foto"
-  },
-  "modal": {
-    "title": "Rincian Pesanan",
-    "closeBtn": "Tutup"
-  },
-  "detailTabs": {
-    "order": "Data Pesanan",
-    "history": "Riwayat Pesanan"
-  },
-  "stepper": {
-    "created": "Pesanan Dibuat",
-    "paid": "Pembayaran Dikonfirmasi",
-    "processing": "Peracikan / Diproses",
-    "shipping": "Dikirim / Selesai"
   },
   "ratingOptions": [
     { "value": 5, "label": "★★★★★ (5 - Luar Biasa)" },
@@ -55,7 +110,69 @@
     { "value": 2, "label": "★★☆☆☆ (2 - Kurang)" },
     { "value": 1, "label": "★☆☆☆☆ (1 - Buruk)" }
   ],
-  "confirmations": {
-    "cancelPrompt": "Apakah Anda yakin ingin membatalkan pesanan ini?"
+  "modals": {
+    "cancel": {
+      "title": "Batalkan Pesanan",
+      "messageTemplate": "Batalkan pesanan {orderNumber}? Tindakan ini tidak bisa dibatalkan.",
+      "loading": "Membatalkan pesanan...",
+      "success": "Pesanan berhasil dibatalkan.",
+      "error": "Gagal membatalkan pesanan."
+    },
+    "confirm": {
+      "title": "Konfirmasi Pesanan",
+      "messageTemplate": "Konfirmasi bahwa pesanan {orderNumber} sudah diterima?",
+      "loading": "Mengonfirmasi penerimaan pesanan...",
+      "success": "Pesanan berhasil dikonfirmasi diterima.",
+      "error": "Gagal mengonfirmasi pesanan."
+    },
+    "return": {
+      "title": "Pengajuan Return Pesanan",
+      "orderIdLabel": "ID Pesanan",
+      "productLabel": "Produk / Detail",
+      "reasonLabel": "Alasan Return",
+      "reasonPlaceholder": "Tuliskan alasan pengembalian/return produk secara detail...",
+      "evidenceLabel": "Foto Bukti Barang (Opsional namun sangat disarankan)",
+      "dropzoneMain": "Pilih foto bukti barang atau seret ke sini",
+      "dropzoneSub": "Format JPG, PNG, WebP (Maksimal 5 MB)",
+      "removePhoto": "Hapus Foto",
+      "submitBtn": "Kirim Pengajuan Return",
+      "submittingBtn": "Mengirim Pengajuan...",
+      "bankCheckLoading": "Memeriksa kelengkapan profil...",
+      "bankRequired": "Silakan lengkapi informasi Rekening Bank di Pengaturan Profil terlebih dahulu untuk keperluan pencairan dana retur.",
+      "toasts": {
+        "maxSize": "Ukuran foto maksimal 5 MB.",
+        "submitting": "Mengirim formulir retur...",
+        "success": "Pengajuan retur berhasil dikirim! Tim kami akan meninjau dalam 1x24 jam.",
+        "error": "Gagal mengajukan retur."
+      }
+    }
+  },
+  "toasts": {
+    "fetchOrdersError": "Gagal memuat data pesanan.",
+    "connectPayment": "Menghubungkan sistem pembayaran...",
+    "tokenGenerateError": "Gagal menghasilkan token pembayaran.",
+    "paymentSystemError": "Gagal memuat sistem pembayaran.",
+    "tokenNotFound": "Token pembayaran tidak ditemukan. Silakan buka detail pesanan.",
+    "snapModuleLoading": "Modul pembayaran sedang dimuat, coba sesaat lagi.",
+    "paySuccess": "Pembayaran Berhasil! Pesanan sekarang sedang dikemas.",
+    "payPending": "Menunggu pembayaran Anda diselesaikan.",
+    "payClosed": "Popup pembayaran ditutup.",
+    "checkingStock": "Memeriksa ketersediaan stok produk...",
+    "unauthenticated": "Pengguna tidak terautentikasi.",
+    "checkStockError": "Gagal memeriksa stok produk.",
+    "productUnavailable": "Produk \"{name}\" sudah tidak tersedia.",
+    "stockEmpty": "Stok \"{name} ({size})\" sudah habis.",
+    "stockAdjusted": "Stok terbatas! Jumlah \"{name}\" disesuaikan jadi {qty}.",
+    "reorderSuccess": "Produk berhasil dimasukkan ke keranjang!",
+    "reorderEmpty": "Gagal menambahkan produk ke keranjang karena stok habis.",
+    "reorderError": "Gagal memproses pesanan ulang.",
+    "invalidPhotoFormat": "Format foto harus JPG, PNG, atau WebP.",
+    "photoMaxSize": "Ukuran foto maksimal 5 MB.",
+    "submittingReview": "Mengirim ulasan Anda...",
+    "uploadingReviewPhoto": "Mengunggah foto ulasan...",
+    "uploadPhotoError": "Gagal mengunggah foto. Silakan coba lagi nanti.",
+    "savingReview": "Menyimpan ulasan...",
+    "reviewSuccess": "Terima kasih! Ulasan Anda berhasil dikirim.",
+    "reviewError": "Gagal mengirim ulasan."
   }
 }

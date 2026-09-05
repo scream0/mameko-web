@@ -24,6 +24,8 @@ import { useAdminAuth } from "@/hooks/useAdminAuth";
 
 import dynamic from "next/dynamic";
 import adminConfig from "@/data/ui/adminConfig.json";
+import analyticsConfig from "@/data/ui/analyticsConfig.json";
+import overviewConfig from "@/data/ui/overviewConfig.json";
 import { supabase } from "@/lib/supabaseClient";
 import { Logo } from "@/components/UI/Logo/logo";
 
@@ -45,6 +47,7 @@ import NotificationCenter from "@/components/Dashboard/Admin/Notifications/Notif
 import UserManagement from "@/components/Dashboard/Admin/Settings/UserManagement";
 import OrdersManagement from "@/components/Dashboard/Admin/Orders/OrdersManagement";
 import AdminChatView from "@/components/Dashboard/Admin/Chat/AdminChatView";
+import ConfirmationModal from "@/components/UI/Modal/ConfirmationModal";
 import { AdminDashboardSkeleton } from "@/components/UI/Skeleton/SkeletonLayouts";
 
 const DEFAULT_TAB = "overview";
@@ -75,13 +78,10 @@ function getGreetingName(currentUser: any) {
 
 function getRoleLabel(role: any) {
   const normalizedRole = String(role || "").toLowerCase();
-  if (normalizedRole === "superadmin") {
-    return "Super Admin";
-  }
-  if (normalizedRole === "admin") {
-    return "Admin";
-  }
-  return "User";
+  return (
+    adminConfig?.roles?.[normalizedRole] ||
+    (normalizedRole === "superadmin" ? "Super Admin" : normalizedRole === "admin" ? "Admin" : "User")
+  );
 }
 
 function formatTemplate(template, payload: any) {
@@ -107,6 +107,7 @@ export default function AdminDashboard() {
     ? currentTabParam
     : DEFAULT_TAB;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [overviewTab, setOverviewTab] = useState("stats");
   const [unreadChatCount, setUnreadChatCount] = useState(0);
   const unreadChatCountRef = useRef(0);
@@ -124,7 +125,7 @@ export default function AdminDashboard() {
     hasError: false,
   });
 
-  const navMeta = {
+  const navMeta = adminConfig?.navMeta || {
     overview: "Pertumbuhan & ikhtisar",
     products: "Katalog & stok",
     reviews: "Ulasan pelanggan",
@@ -332,6 +333,48 @@ export default function AdminDashboard() {
     };
   }, [isAdmin]);
 
+  // Fetch unread notifications count on mount & subscribe realtime
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    const fetchUnreadNotifications = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session?.access_token;
+        if (!token) return;
+
+        const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/admin/notifications?scope=system", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const result = res.headers?.get("content-type")?.includes("application/json") ? await res.json() : {};
+        if (res.ok && result.notifications) {
+          const unread = result.notifications.filter((n: any) => !n.is_read).length;
+          setUnreadNotificationCount(unread);
+        }
+      } catch (err) {
+        console.error("Error fetching unread notifications count:", err);
+      }
+    };
+
+    let debounceTimer = null;
+    const debouncedFetch = () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(fetchUnreadNotifications, 500);
+    };
+
+    fetchUnreadNotifications();
+
+    const channel = supabase
+      .channel("admin_dashboard_notifications_badge")
+      .on("postgres_changes", { event: "*", schema: "public", table: "notifications" }, debouncedFetch)
+      .subscribe();
+
+    return () => {
+      clearTimeout(debounceTimer);
+      supabase.removeChannel(channel);
+    };
+  }, [isAdmin]);
+
   const handleTabChange = (tabId: any) => {
     if (!VALID_TABS.includes(tabId)) {
       return;
@@ -354,19 +397,19 @@ export default function AdminDashboard() {
                 className={`${styles.overviewSubTab} ${overviewTab === "stats" ? styles.overviewSubTabActive : ""}`}
                 onClick={() => setOverviewTab("stats")}
               >
-                📊 Statistik
+                {overviewConfig.subTabs?.stats || "📊 Statistik"}
               </button>
               <button
                 className={`${styles.overviewSubTab} ${overviewTab === "reviews" ? styles.overviewSubTabActive : ""}`}
                 onClick={() => setOverviewTab("reviews")}
               >
-                ⭐ Ulasan
+                {overviewConfig.subTabs?.reviews || "⭐ Ulasan"}
               </button>
               <button
                 className={`${styles.overviewSubTab} ${overviewTab === "chat" ? styles.overviewSubTabActive : ""}`}
                 onClick={() => setOverviewTab("chat")}
               >
-                💬 Chat
+                {overviewConfig.subTabs?.chat || "💬 Chat"}
                 {unreadChatCount > 0 && (
                   <span className={styles.subTabBadge}>
                     {unreadChatCount > 99 ? "99+" : unreadChatCount}
@@ -412,13 +455,16 @@ export default function AdminDashboard() {
           <section className={styles.workspaceArea}>
             <div className={styles.workspaceInner} id="analytics-report-content">
               {/* Header khusus untuk Export PDF (disembunyikan secara default, ditampilkan saat export) */}
-              <div id="analytics-pdf-header" style={{ display: "none", alignItems: "center", justifyContent: "space-between", paddingBottom: "20px", marginBottom: "20px", borderBottom: "2px solid #eaeaea", color: "#000" }}>
-                <div style={{ display: "flex", alignItems: "center", transform: "scale(0.8)", transformOrigin: "left center" }}>
+              <div id="analytics-pdf-header" className={styles.pdfExportHeader}>
+                <div className={styles.pdfExportLogo}>
                   <Logo />
                 </div>
-                <div style={{ textAlign: "right" }}>
-                  <h3 style={{ margin: 0, fontSize: "1.2rem", color: "#000" }}>Laporan Analitik & Penjualan</h3>
-                  <p style={{ margin: "4px 0 0 0", fontSize: "0.85rem", color: "#666" }}>Dicetak pada: {new Date().toLocaleDateString("id-ID", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}</p>
+                <div className={styles.pdfExportInfo}>
+                  <h3 className={styles.pdfExportTitle}>{analyticsConfig.pdfHeader.title}</h3>
+                  <p className={styles.pdfExportDate}>
+                    {analyticsConfig.pdfHeader.printedAt}
+                    {new Date().toLocaleDateString("id-ID", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                  </p>
                 </div>
               </div>
 
@@ -526,7 +572,7 @@ export default function AdminDashboard() {
               className={styles.accessPrimaryBtn}
               onClick={logoutUser}
             >
-              Keluar Akun
+              {adminConfig.logoutText || "Keluar Akun"}
             </button>
           </div>
         </div>
@@ -545,24 +591,24 @@ export default function AdminDashboard() {
         />
       )}
 
-      <div
+       <div
         className={`${styles.mobileTopBar} ${
           isTopBarElevated ? styles.mobileTopBarElevated : ""
         }`}
       >
-        <div className={styles.brandLogo} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <div style={{ width: "22px", height: "22px", display: "flex", alignItems: "center", color: "var(--primary-accent)" }}>
+        <div className={`${styles.brandLogo} ${styles.brandLogoWrap}`}>
+          <div className={styles.brandLogoIcon}>
             <Logo />
           </div>
-          <div style={{ display: "flex", alignItems: "baseline", gap: "2px" }}>
+          <div className={styles.brandLogoText}>
             {adminConfig.brand.name}
             <span>{adminConfig.brand.suffix}</span>
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
-          <span className={styles.statusDot} style={storeStatus.hasError ? { background: 'var(--danger-color)', boxShadow: '0 0 0 3px rgba(220, 38, 38, 0.15)' } : {}} />
-          {storeStatus.latencyMs ? `${storeStatus.latencyMs}ms` : '...'}
+        <div className={styles.latencyIndicator}>
+          <span className={`${styles.statusDot} ${storeStatus.hasError ? styles.statusDotError : ""}`} />
+          {storeStatus.latencyMs ? `${storeStatus.latencyMs}ms` : "..."}
         </div>
 
         <button
@@ -579,7 +625,7 @@ export default function AdminDashboard() {
           onClick={() => setIsMobileMenuOpen((previous) => !previous)}
         >
           {isMobileMenuOpen ? <X size={16} /> : <Menu size={16} />}
-          <span>{isMobileMenuOpen ? "Tutup" : "Menu"}</span>
+          <span>{isMobileMenuOpen ? (adminConfig.mobile?.menuClose || "Tutup") : (adminConfig.mobile?.menuOpen || "Menu")}</span>
         </button>
       </div>
 
@@ -591,18 +637,18 @@ export default function AdminDashboard() {
         }`}
       >
         <div className={styles.brandSection}>
-          <div className={styles.brandLogo} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <div style={{ width: "22px", height: "22px", display: "flex", alignItems: "center", color: "var(--primary-accent)" }}>
+          <div className={`${styles.brandLogo} ${styles.brandLogoWrap}`}>
+            <div className={styles.brandLogoIcon}>
               <Logo />
             </div>
-            <div style={{ display: "flex", alignItems: "baseline", gap: "2px" }}>
+            <div className={styles.brandLogoText}>
               {adminConfig.brand.name}
               <span>{adminConfig.brand.suffix}</span>
             </div>
           </div>
           <div className={styles.brandBadge}>{adminConfig.brand.badge}</div>
           <div className={styles.brandCaption}>
-            Halo, {getGreetingName(user)} 👋
+            {(adminConfig.brand?.greetingPrefix || "Halo")}, {getGreetingName(user)} {(adminConfig.brand?.greetingSuffix || "👋")}
           </div>
         </div>
 
@@ -659,9 +705,9 @@ export default function AdminDashboard() {
               <p className={styles.statusMetric}>{latencyText}</p>
             </div>
           </div>
-          <button onClick={logoutUser} className={styles.logoutBtn}>
+          <button onClick={() => setIsLogoutModalOpen(true)} className={styles.logoutBtn}>
             <LogOut size={16} />
-            <span>Keluar Akun</span>
+            <span>{adminConfig.logoutText || "Keluar Akun"}</span>
           </button>
         </div>
       </aside>
@@ -673,7 +719,7 @@ export default function AdminDashboard() {
               {activeSectionTitle}
             </h1>
             <p className={styles.headerSubtitle}>
-              {navMeta[activeTab] || "Pusat kendali operasional toko"}
+              {navMeta[activeTab] || (copy?.brandCaption || "Pusat kendali operasional toko")}
             </p>
           </div>
           <div className={styles.roleChip}>
@@ -690,12 +736,21 @@ export default function AdminDashboard() {
           </div>
         )}
         <div 
-          style={{ display: activeTab === "notifications" ? "flex" : "none" }}
-          className={activeTab === "notifications" ? `${styles.viewWrapper} ${styles.viewWrapperAnimated}` : styles.viewWrapper}
+          className={`${styles.viewWrapper} ${activeTab === "notifications" ? `${styles.visibleView} ${styles.viewWrapperAnimated}` : styles.hiddenView}`}
         >
           <NotificationCenter onUnreadCountChange={setUnreadNotificationCount} />
         </div>
       </main>
+
+      {isLogoutModalOpen && (
+        <ConfirmationModal
+          isOpen={isLogoutModalOpen}
+          onClose={() => setIsLogoutModalOpen(false)}
+          onConfirm={logoutUser}
+          title={adminConfig.logoutDialog?.title || "Keluar dari panel admin?"}
+          message={adminConfig.logoutDialog?.description || "Sesi admin pada perangkat ini akan ditutup. Pastikan semua perubahan penting sudah tersimpan."}
+        />
+      )}
     </div>
   );
 }

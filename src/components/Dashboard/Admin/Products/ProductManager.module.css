@@ -326,3 +326,132 @@
   box-sizing: border-box;
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
 }
+
+/* --- Responsive Tablet --- */
+@media (max-width: 768px) {
+  .inventorySection,
+  .formSection {
+    padding: 20px;
+    border-radius: 14px;
+    gap: 20px;
+  }
+
+  .headerRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .controlsContainer {
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .searchInput {
+    max-width: 100%;
+  }
+
+  .filters {
+    width: 100%;
+    gap: 10px;
+  }
+
+  .filterSelect {
+    flex: 1;
+    min-width: 140px;
+  }
+
+  .table th,
+  .table td {
+    padding: 12px 14px;
+  }
+}
+
+/* --- Responsive Mobile / Smartphone --- */
+@media (max-width: 480px) {
+  .container {
+    gap: 20px;
+    padding: 4px 0;
+  }
+
+  .inventorySection,
+  .formSection {
+    padding: 16px;
+    border-radius: 12px;
+    gap: 16px;
+  }
+
+  .title {
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+  }
+
+  .subtitle {
+    font-size: 0.78rem;
+  }
+
+  .summaryPillGroup {
+    gap: 0.4rem;
+  }
+
+  .summaryPill {
+    font-size: 0.65rem;
+    padding: 0.35rem 0.6rem;
+  }
+
+  .searchInput,
+  .filterSelect {
+    padding: 0.65rem 0.9rem;
+    font-size: 0.8rem;
+    width: 100%;
+  }
+
+  .filters {
+    flex-direction: column;
+    width: 100%;
+    gap: 8px;
+  }
+
+  .filterSelect {
+    min-width: 100%;
+  }
+
+  .table th,
+  .table td {
+    padding: 10px 12px;
+    font-size: 0.78rem;
+    white-space: nowrap;
+  }
+
+  .productImage {
+    width: 42px;
+    height: 42px;
+  }
+
+  .actionButtons {
+    gap: 6px;
+  }
+
+  .editBtn,
+  .deleteBtn {
+    font-size: 0.7rem;
+    padding: 0.4rem 0.7rem;
+  }
+
+  .pagination {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    text-align: center;
+  }
+
+  .paginationButtons {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .pagination button {
+    flex: 1;
+    padding: 0.55rem 0.8rem;
+  }
+}

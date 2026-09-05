@@ -11,14 +11,17 @@ import MyVouchers from "@/components/Dashboard/User/Vouchers/MyVouchers";
 import { AddressFormModal, OTPModal } from "@/components/Dashboard/User/Profil/ProfileModals";
 import profileConfig from "@/data/ui/userProfilConfig.json";
 import { DEFAULT_ACTIVE_COURIERS, DEFAULT_ORIGIN_AREA_ID } from "@/config/shipping";
+import Link from "next/link";
 import styles from "./checkout.module.css";
+import checkoutConfig from "@/data/ui/checkoutConfig.json";
+import { getDiscountedPrice } from "@/utils/promo";
 
 // ID area Biteship untuk kota asal toko (di-resolve via nama kota di admin).
 const ORIGIN_AREA_FALLBACK = DEFAULT_ORIGIN_AREA_ID;
 const MAX_APPLIED_VOUCHERS = 2;
 
 const emptyAddressForm = (displayName = "") => ({
-  label: "Rumah",
+  label: checkoutConfig.address.defaultLabelName || "Rumah",
   recipientName: displayName || "",
   recipientPhone: "",
   street: "",
@@ -89,8 +92,16 @@ const buildLocalCourierOptions = (courierList = [], weight = 0) => {
 // ─── CHECKOUT PAGE ──────────────────────────────────────────
 export default function CheckoutPage() {
   const router = useRouter();
-  const { cart, products, processPayment, isProcessing: isStoreProcessing, activePromo, discountedCartTotal, cartTotal } =
-    useStore();
+  const {
+    cart,
+    products,
+    processPayment,
+    isProcessing: isStoreProcessing,
+    activePromo,
+    discountedCartTotal,
+    cartTotal,
+    promoSavings,
+  } = useStore();
 
 
   // ── Auth ──
@@ -288,7 +299,7 @@ export default function CheckoutPage() {
           });
         }
       } catch {
-        toast.error("Gagal memuat alamat");
+        toast.error(checkoutConfig.toasts.fetchAddressError);
       } finally {
         setAddressLoading(false);
       }
@@ -325,7 +336,7 @@ export default function CheckoutPage() {
 
   // ── Send OTP for address phone verification ──
   const handleSendAddressOtp = async (phone: any) => {
-    const toastId = toast.loading("Mengirim kode verifikasi WhatsApp...");
+    const toastId = toast.loading(checkoutConfig.toasts.sendOtpLoading);
     try {
       const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/auth/send-whatsapp-otp", {
         method: "POST",
@@ -333,7 +344,7 @@ export default function CheckoutPage() {
         body: JSON.stringify({ phone }),
       });
       const result = await res.json();
-      if (!res.ok) throw new Error(result.error || "Gagal mengirim OTP");
+      if (!res.ok) throw new Error(result.error || checkoutConfig.toasts.sendOtpFailed);
       toast.dismiss(toastId);
       setAddressOtpPhone(phone);
       setIsAddressOtpModalOpen(true);
@@ -344,7 +355,7 @@ export default function CheckoutPage() {
 
   // ── Verify OTP for address phone ──
   const handleVerifyAddressOtp = async (otp: any) => {
-    const toastId = toast.loading("Memverifikasi OTP...");
+    const toastId = toast.loading(checkoutConfig.toasts.verifyOtpLoading);
     try {
       const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/auth/verify-whatsapp-otp", {
         method: "POST",
@@ -352,8 +363,8 @@ export default function CheckoutPage() {
         body: JSON.stringify({ phone: addressOtpPhone, code: otp }),
       });
       const result = await res.json();
-      if (!res.ok) throw new Error(result.error || "OTP tidak valid");
-      toast.success("Nomor telepon diverifikasi!", { id: toastId });
+      if (!res.ok) throw new Error(result.error || checkoutConfig.toasts.verifyOtpInvalid);
+      toast.success(checkoutConfig.toasts.phoneVerified, { id: toastId });
       setIsAddressOtpModalOpen(false);
       setVerifiedPhones((prev) => [...prev, addressOtpPhone]);
     } catch (err) {
@@ -365,19 +376,19 @@ export default function CheckoutPage() {
     e.preventDefault();
     if (!currentUser) return;
     if (!addressForm.province || !addressForm.city || !addressForm.street || !addressForm.recipientName || !addressForm.postalCode) {
-      toast.error("Harap lengkapi semua kolom: nama, telepon, alamat, provinsi, kota, dan kode pos.");
+      toast.error(checkoutConfig.toasts.addressFieldsRequired);
       return;
     }
 
     const isEditing = !!addressForm.id && addresses.some((a) => a.id === addressForm.id);
     if (!isEditing && addresses.length >= 3) {
-      toast.error("Maksimal hanya dapat menyimpan 3 alamat. Hapus salah satu alamat di halaman profil jika ingin menambahkan yang baru.");
+      toast.error(checkoutConfig.toasts.maxAddressesReached);
       return;
     }
 
     // Require OTP for new phone numbers
     if (addressForm.recipientPhone && !verifiedPhones.includes(addressForm.recipientPhone)) {
-      toast.error("Harap verifikasi nomor telepon penerima terlebih dahulu.");
+      toast.error(checkoutConfig.toasts.phoneVerificationRequired);
       return;
     }
 
@@ -393,7 +404,7 @@ export default function CheckoutPage() {
         cityId: addressForm.cityId || addressForm.biteshipAreaId || "",
         province: addressForm.province,
         postalCode: addressForm.postalCode,
-        label: addressForm.label || "Rumah",
+        label: addressForm.label || checkoutConfig.address.defaultLabelName || "Rumah",
         isPrimary,
       };
 
@@ -419,7 +430,7 @@ export default function CheckoutPage() {
       }
 
       const result = await res.json();
-      if (!res.ok) throw new Error(result.error || "Gagal simpan alamat");
+      if (!res.ok) throw new Error(result.error || checkoutConfig.toasts.addressSaveFailed);
 
       // Reload from server to get canonical data
       const reloadRes = await fetch(`${apiBase}/api/user/addresses`, {
@@ -437,9 +448,9 @@ export default function CheckoutPage() {
 
       setShowAddressModal(false);
       setAddressForm(emptyAddressForm());
-      toast.success("Alamat berhasil disimpan!");
+      toast.success(checkoutConfig.toasts.addressSaveSuccess);
     } catch (err) {
-      toast.error(err.message || "Gagal menyimpan alamat");
+      toast.error(err.message || checkoutConfig.toasts.addressSaveFailed);
     } finally {
       setSavingAddress(false);
     }
@@ -465,32 +476,32 @@ export default function CheckoutPage() {
     if (!selectedAddress) {
       return {
         tone: "warning",
-        title: "Pilih alamat pengiriman",
-        detail: "Alamat yang lengkap akan membantu sistem menentukan ongkir secara akurat.",
+        title: checkoutConfig.shippingReadiness.chooseAddress,
+        detail: checkoutConfig.shippingReadiness.chooseAddressDesc,
       };
     }
 
     if (selectedAddress.city && (selectedAddress.district || selectedAddress.postalCode)) {
-      const areaDesc = [selectedAddress.district ? `Kec. ${selectedAddress.district}` : "", selectedAddress.city].filter(Boolean).join(", ");
+      const areaDesc = [selectedAddress.district ? `${checkoutConfig.address.districtPrefix || "Kec. "}${selectedAddress.district}` : "", selectedAddress.city].filter(Boolean).join(", ");
       return {
         tone: "success",
-        title: "Area terlayani",
-        detail: `${areaDesc} siap menerima pengiriman kurir.`,
+        title: checkoutConfig.shippingReadiness.areaServed,
+        detail: `${areaDesc} ${checkoutConfig.shippingReadiness.areaServedDesc}`,
       };
     }
 
     if (selectedAddress.city || selectedAddress.postalCode) {
       return {
         tone: "info",
-        title: "Mendeteksi wilayah",
-        detail: "Sistem mendeteksi wilayah tujuan untuk menghitung tarif pengiriman.",
+        title: checkoutConfig.shippingReadiness.detectingArea,
+        detail: checkoutConfig.shippingReadiness.detectingAreaDesc,
       };
     }
 
     return {
       tone: "warning",
-      title: "Alamat belum lengkap",
-      detail: "Lengkapi kota dan kode pos agar sistem bisa menghitung ongkos kirim.",
+      title: checkoutConfig.shippingReadiness.addressIncomplete,
+      detail: checkoutConfig.shippingReadiness.addressIncompleteDesc,
     };
   }, [selectedAddress]);
 
@@ -535,8 +546,8 @@ export default function CheckoutPage() {
         setShippingMeta({
           kind: "estimated",
           message: usingFallbackDestination
-            ? "Lengkapi alamat untuk kalkulasi ongkir otomatis."
-            : "Wilayah tujuan belum terdeteksi penuh di Ongkir. Menggunakan estimasi lokal.",
+            ? checkoutConfig.courier.fallbackMessageIncomplete
+            : checkoutConfig.courier.fallbackMessageUndetected,
         });
         return;
       }
@@ -578,7 +589,7 @@ export default function CheckoutPage() {
         setShippingCost(safeFallbackOptions[0]?.cost || 0);
         setShippingMeta({
           kind: "estimated",
-          message: fallbackMessage || "Tarif real-time belum tersedia. Menampilkan opsi estimasi lokal.",
+          message: fallbackMessage || checkoutConfig.courier.fallbackMessageGeneric,
         });
         return;
       }
@@ -612,7 +623,7 @@ export default function CheckoutPage() {
       setShippingCost(fallbackOption?.cost || 0);
       setShippingMeta({
         kind: "estimated",
-        message: "Kami menampilkan opsi pengiriman estimasi lokal karena layanan tarif sedang tidak tersedia.",
+        message: checkoutConfig.courier.fallbackMessageError,
       });
     } finally {
       setCourierLoading(false);
@@ -647,7 +658,7 @@ export default function CheckoutPage() {
     const voucherDetail = claimedVoucherEntry.vouchers || claimedVoucherEntry;
 
     if (voucherDetail.min_purchase && subtotal < voucherDetail.min_purchase) {
-      toast.error(`Minimum belanja untuk voucher ini adalah ${rupiah(voucherDetail.min_purchase)}`);
+      toast.error(checkoutConfig.toasts.minPurchaseRequired.replace("{amount}", rupiah(voucherDetail.min_purchase)));
       return;
     }
 
@@ -659,14 +670,14 @@ export default function CheckoutPage() {
     if (alreadyHasSameCategory) {
       toast.error(
         category === "shipping"
-          ? "Kamu sudah pakai 1 voucher gratis ongkir. Hapus dulu untuk menggantinya."
-          : "Kamu sudah pakai 1 voucher diskon. Hapus dulu untuk menggantinya.",
+          ? checkoutConfig.toasts.shippingVoucherAlreadyApplied
+          : checkoutConfig.toasts.discountVoucherAlreadyApplied,
       );
       return;
     }
 
     if (appliedVouchers.length >= MAX_APPLIED_VOUCHERS) {
-      toast.error(`Maksimal ${MAX_APPLIED_VOUCHERS} voucher bisa dipakai sekaligus`);
+      toast.error(checkoutConfig.toasts.maxVouchersReached.replace("{max}", String(MAX_APPLIED_VOUCHERS)));
       return;
     }
 
@@ -678,7 +689,7 @@ export default function CheckoutPage() {
       },
     ]);
     setShowVoucherModal(false);
-    toast.success(`Voucher ${voucherDetail.code} berhasil diterapkan!`);
+    toast.success(checkoutConfig.toasts.voucherApplied.replace("{code}", voucherDetail.code));
   };
 
   const [voucherCodeInput, setVoucherCodeInput] = useState("");
@@ -686,7 +697,7 @@ export default function CheckoutPage() {
   const handleApplyVoucherCode = (inputCode: any) => {
     const codeToFind = (inputCode || voucherCodeInput).trim().toUpperCase();
     if (!codeToFind) {
-      toast.error("Masukkan kode voucher terlebih dahulu");
+      toast.error(checkoutConfig.toasts.voucherCodeRequired);
       return;
     }
 
@@ -696,7 +707,7 @@ export default function CheckoutPage() {
     });
 
     if (!matched) {
-      toast.error("Kode voucher tidak ditemukan atau sudah tidak berlaku");
+      toast.error(checkoutConfig.toasts.voucherNotFound);
       return;
     }
 
@@ -706,7 +717,7 @@ export default function CheckoutPage() {
 
   const handleRemoveVoucher = (claimId: any) => {
     setAppliedVouchers((prev) => prev.filter((v) => v.claimId !== claimId));
-    toast.success("Voucher dibatalkan");
+    toast.success(checkoutConfig.toasts.voucherRemoved);
   };
 
   const shippingVoucherDiscount = useMemo(() => {
@@ -730,11 +741,11 @@ export default function CheckoutPage() {
   // ── Handle payment ──
   const handlePay = async () => {
     if (!selectedAddress) {
-      toast.error("Pilih alamat pengiriman");
+      toast.error(checkoutConfig.toasts.selectAddressPrompt);
       return;
     }
     if (!selectedCourierKey) {
-      toast.error("Pilih kurir pengiriman");
+      toast.error(checkoutConfig.toasts.selectCourierPrompt);
       return;
     }
 
@@ -792,13 +803,13 @@ export default function CheckoutPage() {
       <div className={styles.checkoutPage}>
         <div className={styles.emptyCart}>
           <div className={styles.emptyCartIcon}>🛒</div>
-          <h2 className={styles.emptyCartTitle}>Keranjang Belanja Kosong</h2>
+          <h2 className={styles.emptyCartTitle}>{checkoutConfig.emptyCart.title}</h2>
           <p className={styles.emptyCartDesc}>
-            Tambahkan produk terlebih dahulu sebelum checkout
+            {checkoutConfig.emptyCart.desc}
           </p>
-          <a href="/dashboard?tab=shop" className={styles.emptyCartBtn}>
-            Belanja Sekarang
-          </a>
+          <Link href="/dashboard?tab=shop" className={styles.emptyCartBtn}>
+            {checkoutConfig.emptyCart.shopNowBtn}
+          </Link>
         </div>
       </div>
     );
@@ -808,7 +819,7 @@ export default function CheckoutPage() {
     return (
       <div className={styles.loadingState}>
         <div className={styles.loadingSpinner}></div>
-        <p className={styles.loadingText}>Memuat halaman checkout...</p>
+        <p className={styles.loadingText}>{checkoutConfig.loading.text}</p>
       </div>
     );
   }
@@ -817,19 +828,19 @@ export default function CheckoutPage() {
     <div className={styles.checkoutPage}>
       {/* ─── HEADER ─── */}
       <header className={styles.checkoutHeader}>
-        <a href="/dashboard?tab=shop" className={styles.checkoutBackLink}>
-          ← Kembali ke Belanja
-        </a>
-        <h1 className={styles.checkoutTitle}>Checkout</h1>
+        <Link href="/dashboard?tab=shop" className={styles.checkoutBackLink}>
+          {checkoutConfig.header.backToShop}
+        </Link>
+        <h1 className={styles.checkoutTitle}>{checkoutConfig.header.title}</h1>
         <div className={styles.checkoutSteps}>
           <div className={styles.stepItemActive}>
             <span className={styles.stepDotActive}></span>
-            <span>Alamat</span>
+            <span>{checkoutConfig.steps.address}</span>
           </div>
           <div className={styles.stepDivider}></div>
           <div className={styles.stepItem}>
             <span className={styles.stepDot}></span>
-            <span>Pembayaran</span>
+            <span>{checkoutConfig.steps.payment}</span>
           </div>
         </div>
       </header>
@@ -844,7 +855,7 @@ export default function CheckoutPage() {
             <div className={styles.sectionHeader}>
               <h2 className={styles.sectionTitle}>
                 <span className={styles.sectionStep}>1</span>
-                Alamat Pengiriman
+                {checkoutConfig.address.title}
               </h2>
               <button
                 className={styles.sectionAction}
@@ -853,16 +864,16 @@ export default function CheckoutPage() {
                   setShowAddressModal(true);
                 }}
               >
-                + Tambah Baru
+                {checkoutConfig.address.addNew}
               </button>
             </div>
 
             {addressLoading ? (
-              <p style={{ color: "var(--text-secondary)", fontSize: "0.85rem" }}>Memuat alamat...</p>
+              <p className={styles.addressLoadingText}>{checkoutConfig.address.loading}</p>
             ) : addresses.length === 0 ? (
-              <div style={{ padding: "16px 0", textAlign: "center" }}>
-                <p style={{ color: "var(--text-secondary)", fontSize: "0.85rem", marginBottom: "10px" }}>
-                  Belum ada alamat tersimpan.
+              <div className={styles.addressEmptyWrapper}>
+                <p className={styles.addressEmptyDesc}>
+                  {checkoutConfig.address.empty}
                 </p>
                 <button
                   type="button"
@@ -873,7 +884,7 @@ export default function CheckoutPage() {
                   className={styles.sectionAction}
                   style={{ display: "inline-block" }}
                 >
-                  + Tambah Alamat Sekarang
+                  {checkoutConfig.address.addNow}
                 </button>
               </div>
             ) : (
@@ -881,7 +892,6 @@ export default function CheckoutPage() {
                 <div className={styles.addressList}>
                   {addresses.map((addr) => {
                     const hasFullArea = Boolean(addr.city && (addr.district || addr.postalCode));
-                    const statusTone = hasFullArea ? styles.addressPillSuccess : addr.city || addr.postalCode ? styles.addressPillInfo : styles.addressPillNeutral;
 
                     return (
                       <div
@@ -891,10 +901,10 @@ export default function CheckoutPage() {
                         onClick={() => setSelectedAddressId(addr.id)}
                       >
                         <div className={styles.addressContent}>
-                          <span className={styles.addressLabel} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
+                          <span className={`${styles.addressLabel} ${styles.addressLabelHeader}`}>
                             <span>
-                              {addr.label || "Alamat"}
-                              {addr.isPrimary && <span className={styles.primaryBadge}>Utama</span>}
+                              {addr.label || checkoutConfig.address.defaultLabel}
+                              {addr.isPrimary && <span className={styles.primaryBadge}>{checkoutConfig.address.primaryBadge}</span>}
                             </span>
                             <button
                               type="button"
@@ -903,24 +913,24 @@ export default function CheckoutPage() {
                                 setAddressForm(addr);
                                 setShowAddressModal(true);
                               }}
-                              style={{ background: "transparent", border: "1px solid var(--border-color)", color: "var(--text-primary)", fontSize: "0.7rem", padding: "3px 8px", borderRadius: "4px", cursor: "pointer" }}
+                              className={styles.addressEditBtn}
                             >
-                              Edit
+                              {checkoutConfig.address.editBtn}
                             </button>
                           </span>
                           <p className={styles.addressName}>{addr.recipientName}</p>
                           <p className={styles.addressPhone}>{addr.recipientPhone}</p>
                           <p className={styles.addressFull}>
-                            {addr.street}, {addr.district ? `Kec. ${addr.district}, ` : ""}{addr.city}, {addr.province} {addr.postalCode ? ` - ${addr.postalCode}` : ""}
+                            {addr.street}, {addr.district ? `${checkoutConfig.address.districtPrefix || "Kec. "}${addr.district}, ` : ""}{addr.city}, {addr.province} {addr.postalCode ? ` - ${addr.postalCode}` : ""}
                           </p>
                           {addr.notes && (
-                            <p style={{ fontSize: "0.78rem", color: "var(--text-secondary)", marginTop: "2px", marginBottom: "6px", fontStyle: "italic" }}>
-                              📌 Patokan: {addr.notes}
+                            <p className={styles.addressNotesText}>
+                              {checkoutConfig.address.notesPrefix}{addr.notes}
                             </p>
                           )}
                           {!hasFullArea && (
                             <span className={`${styles.addressPill} ${styles.addressPillNeutral}`}>
-                              ⚠️ Lengkapi kota & kode pos
+                              {checkoutConfig.address.incompleteWarning}
                             </span>
                           )}
                         </div>
@@ -937,13 +947,13 @@ export default function CheckoutPage() {
             <div className={styles.sectionHeader}>
               <h2 className={styles.sectionTitle}>
                 <span className={styles.sectionStep}>2</span>
-                Pilih Kurir
+                {checkoutConfig.courier.title}
               </h2>
             </div>
 
             {!selectedAddress ? (
-              <p style={{ color: "var(--text-secondary)", fontSize: "0.85rem" }}>
-                Pilih alamat pengiriman terlebih dahulu
+              <p className={styles.addressLoadingText}>
+                {checkoutConfig.courier.selectAddressFirst}
               </p>
             ) : (
               <>
@@ -951,7 +961,7 @@ export default function CheckoutPage() {
                   <div className={`${styles.shippingStatus} ${styles[`shippingStatus${shippingMeta.kind === "estimated" ? "Warning" : shippingReadiness.tone === "info" ? "Info" : "Warning"}`]}`}>
                     <div>
                       <p className={styles.shippingStatusTitle}>
-                        {shippingMeta.kind === "estimated" ? "Perhatian" : shippingReadiness.title}
+                        {shippingMeta.kind === "estimated" ? checkoutConfig.courier.warningTitle : shippingReadiness.title}
                       </p>
                       <p className={styles.shippingStatusDetail}>
                         {shippingMeta.message || shippingReadiness.detail}
@@ -959,7 +969,7 @@ export default function CheckoutPage() {
                     </div>
                     <div className={styles.shippingStatusActions}>
                       {shippingMeta.kind === "estimated" && (
-                        <span className={styles.shippingStatusBadge}>Estimasi</span>
+                        <span className={styles.shippingStatusBadge}>{checkoutConfig.courier.estimatedBadge}</span>
                       )}
                     </div>
                   </div>
@@ -968,11 +978,11 @@ export default function CheckoutPage() {
                 {courierLoading ? (
                   <div className={styles.courierLoading}>
                     <div className={styles.loadingSpinner} style={{ width: 24, height: 24, margin: "0 auto 0.5rem" }}></div>
-                    Menghitung tarif pengiriman...
+                    {checkoutConfig.courier.calculating}
                   </div>
                 ) : courierOptions.length === 0 ? (
                   <div className={styles.courierEmpty}>
-                    <p>Belum ada opsi pengiriman yang bisa kami sarankan untuk alamat ini.</p>
+                    <p>{checkoutConfig.courier.empty}</p>
                   </div>
                 ) : (
                   <div className={styles.courierGrid}>
@@ -997,7 +1007,9 @@ export default function CheckoutPage() {
                           </div>
                           <p className={styles.courierService}>{option.description}</p>
                           {option.etd && option.etd !== "-" && (
-                            <p className={styles.courierEtd}>Estimasi tiba: {option.etd} hari</p>
+                            <p className={styles.courierEtd}>
+                              {checkoutConfig.courier.etdTemplate.replace("{etd}", option.etd)}
+                            </p>
                           )}
                         </div>
                         <div className={styles.courierPriceBox}>
@@ -1016,18 +1028,20 @@ export default function CheckoutPage() {
             <div className={styles.sectionHeader}>
               <h2 className={styles.sectionTitle}>
                 <span className={styles.sectionStep}>3</span>
-                Voucher Toko
+                {checkoutConfig.voucher.title}
               </h2>
               <span className={styles.voucherSlotCounter}>
-                {appliedVouchers.length}/{MAX_APPLIED_VOUCHERS} Dipakai
+                {checkoutConfig.voucher.counterTemplate
+                  .replace("{used}", String(appliedVouchers.length))
+                  .replace("{max}", String(MAX_APPLIED_VOUCHERS))}
               </span>
             </div>
 
             {/* Input Kode Promo Manual */}
-            <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
+            <div className={styles.voucherInputGroup}>
               <input
                 type="text"
-                placeholder="Punya kode promo? (Cth: MERDEKA99)"
+                placeholder={checkoutConfig.voucher.inputPlaceholder}
                 value={voucherCodeInput}
                 onChange={(e) => setVoucherCodeInput(e.target.value.toUpperCase())}
                 onKeyDown={(e) => {
@@ -1036,40 +1050,30 @@ export default function CheckoutPage() {
                     handleApplyVoucherCode();
                   }
                 }}
-                style={{
-                  flex: 1,
-                  padding: "10px 14px",
-                  borderRadius: "8px",
-                  border: "1px solid var(--border-color)",
-                  background: "var(--surface-secondary)",
-                  color: "var(--text-primary)",
-                  fontSize: "0.85rem",
-                  fontWeight: 600,
-                  letterSpacing: "0.5px",
-                }}
+                className={styles.voucherInput}
               />
               <button
                 type="button"
                 onClick={() => handleApplyVoucherCode()}
                 className={styles.promoApplyBtn}
-                aria-label="Terapkan Kode Voucher"
+                aria-label={checkoutConfig.voucher.applyAria}
               >
-                Terapkan
+                {checkoutConfig.voucher.applyBtn}
               </button>
             </div>
 
             {/* List Voucher yang sedang diterapkan */}
             {appliedVouchers.length > 0 && (
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "12px" }}>
+              <div className={styles.appliedVouchersList}>
                 {discountVoucher && (
                   <div className={styles.promoApplied}>
-                    <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                      <span style={{ fontSize: "0.8rem", color: "var(--primary-accent)", fontWeight: 700 }}>
-                        🏷️ Diskon Produk
+                    <div className={styles.promoAppliedItem}>
+                      <span className={styles.promoBadgeText}>
+                        {checkoutConfig.voucher.discountBadge}
                       </span>
-                      <span>
+                      <span className={styles.promoCodeText}>
                         <strong>{discountVoucher.code}</strong> ({discountVoucher.title})
-                        {subtotalVoucherDiscount > 0 && ` • Hemat ${rupiah(subtotalVoucherDiscount)}`}
+                        {subtotalVoucherDiscount > 0 && ` • ${checkoutConfig.voucher.savingsPrefix}${rupiah(subtotalVoucherDiscount)}`}
                       </span>
                     </div>
                     <button
@@ -1077,20 +1081,20 @@ export default function CheckoutPage() {
                       className={styles.promoRemoveBtn}
                       onClick={() => handleRemoveVoucher(discountVoucher.claimId)}
                     >
-                      Hapus
+                      {checkoutConfig.voucher.removeBtn}
                     </button>
                   </div>
                 )}
 
                 {shippingVoucher && (
                   <div className={styles.promoApplied}>
-                    <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                      <span style={{ fontSize: "0.8rem", color: "var(--primary-accent)", fontWeight: 700 }}>
-                        🚚 Gratis Ongkir
+                    <div className={styles.promoAppliedItem}>
+                      <span className={styles.promoBadgeText}>
+                        {checkoutConfig.voucher.shippingBadge}
                       </span>
-                      <span>
+                      <span className={styles.promoCodeText}>
                         <strong>{shippingVoucher.code}</strong> ({shippingVoucher.title})
-                        {shippingVoucherDiscount > 0 && ` • Hemat ${rupiah(shippingVoucherDiscount)}`}
+                        {shippingVoucherDiscount > 0 && ` • ${checkoutConfig.voucher.savingsPrefix}${rupiah(shippingVoucherDiscount)}`}
                       </span>
                     </div>
                     <button
@@ -1098,7 +1102,7 @@ export default function CheckoutPage() {
                       className={styles.promoRemoveBtn}
                       onClick={() => handleRemoveVoucher(shippingVoucher.claimId)}
                     >
-                      Hapus
+                      {checkoutConfig.voucher.removeBtn}
                     </button>
                   </div>
                 )}
@@ -1111,18 +1115,21 @@ export default function CheckoutPage() {
                 type="button"
                 onClick={() => setShowVoucherModal(true)}
                 className={styles.voucherPickerBtn}
-                aria-label="Pilih Voucher Belanja atau Ongkir"
+                aria-label={checkoutConfig.voucher.pickerAria}
               >
                 <div className={styles.voucherPickerLabel}>
                   <span className={styles.voucherPickerIcon}>🎟️</span>
                   <span>
                     {appliedVouchers.length === 0
-                      ? "Pilih / Masukkan Voucher Toko"
-                      : "Tambah 1 Voucher Lagi (Diskon / Ongkir)"}
+                      ? checkoutConfig.voucher.selectBtn
+                      : checkoutConfig.voucher.addAnotherBtn}
                   </span>
                 </div>
                 <span className={styles.voucherPickerBadge}>
-                  {claimedVouchers.filter(v => v.status === "active").length} voucher tersedia &gt;
+                  {checkoutConfig.voucher.availableBadgeTemplate.replace(
+                    "{count}",
+                    String(claimedVouchers.filter(v => v.status === "active").length)
+                  )}
                 </span>
               </button>
             ) : (
@@ -1132,7 +1139,7 @@ export default function CheckoutPage() {
                 className={styles.sectionAction}
                 style={{ marginTop: "4px", fontSize: "0.8rem" }}
               >
-                Ubah Voucher yang Dipilih
+                {checkoutConfig.voucher.changeBtn}
               </button>
             )}
           </section>
@@ -1143,52 +1150,40 @@ export default function CheckoutPage() {
               <div className={styles.sectionHeader}>
                 <h2 className={styles.sectionTitle}>
                   <span className={styles.sectionStep}>4</span>
-                  Metode Pembayaran
+                  {checkoutConfig.payment.title}
                 </h2>
               </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "1rem" }}>
+              <div className={styles.paymentMethodList}>
                 {(!storeSettings || storeSettings.enableMidtrans !== false) && (
-                  <label style={{
-                    display: "flex", alignItems: "center", gap: "12px", padding: "14px",
-                    border: `1.5px solid ${paymentMethod === "midtrans" ? "var(--primary-accent)" : "var(--border-color)"}`,
-                    borderRadius: "10px", cursor: "pointer",
-                    background: paymentMethod === "midtrans" ? "rgba(var(--primary-accent-rgb), 0.05)" : "var(--surface-primary)",
-                    transition: "all 0.2s ease"
-                  }}>
+                  <label className={`${styles.paymentMethodCard} ${paymentMethod === "midtrans" ? styles.paymentMethodCardSelected : ""}`}>
                     <input
                       type="radio"
                       name="paymentMethod"
                       value="midtrans"
                       checked={paymentMethod === "midtrans"}
                       onChange={(e) => setPaymentMethod(e.target.value)}
-                      style={{ width: "18px", height: "18px", accentColor: "var(--primary-accent)" }}
+                      className={styles.paymentMethodRadio}
                     />
-                    <div>
-                      <div style={{ fontWeight: "700", fontSize: "0.95rem" }}>⚡ Otomatis (Midtrans)</div>
-                      <div style={{ fontSize: "0.8rem", color: "var(--text-secondary)", marginTop: "2px" }}>QRIS, Virtual Account (BCA, BRI, Mandiri, BNI), e-Wallet</div>
+                    <div className={styles.paymentMethodInfo}>
+                      <div className={styles.paymentMethodTitle}>{checkoutConfig.payment.midtransTitle}</div>
+                      <div className={styles.paymentMethodDesc}>{checkoutConfig.payment.midtransDesc}</div>
                     </div>
                   </label>
                 )}
 
                 {(!storeSettings || storeSettings.enableManualTransfer !== false) && (
-                  <label style={{
-                    display: "flex", alignItems: "center", gap: "12px", padding: "14px",
-                    border: `1.5px solid ${paymentMethod === "manual" ? "var(--primary-accent)" : "var(--border-color)"}`,
-                    borderRadius: "10px", cursor: "pointer",
-                    background: paymentMethod === "manual" ? "rgba(var(--primary-accent-rgb), 0.05)" : "var(--surface-primary)",
-                    transition: "all 0.2s ease"
-                  }}>
+                  <label className={`${styles.paymentMethodCard} ${paymentMethod === "manual" ? styles.paymentMethodCardSelected : ""}`}>
                     <input
                       type="radio"
                       name="paymentMethod"
                       value="manual"
                       checked={paymentMethod === "manual"}
                       onChange={(e) => setPaymentMethod(e.target.value)}
-                      style={{ width: "18px", height: "18px", accentColor: "var(--primary-accent)" }}
+                      className={styles.paymentMethodRadio}
                     />
-                    <div>
-                      <div style={{ fontWeight: "700", fontSize: "0.95rem" }}>🏦 Transfer Bank Manual</div>
-                      <div style={{ fontSize: "0.8rem", color: "var(--text-secondary)", marginTop: "2px" }}>Transfer ke rekening bank toko & upload bukti transfer</div>
+                    <div className={styles.paymentMethodInfo}>
+                      <div className={styles.paymentMethodTitle}>{checkoutConfig.payment.manualTitle}</div>
+                      <div className={styles.paymentMethodDesc}>{checkoutConfig.payment.manualDesc}</div>
                     </div>
                   </label>
                 )}
@@ -1201,13 +1196,23 @@ export default function CheckoutPage() {
         {/* ─── RIGHT COLUMN — RINGKASAN ─── */}
         <div className={styles.summaryCard}>
           <div className={styles.summaryHeader}>
-            <h3 className={styles.summaryTitle}>Ringkasan Belanja</h3>
+            <h3 className={styles.summaryTitle}>{checkoutConfig.summary.title}</h3>
           </div>
 
           <div className={styles.summaryItems}>
             {(cart.items || []).map((item: any) => {
               const prod = (products || []).find((p: any) => String(p.id) === String(item.id));
               const imgSrc = item.image || prod?.image_url || prod?.imageUrl || "/assets/placeholder.jpg";
+              const disc = activePromo
+                ? getDiscountedPrice(item.price, activePromo, {
+                    productId: item.productId || item.id,
+                    size: item.size,
+                  })
+                : null;
+              const hasDiscount = Boolean(disc && disc.hasDiscount);
+              const originalItemTotal = Number(item.price) * Number(item.quantity);
+              const finalItemTotal = (hasDiscount ? disc.price : Number(item.price)) * Number(item.quantity);
+
               return (
                 <div key={item.cartId} className={styles.summaryItem}>
                   <div className={styles.summaryItemImg}>
@@ -1218,33 +1223,54 @@ export default function CheckoutPage() {
                     <p className={styles.summaryItemVariant}>{item.size}</p>
                     <p className={styles.summaryItemQty}>x{item.quantity}</p>
                   </div>
-                  <span className={styles.summaryItemPrice}>
-                    {rupiah(Number(item.price) * Number(item.quantity))}
-                  </span>
+                  <div className={styles.summaryItemPriceBox}>
+                    {hasDiscount && (
+                      <span className={styles.summaryItemOriginalPrice}>
+                        {rupiah(originalItemTotal)}
+                      </span>
+                    )}
+                    <span className={styles.summaryItemPrice}>
+                      {rupiah(finalItemTotal)}
+                    </span>
+                  </div>
                 </div>
               );
             })}
           </div>
 
           <div className={styles.summaryLine}>
-            <span>Subtotal Produk</span>
-            <span>{rupiah(subtotal)}</span>
+            <span>{checkoutConfig.summary.subtotalLabel}</span>
+            <span>{rupiah(activePromo && promoSavings > 0 ? cartTotal : subtotal)}</span>
           </div>
+
+          {activePromo && promoSavings > 0 && (
+            <div className={`${styles.summaryLine} ${styles.summaryLineDiscount}`}>
+              <span style={{ display: "inline-flex", alignItems: "center" }}>
+                🏷️ {checkoutConfig.summary.storeDiscountLabel}
+                {activePromo.promoName && (
+                  <span className={styles.summaryPromoBadge}>
+                    {activePromo.promoName}
+                  </span>
+                )}
+              </span>
+              <span>-{rupiah(promoSavings)}</span>
+            </div>
+          )}
 
           {discountVoucher && subtotalVoucherDiscount > 0 && (
             <div className={`${styles.summaryLine} ${styles.summaryLineDiscount}`}>
-              <span>Diskon Voucher</span>
+              <span>🎟️ {checkoutConfig.summary.discountLabel}</span>
               <span>-{rupiah(subtotalVoucherDiscount)}</span>
             </div>
           )}
 
           <div className={styles.summaryLine}>
-            <span>Ongkos Kirim</span>
+            <span>{checkoutConfig.summary.shippingLabel}</span>
             <span className={styles.summaryLineShipping}>
               {selectedCourierInfo ? (
                 shippingVoucher && shippingVoucherDiscount > 0 ? (
                   <span>
-                    <span style={{ textDecoration: "line-through", color: "var(--text-secondary)", marginRight: "6px" }}>
+                    <span className={styles.strikethroughText}>
                       {rupiah(shippingCost)}
                     </span>
                     {rupiah(finalShippingCost)}
@@ -1257,7 +1283,7 @@ export default function CheckoutPage() {
           </div>
 
           <div className={`${styles.summaryLine} ${styles.summaryLineTotal}`}>
-            <span>Total Pembayaran</span>
+            <span>{checkoutConfig.summary.totalLabel}</span>
             <span>{rupiah(grandTotal)}</span>
           </div>
 
@@ -1267,13 +1293,13 @@ export default function CheckoutPage() {
             disabled={isStoreProcessing || !selectedAddress || !selectedCourierKey}
           >
             <span className={styles.payButtonMain}>
-              {isStoreProcessing ? "Memproses Pembayaran..." : `Bayar Sekarang • ${rupiah(grandTotal)}`}
+              {isStoreProcessing ? checkoutConfig.summary.processingBtn : `${checkoutConfig.summary.payNowPrefix}${rupiah(grandTotal)}`}
             </span>
             {(!selectedAddress || !selectedCourierKey) && (
               <span className={styles.payButtonSub}>
                 {!selectedAddress
-                  ? "Pilih alamat terlebih dahulu"
-                  : "Pilih kurir terlebih dahulu"}
+                  ? checkoutConfig.summary.selectAddressSub
+                  : checkoutConfig.summary.selectCourierSub}
               </span>
             )}
           </button>
@@ -1283,18 +1309,18 @@ export default function CheckoutPage() {
       {/* ─── MODAL PILIH VOUCHER SAYA ─── */}
       {showVoucherModal && (
         <div className={styles.modalOverlay} onClick={() => setShowVoucherModal(false)}>
-          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()} style={{ maxWidth: "600px" }}>
+          <div className={`${styles.modalContent} ${styles.voucherModalContent}`} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
               <div>
-                <h2 className={styles.modalTitle}>Pilih Voucher Saya</h2>
-                <p style={{ margin: "2px 0 0", fontSize: "0.75rem", color: "var(--text-secondary)" }}>
-                  Gunakan maks. 2 voucher (1 Diskon Belanja + 1 Gratis Ongkir).
+                <h2 className={styles.modalTitle}>{checkoutConfig.voucher.modalTitle}</h2>
+                <p className={styles.voucherModalSub}>
+                  {checkoutConfig.voucher.modalHint}
                 </p>
               </div>
               <button className={styles.modalCloseBtn} onClick={() => setShowVoucherModal(false)}>&times;</button>
             </div>
 
-            <div style={{ maxHeight: "65vh", overflowY: "auto", padding: "10px 0" }}>
+            <div className={styles.voucherModalList}>
               <MyVouchers
                 claimedVouchers={claimedVouchers}
                 isCheckoutMode={true}

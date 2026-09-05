@@ -117,8 +117,8 @@ export default function AdminReturns() {
                     <b>{r.reason}</b>
                     {r.notes && <div><small>{r.notes}</small></div>}
                     {r.evidence && (
-                      <div style={{ marginTop: '4px' }}>
-                        <a href={r.evidence} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary-color)', fontSize: '0.85rem', textDecoration: 'underline' }}>
+                      <div>
+                        <a href={r.evidence} target="_blank" rel="noopener noreferrer" className={styles.evidenceLink}>
                           Lihat Bukti Foto
                         </a>
                       </div>
@@ -129,7 +129,7 @@ export default function AdminReturns() {
                       {r.status}
                     </span>
                     {(r.bankName || r.bankNumber) && (
-                      <div style={{ marginTop: '8px', fontSize: '0.8rem', padding: '6px', background: 'var(--bg-secondary)', borderRadius: '4px' }}>
+                      <div className={styles.bankInfoBox}>
                         <strong>Bank:</strong> {r.bankName} <br/>
                         <strong>No:</strong> {r.bankNumber} <br/>
                         <strong>A/N:</strong> {r.bankHolder}
@@ -138,7 +138,7 @@ export default function AdminReturns() {
                   </td>
                   <td>
                     {['requested', 'pending', 'return_requested'].includes(r.status) && (
-                      <div style={{ display: 'flex', gap: '8px' }}>
+                      <div className={styles.actionButtonRow}>
                         <button 
                           className={styles.actionBtnPrimary} 
                           onClick={() => openPrompt(r.id, 'approve')}
@@ -167,7 +167,7 @@ export default function AdminReturns() {
         <div className={styles.modalOverlay} onClick={closePrompt}>
           <div className={styles.modalCard} onClick={(e) => e.stopPropagation()}>
             <h4>Konfirmasi</h4>
-            <p style={{ marginBottom: '0.5rem', fontSize: '0.85rem' }}>{promptModal.message}</p>
+            <p className={styles.modalMessage}>{promptModal.message}</p>
             <textarea 
               className={styles.modalInput}
               value={promptModal.note}

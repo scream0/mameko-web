@@ -82,20 +82,28 @@ export function StoreProvider({ children }) {
 
 
   // Fetch promo settings (public) untuk diterapkan di seluruh app
-  useEffect(() => {
-    const loadPromo = async () => {
-      try {
-        const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/settings?public=true", { cache: "no-store" });
-        if (res.ok) {
-          const data = await res.json();
-          setPromoSettings(data);
-        }
-      } catch (error) {
-        console.error("Gagal memuat settings promo:", error);
+  const loadPromo = useCallback(async () => {
+    try {
+      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/settings?public=true", { cache: "no-store" });
+      if (res.ok) {
+        const data = await res.json();
+        setPromoSettings(data);
       }
-    };
-    loadPromo();
+    } catch (error) {
+      console.error("Gagal memuat settings promo:", error);
+    }
   }, []);
+
+  useEffect(() => {
+    loadPromo();
+    const handlePromoUpdate = () => {
+      loadPromo();
+    };
+    window.addEventListener("promo-settings-updated", handlePromoUpdate);
+    return () => {
+      window.removeEventListener("promo-settings-updated", handlePromoUpdate);
+    };
+  }, [loadPromo]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -105,9 +113,10 @@ export function StoreProvider({ children }) {
 
   const fetchProducts = useCallback(async () => {
     try {
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/products");
+      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/products?status=published");
       const result = await res.json();
-      const data = Array.isArray(result?.data) ? result.data : (Array.isArray(result) ? result : []);
+      const rawData = Array.isArray(result?.data) ? result.data : (Array.isArray(result) ? result : []);
+      const data = rawData.filter((p) => p.status !== "draft");
 
       const mapped = data.map((p) => ({
         ...p,
@@ -236,6 +245,17 @@ const handleUserData = useCallback(async (currentUser, token) => {
     let lastUserId = null;
 
     const initAuth = async () => {
+      // Safety net: Jika pengguna mendarat di halaman mana pun dengan parameter ?code= (dari email Magic Link),
+      // otomatis alihkan ke penerima resmi /auth/callback agar kodenya ditukar menjadi sesi login aktif.
+      if (typeof window !== "undefined") {
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get("code");
+        if (code && !window.location.pathname.startsWith("/auth/callback")) {
+          window.location.replace(`/auth/callback${window.location.search}`);
+          return;
+        }
+      }
+
       const { data: { session } } = await auth.getSession();
       setCurrentSession(session);
       const currentUser = session?.user || null;
@@ -678,7 +698,20 @@ const handleUserData = useCallback(async (currentUser, token) => {
           userId,
           orderId,
           amount: baseSubtotal,
-          items: cart.items,
+          items: cart.items.map((it) => {
+            const disc = activePromo
+              ? getDiscountedPrice(it.price, activePromo, {
+                  productId: it.productId || it.id,
+                  size: it.size,
+                })
+              : null;
+            return {
+              ...it,
+              price: disc && disc.hasDiscount ? disc.price : it.price,
+              originalPrice: it.price,
+            };
+          }),
+
           customerDetails: customer,
           shippingAddress: selectedShippingAddress,
           shippingCost: shippingCostAmount,

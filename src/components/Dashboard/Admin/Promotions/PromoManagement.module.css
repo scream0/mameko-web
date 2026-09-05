@@ -1,16 +1,16 @@
 .container {
   padding: 24px;
-  max-width: 1200px;
+  max-width: 1280px;
   margin: 0 auto;
 }
 
+/* ── Hero Header ── */
 .hero {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 32px;
-  padding: 32px;
-  /* Gunakan warna aksen primary untuk hero, biasanya gelap */
+  margin-bottom: 24px;
+  padding: 28px 32px;
   background: var(--surface-secondary);
   border: 1px solid var(--border-color);
   border-radius: 16px;
@@ -18,21 +18,32 @@
   box-shadow: var(--shadow-md);
 }
 
+.heroContent {
+  max-width: 680px;
+}
+
 .heroSubtitle {
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-secondary);
-  margin-bottom: 8px;
-  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--success-color);
+  margin-bottom: 6px;
+  font-weight: 700;
 }
 
 .heroTitle {
-  font-size: 1.75rem;
+  font-size: 1.65rem;
   font-weight: 700;
-  margin: 0;
+  margin: 0 0 6px 0;
   color: var(--text-primary);
-  font-family: var(--font-serif);
+  font-family: var(--font-serif, serif);
+}
+
+.heroDescription {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.5;
 }
 
 .heroStats {
@@ -43,31 +54,120 @@
 .statBox {
   background: var(--surface-primary);
   border: 1px solid var(--border-color);
-  padding: 16px 24px;
+  padding: 14px 22px;
   border-radius: 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
   box-shadow: var(--shadow-sm);
+  min-width: 140px;
 }
 
 .statLabel {
-  font-size: 0.875rem;
+  font-size: 0.76rem;
   color: var(--text-secondary);
   margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
 }
 
 .statValue {
-  font-size: 1.5rem;
+  font-size: 1.35rem;
   font-weight: 700;
-  color: var(--primary-accent);
+  color: var(--text-primary);
 }
 
-.mainGrid {
-  display: grid;
-  grid-template-columns: 350px 1fr;
-  gap: 24px;
-  align-items: start;
+.statValueActive {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--success-color);
+}
+
+.statBadgeActive {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--success-color);
+  background: var(--success-bg);
+  padding: 4px 10px;
+  border-radius: 9999px;
+  border: 1px solid var(--success-border);
+}
+
+.statBadgeInactive {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--danger-color);
+  background: var(--danger-bg);
+  padding: 4px 10px;
+  border-radius: 9999px;
+  border: 1px solid var(--danger-border);
+}
+
+/* ── Tab Switcher ── */
+.tabNav {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 12px;
+}
+
+.tabBtn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border-radius: 10px;
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tabBtn:hover {
+  background: var(--surface-primary);
+  color: var(--text-primary);
+  border-color: var(--text-tertiary);
+}
+
+.tabBtnActive {
+  background: var(--primary-accent);
+  color: var(--primary-accent-text);
+  border-color: var(--primary-accent);
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
+}
+
+.tabBtnActive:hover {
+  background: var(--primary-accent);
+  color: var(--primary-accent-text);
+}
+
+.tabBadge {
+  background: var(--primary-accent-bg);
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 1px solid var(--border-color);
+}
+
+/* ── TAB 1: Promo Toko Layout (Clean, Centered & Focused) ── */
+.promoTokoWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  width: 100%;
 }
 
 .panel {
@@ -79,34 +179,35 @@
 }
 
 .panelHeader {
-  padding: 20px 24px;
+  padding: 22px 28px;
   border-bottom: 1px solid var(--border-color);
   background: var(--surface-secondary);
 }
 
 .panelHeader h3 {
   margin: 0 0 4px 0;
-  font-size: 1.125rem;
+  font-size: 1.15rem;
   color: var(--text-primary);
+  font-weight: 700;
 }
 
 .panelHeader p {
   margin: 0;
-  font-size: 0.875rem;
+  font-size: 0.85rem;
   color: var(--text-secondary);
 }
 
 .formGrid {
-  padding: 24px;
+  padding: 28px;
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
 .inputRow {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
 }
 
 .inputGroup {
@@ -116,17 +217,17 @@
 }
 
 .inputGroup label {
-  font-size: 0.875rem;
+  font-size: 0.85rem;
   font-weight: 600;
   color: var(--text-primary);
 }
 
 .inputGroup input,
 .inputGroup select {
-  padding: 10px 12px;
+  padding: 11px 14px;
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  font-size: 0.875rem;
+  font-size: 0.88rem;
   color: var(--text-primary);
   background: var(--input-background);
   transition: all 0.2s ease;
@@ -135,8 +236,8 @@
 .inputGroup input:focus,
 .inputGroup select:focus {
   outline: none;
-  border-color: var(--primary-accent);
-  box-shadow: 0 0 0 3px var(--primary-accent-bg);
+  border-color: var(--success-color);
+  box-shadow: 0 0 0 3px var(--success-bg);
 }
 
 .inputWrapper {
@@ -147,67 +248,717 @@
 
 .inputWrapper input {
   width: 100%;
-  padding-left: 36px;
+  padding-left: 38px;
 }
 
 .inputIcon {
   position: absolute;
   left: 12px;
   color: var(--text-secondary);
+  pointer-events: none;
 }
 
-.saveButton {
+.inputHint {
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* ── Switch Card ── */
+.switchCard {
   display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--surface-secondary);
+  padding: 18px 22px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+}
+
+.switchInfo h4 {
+  margin: 0 0 4px 0;
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.switchInfo p {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--neutral-border);
+  transition: 0.3s;
+  border-radius: 28px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 4px;
+  bottom: 4px;
+  background-color: var(--primary-accent);
+  transition: 0.3s;
+  border-radius: 50%;
+}
+
+.switch input:checked + .slider {
+  background-color: var(--success-color);
+}
+
+.switch input:checked + .slider:before {
+  transform: translateX(22px);
+  background-color: var(--primary-accent-text);
+}
+
+/* ── Scope Selector ── */
+.scopeSelector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 4px;
+}
+
+.scopeOption {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.scopeOption:hover {
+  border-color: var(--success-border);
+  background: var(--neutral-bg);
+}
+
+.scopeOptionActive {
+  border-color: var(--success-color);
+  background: var(--success-bg);
+  box-shadow: 0 0 0 1px var(--success-color);
+}
+
+.scopeOptionTitle {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.scopeOptionActive .scopeOptionTitle {
+  color: var(--success-color);
+}
+
+.scopeOptionDesc {
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* ── Save Button ── */
+.saveButton {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   width: 100%;
-  padding: 12px;
+  padding: 13px 24px;
   background: var(--primary-accent);
   color: var(--primary-accent-text);
   border: none;
   border-radius: 8px;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 0.95rem;
   cursor: pointer;
   transition: opacity 0.2s ease, transform 0.1s ease;
-  margin-top: 8px;
+  margin-top: 6px;
 }
 
 .saveButton:hover {
-  opacity: 0.9;
+  opacity: 0.92;
 }
 
 .saveButton:active {
-  transform: scale(0.98);
+  transform: scale(0.99);
 }
 
-.listSection {
+.saveButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── Panel Seleksi Varian Spesifik Terintegrasi (Di Bawah Opsi Varian) ── */
+.embeddedVariantSection {
+  margin-top: 14px;
+  background: var(--surface-secondary);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.embeddedVariantHeader {
+  padding: 16px 20px;
+  background: rgba(0, 0, 0, 0.18);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.embeddedVariantHeader h4 {
+  margin: 0 0 4px 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.embeddedVariantHeader p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.sectionIcon {
+  color: var(--success-color);
+  flex-shrink: 0;
+}
+
+/* ── Bulk Action Bar ── */
+.bulkActionBar {
+  padding: 16px 28px;
+  background: var(--surface-primary);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.bulkSearchWrapper {
+  position: relative;
+  flex: 1;
+  min-width: 260px;
+  max-width: 420px;
+  display: flex;
+  align-items: center;
+}
+
+.bulkSearchWrapper input {
+  width: 100%;
+  padding: 9px 12px 9px 36px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--input-background);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+}
+
+.bulkSearchWrapper input:focus {
+  outline: none;
+  border-color: var(--success-color);
+  box-shadow: 0 0 0 3px var(--success-bg);
+}
+
+.bulkSearchIcon {
+  position: absolute;
+  left: 12px;
+  color: var(--text-secondary);
+  pointer-events: none;
+}
+
+.bulkActionButtons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.bulkBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 15px;
+  border-radius: 8px;
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bulkBtn:hover {
+  background: var(--surface-primary);
+  border-color: var(--text-tertiary);
+}
+
+.bulkBtnPrimary {
+  background: var(--success-bg);
+  border-color: var(--success-border);
+  color: var(--success-color);
+}
+
+.bulkBtnPrimary:hover {
+  background: var(--success-color);
+  color: var(--primary-accent-text);
+  border-color: var(--success-color);
+}
+
+.selectedCounterBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--success-color);
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
+}
+
+/* ── Group Produk & Baris Varian ── */
+.productGroupList {
+  padding: 20px 24px;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  max-height: 520px;
+  overflow-y: auto;
+}
+
+.productGroupCard {
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color 0.2s ease;
+}
+
+.productGroupCard:hover {
+  border-color: var(--text-tertiary);
+}
+
+.productGroupHeader {
+  padding: 12px 18px;
+  background: rgba(0, 0, 0, 0.15);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.productHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.productThumb {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: var(--surface-primary);
+  border: 1px solid var(--border-color);
+}
+
+.productThumbPlaceholder {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  background: var(--surface-primary);
+  border: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+}
+
+.productTitleText {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.productCategoryText {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin: 2px 0 0 0;
+}
+
+.productSelectAllBtn {
+  background: transparent;
+  border: 1px dashed var(--border-color);
+  color: var(--text-secondary);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.productSelectAllBtn:hover {
+  border-color: var(--success-color);
+  color: var(--success-color);
+  background: var(--success-bg);
+}
+
+.variantGrid {
+  display: flex;
+  flex-direction: column;
+}
+
+.variantRow {
+  padding: 13px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-color);
+  transition: background 0.15s ease;
+  cursor: pointer;
+}
+
+.variantRow:last-child {
+  border-bottom: none;
+}
+
+.variantRow:hover {
+  background: var(--neutral-bg);
+}
+
+.variantRowActive {
+  background: var(--success-bg);
+}
+
+.variantRowActive:hover {
+  background: rgba(2, 245, 161, 0.16);
+}
+
+.variantRowLeft {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.variantCheckbox {
+  cursor: pointer;
+  accent-color: var(--success-color);
+  width: 17px;
+  height: 17px;
+}
+
+.variantSizeBadge {
+  font-weight: 700;
+  font-size: 0.86rem;
+  color: var(--text-primary);
+  background: var(--surface-primary);
+  border: 1px solid var(--border-color);
+  padding: 3px 9px;
+  border-radius: 6px;
+}
+
+.variantStockText {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.variantRowRight {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.variantPriceCol {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.variantOriginalPrice {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  text-decoration: line-through;
+}
+
+.variantPromoPrice {
+  font-size: 0.94rem;
+  font-weight: 700;
+  color: var(--success-color);
+}
+
+.variantNormalPrice {
+  font-size: 0.94rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.variantSavingsTag {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--success-color);
+}
+
+.variantActiveBadge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--success-color);
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
+  padding: 4px 10px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.variantInactiveBadge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--neutral-text);
+  background: var(--neutral-bg);
+  border: 1px solid var(--neutral-border);
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+/* ── Unified Save Area (Satu Tombol Simpan di Bawah Form) ── */
+.unifiedSaveArea {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border-color);
+  margin-top: 6px;
+}
+
+.saveSummaryText {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--success-color);
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
+  padding: 8px 14px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ── TAB 2: VOUCHERS LAYOUT & CARDS ── */
+.mainGrid {
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.voucherListSection {
+  background: var(--surface-primary);
+  border-radius: 16px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-md);
+  padding: 24px;
+}
+
+.listHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .listHeader h3 {
   margin: 0 0 4px 0;
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   color: var(--text-primary);
+  font-weight: 700;
 }
 
 .listHeader p {
   margin: 0;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   color: var(--text-secondary);
+}
+
+.voucherToolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+
+.voucherSearchWrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.voucherSearchInput {
+  width: 100%;
+  padding: 9px 12px 9px 36px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--input-background);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+}
+
+.voucherSearchInput:focus {
+  outline: none;
+  border-color: var(--success-color);
+  box-shadow: 0 0 0 3px var(--success-bg);
+}
+
+.voucherSearchIcon {
+  position: absolute;
+  left: 12px;
+  color: var(--text-secondary);
+  pointer-events: none;
+}
+
+.voucherFiltersRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.voucherFilters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.filterBtn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--surface-primary);
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filterBtn:hover {
+  background: var(--surface-secondary);
+  color: var(--text-primary);
+}
+
+.filterBtnActive {
+  background: var(--primary-accent);
+  color: var(--primary-accent-text);
+  border-color: var(--primary-accent);
+}
+
+.filterCountText {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.editModeBanner {
+  background: var(--warning-bg);
+  border: 1px solid var(--warning-border);
+  padding: 12px 16px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.editModeText {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--warning-color);
+}
+
+.cancelEditBtn {
+  background: transparent;
+  border: 1px solid var(--warning-border);
+  color: var(--warning-color);
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancelEditBtn:hover {
+  background: var(--warning-color);
+  color: #07191E;
 }
 
 .voucherGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 18px;
 }
 
 .voucherCard {
-  background: var(--surface-primary);
+  background: var(--surface-secondary);
   border-radius: 12px;
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-sm);
@@ -220,10 +971,11 @@
 .voucherCard:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
+  border-color: var(--text-tertiary);
 }
 
 .voucherCard::before {
-  content: '';
+  content: "";
   position: absolute;
   left: 64px;
   top: 0;
@@ -238,8 +990,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--surface-secondary);
-  color: var(--primary-accent);
+  background: var(--surface-primary);
+  color: var(--success-color);
 }
 
 .voucherContent {
@@ -255,14 +1007,32 @@
 }
 
 .voucherCode {
-  background: var(--primary-accent-bg);
-  color: var(--primary-accent);
+  background: var(--success-bg);
+  color: var(--success-color);
   padding: 4px 8px;
   border-radius: 6px;
   font-size: 0.75rem;
   font-weight: 700;
-  letter-spacing: 0.05em;
-  border: 1px dashed var(--border-color);
+  letter-spacing: 0.06em;
+  border: 1px dashed var(--success-border);
+}
+
+.editBtn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.editBtn:hover {
+  background: var(--neutral-bg);
+  color: var(--primary-accent);
 }
 
 .deleteBtn {
@@ -279,45 +1049,135 @@
 }
 
 .deleteBtn:hover {
-  background: rgba(var(--danger-color-rgb), 0.1);
+  background: var(--danger-bg);
 }
 
 .voucherTitle {
   margin: 0 0 4px 0;
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 0.98rem;
+  font-weight: 700;
   color: var(--text-primary);
 }
 
 .voucherDetail {
-  margin: 0 0 12px 0;
-  font-size: 0.875rem;
+  margin: 0 0 10px 0;
+  font-size: 0.85rem;
   color: var(--text-secondary);
 }
 
 .voucherDetail strong {
   color: var(--text-primary);
-  font-size: 1.1rem;
+  font-size: 1.05rem;
+}
+
+.voucherFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .voucherExpiry {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.75rem;
-  color: var(--primary-accent);
-  background: var(--primary-accent-bg);
-  padding: 4px 8px;
-  border-radius: 4px;
-  width: fit-content;
+  font-size: 0.72rem;
+  color: var(--text-secondary);
   font-weight: 500;
 }
 
+.badgeActive {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--success-color);
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.badgeExpired {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--danger-color);
+  background: var(--danger-bg);
+  border: 1px solid var(--danger-border);
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.badgeQuotaFull {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--warning-color);
+  background: var(--warning-bg);
+  border: 1px solid var(--warning-border);
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.badgeInactive {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--neutral-text);
+  background: var(--neutral-bg);
+  border: 1px solid var(--neutral-border);
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.voucherQuota {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin: 0 0 10px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.voucherActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.toggleBtn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+}
+
+.toggleBtnActive {
+  border-color: var(--success-border);
+  color: var(--success-color);
+  background: var(--success-bg);
+}
+
+.toggleBtnInactive {
+  border-color: var(--danger-border);
+  color: var(--danger-color);
+  background: var(--danger-bg);
+}
+
+.toggleBtn:hover {
+  opacity: 0.85;
+}
+
+/* ── Empty & Loading States ── */
 .emptyState {
   grid-column: 1 / -1;
-  background: var(--surface-primary);
+  background: var(--surface-secondary);
   border: 2px dashed var(--border-color);
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 48px;
   text-align: center;
   display: flex;
@@ -327,20 +1187,21 @@
 }
 
 .emptyIcon {
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   margin-bottom: 16px;
+  opacity: 0.6;
 }
 
 .emptyState h4 {
   margin: 0 0 8px 0;
-  font-size: 1.125rem;
+  font-size: 1.15rem;
   color: var(--text-primary);
 }
 
 .emptyState p {
   margin: 0;
   color: var(--text-secondary);
-  font-size: 0.95rem;
+  font-size: 0.9rem;
 }
 
 .loadingState {
@@ -348,32 +1209,263 @@
   align-items: center;
   justify-content: center;
   gap: 12px;
-  height: 200px;
+  height: 250px;
   color: var(--text-secondary);
   font-weight: 500;
 }
 
 .spinner {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   border: 2px solid var(--border-color);
-  border-top-color: var(--primary-accent);
+  border-top-color: var(--success-color);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
+/* ── Edit Mode Banner for Vouchers ── */
+.editModeBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--surface-secondary);
+  border: 1px solid var(--primary-accent);
+  border-radius: 8px;
+  margin-bottom: 14px;
+  gap: 10px;
 }
 
-@media (max-width: 900px) {
+.editModeText {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--primary-accent);
+}
+
+.cancelEditBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--surface-primary);
+  color: var(--text-secondary);
+  font-size: 0.74rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancelEditBtn:hover {
+  background: var(--surface-secondary);
+  color: var(--text-primary);
+  border-color: var(--text-secondary);
+}
+
+.cancelEditIcon {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* ── Responsive Queries: Tablet (max-width: 1024px) ── */
+@media (max-width: 1024px) {
   .mainGrid {
     grid-template-columns: 1fr;
+    gap: 20px;
   }
-  
+
   .hero {
     flex-direction: column;
     align-items: flex-start;
     gap: 20px;
+    padding: 22px;
+  }
+
+  .heroStats {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .statBox {
+    flex: 1 1 140px;
+    min-width: 120px;
+  }
+
+  .scopeSelector {
+    grid-template-columns: 1fr;
+  }
+
+  .inputRow {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+}
+
+/* ── Responsive Queries: Mobile & Smartphone (max-width: 768px) ── */
+@media (max-width: 768px) {
+  .container {
+    padding: 16px 12px;
+  }
+
+  .hero {
+    padding: 18px 16px;
+    border-radius: 12px;
+  }
+
+  .heroTitle {
+    font-size: 1.35rem;
+  }
+
+  .heroStats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .heroStats .statBox:first-child {
+    grid-column: span 2;
+  }
+
+  .tabNav {
+    flex-direction: row;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .tabBtn {
+    flex: 1;
+    justify-content: center;
+    padding: 10px 12px;
+    font-size: 0.82rem;
+  }
+
+  .panelHeader {
+    padding: 16px 18px;
+  }
+
+  .formGrid {
+    padding: 18px 16px;
+    gap: 16px;
+  }
+
+  .switchCard {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .embeddedVariantSection {
+    padding: 16px 14px;
+  }
+
+  .embeddedVariantHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .bulkActionBar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .bulkSearchWrapper {
+    width: 100%;
+  }
+
+  .bulkActionButtons {
+    display: flex;
+    width: 100%;
+    gap: 8px;
+  }
+
+  .bulkBtn {
+    flex: 1;
+    justify-content: center;
+    padding: 8px 10px;
+    font-size: 0.78rem;
+  }
+
+  .productGroupHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+  }
+
+  .productSelectAllBtn {
+    align-self: flex-start;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .variantRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .variantRowRight {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .unifiedSaveArea {
+    padding: 14px 16px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .saveButton {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .voucherToolbar {
+    padding: 12px;
+  }
+
+  .voucherFiltersRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .voucherFilters {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    width: 100%;
+  }
+
+  .filterBtn {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .voucherGrid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .voucherCard::before {
+    display: none;
+  }
+
+  .voucherIcon {
+    width: 52px;
+  }
+
+  .voucherContent {
+    padding: 12px;
   }
 }

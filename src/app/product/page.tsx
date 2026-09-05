@@ -64,11 +64,11 @@ function ProductDetailContent() {
       .then(data => {
         const productData = Array.isArray(data.data) ? data.data[0] : data.data;
 
-        if (data.success && productData) {
+        if (data.success && productData && productData.status !== "draft") {
           setProduct(productData);
         } else {
           setIsNotFound(true);
-          throw new Error('Produk tidak ditemukan.');
+          throw new Error('Produk tidak ditemukan atau belum dipublikasikan.');
         }
         setLoading(false);
       })
@@ -231,7 +231,12 @@ function ProductDetailContent() {
                     : product.price
                     ? Number(product.price)
                     : 0;
-                  const discounted = getDiscountedPrice(rawPrice, activePromo);
+                  const discounted = getDiscountedPrice(rawPrice, activePromo, {
+                    productId: product.id,
+                    size: selectedVariant?.size,
+                  });
+
+
                   if (rawPrice <= 0 || isSelectedVariantOutOfStock) return <span className={styles.outOfStockText}>Stok Habis</span>;
                   return (
                     <>

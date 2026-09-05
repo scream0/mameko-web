@@ -3,24 +3,22 @@
    ==================================================== */
 .settingsContainer {
   background: var(--surface-primary);
-  backdrop-filter: blur(25px);
-  -webkit-backdrop-filter: blur(25px);
   border: 1px solid var(--border-color);
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 28px;
   display: flex;
   flex-direction: column;
   gap: 24px;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
   width: 100%;
   box-sizing: border-box;
-  animation: fadeInSettings 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: fadeInSettings 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes fadeInSettings {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -31,7 +29,7 @@
 .settingsHeader {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
   border-bottom: 1px solid var(--border-color);
   padding-bottom: 1.25rem;
 }
@@ -51,14 +49,14 @@
   border: 1px solid var(--border-color);
   color: var(--text-primary);
   padding: 0.5rem 1rem;
-  border-radius: 6px;
+  border-radius: 8px;
   font-family: var(--font-sans);
   font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 1px;
-  text-transform: uppercase;
+  letter-spacing: 0.5px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.2s ease;
+  min-height: 36px;
 }
 
 .backBtn:hover {
@@ -70,11 +68,10 @@
 .settingsTitle {
   font-family: var(--font-serif);
   font-size: 1.3rem;
-  font-weight: 500;
-  letter-spacing: 1.5px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
   color: var(--text-primary);
   margin: 0;
-  text-transform: uppercase;
 }
 
 .settingsSubtitle {
@@ -88,19 +85,18 @@
   display: flex;
   align-items: center;
   gap: 20px;
-  padding: 24px;
-  background: linear-gradient(135deg, rgba(var(--primary-accent-rgb, 197, 160, 89), 0.1), rgba(var(--surface-primary-rgb), 0.95));
-  border: 1px solid rgba(var(--primary-accent-rgb, 197, 160, 89), 0.2);
+  padding: 20px 24px;
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
 }
 
 .profileAvatar {
-  width: 72px;
-  height: 72px;
+  width: 68px;
+  height: 68px;
   border-radius: 50%;
   overflow: hidden;
-  background: var(--surface-secondary);
+  background: var(--surface-primary);
   border: 2px solid var(--primary-accent);
   display: flex;
   align-items: center;
@@ -116,8 +112,8 @@
 
 .avatarInitials {
   font-family: var(--font-serif);
-  font-size: 2rem;
-  font-weight: 500;
+  font-size: 1.8rem;
+  font-weight: 600;
   color: var(--primary-accent);
 }
 
@@ -125,20 +121,24 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+  min-width: 0;
 }
 
 .profileName {
   margin: 0;
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   font-weight: 600;
   color: var(--text-primary);
-  font-family: var(--font-serif);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .profileEmail {
   margin: 0;
   font-size: 0.85rem;
   color: var(--text-secondary);
+  word-break: break-all;
 }
 
 .profilePhone {
@@ -169,42 +169,53 @@
   margin: 0 0 2px 4px;
 }
 
+.dangerGroupLabel {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--danger-color, #ef4444);
+  font-weight: 700;
+  margin: 0 0 2px 4px;
+}
+
 .settingsGrid {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-/* Item Menu Kartu Profesional (Gaya List Shopee/Tokopedia) */
+/* Item Menu Kartu */
 .settingItem {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 16px 20px;
-  background: var(--surface-secondary);
-  border-radius: 10px;
+  background: var(--surface-primary);
+  border-radius: 12px;
   border: 1px solid var(--border-color);
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.2s ease;
 }
 
 .settingItem:hover {
   border-color: var(--primary-accent);
-  background: var(--surface-primary);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+  background: var(--surface-secondary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
 }
 
 .settingLeft {
   display: flex;
   align-items: center;
   gap: 16px;
+  flex: 1;
+  min-width: 0;
 }
 
 .iconBox {
   width: 42px;
   height: 42px;
-  border-radius: 8px;
+  border-radius: 10px;
   background: rgba(var(--primary-accent-rgb, 197, 160, 89), 0.1);
   color: var(--primary-accent);
   display: flex;
@@ -217,6 +228,7 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+  min-width: 0;
 }
 
 .settingInfo h4 {
@@ -242,6 +254,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-shrink: 0;
 }
 
 .actionText {
@@ -268,10 +281,9 @@
 .addressSummary {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   margin-top: 2px;
   width: 100%;
-  max-width: 250px;
 }
 
 .addressSummaryLabel {
@@ -290,6 +302,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 280px;
 }
 
 /* Zona Bahaya / Logout & Hapus Akun */
@@ -305,9 +318,9 @@
   align-items: center;
   width: 100%;
   padding: 14px 20px;
-  background: var(--surface-secondary);
+  background: var(--surface-primary);
   border: 1px solid var(--border-color);
-  border-radius: 10px;
+  border-radius: 12px;
   color: var(--text-primary);
   font-family: var(--font-sans);
   font-size: 0.9rem;
@@ -315,6 +328,7 @@
   cursor: pointer;
   transition: all 0.2s ease;
   box-sizing: border-box;
+  min-height: 48px;
 }
 
 .dangerCardLeft {
@@ -325,8 +339,8 @@
 }
 
 .dangerCardBtn:hover {
-  background: rgba(var(--danger-color-rgb, 220, 38, 38), 0.05);
-  border-color: rgba(var(--danger-color-rgb, 220, 38, 38), 0.3);
+  background: rgba(var(--danger-color-rgb, 239, 68, 68), 0.05);
+  border-color: rgba(var(--danger-color-rgb, 239, 68, 68), 0.3);
   color: var(--danger-color, #ef4444);
 }
 
@@ -335,7 +349,7 @@
 }
 
 .deleteCardBtn {
-  border-color: rgba(var(--danger-color-rgb, 220, 38, 38), 0.2);
+  border-color: rgba(var(--danger-color-rgb, 239, 68, 68), 0.2);
   color: var(--danger-color, #ef4444);
 }
 
@@ -344,26 +358,24 @@
 }
 
 .deleteCardBtn:hover {
-  background: rgba(var(--danger-color-rgb, 220, 38, 38), 0.1);
+  background: rgba(var(--danger-color-rgb, 239, 68, 68), 0.1);
   border-color: var(--danger-color, #ef4444);
 }
 
-/* ====================================================
-   MODAL KONFIRMASI (Luxury Enterprise Style)
-   ==================================================== */
+/* Modal Konfirmasi Hapus Akun */
 .modalOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 9999;
-  padding: 20px;
+  padding: 16px;
   box-sizing: border-box;
-  animation: fadeInOverlay 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: fadeInOverlay 0.25s ease-out;
 }
 
 @keyframes fadeInOverlay {
@@ -374,23 +386,23 @@
 .modalContent {
   background: var(--surface-primary);
   border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 32px 24px;
+  border-radius: 16px;
+  padding: 30px 24px;
   width: 100%;
-  max-width: 400px;
+  max-width: 420px;
   display: flex;
   flex-direction: column;
   gap: 20px;
   text-align: center;
   box-sizing: border-box;
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
-  animation: scaleUpModal 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 20px 35px rgba(0, 0, 0, 0.2);
+  animation: scaleUpModal 0.25s ease-out;
 }
 
 @keyframes scaleUpModal {
   from {
     opacity: 0;
-    transform: translateY(15px) scale(0.97);
+    transform: translateY(12px) scale(0.97);
   }
   to {
     opacity: 1;
@@ -402,8 +414,8 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: rgba(239, 68, 68, 0.12);
-  color: #ef4444;
+  background: rgba(var(--danger-color-rgb, 239, 68, 68), 0.12);
+  color: var(--danger-color, #ef4444);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -413,14 +425,13 @@
 .deleteContentText {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .deleteContentText h3 {
   margin: 0;
-  font-family: var(--font-serif);
-  font-size: 1.2rem;
-  font-weight: 500;
+  font-size: 1.15rem;
+  font-weight: 700;
   color: var(--text-primary);
 }
 
@@ -439,53 +450,89 @@
 
 .modalCancelBtn {
   flex: 1;
-  padding: 0.75rem;
-  border-radius: 6px;
+  padding: 10px 16px;
+  border-radius: 10px;
   background: var(--surface-secondary);
   border: 1px solid var(--border-color);
   color: var(--text-primary);
   font-weight: 600;
-  font-size: 0.75rem;
-  text-transform: uppercase;
+  font-size: 0.85rem;
   cursor: pointer;
   transition: all 0.2s ease;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .modalCancelBtn:hover {
+  background: var(--surface-primary);
   border-color: var(--text-secondary);
 }
 
 .modalConfirmDeleteBtn {
   flex: 1;
-  padding: 0.75rem;
-  border-radius: 6px;
-  background: #ef4444;
-  border: 1px solid #ef4444;
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: var(--danger-color, #ef4444);
+  border: 1px solid var(--danger-color, #ef4444);
   color: #ffffff;
   font-weight: 600;
-  font-size: 0.75rem;
-  text-transform: uppercase;
+  font-size: 0.85rem;
   cursor: pointer;
   transition: opacity 0.2s ease;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .modalConfirmDeleteBtn:hover {
-  opacity: 0.9;
+  opacity: 0.92;
 }
 
 .modalConfirmDeleteBtn:disabled {
-  opacity: 0.7;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
+/* Responsiveness */
 @media (max-width: 640px) {
-  .settingItem {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
+  .settingsContainer {
+    padding: 20px 16px;
+    border-radius: 12px;
   }
-  .settingRight {
+
+  .profileSummaryBox {
+    padding: 16px;
+    gap: 14px;
+  }
+
+  .settingItem {
+    padding: 14px 16px;
+  }
+
+  .addressSummaryText {
+    max-width: 180px;
+  }
+}
+
+@media (max-width: 480px) {
+  .profileAvatar {
+    width: 56px;
+    height: 56px;
+  }
+
+  .avatarInitials {
+    font-size: 1.4rem;
+  }
+
+  .deleteActions {
+    flex-direction: column-reverse;
+  }
+
+  .modalCancelBtn,
+  .modalConfirmDeleteBtn {
     width: 100%;
-    justify-content: space-between;
   }
 }
