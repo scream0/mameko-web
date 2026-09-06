@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
+    "lint": "next lint",
     "test": "node --test",
     "e2e": "playwright test",
     "e2e:auth": "playwright test -g \"login and open account orders page\"",
@@ -51,6 +51,6 @@
   "overrides": {
     "jwks-rsa": "3.1.0",
     "jose": "4.15.9",
-    "nanoid": "3.3.17"
+    "nanoid": "3.3.18"
   }
 }

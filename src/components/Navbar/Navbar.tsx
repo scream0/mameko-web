@@ -93,7 +93,6 @@ export function Navbar() {
 
   useEffect(() => {
     if (cartQuantity > 0) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setAnimate(true);
       const timer = setTimeout(() => setAnimate(false), 600);
       return () => clearTimeout(timer);

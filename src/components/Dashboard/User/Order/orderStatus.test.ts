@@ -1,8 +1,5 @@
-// @ts-nocheck
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const test = require('node:test');
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const assert = require('node:assert/strict');
+import test from 'node:test';
+import assert from 'node:assert/strict';
 
 function calculateOrderStats(orders: any) {
   const total = orders.length;

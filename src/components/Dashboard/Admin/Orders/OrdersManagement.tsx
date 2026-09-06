@@ -100,7 +100,6 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
   };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadOrders(1, statusFilter, searchTerm);
 
     const loadSettings = async () => {
@@ -114,7 +113,6 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
     };
     loadSettings();
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPage(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusFilter]);

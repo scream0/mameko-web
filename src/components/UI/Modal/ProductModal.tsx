@@ -35,17 +35,12 @@ export function Modal({ isOpen, item, onClose, onAddToCart, rupiah }) {
 
       if (!currentIsStillAvailable) {
         const firstAvailable = availableVariants[0];
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setCurrentSize(firstAvailable.size);
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSelectedVariant(firstAvailable);
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setModalQty(1);
       }
     } else {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCurrentSize("");
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedVariant(null);
     }
   }, [item, currentSize]);

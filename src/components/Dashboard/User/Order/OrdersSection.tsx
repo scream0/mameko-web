@@ -221,7 +221,6 @@ export default function OrdersSection() {
     if (!currentUser || !currentSession) return;
 
     let isActive = true;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
 
     const loadOrders = async () => {

@@ -74,7 +74,7 @@ func main() {
 	fmt.Println("\n=======================================================")
 	fmt.Println("  SILAKAN SCAN QR CODE INI DENGAN NOMOR WHATSAPP BARU")
 	fmt.Println("  (Buka WhatsApp -> Perangkat Tertaut -> Tautkan)")
-	fmt.Println("=======================================================\n")
+	fmt.Println("=======================================================")
 
 	for evt := range qrChan {
 		if evt.Event == "code" {

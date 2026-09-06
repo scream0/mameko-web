@@ -218,7 +218,6 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
 
   useEffect(() => {
     if (!resolvedOrderId) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setError("ID Pesanan tidak ditemukan di URL.");
       setLoading(false);
       return;

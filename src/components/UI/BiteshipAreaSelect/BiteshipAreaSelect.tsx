@@ -181,7 +181,7 @@ export function BiteshipAreaSelect({
           )}
 
           <p className={styles.hintText}>
-            Contoh pencarian: <em>"Depok Sleman"</em>, <em>"Gambir Jakarta"</em>, atau <em>"55281"</em>
+            Contoh pencarian: <em>&ldquo;Depok Sleman&rdquo;</em>, <em>&ldquo;Gambir Jakarta&rdquo;</em>, atau <em>&ldquo;55281&rdquo;</em>
           </p>
         </div>
       )}

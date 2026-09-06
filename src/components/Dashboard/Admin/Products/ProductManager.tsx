@@ -116,7 +116,6 @@ export default function ProductManager() {
   }, [currentPage, searchTerm, filters]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchCategories();
   }, [fetchCategories]);
 
