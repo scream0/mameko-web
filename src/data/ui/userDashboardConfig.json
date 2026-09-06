@@ -76,6 +76,12 @@
     "logout": "Keluar dari akun"
   },
   "navbar": {
+    "brand": {
+      "name": "MAKE ME KOOL",
+      "suffix": "PARFUM",
+      "href": "/dashboard",
+      "ariaLabel": "Dashboard Make Me Kool"
+    },
     "searchPlaceholder": "Cari parfum...",
     "clearSearchAria": "Hapus pencarian",
     "chatAria": "Buka Live Chat",

@@ -45,5 +45,12 @@
     "minPurchase": "Min. belanja",
     "upTo": "Hingga",
     "validUntil": "Berlaku s/d"
+  },
+  "aria": {
+    "tabList": "Kategori Voucher Saya",
+    "tabAriaTemplate": "Filter voucher {label}, terdapat {count} voucher"
+  },
+  "fallbacks": {
+    "claimed": "Diklaim"
   }
 }

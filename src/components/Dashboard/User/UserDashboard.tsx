@@ -19,7 +19,9 @@ import OrdersSection from "@/components/Dashboard/User/Order/OrdersSection";
 import { CartSidebar } from "@/components/UI/Sidebar/CartSidebar";
 import { Modal as ProductModal } from "@/components/UI/Modal/ProductModal";
 import { AppIcon } from "@/components/UI/Icon/AppIcon";
+import { Logo } from "@/components/UI/Logo/logo";
 import { UserDashboardSkeleton } from "@/components/UI/Skeleton/SkeletonLayouts";
+import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import UserChatModal from "@/components/Dashboard/User/Chat/UserChatModal";
 
@@ -151,8 +153,13 @@ export default function UserDashboard({ user }) {
         aria-label={userConfig.aria.menuPanel}
       >
         <div className={styles.brandSection}>
-          <div className={styles.brandLogo}>
-            {userConfig.brand.name} <span>{userConfig.brand.suffix}</span>
+          <div className={`${styles.brandLogo} ${styles.brandLogoWrap}`}>
+            <div className={styles.brandLogoIcon}>
+              <Logo />
+            </div>
+            <div className={styles.brandLogoText}>
+              {userConfig.brand.name} <span>{userConfig.brand.suffix}</span>
+            </div>
           </div>
 
           {/* User Greeting & Name inside Sidebar Header */}
@@ -208,6 +215,26 @@ export default function UserDashboard({ user }) {
       <main className={styles.mainContent}>
         {/* Navbar Atas Melayang */}
         <header className={styles.shopNavbar}>
+          <Link
+            href={userConfig.navbar?.brand?.href || "/dashboard"}
+            className={styles.navbarBrand}
+            aria-label={userConfig.navbar?.brand?.ariaLabel || `${userConfig.brand.name} Dashboard`}
+          >
+            <div className={styles.navbarBrandLogo}>
+              <Logo />
+            </div>
+            <div className={styles.navbarBrandText}>
+              <span className={styles.navbarBrandName}>
+                {userConfig.navbar?.brand?.name || userConfig.brand.name}
+              </span>
+              {userConfig.navbar?.brand?.suffix && (
+                <span className={styles.navbarBrandSuffix}>
+                  {userConfig.navbar.brand.suffix}
+                </span>
+              )}
+            </div>
+          </Link>
+
           <div className={styles.navbarSearchWrapper}>
             <AppIcon name="search" className={styles.searchIcon} />
             <input

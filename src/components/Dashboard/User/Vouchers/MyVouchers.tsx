@@ -136,18 +136,35 @@ const MyVouchers = ({
         {!isCheckoutMode && <h2 className={styles.sectionTitle}>{vouchersConfig.headings.myVouchersTitle}</h2>}
 
         {!isCheckoutMode && (
-          <div className={styles.tabBar}>
-            {TABS.map((tab) => (
-              <button
-                key={tab.key}
-                type="button"
-                className={`${styles.tabButton} ${activeTab === tab.key ? styles.tabButtonActive : ""}`}
-                onClick={() => setActiveTab(tab.key)}
-              >
-                {tab.label}
-                {tabCounts[tab.key] > 0 && <span className={styles.tabCount}>{tabCounts[tab.key]}</span>}
-              </button>
-            ))}
+          <div
+            className={styles.tabBar}
+            role="tablist"
+            aria-label={vouchersConfig.aria?.tabList || vouchersConfig.headings.myVouchersTitle}
+          >
+            {TABS.map((tab) => {
+              const isActive = activeTab === tab.key;
+              const count = tabCounts[tab.key] || 0;
+              const ariaLabel = vouchersConfig.aria?.tabAriaTemplate
+                ? vouchersConfig.aria.tabAriaTemplate
+                    .replace("{label}", tab.label)
+                    .replace("{count}", String(count))
+                : `${tab.label} (${count})`;
+
+              return (
+                <button
+                  key={tab.key}
+                  type="button"
+                  role="tab"
+                  aria-selected={isActive}
+                  aria-label={ariaLabel}
+                  className={`${styles.tabButton} ${isActive ? styles.tabButtonActive : ""}`}
+                  onClick={() => setActiveTab(tab.key)}
+                >
+                  <span>{tab.label}</span>
+                  {count > 0 && <span className={styles.tabCount}>{count}</span>}
+                </button>
+              );
+            })}
           </div>
         )}
 
@@ -161,7 +178,7 @@ const MyVouchers = ({
                 <VoucherCard
                   key={claimId || cv.voucher_id}
                   voucher={cv}
-                  statusText={statusTextMap[cv.status] || "Diklaim"}
+                  statusText={statusTextMap[cv.status] || vouchersConfig.fallbacks?.claimed || vouchersConfig.status.claimed}
                   disabled={isCheckoutMode && isApplied}
                   onActionClick={isCheckoutMode && !isApplied ? () => onSelectVoucher(cv) : undefined}
                   buttonText={isCheckoutMode && isApplied ? vouchersConfig.actions.used : vouchersConfig.actions.useVoucher}
