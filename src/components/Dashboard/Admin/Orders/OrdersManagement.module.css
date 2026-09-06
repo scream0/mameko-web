@@ -586,41 +586,56 @@
 /* Admin Tabs */
 .adminTabs {
   display: flex;
-  gap: 1rem;
+  gap: 0.55rem;
   border-bottom: 1px solid var(--border-color);
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.9rem;
   flex-wrap: wrap;
 }
 
 .tabBtn {
-  background: none;
-  border: none;
-  padding: 0.75rem 1rem;
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-color);
+  padding: 0.55rem 1.15rem;
   color: var(--text-secondary);
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   position: relative;
-  transition: all 0.2s ease;
-  font-size: 0.9rem;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  font-size: 0.82rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
-.tabBtn:hover {
+.tabBtn:hover:not(.activeTab) {
+  background: rgba(var(--primary-accent-rgb), 0.08);
+  border-color: var(--primary-accent);
   color: var(--text-primary);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(var(--primary-accent-rgb), 0.12);
 }
 
 .activeTab {
-  color: var(--primary-accent);
+  background: var(--primary-accent) !important;
+  border-color: var(--primary-accent) !important;
+  color: var(--primary-accent-text) !important;
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(var(--primary-accent-rgb), 0.25);
 }
 
-.activeTab::after {
-  content: '';
-  position: absolute;
-  bottom: -1px;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background-color: var(--primary-accent);
-  border-radius: 2px 2px 0 0;
+.activeTab:hover,
+.tabBtn.activeTab:hover {
+  background: var(--primary-accent) !important;
+  border-color: var(--primary-accent) !important;
+  color: var(--primary-accent-text) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(var(--primary-accent-rgb), 0.35);
+  filter: brightness(1.1);
 }
 
 .tabContent {

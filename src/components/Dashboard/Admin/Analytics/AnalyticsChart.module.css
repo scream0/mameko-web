@@ -63,22 +63,29 @@
   padding: 6px 14px;
   font-family: var(--font-sans);
   font-size: 0.75rem;
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: 0.5px;
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .tabBtn:hover:not(.tabBtnActive) {
   color: var(--text-primary);
+  background: rgba(var(--primary-accent-rgb), 0.08);
 }
 
 .tabBtnActive {
-  background: var(--surface-primary);
-  color: var(--primary-accent);
-  border: 1px solid var(--border-color);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  background: var(--primary-accent) !important;
+  color: var(--primary-accent-text) !important;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(var(--primary-accent-rgb), 0.25);
+}
+
+.tabBtnActive:hover {
+  background: var(--primary-accent) !important;
+  color: var(--primary-accent-text) !important;
+  filter: brightness(1.1);
 }
 
 .exportBtn {

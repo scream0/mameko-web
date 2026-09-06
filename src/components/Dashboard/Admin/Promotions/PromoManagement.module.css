@@ -134,23 +134,29 @@
   transition: all 0.2s ease;
 }
 
-.tabBtn:hover {
-  background: var(--surface-primary);
+.tabBtn:hover:not(.tabBtnActive) {
+  background: rgba(var(--primary-accent-rgb), 0.08);
   color: var(--text-primary);
-  border-color: var(--text-tertiary);
+  border-color: var(--primary-accent);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(var(--primary-accent-rgb), 0.12);
 }
 
 .tabBtnActive {
-  background: var(--primary-accent);
-  color: var(--primary-accent-text);
-  border-color: var(--primary-accent);
+  background: var(--primary-accent) !important;
+  color: var(--primary-accent-text) !important;
+  border-color: var(--primary-accent) !important;
   font-weight: 700;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 4px 14px rgba(var(--primary-accent-rgb), 0.25);
 }
 
 .tabBtnActive:hover {
-  background: var(--primary-accent);
-  color: var(--primary-accent-text);
+  background: var(--primary-accent) !important;
+  color: var(--primary-accent-text) !important;
+  border-color: var(--primary-accent) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(var(--primary-accent-rgb), 0.35);
+  filter: brightness(1.1);
 }
 
 .tabBadge {
