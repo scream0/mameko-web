@@ -1,0 +1,13 @@
+{
+  "search": {
+    "placeholder": "Ketik nama Kecamatan, Kota, atau Kode Pos...",
+    "searching": "Mencari wilayah...",
+    "examples": "Contoh: \"Depok Sleman\", \"Gambir Jakarta\", atau \"55281\"",
+    "noResults": "Wilayah tidak ditemukan. Coba ketik nama kota atau kecamatan lain."
+  },
+  "selectedCard": {
+    "verifiedBadge": "Wilayah terverifikasi Biteship",
+    "postalCodePrefix": "Kode Pos: ",
+    "changeAreaBtn": "Ubah Wilayah"
+  }
+}

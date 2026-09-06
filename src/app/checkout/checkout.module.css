@@ -1556,7 +1556,7 @@
 @media (max-width: 768px) {
   .checkoutPage {
     padding: 1rem;
-    padding-bottom: 6rem;
+    padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
   }
 
   .checkoutTrustBar {
@@ -1589,5 +1589,23 @@
 
   .modalContent {
     padding: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .checkoutHero h2 {
+    font-size: 0.96rem;
+  }
+
+  .heroMetrics > div {
+    min-width: 100%;
+  }
+
+  .addressCard {
+    padding: 0.9rem;
+  }
+
+  .courierCard {
+    padding: 0.85rem;
   }
 }

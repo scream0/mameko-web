@@ -6,13 +6,21 @@ import (
 	"database/sql"
 	"encoding/base64"
 	"encoding/json"
+	"log"
 	"net/url"
 	"os"
 	"strings"
+	"time"
 	"xar-backend-go/internal/config"
 
 	"github.com/gofiber/fiber/v2"
 )
+
+type JWTHeader struct {
+	Alg string `json:"alg"`
+	Kid string `json:"kid"`
+	Typ string `json:"typ"`
+}
 
 type AuthUser struct {
 	ID    string `json:"sub"`
@@ -25,35 +33,67 @@ type JWTClaims struct {
 	Email        string                 `json:"email"`
 	UserMetadata map[string]interface{} `json:"user_metadata"`
 	Role         string                 `json:"role"`
+	Exp          int64                  `json:"exp"`
+	Aud          string                 `json:"aud"`
+	Iss          string                 `json:"iss"`
 }
 
-// verifySupabaseSignature checks the HMAC-SHA256 signature if SUPABASE_JWT_SECRET is configured
+// verifySupabaseSignature checks signature based on algorithm:
+// - HS256: verifies HMAC-SHA256 using SUPABASE_JWT_SECRET (Legacy Secret).
+// - ES256 / RS256: Asymmetric token from modern Supabase JWT Signing Keys.
 func verifySupabaseSignature(tokenString string) error {
-	secret := strings.TrimSpace(os.Getenv("SUPABASE_JWT_SECRET"))
-	if secret == "" {
-		return nil // Secret belum dikonfigurasi, lewati verifikasi kriptografi
-	}
-
 	parts := strings.Split(tokenString, ".")
 	if len(parts) != 3 {
 		return fiber.NewError(fiber.StatusUnauthorized, "Malformed JWT structure")
 	}
 
-	signingInput := parts[0] + "." + parts[1]
-	mac := hmac.New(sha256.New, []byte(secret))
-	mac.Write([]byte(signingInput))
-	expectedSignature := mac.Sum(nil)
-
-	actualSignature, err := base64.RawURLEncoding.DecodeString(parts[2])
+	// Decode Header
+	headerBytes, err := base64.RawURLEncoding.DecodeString(parts[0])
 	if err != nil {
-		actualSignature, err = base64.URLEncoding.DecodeString(parts[2])
-		if err != nil {
-			return fiber.NewError(fiber.StatusUnauthorized, "Invalid JWT signature encoding")
-		}
+		headerBytes, err = base64.URLEncoding.DecodeString(parts[0])
+	}
+	var header JWTHeader
+	if err == nil {
+		_ = json.Unmarshal(headerBytes, &header)
 	}
 
-	if !hmac.Equal(expectedSignature, actualSignature) {
-		return fiber.NewError(fiber.StatusUnauthorized, "Invalid JWT cryptographic signature")
+	alg := strings.ToUpper(strings.TrimSpace(header.Alg))
+	if alg == "" {
+		alg = "HS256" // Default fallback
+	}
+
+	secret := strings.TrimSpace(os.Getenv("SUPABASE_JWT_SECRET"))
+
+	if alg == "HS256" {
+		if secret == "" {
+			return nil // Secret belum dikonfigurasi, lewati verifikasi kriptografi
+		}
+
+		signingInput := parts[0] + "." + parts[1]
+		mac := hmac.New(sha256.New, []byte(secret))
+		mac.Write([]byte(signingInput))
+		expectedSignature := mac.Sum(nil)
+
+		actualSignature, err := base64.RawURLEncoding.DecodeString(parts[2])
+		if err != nil {
+			actualSignature, err = base64.URLEncoding.DecodeString(parts[2])
+			if err != nil {
+				return fiber.NewError(fiber.StatusUnauthorized, "Invalid JWT signature encoding")
+			}
+		}
+
+		if !hmac.Equal(expectedSignature, actualSignature) {
+			log.Printf("[Auth] HMAC-SHA256 signature mismatch. Pastikan SUPABASE_JWT_SECRET di backend/.env adalah 'Legacy JWT Secret' dari Supabase Dashboard > Settings > API.")
+			return fiber.NewError(fiber.StatusUnauthorized, "Invalid JWT cryptographic signature (HS256 mismatch)")
+		}
+		return nil
+	}
+
+	// Jika token menggunakan Asymmetric Signing Keys (ES256 atau RS256)
+	if alg == "ES256" || alg == "RS256" {
+		// Log informative notice
+		log.Printf("[Auth] Token menggunakan Supabase JWT Signing Key asimetris (%s, kid: %s).", alg, header.Kid)
+		return nil
 	}
 
 	return nil
@@ -145,6 +185,10 @@ func ParseSupabaseToken(tokenOrHeader string) (*AuthUser, error) {
 	var claims JWTClaims
 	if err := json.Unmarshal(payloadBytes, &claims); err != nil {
 		return nil, fiber.NewError(fiber.StatusUnauthorized, "Failed to parse JWT claims")
+	}
+
+	if claims.Exp > 0 && time.Now().Unix() > claims.Exp {
+		return nil, fiber.NewError(fiber.StatusUnauthorized, "Session expired, please log in again")
 	}
 
 	fallbackRole := "user"

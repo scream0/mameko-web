@@ -1,0 +1,26 @@
+{
+  "header": {
+    "title": "Chat dengan Admin",
+    "statusOnline": "Online",
+    "statusOffline": "Offline",
+    "closeAriaLabel": "Tutup Chat"
+  },
+  "messages": {
+    "emptyState": "Mulai obrolan dengan admin Mameko.",
+    "adminTyping": "Admin sedang mengetik...",
+    "attachmentAlt": "Lampiran Gambar",
+    "imageZoomClose": "Tutup Preview"
+  },
+  "input": {
+    "placeholder": "Ketik pesan untuk admin...",
+    "sendAria": "Kirim Pesan",
+    "attachAria": "Lampirkan Gambar",
+    "removeImageTitle": "Hapus Gambar",
+    "uploading": "Mengunggah..."
+  },
+  "errors": {
+    "emptyMessage": "Pesan atau gambar tidak boleh kosong.",
+    "uploadFailed": "Gagal mengunggah gambar. Silakan coba lagi.",
+    "sendFailed": "Gagal mengirim pesan."
+  }
+}

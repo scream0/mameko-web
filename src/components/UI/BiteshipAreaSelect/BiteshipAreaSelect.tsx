@@ -2,6 +2,7 @@
 "use client";
 import { useState, useRef, useEffect, useCallback } from "react";
 import styles from "./BiteshipAreaSelect.module.css";
+import biteshipConfig from "@/data/ui/biteshipAreaConfig.json";
 
 /**
  * Komponen pencarian wilayah Biteship (Kecamatan, Kota, Provinsi, Kode Pos).
@@ -15,7 +16,7 @@ import styles from "./BiteshipAreaSelect.module.css";
 export function BiteshipAreaSelect({
   value = {},
   onChange,
-  placeholder = "Ketik nama Kecamatan, Kota, atau Kode Pos...",
+  placeholder = biteshipConfig?.search?.placeholder || "Ketik nama Kecamatan, Kota, atau Kode Pos...",
 }) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
@@ -120,7 +121,9 @@ export function BiteshipAreaSelect({
           <div className={styles.selectedInfo}>
             <span className={styles.selectedTitle}>📍 {locationSummary}</span>
             <span className={styles.selectedDesc}>
-              {value.postalCode ? `Kode Pos: ${value.postalCode}` : "Wilayah terverifikasi Biteship"}
+              {value.postalCode
+                ? `${biteshipConfig?.selectedCard?.postalCodePrefix || "Kode Pos: "}${value.postalCode}`
+                : biteshipConfig?.selectedCard?.verifiedBadge || "Wilayah terverifikasi Biteship"}
             </span>
           </div>
           <button
@@ -131,7 +134,7 @@ export function BiteshipAreaSelect({
               setQuery(value.district || value.city || "");
             }}
           >
-            Ubah Wilayah
+            {biteshipConfig?.selectedCard?.changeAreaBtn || "Ubah Wilayah"}
           </button>
         </div>
       ) : (
@@ -148,7 +151,11 @@ export function BiteshipAreaSelect({
             placeholder={placeholder}
             autoComplete="off"
           />
-          {loading && <span className={styles.loadingSpinner}>Mencari...</span>}
+          {loading && (
+            <span className={styles.loadingSpinner}>
+              {biteshipConfig?.search?.searching || "Mencari wilayah..."}
+            </span>
+          )}
 
           {open && results.length > 0 && (
             <div className={styles.dropdown}>
@@ -181,7 +188,7 @@ export function BiteshipAreaSelect({
           )}
 
           <p className={styles.hintText}>
-            Contoh pencarian: <em>&ldquo;Depok Sleman&rdquo;</em>, <em>&ldquo;Gambir Jakarta&rdquo;</em>, atau <em>&ldquo;55281&rdquo;</em>
+            {biteshipConfig?.search?.examples || "Contoh pencarian: \"Depok Sleman\", \"Gambir Jakarta\", atau \"55281\""}
           </p>
         </div>
       )}
