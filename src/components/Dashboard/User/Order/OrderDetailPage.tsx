@@ -10,6 +10,7 @@ import styles from "./OrderDetailPage.module.css";
 import { AppIcon } from "@/components/UI/Icon/AppIcon";
 import ordersConfig from "@/data/ui/ordersConfig.json";
 import orderDetailConfig from "@/data/ui/orderDetailConfig.json";
+import { getApiBaseUrl } from "@/lib/apiClient";
 
 const STATUS_INFO = orderDetailConfig.status;
 const RETURN_STATUS_INFO = orderDetailConfig.returnStatus;
@@ -203,7 +204,7 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
     ) {
       toast.success(`Pembayaran untuk pesanan #${orderId} berhasil!`);
 
-      fetch((process.env.NEXT_PUBLIC_API_URL || "") + `/api/user/orders/${orderId}/sync`, {
+      fetch(getApiBaseUrl() + `/api/user/orders/${orderId}/sync`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ transaction_status: transactionStatus === "200" ? "success" : transactionStatus }),
@@ -233,7 +234,7 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
         const { data: { session } } = await auth.getSession();
         const token = session?.access_token;
 
-        const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + `/api/user/orders/${resolvedOrderId}?userId=${user.id || user.uid}`, {
+        const res = await fetch(getApiBaseUrl() + `/api/user/orders/${resolvedOrderId}?userId=${user.id || user.uid}`, {
           cache: "no-store",
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
@@ -679,7 +680,7 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
       const { data: { session } } = await auth.getSession();
       const token = session?.access_token;
 
-      await fetch((process.env.NEXT_PUBLIC_API_URL || "") + `/api/user/orders/${resolvedOrderId}/sync`, {
+      await fetch(getApiBaseUrl() + `/api/user/orders/${resolvedOrderId}/sync`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -707,7 +708,7 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
         const { data: { session } } = await auth.getSession();
         const token = session?.access_token;
 
-        const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + `/api/user/orders/${resolvedOrderId}/pay`, {
+        const res = await fetch(getApiBaseUrl() + `/api/user/orders/${resolvedOrderId}/pay`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -837,7 +838,7 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
         uploadData.append("userId", userId);
         uploadData.append("folder", "reviews");
 
-        const uploadRes = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/user/cloudinary", {
+        const uploadRes = await fetch(getApiBaseUrl() + "/api/user/cloudinary", {
           method: "POST",
           headers: token ? { Authorization: `Bearer ${token}` } : {},
           body: uploadData,
@@ -854,7 +855,7 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
       }
 
       toast.loading(orderDetailConfig.reviewModal.toasts.savingReview, { id: toastId });
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/user/reviews", {
+      const res = await fetch(getApiBaseUrl() + "/api/user/reviews", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -949,7 +950,7 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
         uploadData.append("oldUrl", existingProofUrl);
       }
 
-      const uploadRes = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/user/cloudinary", {
+      const uploadRes = await fetch(getApiBaseUrl() + "/api/user/cloudinary", {
         method: "POST",
         headers: token ? { Authorization: `Bearer ${token}` } : {},
         body: uploadData,
@@ -965,7 +966,7 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
 
       const proofUrl = uploadResult.secure_url;
 
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + `/api/user/orders/${order.id}/pay`, {
+      const res = await fetch(getApiBaseUrl() + `/api/user/orders/${order.id}/pay`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

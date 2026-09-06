@@ -8,6 +8,7 @@ import { useStore } from "@/context/StoreContext";
 import { getDiscountedPrice } from "@/utils/promo";
 import { useScrollLock } from "@/hooks/useScrollLock";
 import { optimizeCloudinaryUrl, IMAGE_PRESETS } from "@/utils/imageOptimizer";
+import { getApiBaseUrl } from "@/lib/apiClient";
 
 export function Modal({ isOpen, item, onClose, onAddToCart, rupiah }) {
   useScrollLock(Boolean(isOpen && item));
@@ -55,7 +56,7 @@ export function Modal({ isOpen, item, onClose, onAddToCart, rupiah }) {
 
   const fetchReviews = (pageToFetch: any) => {
     setLoadingReviews(true);
-    fetch((process.env.NEXT_PUBLIC_API_URL || "") + `/api/reviews?productId=${item.id}&public=true&page=${pageToFetch}&limit=10`)
+    fetch(getApiBaseUrl() + `/api/reviews?productId=${item.id}&public=true&page=${pageToFetch}&limit=10`)
       .then((res) => res.json())
       .then((data) => {
         const newReviews = data.reviews || [];

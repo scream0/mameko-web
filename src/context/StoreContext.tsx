@@ -16,6 +16,7 @@ import { isPromoActive, getDiscountedPrice, getCartPromoSummary } from "@/utils/
 import { buildAddressId, normalizeAddress, formatAddressDisplay } from "@/utils/address";
 import { shouldSkipAuthEvent, logoutUser } from "@/utils/authHelpers";
 import { loadMidtransSnap } from "@/lib/midtrans";
+import { getApiBaseUrl } from "@/lib/apiClient";
 
 const StoreContext = createContext();
 
@@ -63,7 +64,7 @@ export function StoreProvider({ children }) {
     if (!currentSession) return; // Only sync if user is logged in
     try {
       const token = currentSession.access_token;
-      const response = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/user/cart", {
+      const response = await fetch(getApiBaseUrl() + "/api/user/cart", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -85,7 +86,7 @@ export function StoreProvider({ children }) {
   // Fetch promo settings (public) untuk diterapkan di seluruh app
   const loadPromo = useCallback(async () => {
     try {
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/settings?public=true", { cache: "no-store" });
+      const res = await fetch(getApiBaseUrl() + "/api/settings?public=true", { cache: "no-store" });
       if (res.ok) {
         const data = await res.json();
         setPromoSettings(data);
@@ -114,7 +115,7 @@ export function StoreProvider({ children }) {
 
   const fetchProducts = useCallback(async () => {
     try {
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/products?status=published");
+      const res = await fetch(getApiBaseUrl() + "/api/products?status=published");
       const result = await res.json();
       const rawData = Array.isArray(result?.data) ? result.data : (Array.isArray(result) ? result : []);
       const data = rawData.filter((p) => p.status !== "draft");
@@ -157,13 +158,13 @@ const handleUserData = useCallback(async (currentUser, token) => {
   const headers = token ? { Authorization: `Bearer ${token}` } : {};
   
   // Start promises concurrently
-  const userPromise = fetch((process.env.NEXT_PUBLIC_API_URL || "") + `/api/user/profile`, { headers }).catch(err => {
+  const userPromise = fetch(getApiBaseUrl() + `/api/user/profile`, { headers }).catch(err => {
     console.error("Gagal memuat profil user untuk navbar:", err);
     return null;
   });
   
   const cartPromise = !isCartSynced
-    ? fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/user/cart", { headers }).catch(err => {
+    ? fetch(getApiBaseUrl() + "/api/user/cart", { headers }).catch(err => {
         console.error("Gagal menyinkronkan keranjang:", err);
         return null;
       })
@@ -372,6 +373,7 @@ const handleUserData = useCallback(async (currentUser, token) => {
               name: product.name,
               size: variant.size,
               price: variant.price,
+              variants: product.variants || [variant],
               image:
                 variant.image_url ||
                 variant.imageUrl ||
@@ -388,16 +390,14 @@ const handleUserData = useCallback(async (currentUser, token) => {
     });
 
     if (errorMessage) {
-      if (!suppressToast) toast.error(errorMessage);
+      if (!suppressToast) toast.error(errorMessage, { id: "cart-toast" });
       return { success: false, reason: "exceeds_stock" };
     } else if (successMessage) {
-      if (!suppressToast) toast.success(successMessage);
+      if (!suppressToast) toast.success(successMessage, { id: "cart-toast" });
       try {
         await syncCartWithDB(newCart);
       } catch (error) {
-        setCart(previousCart); // Rollback
-        if (!suppressToast) toast.error("Gagal menyimpan keranjang. Silakan coba lagi.");
-        return { success: false, reason: "sync_failed" };
+        console.warn("Sinkronisasi keranjang ke server tertunda:", error);
       }
       return { success: true };
     }
@@ -408,46 +408,37 @@ const handleUserData = useCallback(async (currentUser, token) => {
   // atau "all" (dipakai ikon trash) yang selalu menghapus item sepenuhnya
   // berapa pun quantity-nya.
   const removeFromCart = async (cartId, mode = "decrement") => {
-    const previousCart = cart;
     let actionMessage = "";
-    let newCart = cart;
+    const previousCart = cart;
+    const item = previousCart.items.find((i) => i.cartId === cartId);
+    if (!item) return;
 
-    setCart((prev) => {
-      const item = prev.items.find((i) => i.cartId === cartId);
-      if (!item) {
-        newCart = prev;
-        return prev;
-      }
-
-      if (mode === "all" || item.quantity <= 1) {
-        actionMessage = `${item.name} dihapus dari keranjang`;
-        newCart = { ...prev, items: prev.items.filter((i) => i.cartId !== cartId) };
-        return newCart;
-      }
-
+    let newItems;
+    if (mode === "all" || item.quantity <= 1) {
+      actionMessage = `${item.name} dihapus dari keranjang`;
+      newItems = previousCart.items.filter((i) => i.cartId !== cartId);
+    } else {
       actionMessage = `Jumlah ${item.name} dikurangi`;
-      newCart = {
-        ...prev,
-        items: prev.items.map((i) =>
-          i.cartId === cartId
-            ? {
-                ...i,
-                quantity: i.quantity - 1,
-                total: i.price * (i.quantity - 1),
-              }
-            : i,
-        ),
-      };
-      return newCart;
-    });
+      newItems = previousCart.items.map((i) =>
+        i.cartId === cartId
+          ? {
+              ...i,
+              quantity: i.quantity - 1,
+              total: i.price * (i.quantity - 1),
+            }
+          : i,
+      );
+    }
+
+    const newCart = { ...previousCart, items: newItems };
+    setCart(newCart);
 
     if (actionMessage) {
-      toast.success(actionMessage, { id: `cart-action-${cartId}` });
+      toast.success(actionMessage, { id: "cart-toast" });
       try {
         await syncCartWithDB(newCart);
       } catch (error) {
-        setCart(previousCart); // Rollback
-        toast.error("Gagal menyimpan keranjang. Silakan coba lagi.");
+        console.warn("Sinkronisasi keranjang ke server tertunda:", error);
       }
     }
   };
@@ -458,20 +449,29 @@ const handleUserData = useCallback(async (currentUser, token) => {
     setCart(clearedCart);
     try {
       await syncCartWithDB(clearedCart);
-      toast.success("Keranjang dibersihkan.");
+      toast.success("Keranjang dibersihkan.", { id: "cart-toast" });
     } catch (error) {
-      setCart(previousCart);
-      toast.error("Gagal membersihkan keranjang. Silakan coba lagi.");
+      console.warn("Sinkronisasi pembersihan keranjang tertunda:", error);
     }
   };
 
-  const getAvailableVariants = (productId) => {
-    const product = products.find(
+  const getAvailableVariants = (productId, itemFallback = null) => {
+    const list = Array.isArray(products) ? products : (products?.data || []);
+    const product = list.find(
       (p) =>
         String(p.id) === String(productId) ||
         String(p._id) === String(productId),
     );
-    return product ? product.variants || [] : [];
+    if (product && Array.isArray(product.variants) && product.variants.length > 0) {
+      return product.variants;
+    }
+    if (itemFallback && Array.isArray(itemFallback.variants) && itemFallback.variants.length > 0) {
+      return itemFallback.variants;
+    }
+    if (itemFallback && itemFallback.size) {
+      return [{ size: itemFallback.size, price: itemFallback.price || 0, stock: itemFallback.stock || 10 }];
+    }
+    return [];
   };
 
   const updateCartItemVariant = async (currentCartId, newSize) => {
@@ -605,7 +605,7 @@ const handleUserData = useCallback(async (currentUser, token) => {
       const token = currentSession?.access_token;
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-      const userRes = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + `/api/user/profile`, { headers });
+      const userRes = await fetch(getApiBaseUrl() + `/api/user/profile`, { headers });
       const userText = userRes.ok ? await userRes.text() : "";
       const userResult = userText ? JSON.parse(userText) : {};
       const userData = userResult?.data || {};
@@ -627,7 +627,7 @@ const handleUserData = useCallback(async (currentUser, token) => {
       let primaryAddress = null;
 
       if (!shippingDetail) {
-        const addrRes = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + `/api/user/${userId}/addresses`, { headers });
+        const addrRes = await fetch(getApiBaseUrl() + `/api/user/${userId}/addresses`, { headers });
         const addrText = addrRes.ok ? await addrRes.text() : "";
         const addrResult = addrText ? JSON.parse(addrText) : {};
         userAddresses = addrResult?.data || [];
@@ -688,7 +688,7 @@ const handleUserData = useCallback(async (currentUser, token) => {
           }
         : null);
 
-      const response = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/midtrans", {
+      const response = await fetch(getApiBaseUrl() + "/api/midtrans", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -747,10 +747,12 @@ const handleUserData = useCallback(async (currentUser, token) => {
         toast.success("Pesanan Berhasil Dibuat!");
         router.push(`/dashboard/order-detail?id=${orderId}&status_code=201&transaction_status=pending&payment_type=manual`);
       } else if (data.token) {
-        const snap = await loadMidtransSnap(
-          settings?.midtransIsProduction ? process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY_PRODUCTION : process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY_SANDBOX,
-          settings?.midtransIsProduction
-        );
+        const isProduction = Boolean(promoSettings?.midtransIsProduction);
+        const clientKey = isProduction
+          ? process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY_PRODUCTION
+          : process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY_SANDBOX;
+
+        const snap = await loadMidtransSnap(clientKey, isProduction);
         if (snap && snap.pay) {
           snap.pay(data.token, {
             onSuccess: async (result) => {
@@ -808,7 +810,7 @@ const handleUserData = useCallback(async (currentUser, token) => {
         isPrimary: true,
       };
 
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + `/api/user/${userId}/addresses`, {
+      const res = await fetch(getApiBaseUrl() + `/api/user/${userId}/addresses`, {
         method: "POST",
         headers,
         body: JSON.stringify(payload),

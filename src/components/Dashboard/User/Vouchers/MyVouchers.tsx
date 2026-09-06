@@ -6,6 +6,7 @@ import VoucherCard from "@/components/Voucher/VoucherCard";
 import toast from "react-hot-toast";
 import { auth } from "@/lib/supabaseClient";
 import vouchersConfig from "@/data/ui/vouchersConfig.json";
+import { getApiBaseUrl } from "@/lib/apiClient";
 
 const TABS = vouchersConfig.tabs;
 const statusTextMap = vouchersConfig.status;
@@ -79,7 +80,7 @@ const MyVouchers = ({
         return;
       }
 
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/user/vouchers/claim", {
+      const res = await fetch(getApiBaseUrl() + "/api/user/vouchers/claim", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

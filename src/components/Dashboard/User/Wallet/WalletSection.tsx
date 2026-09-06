@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import { AppIcon } from "@/components/UI/Icon/AppIcon";
 import { auth } from "@/lib/supabaseClient";
 import walletConfig from "@/data/ui/walletConfig.json";
+import { getApiBaseUrl } from "@/lib/apiClient";
 import {
   SkeletonCircle,
   SkeletonLines,
@@ -40,7 +41,7 @@ export default function WalletSection({ profile, onOpenBankSettings }: WalletSec
     try {
       const token = await getSupabaseToken();
       const res = await fetch(
-        (process.env.NEXT_PUBLIC_API_URL || "") + "/api/user/wallet",
+        getApiBaseUrl() + "/api/user/wallet",
         {
           headers: {
             Authorization: token ? `Bearer ${token}` : undefined,
@@ -99,7 +100,7 @@ export default function WalletSection({ profile, onOpenBankSettings }: WalletSec
     try {
       const token = await getSupabaseToken();
       const res = await fetch(
-        (process.env.NEXT_PUBLIC_API_URL || "") + "/api/user/wallet/withdraw",
+        getApiBaseUrl() + "/api/user/wallet/withdraw",
         {
           method: "POST",
           headers: {

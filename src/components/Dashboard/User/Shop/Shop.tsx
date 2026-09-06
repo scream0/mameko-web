@@ -11,6 +11,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { ShopSkeleton } from "@/components/UI/Skeleton/ShopSkeleton";
 import shopConfig from "@/data/ui/shopConfig.json";
 import { optimizeCloudinaryUrl, IMAGE_PRESETS } from "@/utils/imageOptimizer";
+import { getApiBaseUrl } from "@/lib/apiClient";
 
 const PRODUCTS_PER_PAGE = 12;
 
@@ -22,7 +23,9 @@ export default function Shop({ searchQuery = "", onBukaDetail, initialData }) {
   );
   const [orderItemsMap, setOrderItemsMap] = useState(initialData?.salesMap || {});
   const [allReviews, setAllReviews] = useState(initialData?.reviews || []);
-  const [loading, setLoading] = useState(!initialData);
+  const [loading, setLoading] = useState(
+    !initialData?.products || initialData.products.length === 0
+  );
   const [sortBy, setSortBy] = useState("default");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalProducts, setTotalProducts] = useState(initialData?.totalProducts || 0);
@@ -154,12 +157,12 @@ export default function Shop({ searchQuery = "", onBukaDetail, initialData }) {
       queryParams.append("limit", PRODUCTS_PER_PAGE.toString());
       queryParams.append("status", "published");
 
+      const baseUrl = getApiBaseUrl();
       const fetches = [];
       if (shouldFetchProducts) {
         fetches.push(
           fetch(
-            (process.env.NEXT_PUBLIC_API_URL || "") +
-              `/api/products?${queryParams.toString()}`,
+            `${baseUrl}/api/products?${queryParams.toString()}`,
             { cache: "default" }
           )
         );
@@ -168,13 +171,13 @@ export default function Shop({ searchQuery = "", onBukaDetail, initialData }) {
       }
       fetches.push(
         fetch(
-          (process.env.NEXT_PUBLIC_API_URL || "") + "/api/products/sales/public",
+          `${baseUrl}/api/products/sales/public`,
           { cache: "no-store" }
         )
       );
       fetches.push(
         fetch(
-          (process.env.NEXT_PUBLIC_API_URL || "") + "/api/reviews?public=true",
+          `${baseUrl}/api/reviews?public=true`,
           { cache: "no-store" }
         )
       );
@@ -234,10 +237,15 @@ export default function Shop({ searchQuery = "", onBukaDetail, initialData }) {
     [debouncedSearch, sortBy, currentPage]
   );
 
-  // Trigger data fetch on filter / pagination change
+  // Trigger data fetch on filter / pagination change, or when initialData has no products
   useEffect(() => {
+    const hasInitialProducts =
+      Array.isArray(initialData?.products) && initialData.products.length > 0;
     const isInitialLoad =
-      initialData && currentPage === 1 && sortBy === "default" && !debouncedSearch;
+      hasInitialProducts &&
+      currentPage === 1 &&
+      sortBy === "default" &&
+      !debouncedSearch;
     if (isInitialLoad) {
       return;
     }

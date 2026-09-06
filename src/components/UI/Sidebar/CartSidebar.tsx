@@ -179,8 +179,16 @@ export function CartSidebar() {
                             updateCartItemVariant(item.cartId, e.target.value)
                           }
                         >
-                          {getAvailableVariants(item.productId || item.id).map(
-                            (v: any) => {
+                          {(() => {
+                            const variants = getAvailableVariants(item.productId || item.id, item);
+                            if (!variants || variants.length === 0) {
+                              return (
+                                <option value={item.size || "Standard"}>
+                                  {item.size || "Standard"}
+                                </option>
+                              );
+                            }
+                            return variants.map((v: any) => {
                               const vStock = Number(v.stock ?? v.stok ?? 0);
                               const isOutOfStock = vStock <= 0;
                               return (
@@ -198,8 +206,8 @@ export function CartSidebar() {
                                       ) || `(Sisa: ${vStock})`}
                                 </option>
                               );
-                            },
-                          )}
+                            });
+                          })()}
                         </select>
                       </div>
 

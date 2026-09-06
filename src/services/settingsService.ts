@@ -1,5 +1,7 @@
 "use client";
 
+import { getApiBaseUrl } from "@/lib/apiClient";
+
 /**
  * settingsService.ts — Data-access layer untuk pengaturan toko & landing page.
  *
@@ -54,7 +56,7 @@ export async function getPublicSettings({ force = false } = {}): Promise<StoreSe
     return publicCache.data;
   }
 
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
+  const apiBase = getApiBaseUrl();
   const res = await fetch(`${apiBase}/api/settings?public=true`, {
     cache: "no-store",
   });
@@ -77,7 +79,7 @@ export async function getAdminSettings(tokenOrSession: any): Promise<StoreSettin
   const token = await resolveTokenAsync(tokenOrSession);
   if (!token) throw new Error("Admin token required.");
 
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
+  const apiBase = getApiBaseUrl();
   const res = await fetch(`${apiBase}/api/settings`, {
     headers: { Authorization: `Bearer ${token}` },
   });
@@ -102,7 +104,7 @@ export async function saveSettings(payload: any, tokenOrSession: any): Promise<S
   const token = await resolveTokenAsync(tokenOrSession);
   if (!token) throw new Error("Admin token required.");
 
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
+  const apiBase = getApiBaseUrl();
   const res = await fetch(`${apiBase}/api/admin/settings`, {
     method: "POST",
     headers: {

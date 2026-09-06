@@ -1,14 +1,29 @@
-"use client";
-
 /**
- * apiClient.js
- * Utilitas untuk mem-bypass Vercel API Route Rewrites dan
- * langsung fetch data dari URL Golang API.
- * Menghindari isu 500 error karena kegagalan SSL Handshake antara Vercel dan Cloudflare Tunnel.
+ * apiClient.ts
+ * Utilitas untuk request ke Golang API dengan base URL dinamis & tangguh.
  */
 
-export const getApiBaseUrl = () => {
-  return process.env.NEXT_PUBLIC_API_URL || "";
+export const getApiBaseUrl = (): string => {
+  const envUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (envUrl && envUrl.trim() !== "") {
+    return envUrl.replace(/\/$/, "");
+  }
+
+  if (typeof window !== "undefined") {
+    const host = window.location.hostname;
+    if (host === "localhost" || host === "127.0.0.1") {
+      return "http://localhost:8080";
+    }
+    // Domain produksi / staging Cloudflare Pages
+    return "https://api.mameko.my.id";
+  }
+
+  // SSR / Next.js static build phase
+  if (process.env.NODE_ENV === "production") {
+    return "https://api.mameko.my.id";
+  }
+
+  return "http://localhost:8080";
 };
 
 /**

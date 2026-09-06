@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { auth } from "@/lib/supabaseClient";
 import userConfig from "@/data/ui/userDashboardConfig.json";
 import { shouldSkipAuthEvent } from "@/utils/authHelpers";
+import { getApiBaseUrl } from "@/lib/apiClient";
 
 function toTitleCase(value) {
   return value
@@ -84,7 +85,7 @@ export function useUserDashboardData() {
       const headers = sessionToken ? { Authorization: `Bearer ${sessionToken}` } : {};
 
       try {
-        const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
+        const apiBase = getApiBaseUrl();
         const res = await fetch(`${apiBase}/api/user/profile`, { 
           headers,
           cache: "no-store" 
@@ -127,7 +128,7 @@ export function useUserDashboardData() {
           let fallbackRole = currentUser.user_metadata?.role || userConfig.defaultRole;
 
           try {
-            const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
+            const apiBase = getApiBaseUrl();
             const postRes = await fetch(`${apiBase}/api/user/profile`, {
               method: "POST",
               headers: {

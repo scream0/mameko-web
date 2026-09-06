@@ -14,6 +14,7 @@ import { sortOrdersByNewestFirst } from "./orderSorting";
 import { useRouter, useSearchParams } from "next/navigation";
 import ReturnsCenter from "@/components/Dashboard/User/Returns/ReturnsCenter"; // Sesuaikan path jika berbeda
 import ConfirmationModal from "@/components/UI/Modal/ConfirmationModal";
+import { getApiBaseUrl } from "@/lib/apiClient";
 
 function getStatusInfo(rawStatus: any) {
   const key = (rawStatus || "pending").toLowerCase();
@@ -228,7 +229,7 @@ export default function OrdersSection() {
         const userId = currentUser.id || currentUser.uid;
         const token = currentSession.access_token;
 
-        const response = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + `/api/user/orders?userId=${userId}&limit=1000`, {
+        const response = await fetch(getApiBaseUrl() + `/api/user/orders?userId=${userId}&limit=1000`, {
           cache: "no-store",
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
@@ -364,7 +365,7 @@ export default function OrdersSection() {
         const token = session?.access_token;
         const userId = currentUser?.id || currentUser?.uid;
 
-        const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + `/api/user/orders/${order.id}/pay`, {
+        const res = await fetch(getApiBaseUrl() + `/api/user/orders/${order.id}/pay`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -407,7 +408,7 @@ export default function OrdersSection() {
         try {
           const { data: { session } } = await auth.getSession();
           const token = session?.access_token;
-          await fetch((process.env.NEXT_PUBLIC_API_URL || "") + `/api/user/orders/${order.id}/sync`, {
+          await fetch(getApiBaseUrl() + `/api/user/orders/${order.id}/sync`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -445,7 +446,7 @@ export default function OrdersSection() {
     try {
       if (!currentUser) throw new Error(ordersConfig.toasts.unauthenticated || "Pengguna tidak terautentikasi.");
 
-      const productsRes = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/products", { cache: "no-store" });
+      const productsRes = await fetch(getApiBaseUrl() + "/api/products", { cache: "no-store" });
       const productsResult = await productsRes.json();
       if (!productsRes.ok) throw new Error(ordersConfig.toasts.checkStockError || "Gagal memeriksa stok produk.");
 
@@ -574,7 +575,7 @@ export default function OrdersSection() {
 
       if (!userId) throw new Error(ordersConfig.toasts.unauthenticated || "Pengguna tidak terautentikasi.");
 
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + `/api/user/orders/${order.id}/cancel?userId=${userId}`, {
+      const res = await fetch(getApiBaseUrl() + `/api/user/orders/${order.id}/cancel?userId=${userId}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -592,6 +593,10 @@ export default function OrdersSection() {
       setOrders((prev) =>
         prev.map((o) => (o.id === order.id ? { ...o, status: "cancelled" } : o))
       );
+
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("product-stock-updated"));
+      }
     } catch (err) {
       console.error("Cancel Order Error:", err);
       toast.error(err.message || ordersConfig.modals.cancel.error || "Gagal membatalkan pesanan.", { id: toastId });
@@ -620,7 +625,7 @@ export default function OrdersSection() {
 
       if (!userId) throw new Error(ordersConfig.toasts.unauthenticated || "Pengguna tidak terautentikasi.");
 
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + `/api/user/orders/${order.id}/confirm?userId=${userId}`, {
+      const res = await fetch(getApiBaseUrl() + `/api/user/orders/${order.id}/confirm?userId=${userId}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -722,7 +727,7 @@ export default function OrdersSection() {
         uploadData.append("userId", userId);
         uploadData.append("folder", "reviews");
 
-        const uploadRes = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/user/cloudinary", {
+        const uploadRes = await fetch(getApiBaseUrl() + "/api/user/cloudinary", {
           method: "POST",
           headers: token ? { Authorization: `Bearer ${token}` } : {},
           body: uploadData,
@@ -739,7 +744,7 @@ export default function OrdersSection() {
       }
 
       toast.loading(ordersConfig.toasts.savingReview || "Menyimpan ulasan...", { id: toastId });
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/user/reviews", {
+      const res = await fetch(getApiBaseUrl() + "/api/user/reviews", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -830,7 +835,7 @@ export default function OrdersSection() {
       const { data: { session } } = await auth.getSession();
       const token = session?.access_token;
       
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/user/profile", {
+      const res = await fetch(getApiBaseUrl() + "/api/user/profile", {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       const data = await res.json();
@@ -878,7 +883,7 @@ export default function OrdersSection() {
         uploadData.append("userId", userId);
         uploadData.append("folder", "returns");
 
-        const uploadRes = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/user/cloudinary", {
+        const uploadRes = await fetch(getApiBaseUrl() + "/api/user/cloudinary", {
           method: "POST",
           headers: token ? { Authorization: `Bearer ${token}` } : {},
           body: uploadData,
@@ -895,7 +900,7 @@ export default function OrdersSection() {
       }
 
       toast.loading(ordersConfig.modals.return.submittingBtn || "Menyimpan pengajuan retur...", { id: toastId });
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + `/api/user/orders/${returnModalOrder.id}/return`, {
+      const res = await fetch(getApiBaseUrl() + `/api/user/orders/${returnModalOrder.id}/return`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -10,6 +10,7 @@ import { useStore } from "@/context/StoreContext";
 import { getDiscountedPrice } from "@/utils/promo";
 import toast from "react-hot-toast";
 import { optimizeCloudinaryUrl, IMAGE_PRESETS } from "@/utils/imageOptimizer";
+import { getApiBaseUrl } from "@/lib/apiClient";
 
 interface Variant {
   size: string;
@@ -51,7 +52,7 @@ function ProductDetailContent() {
     if (!id || id === 'undefined') return;
 
     setLoading(true);
-    fetch((process.env.NEXT_PUBLIC_API_URL || "") + `/api/products?id=${id}`)
+    fetch(getApiBaseUrl() + `/api/products?id=${id}`)
       .then(async res => {
         if (res.status === 404) {
           setIsNotFound(true);

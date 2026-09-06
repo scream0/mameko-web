@@ -1,11 +1,12 @@
 // src/utils/authHelpers.js
 import { supabase } from "@/lib/supabaseClient";
+import { getApiBaseUrl } from "@/lib/apiClient";
 
 // --- HELPER INTERNAL (PRIVATE) ---
 
 // 1. Helper untuk membuat Cookie Sesi di Server
 async function setSessionCookie(accessToken: string) {
-  const response = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/auth/login", {
+  const response = await fetch(getApiBaseUrl() + "/api/auth/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ token: accessToken }),
@@ -192,7 +193,7 @@ export const logoutUser = async () => {
     const timeoutPromise = new Promise((resolve) => setTimeout(resolve, 1500));
 
     const logoutNetworkWork = Promise.allSettled([
-      fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/auth/logout", {
+      fetch(getApiBaseUrl() + "/api/auth/logout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       }),

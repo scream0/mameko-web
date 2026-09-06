@@ -1,10 +1,10 @@
 import type { SalesMap } from '@/types/data';
+import { getApiBaseUrl } from '@/lib/apiClient';
 
 const PRODUCTS_PER_PAGE = 12;
 
-// Gunakan NEXT_PUBLIC_API_URL yang sudah didefinisikan (misal: https://api.mameko.id)
 const getBaseUrl = () => {
-  return process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+  return getApiBaseUrl();
 };
 
 /**
@@ -15,7 +15,7 @@ export async function getInitialProducts() {
   try {
     const res = await fetch(`${getBaseUrl()}/api/products?page=1&limit=${PRODUCTS_PER_PAGE}&status=published`, {
       next: { revalidate: 30 },
-      signal: AbortSignal.timeout(2000),
+      signal: AbortSignal.timeout(5000),
     });
     
     if (!res.ok) {

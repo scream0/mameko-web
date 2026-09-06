@@ -8,6 +8,7 @@ import { useUserDashboardData } from "@/hooks/useUserDashboardData";
 import { auth } from "@/lib/supabaseClient";
 import { logoutUser } from "@/utils/authHelpers";
 import toast from "react-hot-toast";
+import { getApiBaseUrl } from "@/lib/apiClient";
 
 import userConfig from "@/data/ui/userDashboardConfig.json";
 
@@ -102,8 +103,13 @@ export default function UserDashboard({ user }) {
 
     const loadNotificationCount = async () => {
       try {
-        const token = await user.getIdToken();
-        const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/user/notifications", {
+        const { data: { session } } = await auth.getSession();
+        const token = session?.access_token;
+        if (!token) {
+          if (!isDisposed) setNotificationCount(0);
+          return;
+        }
+        const res = await fetch(getApiBaseUrl() + "/api/user/notifications", {
           headers: { Authorization: `Bearer ${token}` },
         });
         let result = {};
