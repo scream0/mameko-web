@@ -15,6 +15,8 @@ import Link from "next/link";
 import styles from "./checkout.module.css";
 import checkoutConfig from "@/data/ui/checkoutConfig.json";
 import { getDiscountedPrice } from "@/utils/promo";
+import { loadMidtransSnap } from "@/lib/midtrans";
+import { optimizeCloudinaryUrl, IMAGE_PRESETS } from "@/utils/imageOptimizer";
 
 // ID area Biteship untuk kota asal toko (di-resolve via nama kota di admin).
 const ORIGIN_AREA_FALLBACK = DEFAULT_ORIGIN_AREA_ID;
@@ -256,6 +258,11 @@ export default function CheckoutPage() {
       document.documentElement.style.touchAction = previousHtmlTouchAction;
       document.documentElement.style.overscrollBehaviorY = previousHtmlOverscrollBehaviorY;
     };
+  }, []);
+
+  // Preload Midtrans Snap script khusus halaman checkout
+  useEffect(() => {
+    loadMidtransSnap().catch(() => {});
   }, []);
 
   // ── Address ──
@@ -1216,7 +1223,7 @@ export default function CheckoutPage() {
               return (
                 <div key={item.cartId} className={styles.summaryItem}>
                   <div className={styles.summaryItemImg}>
-                    <img src={imgSrc} alt={item.name} />
+                    <img src={optimizeCloudinaryUrl(imgSrc, IMAGE_PRESETS.THUMBNAIL)} alt={item.name} />
                   </div>
                   <div className={styles.summaryItemInfo}>
                     <p className={styles.summaryItemName}>{item.name}</p>

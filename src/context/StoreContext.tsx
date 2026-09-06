@@ -15,6 +15,7 @@ import toast from "react-hot-toast";
 import { isPromoActive, getDiscountedPrice, getCartPromoSummary } from "@/utils/promo";
 import { buildAddressId, normalizeAddress, formatAddressDisplay } from "@/utils/address";
 import { shouldSkipAuthEvent, logoutUser } from "@/utils/authHelpers";
+import { loadMidtransSnap } from "@/lib/midtrans";
 
 const StoreContext = createContext();
 
@@ -746,27 +747,36 @@ const handleUserData = useCallback(async (currentUser, token) => {
       if (data.method === "manual") {
         toast.success("Pesanan Berhasil Dibuat!");
         router.push(`/dashboard/order-detail?id=${orderId}&status_code=201&transaction_status=pending&payment_type=manual`);
-      } else if (data.token && window.snap) {
-        window.snap.pay(data.token, {
-          onSuccess: async (result) => {
-            toast.success("Pembayaran Berhasil!");
-            router.push(`/dashboard/order-detail?id=${orderId}&status_code=${result.status_code}&transaction_status=${result.transaction_status}`);
-          },
-          onPending: (result) => {
-            toast("Menunggu Pembayaran", { icon: "⏳" });
-            router.push(
-              `/dashboard/order-detail?id=${orderId}&status_code=201&transaction_status=pending`,
-            );
-          },
-          onError: (result) => {
-            toast.error("Pembayaran Gagal");
-            router.push(`/dashboard/order-detail?id=${orderId}`);
-          },
-          onClose: () => {
-            toast("Popup pembayaran ditutup.", { icon: "ℹ️" });
-            router.push(`/dashboard/order-detail?id=${orderId}`);
-          },
-        });
+      } else if (data.token) {
+        const snap = await loadMidtransSnap(
+          settings?.midtransIsProduction ? process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY_PRODUCTION : process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY_SANDBOX,
+          settings?.midtransIsProduction
+        );
+        if (snap && snap.pay) {
+          snap.pay(data.token, {
+            onSuccess: async (result) => {
+              toast.success("Pembayaran Berhasil!");
+              router.push(`/dashboard/order-detail?id=${orderId}&status_code=${result.status_code}&transaction_status=${result.transaction_status}`);
+            },
+            onPending: (result) => {
+              toast("Menunggu Pembayaran", { icon: "⏳" });
+              router.push(
+                `/dashboard/order-detail?id=${orderId}&status_code=201&transaction_status=pending`,
+              );
+            },
+            onError: (result) => {
+              toast.error("Pembayaran Gagal");
+              router.push(`/dashboard/order-detail?id=${orderId}`);
+            },
+            onClose: () => {
+              toast("Popup pembayaran ditutup.", { icon: "ℹ️" });
+              router.push(`/dashboard/order-detail?id=${orderId}`);
+            },
+          });
+        } else {
+          // Fallback jika popup tidak terbuka
+          router.push(`/dashboard/order-detail?id=${orderId}`);
+        }
       }
     } catch (error) {
       console.error(error);

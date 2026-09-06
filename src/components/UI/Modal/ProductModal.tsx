@@ -7,6 +7,7 @@ import { AppIcon } from "@/components/UI/Icon/AppIcon";
 import { useStore } from "@/context/StoreContext";
 import { getDiscountedPrice } from "@/utils/promo";
 import { useScrollLock } from "@/hooks/useScrollLock";
+import { optimizeCloudinaryUrl, IMAGE_PRESETS } from "@/utils/imageOptimizer";
 
 export function Modal({ isOpen, item, onClose, onAddToCart, rupiah }) {
   useScrollLock(Boolean(isOpen && item));
@@ -140,7 +141,7 @@ export function Modal({ isOpen, item, onClose, onAddToCart, rupiah }) {
         <div className={styles.modalGrid}>
           <div className={styles.modalImageBox}>
             <img
-              src={displayedImage}
+              src={optimizeCloudinaryUrl(displayedImage, IMAGE_PRESETS.PRODUCT_DETAIL)}
               alt={item.name}
               className={styles.modalMainImg}
             />
@@ -191,7 +192,7 @@ export function Modal({ isOpen, item, onClose, onAddToCart, rupiah }) {
             {/* Pilihan Varian */}
             {item.variants?.length > 0 && (
               <div className={styles.modalVariantSection}>
-                <h4>{modalData?.labels?.variant || "Pilih Ukuran / Varian"}</h4>
+                <span className={styles.variantSectionTitle}>{modalData?.labels?.variant || "Pilih Ukuran / Varian"}</span>
                 <div className={styles.variantPillGroup}>
                   {item.variants.map((v: any) => {
                     const stock = v.stock ?? 0;
@@ -270,9 +271,9 @@ export function Modal({ isOpen, item, onClose, onAddToCart, rupiah }) {
 
             {/* --- REVIEWS SECTION --- */}
             <div className={styles.reviewsSection}>
-              <h4 className={styles.reviewsTitle}>
+              <h3 className={styles.reviewsTitle}>
                 {modalData?.reviews?.title || "Ulasan Pembeli"}
-              </h4>
+              </h3>
               {loadingReviews ? (
                 <p className={styles.noReviews}>
                   {modalData?.reviews?.loading || "Memuat ulasan..."}
@@ -308,7 +309,7 @@ export function Modal({ isOpen, item, onClose, onAddToCart, rupiah }) {
                       {rev.reviewPhoto && (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
-                          src={rev.reviewPhoto}
+                          src={optimizeCloudinaryUrl(rev.reviewPhoto, IMAGE_PRESETS.THUMBNAIL)}
                           alt="Review"
                           className={styles.reviewImage}
                         />

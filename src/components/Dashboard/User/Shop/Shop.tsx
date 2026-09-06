@@ -8,8 +8,9 @@ import { getPublicSettings } from "@/services/settingsService";
 import styles from "./Shop.module.css";
 import { AppIcon } from "@/components/UI/Icon/AppIcon";
 import { supabase } from "@/lib/supabaseClient";
-import { ShopSkeleton } from "@/components/UI/Skeleton/SkeletonLayouts";
+import { ShopSkeleton } from "@/components/UI/Skeleton/ShopSkeleton";
 import shopConfig from "@/data/ui/shopConfig.json";
+import { optimizeCloudinaryUrl, IMAGE_PRESETS } from "@/utils/imageOptimizer";
 
 const PRODUCTS_PER_PAGE = 12;
 
@@ -424,11 +425,12 @@ export default function Shop({ searchQuery = "", onBukaDetail, initialData }) {
                   <div className={styles.productCardImageWrapper}>
                     {productImg ? (
                       <Image
-                        src={productImg}
+                        src={optimizeCloudinaryUrl(productImg, IMAGE_PRESETS.PRODUCT_CARD)}
                         alt={product.name}
                         className={styles.productCardImg}
                         width={320}
                         height={320}
+                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                       />
                     ) : (
                       <div className={styles.productCardPlaceholder}>

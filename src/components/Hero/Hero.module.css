@@ -302,31 +302,40 @@
 }
 
 /* ====================================================
-   TYPOGRAPHY & REVEAL ANIMATIONS
+   TYPOGRAPHY & REVEAL ANIMATIONS (Pure CSS - 0ms Render Delay)
    ==================================================== */
+@keyframes heroReveal {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .reveal {
-  opacity: 0;
-  transform: translateY(24px);
-  transition:
-    opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  opacity: 1;
+  transform: translateY(0);
+  animation: heroReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
   will-change: opacity, transform;
 }
 
 .delay0 {
-  transition-delay: 0ms;
+  animation-delay: 30ms;
 }
 
 .delay1 {
-  transition-delay: 120ms;
+  animation-delay: 100ms;
 }
 
 .delay2 {
-  transition-delay: 240ms;
+  animation-delay: 180ms;
 }
 
 .delay3 {
-  transition-delay: 360ms;
+  animation-delay: 260ms;
 }
 
 .reveal.revealed {

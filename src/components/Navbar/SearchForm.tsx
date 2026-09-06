@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import styles from "./SearchForm.module.css";
 import searchData from "@/data/ui/searchFormConfig.json";
+import { optimizeCloudinaryUrl, IMAGE_PRESETS } from "@/utils/imageOptimizer";
 
 export function SearchForm({
   isActive,
@@ -49,6 +50,9 @@ export function SearchForm({
                 item.price ||
                 0;
 
+              const rawImg = item?.image_url || item?.imageUrl;
+              const optimizedImg = optimizeCloudinaryUrl(rawImg, IMAGE_PRESETS.THUMBNAIL_SM) || searchData?.results?.defaultImage;
+
               return (
                 <div
                   key={item?.id || `${item?.name || "product"}-${index}`}
@@ -58,15 +62,11 @@ export function SearchForm({
                   }
                 >
                   <img
-                    src={
-                      item?.image_url ||
-                      item?.imageUrl ||
-                      searchData?.results?.defaultImage
-                    }
+                    src={optimizedImg}
                     alt={item?.name}
                   />
                   <div className={styles.resultInfo}>
-                    <h4>{item?.name}</h4>
+                    <span className={styles.resultName}>{item?.name}</span>
                     <div className="product-price">
                       {isAvailable ? (
                         <p>

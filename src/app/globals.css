@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 :root {
-  --font-serif: "Tenor Sans", sans-serif;
-  --font-sans: "Lato", sans-serif;
+  --font-serif: var(--font-tenor), "Tenor Sans", serif;
+  --font-sans: var(--font-lato), "Lato", sans-serif;
 
   /* Light Theme Palette */
   --background: #f4f8f7;

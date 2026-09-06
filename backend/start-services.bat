@@ -1,10 +1,14 @@
 @echo off
-echo Starting XAR Backend and Cloudflare Tunnel...
+echo ===================================================
+echo   Memulai MAMEKO Backend dan Cloudflare Tunnel
+echo   Menggunakan PM2 Process Manager (Best Practice)
+echo ===================================================
 cd /d "%~dp0"
 
-echo Starting Go Backend...
-start "XAR Backend API" /min cmd /c "go run cmd\api\main.go > backend.log 2>&1"
+call pm2 start ecosystem.config.js
+call pm2 save
 
-echo Starting Cloudflare Tunnel (HTTP2 Mode)...
-:: Menggunakan protocol http2 untuk mencegah isu koneksi terputus (QUIC UDP sering tidak stabil)
-start "Cloudflare Tunnel" /min cmd /c "cloudflared.exe tunnel --protocol http2 --config config.yml run > tunnel.log 2>&1"
+:: Menjalankan MamekoServer manager engine di background secara silent
+start "" "%~dp0..\MamekoServer.exe" --silent
+
+echo [OK] Layanan backend, tunnel, dan MamekoServer berhasil aktif.

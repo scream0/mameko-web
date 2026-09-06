@@ -8,6 +8,13 @@ import styles from "./CartSidebar.module.css";
 import cartConfig from "@/data/ui/cartSidebarConfig.json";
 import { AppIcon } from "@/components/UI/Icon/AppIcon";
 import { useScrollLock } from "@/hooks/useScrollLock";
+import { optimizeCloudinaryUrl, IMAGE_PRESETS } from "@/utils/imageOptimizer";
+import dynamic from "next/dynamic";
+
+const AddressModal = dynamic(
+  () => import("@/components/UI/Modal/AddressModal").then((mod) => mod.AddressModal),
+  { ssr: false }
+);
 
 export function CartSidebar() {
   const router = useRouter();
@@ -28,6 +35,7 @@ export function CartSidebar() {
     activePromo,
     promoSavings,
     discountedCartTotal,
+    isAddressModalOpen,
   } = useStore();
 
   useScrollLock(isCartOpen);
@@ -137,7 +145,7 @@ export function CartSidebar() {
                 return (
                   <div className={styles.cartItem} key={safeKey}>
                     <div className={styles.cartItemImg}>
-                      <img src={itemImageSrc} alt={item.name} />
+                      <img src={optimizeCloudinaryUrl(itemImageSrc, IMAGE_PRESETS.THUMBNAIL)} alt={item.name} />
                     </div>
                     <div className={styles.cartItemDetails}>
                       <div className={styles.itemHeader}>
@@ -303,7 +311,7 @@ export function CartSidebar() {
               )}
 
               <div className={styles.cartTotalRow}>
-                <h4>{cartConfig?.labels?.total || "Total Pembayaran:"}</h4>
+                <span className={styles.cartTotalLabel}>{cartConfig?.labels?.total || "Total Pembayaran:"}</span>
                 <span className={styles.cartGrandTotal}>
                   {rupiah(activePromo ? discountedCartTotal : cartTotal)}
                 </span>
@@ -342,7 +350,7 @@ export function CartSidebar() {
       {confirmModal.isOpen && (
         <div className={styles.confirmOverlay}>
           <div className={styles.confirmModal}>
-            <h4>{cartConfig?.confirmModal?.title || "Hapus Item"}</h4>
+            <h3 className={styles.confirmModalTitle}>{cartConfig?.confirmModal?.title || "Hapus Item"}</h3>
             <p>
               {cartConfig?.confirmModal?.message ||
                 "Apakah Anda yakin ingin menghapus item ini dari keranjang?"}
@@ -358,6 +366,8 @@ export function CartSidebar() {
           </div>
         </div>
       )}
+
+      {isAddressModalOpen && <AddressModal />}
     </>
   );
 }

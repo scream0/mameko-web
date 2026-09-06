@@ -12,6 +12,7 @@ import config from "@/data/ui/navbarConfig.json";
 import { Logo } from "@/components/UI/Logo/logo";
 import { AppIcon } from "@/components/UI/Icon/AppIcon";
 import { useScrollLock } from "@/hooks/useScrollLock";
+import { optimizeCloudinaryUrl, IMAGE_PRESETS } from "@/utils/imageOptimizer";
 
 const CartSidebar = dynamic(
   () => import("../UI/Sidebar/CartSidebar").then((mod) => mod.CartSidebar),
@@ -278,7 +279,7 @@ export function Navbar() {
                   <div className={styles.mobileUserInfo}>
                     {userAvatar && !imageError ? (
                       <img
-                        src={userAvatar}
+                        src={optimizeCloudinaryUrl(userAvatar, IMAGE_PRESETS.THUMBNAIL_SM)}
                         alt="User Avatar"
                         className={styles.avatarImgMobile}
                         onError={() => setImageError(true)}
@@ -385,7 +386,7 @@ export function Navbar() {
                 >
                   {userAvatar && !imageError ? (
                     <img
-                      src={userAvatar}
+                      src={optimizeCloudinaryUrl(userAvatar, IMAGE_PRESETS.THUMBNAIL_SM)}
                       alt="User Avatar"
                       className={styles.avatarImg}
                       onError={() => setImageError(true)}
@@ -452,18 +453,20 @@ export function Navbar() {
         </div>
       </nav>
 
-      <CartSidebar />
+      {isCartOpen && <CartSidebar />}
 
-      <Modal
-        isOpen={isModalOpen}
-        item={selectedProduct}
-        rupiah={rupiah}
-        onClose={() => setIsModalOpen(false)}
-        onAddToCart={(product, variant: any, quantity: any) => {
-          addToCart(product, variant, quantity);
-          setIsModalOpen(false);
-        }}
-      />
+      {isModalOpen && selectedProduct && (
+        <Modal
+          isOpen={isModalOpen}
+          item={selectedProduct}
+          rupiah={rupiah}
+          onClose={() => setIsModalOpen(false)}
+          onAddToCart={(product, variant: any, quantity: any) => {
+            addToCart(product, variant, quantity);
+            setIsModalOpen(false);
+          }}
+        />
+      )}
     </>
   );
 }

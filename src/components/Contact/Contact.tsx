@@ -207,7 +207,7 @@ function InfoItem({ icon, title, value }) {
         <AppIcon name={icon} className={styles.feather} />
       </div>
       <div className={styles.infoText}>
-        <h4>{title}</h4>
+        <span className={styles.infoTitle}>{title}</span>
         <p>{value}</p>
       </div>
     </div>

@@ -5,6 +5,12 @@ module.exports = {
       script: "./api.exe",
       cwd: "./",
       watch: false,
+      autorestart: true,
+      restart_delay: 3000,
+      max_restarts: 20,
+      out_file: "./backend.log",
+      error_file: "./backend.log",
+      merge_logs: true,
       env: {
         NODE_ENV: "production",
       }
@@ -12,9 +18,15 @@ module.exports = {
     {
       name: "mameko-tunnel",
       script: "./cloudflared.exe",
-      args: "tunnel --config config.yml run",
+      args: "tunnel --protocol http2 --config config.yml run",
       cwd: "./",
-      watch: false
+      watch: false,
+      autorestart: true,
+      restart_delay: 5000,
+      max_restarts: 30,
+      out_file: "./tunnel.log",
+      error_file: "./tunnel.log",
+      merge_logs: true,
     }
   ]
 };

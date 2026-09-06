@@ -90,7 +90,9 @@
   border: 1px solid var(--border-color);
 }
 
-.resultInfo h4 {
+.resultInfo h4,
+.resultInfo .resultName {
+  display: block;
   font-family: var(--font-sans);
   font-size: 0.9rem;
   font-weight: 500;

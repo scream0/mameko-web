@@ -46,7 +46,8 @@
   transform: translateX(0);
 }
 
-.infoHeader h5 {
+.infoHeader h5,
+.contactTagline {
   color: var(--primary-accent);
   text-transform: uppercase;
   letter-spacing: 0.3em;
@@ -123,7 +124,9 @@
   filter: drop-shadow(0 0 8px rgba(var(--primary-accent-rgb), 0.6));
 }
 
-.infoText h4 {
+.infoText h4,
+.infoText .infoTitle {
+  display: block;
   font-family: var(--font-sans);
   font-size: 1rem;
   color: var(--text-primary);
@@ -145,6 +148,7 @@
   padding-top: 1.8rem;
 }
 
+.addressBox h3,
 .addressBox h4 {
   color: var(--text-primary);
   font-family: var(--font-serif);

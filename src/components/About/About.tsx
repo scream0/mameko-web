@@ -5,6 +5,7 @@ import Image from "next/image";
 import { getPublicSettings } from "@/services/settingsService";
 import styles from "./About.module.css";
 import aboutData from "@/data/ui/aboutConfig.json"; // Fallback default JSON
+import { optimizeCloudinaryUrl, IMAGE_PRESETS } from "@/utils/imageOptimizer";
 
 // Komponen kecil untuk fitur
 const FeatureItem = ({ number, title, desc }) => (
@@ -109,7 +110,7 @@ export function About() {
             {/* Kontainer Gambar + Shimmer */}
             <div className={styles.imgContainer}>
               <Image
-                src={aboutImage || "/assets/images/about-bg.jpg"}
+                src={optimizeCloudinaryUrl(aboutImage, IMAGE_PRESETS.ABOUT) || "/assets/images/about-bg.jpg"}
                 alt={aboutImageAlt}
                 className={styles.aboutImg}
                 width={600}

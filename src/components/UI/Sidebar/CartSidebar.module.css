@@ -384,7 +384,8 @@
   margin-bottom: 1.1rem;
 }
 
-.cartTotalRow h4 {
+.cartTotalRow h4,
+.cartTotalRow .cartTotalLabel {
   font-family: var(--font-sans);
   color: var(--text-primary);
   font-size: 0.92rem;
@@ -457,7 +458,9 @@
   font-family: var(--font-sans);
 }
 
-.confirmModal h4 {
+.confirmModal h3,
+.confirmModal h4,
+.confirmModal .confirmModalTitle {
   font-family: var(--font-serif);
   font-size: 1.2rem;
   color: var(--text-primary);

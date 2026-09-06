@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MAMEKO Server Manager</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #090d16;
+      --bg-card: rgba(18, 24, 38, 0.75);
+      --bg-card-hover: rgba(24, 32, 50, 0.85);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-active: rgba(99, 102, 241, 0.4);
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --success: #10b981;
+      --success-glow: rgba(16, 185, 129, 0.2);
+      --danger: #ef4444;
+      --danger-glow: rgba(239, 68, 68, 0.2);
+      --warning: #f59e0b;
+      --accent: #8b5cf6;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg-dark);
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.12) 0%, transparent 40%);
+      color: var(--text-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Navigation */
+    header {
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-logo {
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, #6366f1, #a855f7);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+      font-weight: 800;
+      font-size: 20px;
+      color: #fff;
+    }
+
+    .brand-text h1 {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-text p {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .status-pill {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: var(--success-glow);
+      color: var(--success);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-pill.error {
+      background: var(--danger-glow);
+      color: var(--danger);
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 8px currentColor;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    button {
+      font-family: inherit;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+      padding: 9px 16px;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
+    }
+
+    .btn-primary:hover {
+      opacity: 0.95;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-main);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, 0.25);
+    }
+
+    /* Main Container */
+    main {
+      flex: 1;
+      padding: 28px;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Cards Grid */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 22px;
+      transition: all 0.25s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: transparent;
+      transition: all 0.3s ease;
+    }
+
+    .card.online::before {
+      background: linear-gradient(90deg, #10b981, #059669);
+    }
+
+    .card.offline::before {
+      background: linear-gradient(90deg, #ef4444, #dc2626);
+    }
+
+    .card:hover {
+      background: var(--bg-card-hover);
+      border-color: rgba(255, 255, 255, 0.15);
+      transform: translateY(-2px);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+
+    .card-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .card-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .card-metrics {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      background: rgba(0, 0, 0, 0.25);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 16px;
+    }
+
+    .metric-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .metric-val {
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-muted);
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding-top: 12px;
+    }
+
+    /* Logs Viewer */
+    .logs-panel {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-height: 280px;
+    }
+
+    .logs-header {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    .logs-tabs {
+      display: flex;
+      gap: 6px;
+    }
+
+    .tab-btn {
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      background: transparent;
+      color: var(--text-muted);
+    }
+
+    .tab-btn.active {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+
+    .logs-content {
+      background: #050810;
+      color: #cbd5e1;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      padding: 16px 20px;
+      overflow-y: auto;
+      max-height: 260px;
+      user-select: text;
+      flex: 1;
+    }
+
+    .log-line {
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .log-time {
+      color: #64748b;
+      margin-right: 8px;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-card {
+      background: #111827;
+      border: 1px solid var(--border-active);
+      border-radius: 20px;
+      padding: 28px;
+      max-width: 440px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+    }
+
+    .qr-box {
+      background: #fff;
+      padding: 16px;
+      border-radius: 14px;
+      display: inline-block;
+      margin: 20px 0;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+    }
+
+    .qr-box img {
+      width: 230px;
+      height: 230px;
+      display: block;
+    }
+
+    /* Toast */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      padding: 12px 20px;
+      background: #1e293b;
+      color: #fff;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font-size: 13px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      display: none;
+      z-index: 2000;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="brand">
+      <div class="brand-logo">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 458.47 321.05" width="22" height="22" fill="white" style="display: block;">
+          <polygon points="256.99 0 0 321.05 64.03 321.05 321.03 0 256.99 0" />
+          <polygon points="394.44 321.05 458.47 321.05 329.96 160.5 458.44 0 394.41 0 297.94 120.51 265.93 160.5 137.41 321.05 160.51 321.05 201.44 321.05 295.46 321.05 330.28 278.26 235.69 278.26 297.94 200.5 394.44 321.05" />
+        </svg>
+      </div>
+      <div class="brand-text">
+        <h1>MAMEKO Server Control <span id="globalPill" class="status-pill"><span class="dot"></span> Online</span></h1>
+        <p>Production Self-Hosted Node &amp; Tunnel</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn-secondary" onclick="openStore()">
+        <span>🌐</span> Buka Toko (mameko.my.id)
+      </button>
+      <button class="btn-secondary" onclick="restartServices()" id="btnRestart">
+        <span>⚡</span> Restart
+      </button>
+      <button class="btn-danger" onclick="toggleServices()" id="btnToggle">
+        <span>⏹</span> Stop All
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main>
+    <div class="grid">
+      
+      <!-- Card 1: Go Backend -->
+      <div class="card online" id="cardBackend">
+        <div class="card-header">
+          <div class="card-title">
+            <div class="card-icon">🚀</div>
+            <div>
+              <h3>Backend API (Go)</h3>
+              <p style="font-size: 11px; color: var(--text-muted)">Fiber Engine v2</p>
+            </div>
+          </div>
+          <span class="status-pill" id="pillBackend"><span class="dot"></span> Online</span>
+        </div>
+        <div class="card-metrics">
+          <div>
+            <div class="metric-label">Port / Target</div>
+            <div class="metric-val" id="valPort">127.0.0.1:8080</div>
+          </div>
+          <div>
+            <div class="metric-label">Status PID</div>
+            <div class="metric-val" id="valPid">-</div>
+          </div>
+          <div>
+            <div class="metric-label">Uptime</div>
+            <div class="metric-val" id="valUptime">-</div>
+          </div>
+          <div>
+            <div class="metric-label">RAM Usage</div>
+            <div class="metric-val" id="valRam">-</div>
+          </div>
+        </div>
+        <div class="card-footer">
+          <span>Health check: /api/health</span>
+          <span id="backendLatency">Latency: 2ms</span>
+        </div>
+      </div>
+
+      <!-- Card 2: Cloudflare Tunnel -->
+      <div class="card online" id="cardTunnel">
+        <div class="card-header">
+          <div class="card-title">
+            <div class="card-icon">🛡️</div>
+            <div>
+              <h3>Cloudflare Tunnel</h3>
+              <p style="font-size: 11px; color: var(--text-muted)">Protocol: HTTP2</p>
+            </div>
+          </div>
+          <span class="status-pill" id="pillTunnel"><span class="dot"></span> Online</span>
+        </div>
+        <div class="card-metrics">
+          <div style="grid-column: span 2;">
+            <div class="metric-label">Public Domain URL</div>
+            <div class="metric-val" style="color: #60a5fa; font-size: 13px;">https://api.mameko.my.id</div>
+          </div>
+          <div>
+            <div class="metric-label">Tunnel PID</div>
+            <div class="metric-val" id="valTunnelPid">-</div>
+          </div>
+          <div>
+            <div class="metric-label">Mode</div>
+            <div class="metric-val">Zero Trust Tunnel</div>
+          </div>
+        </div>
+        <div class="card-footer">
+          <span>Target: http://127.0.0.1:8080</span>
+          <span>SSL: Cloudflare Edge</span>
+        </div>
+      </div>
+
+      <!-- Card 3: WhatsApp OTP Gateway -->
+      <div class="card online" id="cardWA">
+        <div class="card-header">
+          <div class="card-title">
+            <div class="card-icon">📱</div>
+            <div>
+              <h3>WhatsApp OTP (whatsmeow)</h3>
+              <p style="font-size: 11px; color: var(--text-muted)">Automated Auth Sender</p>
+            </div>
+          </div>
+          <span class="status-pill" id="pillWA"><span class="dot"></span> Terhubung</span>
+        </div>
+        <div class="card-metrics">
+          <div style="grid-column: span 2;">
+            <div class="metric-label">Status Nomor Pengirim</div>
+            <div class="metric-val" id="valWaNumber">Mameko Official Gateway</div>
+          </div>
+          <div>
+            <div class="metric-label">Storage</div>
+            <div class="metric-val">PostgreSQL</div>
+          </div>
+          <div>
+            <div class="metric-label">Aksi Cepat</div>
+            <button class="btn-primary" style="padding: 4px 10px; font-size: 11px; width: 100%; justify-content: center;" onclick="showQrModal()">Ganti Nomor</button>
+          </div>
+        </div>
+        <div class="card-footer">
+          <span>Auto-Reconnect: On</span>
+          <span>End-to-End Encrypted</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Live Logs Panel -->
+    <div class="logs-panel">
+      <div class="logs-header">
+        <div class="logs-tabs">
+          <button class="tab-btn active" onclick="switchLogTab('all', this)">Semua Log</button>
+          <button class="tab-btn" onclick="switchLogTab('backend', this)">Backend Log</button>
+          <button class="tab-btn" onclick="switchLogTab('tunnel', this)">Tunnel Log</button>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn-secondary" style="padding: 5px 10px; font-size: 11px;" onclick="clearLogs()">Bersihkan</button>
+          <button class="btn-secondary" style="padding: 5px 10px; font-size: 11px;" onclick="fetchLogs()">Segarkan</button>
+        </div>
+      </div>
+      <div class="logs-content" id="logsBox">
+        <div class="log-line"><span class="log-time">[System]</span> Memuat log server MAMEKO...</div>
+      </div>
+    </div>
+  </main>
+
+  <!-- WhatsApp QR Code Modal -->
+  <div class="modal-overlay" id="qrModal">
+    <div class="modal-card">
+      <h3 style="font-size: 18px; margin-bottom: 6px;">Tautkan WhatsApp OTP Baru</h3>
+      <p style="font-size: 12px; color: var(--text-muted)">Buka WhatsApp di HP Anda ➔ Perangkat Tertaut ➔ Tautkan Perangkat</p>
+      
+      <div class="qr-box" id="qrContainer">
+        <div style="width: 230px; height: 230px; display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 12px;" id="qrLoading">
+          Menyiapkan QR Code...
+        </div>
+        <img id="qrImage" src="" alt="WhatsApp QR" style="display: none;">
+      </div>
+
+      <div style="display: flex; gap: 10px; justify-content: center;">
+        <button class="btn-secondary" onclick="closeQrModal()">Tutup</button>
+        <button class="btn-primary" onclick="requestQr()">Ambil QR Baru</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast">Aksi berhasil dijalankan</div>
+
+  <script>
+    let activeTab = 'all';
+    let isServicesRunning = true;
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.innerText = msg;
+      t.style.display = 'block';
+      setTimeout(() => { t.style.display = 'none'; }, 3500);
+    }
+
+    function openStore() {
+      window.open('https://mameko.my.id', '_blank');
+    }
+
+    async function fetchStatus() {
+      try {
+        const start = performance.now();
+        const res = await fetch('/api/status');
+        const data = await res.json();
+        const duration = Math.round(performance.now() - start);
+
+        const apiStatus = (data.api && data.api.status) || data.api_status || (data.backend_online ? 'online' : 'offline');
+        const apiPid = (data.api && data.api.pid) || data.api_pid || '-';
+        const apiUptime = (data.api && data.api.uptime) || data.api_uptime || '-';
+        const apiMemory = (data.api && data.api.memory) || data.api_memory || '-';
+
+        const tunnelStatus = (data.tunnel && data.tunnel.status) || data.tunnel_status || 'offline';
+        const tunnelPid = (data.tunnel && data.tunnel.pid) || data.tunnel_pid || '-';
+
+        // Update Backend
+        if (apiStatus === 'online' || data.backend_online) {
+          document.getElementById('cardBackend').className = 'card online';
+          document.getElementById('pillBackend').innerHTML = '<span class="dot"></span> Online';
+          document.getElementById('pillBackend').className = 'status-pill';
+          document.getElementById('valPid').innerText = apiPid !== 0 ? apiPid : '-';
+          document.getElementById('valUptime').innerText = apiUptime;
+          document.getElementById('valRam').innerText = apiMemory;
+          document.getElementById('backendLatency').innerText = `Latency: ${duration}ms`;
+        } else {
+          document.getElementById('cardBackend').className = 'card offline';
+          document.getElementById('pillBackend').innerHTML = '<span class="dot"></span> Offline';
+          document.getElementById('pillBackend').className = 'status-pill error';
+          document.getElementById('valPid').innerText = '-';
+          document.getElementById('valUptime').innerText = '-';
+          document.getElementById('valRam').innerText = '-';
+        }
+
+        // Update Tunnel
+        if (tunnelStatus === 'online') {
+          document.getElementById('cardTunnel').className = 'card online';
+          document.getElementById('pillTunnel').innerHTML = '<span class="dot"></span> Online';
+          document.getElementById('pillTunnel').className = 'status-pill';
+          document.getElementById('valTunnelPid').innerText = tunnelPid !== 0 ? tunnelPid : '-';
+        } else {
+          document.getElementById('cardTunnel').className = 'card offline';
+          document.getElementById('pillTunnel').innerHTML = '<span class="dot"></span> Offline';
+          document.getElementById('pillTunnel').className = 'status-pill error';
+          document.getElementById('valTunnelPid').innerText = '-';
+        }
+
+        // Global status
+        const isAllOnline = (apiStatus === 'online' || data.backend_online) && (tunnelStatus === 'online');
+        if (isAllOnline) {
+          document.getElementById('globalPill').innerHTML = '<span class="dot"></span> All Systems Operational';
+          document.getElementById('globalPill').className = 'status-pill';
+          document.getElementById('btnToggle').innerHTML = '<span>⏹</span> Stop All';
+          isServicesRunning = true;
+        } else {
+          document.getElementById('globalPill').innerHTML = '<span class="dot"></span> Service Partial/Offline';
+          document.getElementById('globalPill').className = 'status-pill error';
+          document.getElementById('btnToggle').innerHTML = '<span>▶</span> Start All';
+          isServicesRunning = false;
+        }
+      } catch (err) {
+        console.error("Status fetch error", err);
+      }
+    }
+
+    async function fetchLogs() {
+      try {
+        const res = await fetch(`/api/logs?type=${activeTab}`);
+        const text = await res.text();
+        const box = document.getElementById('logsBox');
+        if (text.trim()) {
+          const lines = text.trim().split('\n');
+          box.innerHTML = lines.map(line => `<div class="log-line">${escapeHtml(line)}</div>`).join('');
+          box.scrollTop = box.scrollHeight;
+        }
+      } catch (err) {
+        console.error("Logs fetch error", err);
+      }
+    }
+
+    function escapeHtml(text) {
+      return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    function switchLogTab(tab, btn) {
+      activeTab = tab;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      fetchLogs();
+    }
+
+    function clearLogs() {
+      document.getElementById('logsBox').innerHTML = '<div class="log-line">[System] Log dibersihkan dari tampilan.</div>';
+    }
+
+    async function restartServices() {
+      const btn = document.getElementById('btnRestart');
+      btn.innerHTML = '<span>⏳</span> Restarting...';
+      btn.disabled = true;
+      try {
+        const res = await fetch('/api/action/restart', { method: 'POST' });
+        const data = await res.json();
+        showToast(data.message || 'Layanan berhasil direstart!');
+      } catch (err) {
+        showToast('Gagal merestart layanan: ' + err.message);
+      } finally {
+        setTimeout(() => {
+          btn.innerHTML = '<span>⚡</span> Restart';
+          btn.disabled = false;
+          fetchStatus();
+          fetchLogs();
+        }, 3000);
+      }
+    }
+
+    async function toggleServices() {
+      const action = isServicesRunning ? 'stop' : 'start';
+      try {
+        await fetch(`/api/action/${action}`, { method: 'POST' });
+        showToast(action === 'stop' ? 'Layanan dihentikan' : 'Layanan dimulai');
+        setTimeout(() => {
+          fetchStatus();
+          fetchLogs();
+        }, 2000);
+      } catch (err) {
+        showToast('Error: ' + err.message);
+      }
+    }
+
+    function showQrModal() {
+      document.getElementById('qrModal').classList.add('active');
+      requestQr();
+    }
+
+    function closeQrModal() {
+      document.getElementById('qrModal').classList.remove('active');
+    }
+
+    async function requestQr() {
+      const loading = document.getElementById('qrLoading');
+      const img = document.getElementById('qrImage');
+      loading.style.display = 'flex';
+      loading.innerText = 'Menyiapkan QR Code whatsmeow...';
+      img.style.display = 'none';
+
+      try {
+        const res = await fetch('/api/whatsapp/qr');
+        const data = await res.json();
+        if (data.qr) {
+          img.src = data.qr;
+          img.style.display = 'block';
+          loading.style.display = 'none';
+        } else {
+          loading.innerText = data.message || 'WhatsApp sudah terhubung!';
+        }
+      } catch (err) {
+        loading.innerText = 'Gagal memuat QR Code.';
+      }
+    }
+
+    // Polling Realtime
+    fetchStatus();
+    fetchLogs();
+    setInterval(fetchStatus, 4000);
+    setInterval(fetchLogs, 5000);
+  </script>
+</body>
+</html>

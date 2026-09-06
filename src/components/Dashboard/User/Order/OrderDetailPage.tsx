@@ -1280,7 +1280,7 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
 
               {isPendingStatus ? (
                 <div className={styles.proofUploadBox}>
-                  <h4 className={styles.proofUploadTitle}>{orderDetailConfig.manualTransfer.uploadProofTitle}</h4>
+                  <h3 className={styles.proofUploadTitle}>{orderDetailConfig.manualTransfer.uploadProofTitle}</h3>
                   {proofPreview ? (
                     <div className={styles.proofPreviewWrapper}>
                       <img src={proofPreview} alt="Bukti Transfer" className={styles.proofPreviewImg} />
@@ -1459,7 +1459,7 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
                       </div>
 
                       <div className={styles.itemInfo}>
-                        <h4 className={styles.itemName}>{item.name || item.product_name || orderDetailConfig.items.defaultProductName}</h4>
+                        <h3 className={styles.itemName}>{item.name || item.product_name || orderDetailConfig.items.defaultProductName}</h3>
                         <div className={styles.itemVariantBadge}>
                           <span>{orderDetailConfig.items.variantPrefix}{item.size || item.variant_name || item.variant || orderDetailConfig.items.defaultVariant}</span>
                         </div>
@@ -1516,9 +1516,9 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
                     </div>
                     <div className={styles.timelineContent}>
                       <div className={styles.timelineTitleRow}>
-                        <h4 className={`${styles.timelineStatusTitle} ${item.isWebhook ? styles.timelineStatusTitleCapitalized : ""}`}>
+                        <h3 className={`${styles.timelineStatusTitle} ${item.isWebhook ? styles.timelineStatusTitleCapitalized : ""}`}>
                           {item.label}
-                        </h4>
+                        </h3>
                         <span className={styles.timelineTime}>{item.timestampStr}</span>
                       </div>
                       <p className={styles.timelineNote}>{item.note}</p>
@@ -1531,7 +1531,7 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
                     <span className={styles.timelineDot} />
                   </div>
                   <div className={styles.timelineContent}>
-                    <h4 className={styles.timelineStatusTitle}>{statusInfo.label}</h4>
+                    <h3 className={styles.timelineStatusTitle}>{statusInfo.label}</h3>
                     <p className={styles.timelineNote}>{orderDetailConfig.timeline.defaultSystemNote}</p>
                     <span className={styles.timelineTime}>{orderTimeText}</span>
                   </div>

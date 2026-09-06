@@ -7,12 +7,13 @@ import { getPublicSettings } from "@/services/settingsService";
 import { AppIcon } from "@/components/UI/Icon/AppIcon";
 import styles from "./Hero.module.css";
 import heroData from "@/data/ui/heroConfig.json"; // Fallback default JSON
+import { optimizeCloudinaryUrl, IMAGE_PRESETS } from "@/utils/imageOptimizer";
 
 export function Hero() {
   // 1. Definisikan state
   const [resolvedHero, setResolvedHero] = useState(heroData);
   const [isDimmed, setIsDimmed] = useState(false);
-  const [isRevealed, setIsRevealed] = useState(false);
+  const [isRevealed, setIsRevealed] = useState(true);
 
   // Refs untuk visual transform & spotlight tanpa trigger re-render React
   const visualRef = useRef(null);
@@ -226,7 +227,7 @@ export function Hero() {
             >
               <div className={styles.heroVisualGlow}></div>
               <Image
-                src={heroBackgroundImage}
+                src={optimizeCloudinaryUrl(heroBackgroundImage, IMAGE_PRESETS.HERO)}
                 alt="Hero Visual"
                 className={styles.heroVisualImg}
                 width={600}

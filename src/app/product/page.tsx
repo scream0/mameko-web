@@ -9,6 +9,7 @@ import { AppIcon } from "@/components/UI/Icon/AppIcon";
 import { useStore } from "@/context/StoreContext";
 import { getDiscountedPrice } from "@/utils/promo";
 import toast from "react-hot-toast";
+import { optimizeCloudinaryUrl, IMAGE_PRESETS } from "@/utils/imageOptimizer";
 
 interface Variant {
   size: string;
@@ -207,12 +208,13 @@ function ProductDetailContent() {
           {/* Kotak Gambar */}
           <div className={styles.imageBox}>
             <Image
-              src={displayedImage}
+              src={optimizeCloudinaryUrl(displayedImage, IMAGE_PRESETS.PRODUCT_DETAIL)}
               alt={product.name}
               width={500}
               height={550}
               priority
               className={styles.mainImg}
+              sizes="(max-width: 768px) 100vw, 50vw"
             />
           </div>
 
@@ -265,7 +267,7 @@ function ProductDetailContent() {
               {/* Pilihan Varian */}
               {product.variants?.length > 0 && (
                 <div className={styles.variantSection}>
-                  <h4>{modalData?.labels?.variant || "Pilih Ukuran / Varian"}</h4>
+                  <span className={styles.variantTitle}>{modalData?.labels?.variant || "Pilih Ukuran / Varian"}</span>
                   <div className={styles.variantPillGroup}>
                     {product.variants.map((v) => {
                       const stock = v.stock ?? v.stok ?? 0;

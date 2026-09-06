@@ -10,6 +10,7 @@ import wishlistConfig from "@/data/ui/wishlistConfig.json";
 import { AppIcon } from "@/components/UI/Icon/AppIcon";
 import ConfirmationModal from "@/components/UI/Modal/ConfirmationModal";
 import { WishlistSkeleton } from "@/components/UI/Skeleton/SkeletonLayouts";
+import { optimizeCloudinaryUrl, IMAGE_PRESETS } from "@/utils/imageOptimizer";
 
 function readWishlist() {
   if (typeof window === "undefined") {
@@ -257,7 +258,7 @@ export default function WishlistSection() {
                   {product.image_url || product.imageUrl ? (
                     /* eslint-disable-next-line @next/next/no-img-element */
                     <img
-                      src={product.image_url || product.imageUrl}
+                      src={optimizeCloudinaryUrl(product.image_url || product.imageUrl, IMAGE_PRESETS.PRODUCT_CARD)}
                       alt={product.name}
                       className={styles.productImg}
                     />

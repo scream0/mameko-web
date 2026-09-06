@@ -11,18 +11,44 @@ import toast from "react-hot-toast";
 
 import userConfig from "@/data/ui/userDashboardConfig.json";
 
-import OverviewSection from "@/components/Dashboard/User/Overview/OverviewUser";
-import ProfileSection from "@/components/Dashboard/User/Profil/UserProfil";
-import ShopPage from "@/components/Dashboard/User/Shop/Shop";
-import NotificationsSection from "@/components/Dashboard/User/Notifications/NotificationsSection";
-import OrdersSection from "@/components/Dashboard/User/Order/OrdersSection";
-import { CartSidebar } from "@/components/UI/Sidebar/CartSidebar";
-import { Modal as ProductModal } from "@/components/UI/Modal/ProductModal";
+import dynamic from "next/dynamic";
+
+const OverviewSection = dynamic(
+  () => import("@/components/Dashboard/User/Overview/OverviewUser"),
+  { ssr: false }
+);
+const ProfileSection = dynamic(
+  () => import("@/components/Dashboard/User/Profil/UserProfil"),
+  { ssr: false }
+);
+const ShopPage = dynamic(
+  () => import("@/components/Dashboard/User/Shop/Shop"),
+  { ssr: false }
+);
+const NotificationsSection = dynamic(
+  () => import("@/components/Dashboard/User/Notifications/NotificationsSection"),
+  { ssr: false }
+);
+const OrdersSection = dynamic(
+  () => import("@/components/Dashboard/User/Order/OrdersSection"),
+  { ssr: false }
+);
+const CartSidebar = dynamic(
+  () => import("@/components/UI/Sidebar/CartSidebar").then((mod) => mod.CartSidebar),
+  { ssr: false }
+);
+const ProductModal = dynamic(
+  () => import("@/components/UI/Modal/ProductModal").then((mod) => mod.Modal),
+  { ssr: false }
+);
+const UserChatModal = dynamic(
+  () => import("@/components/Dashboard/User/Chat/UserChatModal"),
+  { ssr: false }
+);
 import { AppIcon } from "@/components/UI/Icon/AppIcon";
 import { Logo } from "@/components/UI/Logo/logo";
 import { UserDashboardSkeleton } from "@/components/UI/Skeleton/SkeletonLayouts";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import UserChatModal from "@/components/Dashboard/User/Chat/UserChatModal";
 
 const DEFAULT_TAB = "shop";
 const ALLOWED_TABS = ["shop", "overview", "orders", "notifications", "profile"];
@@ -350,13 +376,15 @@ export default function UserDashboard({ user }) {
       </nav>
 
       {/* Modals & Overlays */}
-      <UserChatModal
-        isOpen={isChatOpen}
-        onClose={() => setIsChatOpen(false)}
-        user={user}
-      />
+      {isChatOpen && (
+        <UserChatModal
+          isOpen={isChatOpen}
+          onClose={() => setIsChatOpen(false)}
+          user={user}
+        />
+      )}
       
-      <CartSidebar isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+      {isCartOpen && <CartSidebar isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />}
 
       {/* Modal Detail Produk */}
       {isProductModalOpen && selectedProduct && (
