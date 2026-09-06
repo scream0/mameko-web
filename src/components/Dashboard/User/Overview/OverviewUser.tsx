@@ -330,7 +330,7 @@ export default function OverviewUser({ setActiveTab }) {
                         onClick={() => {
                           const orderId = order.id || order.orderId;
                           if (orderId) {
-                            router.push(`/account/order-detail?id=${orderId}`);
+                            router.push(`/dashboard/order-detail?id=${orderId}`);
                           } else {
                             router.push("/dashboard");
                           }
@@ -391,7 +391,7 @@ export default function OverviewUser({ setActiveTab }) {
                     src={
                       prod.image_url ||
                       prod.imageUrl ||
-                      "/assets/placeholder.jpg"
+                      "/placeholder.jpg"
                     }
                     alt={prod.name}
                     className={styles.curatedThumb}

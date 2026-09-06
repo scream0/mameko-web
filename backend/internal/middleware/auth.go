@@ -1,10 +1,13 @@
 package middleware
 
 import (
+	"crypto/hmac"
+	"crypto/sha256"
 	"database/sql"
 	"encoding/base64"
 	"encoding/json"
 	"net/url"
+	"os"
 	"strings"
 	"xar-backend-go/internal/config"
 
@@ -22,6 +25,38 @@ type JWTClaims struct {
 	Email        string                 `json:"email"`
 	UserMetadata map[string]interface{} `json:"user_metadata"`
 	Role         string                 `json:"role"`
+}
+
+// verifySupabaseSignature checks the HMAC-SHA256 signature if SUPABASE_JWT_SECRET is configured
+func verifySupabaseSignature(tokenString string) error {
+	secret := strings.TrimSpace(os.Getenv("SUPABASE_JWT_SECRET"))
+	if secret == "" {
+		return nil // Secret belum dikonfigurasi, lewati verifikasi kriptografi
+	}
+
+	parts := strings.Split(tokenString, ".")
+	if len(parts) != 3 {
+		return fiber.NewError(fiber.StatusUnauthorized, "Malformed JWT structure")
+	}
+
+	signingInput := parts[0] + "." + parts[1]
+	mac := hmac.New(sha256.New, []byte(secret))
+	mac.Write([]byte(signingInput))
+	expectedSignature := mac.Sum(nil)
+
+	actualSignature, err := base64.RawURLEncoding.DecodeString(parts[2])
+	if err != nil {
+		actualSignature, err = base64.URLEncoding.DecodeString(parts[2])
+		if err != nil {
+			return fiber.NewError(fiber.StatusUnauthorized, "Invalid JWT signature encoding")
+		}
+	}
+
+	if !hmac.Equal(expectedSignature, actualSignature) {
+		return fiber.NewError(fiber.StatusUnauthorized, "Invalid JWT cryptographic signature")
+	}
+
+	return nil
 }
 
 // ExtractTokenFromCtx retrieves the auth token from Bearer header or browser cookies
@@ -77,7 +112,7 @@ func ExtractTokenFromCtx(c *fiber.Ctx) string {
 	return ""
 }
 
-// ParseSupabaseToken decodes the payload of a Supabase JWT and checks profile role from PostgreSQL
+// ParseSupabaseToken decodes the payload of a Supabase JWT, validates signature, and checks profile role
 func ParseSupabaseToken(tokenOrHeader string) (*AuthUser, error) {
 	tokenString := strings.TrimSpace(tokenOrHeader)
 	if tokenString == "" {
@@ -87,6 +122,11 @@ func ParseSupabaseToken(tokenOrHeader string) (*AuthUser, error) {
 	parts := strings.Split(tokenString, " ")
 	if len(parts) == 2 && strings.EqualFold(parts[0], "bearer") {
 		tokenString = parts[1]
+	}
+
+	// Validasi signature kriptografi jika SUPABASE_JWT_SECRET tersedia
+	if err := verifySupabaseSignature(tokenString); err != nil {
+		return nil, err
 	}
 
 	jwtSegments := strings.Split(tokenString, ".")

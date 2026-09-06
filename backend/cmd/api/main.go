@@ -65,11 +65,17 @@ func main() {
 		BodyLimit:       20 * 1024 * 1024, // 20 MB
 	})
 
+	allowedOrigins := os.Getenv("ALLOWED_ORIGINS")
+	if allowedOrigins == "" {
+		allowedOrigins = "https://mameko.pages.dev,https://mameko.my.id,http://localhost:3000,http://127.0.0.1:3000"
+	}
+
 	// Middleware
 	app.Use(logger.New())
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: "*",
-		AllowHeaders: "Origin, Content-Type, Accept, Authorization, Cache-Control, Pragma",
+		AllowOrigins:     allowedOrigins,
+		AllowHeaders:     "Origin, Content-Type, Accept, Authorization, Cache-Control, Pragma",
+		AllowCredentials: true,
 	}))
 
 	// Setup Routes

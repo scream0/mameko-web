@@ -111,7 +111,7 @@ export function Modal({ isOpen, item, onClose, onAddToCart, rupiah }) {
     selectedVariant?.imageUrl ||
     item?.image_url ||
     item?.imageUrl ||
-    "/assets/placeholder.jpg";
+    "/placeholder.jpg";
 
   const formatRupiah = (val: any) => {
     if (rupiah) return rupiah(val);

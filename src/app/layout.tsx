@@ -32,15 +32,18 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   let storeConfig: any = null;
   try {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
-    const res = await fetch(`${baseUrl}/api/settings`);
+    const res = await fetch(`${baseUrl}/api/settings`, {
+      signal: AbortSignal.timeout(2000),
+      cache: "no-store",
+    });
     if (res.ok) {
       storeConfig = await res.json();
     }
-  } catch (error) {
-    console.error("Failed to fetch settings from API in layout:", error);
+  } catch {
+    // Graceful fallback saat build-time/CI jika API backend sedang offline atau belum resolve DNS
   }
 
-  const isProduction = storeConfig?.midtrans_is_production === true;
+  const isProduction = storeConfig?.midtrans_is_production === true || process.env.NEXT_PUBLIC_MIDTRANS_IS_PRODUCTION === "true";
   const enableMidtrans = storeConfig?.enable_midtrans !== false;
   const scriptSrc = isProduction ? "https://app.midtrans.com/snap/snap.js" : "https://app.sandbox.midtrans.com/snap/snap.js";
   const clientKey = isProduction ? process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY_PRODUCTION : process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY_SANDBOX;

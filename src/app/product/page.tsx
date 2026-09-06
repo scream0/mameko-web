@@ -177,7 +177,7 @@ function ProductDetailContent() {
     selectedVariant?.imageUrl ||
     product?.image_url ||
     product?.imageUrl ||
-    "/assets/placeholder.jpg";
+    "/placeholder.jpg";
 
   const formatRupiah = (val: number) => {
     return `Rp ${Number(val).toLocaleString("id-ID")}`;

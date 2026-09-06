@@ -1202,7 +1202,7 @@ export default function CheckoutPage() {
           <div className={styles.summaryItems}>
             {(cart.items || []).map((item: any) => {
               const prod = (products || []).find((p: any) => String(p.id) === String(item.id));
-              const imgSrc = item.image || prod?.image_url || prod?.imageUrl || "/assets/placeholder.jpg";
+              const imgSrc = item.image || prod?.image_url || prod?.imageUrl || "/placeholder.jpg";
               const disc = activePromo
                 ? getDiscountedPrice(item.price, activePromo, {
                     productId: item.productId || item.id,

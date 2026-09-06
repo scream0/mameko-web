@@ -15,6 +15,7 @@ export async function getInitialProducts() {
   try {
     const res = await fetch(`${getBaseUrl()}/api/products?page=1&limit=${PRODUCTS_PER_PAGE}&status=published`, {
       next: { revalidate: 30 },
+      signal: AbortSignal.timeout(2000),
     });
     
     if (!res.ok) {
@@ -43,9 +44,9 @@ export async function getInitialProducts() {
     return { products: parsedData, total: result.total ?? 0 };
   } catch (error) {
     if (error instanceof Error) {
-      console.error("[ProductService] " + error.message);
+      console.warn("[ProductService] " + error.message);
     } else {
-      console.error("[ProductService] An unknown error occurred");
+      console.warn("[ProductService] An unknown error occurred");
     }
     return { products: [], total: 0 };
   }
@@ -58,6 +59,7 @@ export async function getSalesData(): Promise<SalesMap> {
   try {
     const res = await fetch(`${getBaseUrl()}/api/products/sales/public`, {
       cache: "force-cache",
+      signal: AbortSignal.timeout(2000),
     });
 
     if (!res.ok) {
@@ -68,9 +70,9 @@ export async function getSalesData(): Promise<SalesMap> {
     return result.sales || {};
   } catch (error) {
     if (error instanceof Error) {
-      console.error("[ProductService] Error fetching sales data: " + error.message);
+      console.warn("[ProductService] Error fetching sales data: " + error.message);
     } else {
-      console.error("[ProductService] An unknown error occurred while fetching sales data");
+      console.warn("[ProductService] An unknown error occurred while fetching sales data");
     }
      return {};
   }
@@ -83,6 +85,7 @@ export async function getPublicReviews() {
    try {
     const res = await fetch(`${getBaseUrl()}/api/reviews?public=true`, {
       cache: "force-cache",
+      signal: AbortSignal.timeout(2000),
     });
 
     if (!res.ok) {

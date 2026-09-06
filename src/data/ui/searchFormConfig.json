@@ -6,6 +6,6 @@
     "pricePrefix": "Mulai",
     "outOfStock": "Stok habis",
     "emptyMessage": "Tidak ditemukan.",
-    "defaultImage": "/assets/produk/default.jpg"
+    "defaultImage": "/placeholder.jpg"
   }
 }

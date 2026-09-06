@@ -1,11 +1,20 @@
 "use client";
 import OrderDetailWrapper from "@/components/Dashboard/User/Order/OrderDetailWrapper";
-import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { Suspense, useEffect } from "react";
 
 function Content() {
   const searchParams = useSearchParams();
-  const id = searchParams.get("id");
+  const router = useRouter();
+  const id = searchParams.get("id") || searchParams.get("orderId");
+
+  useEffect(() => {
+    if (id) {
+      const queryString = searchParams.toString();
+      router.replace(`/dashboard/order-detail?${queryString}`);
+    }
+  }, [id, router, searchParams]);
+
   if (!id) return null;
   return <OrderDetailWrapper orderId={id} />;
 }
