@@ -97,34 +97,8 @@ func RunOrderAutomation(db *sql.DB) (*OrderAutomationResult, error) {
 					WHERE order_id = $1 OR order_id = $2
 				`, o.id, o.orderNumber)
 
-				// E. Restore product variant stocks if present
-				var items []struct {
-					ProductID string  `json:"productId"`
-					ID        string  `json:"id"`
-					Size      string  `json:"size"`
-					Quantity  float64 `json:"quantity"`
-				}
-				if err := json.Unmarshal([]byte(o.itemsJSON), &items); err == nil {
-					for _, it := range items {
-						pID := it.ProductID
-						if pID == "" {
-							pID = it.ID
-						}
-						qty := int(it.Quantity)
-						if qty <= 0 {
-							qty = 1
-						}
-						if pID != "" {
-							if it.Size != "" {
-								_, _ = db.Exec(`
-									UPDATE product_variants 
-									SET stock = stock + $1 
-									WHERE product_id::text = $2 AND size = $3
-								`, qty, pID, it.Size)
-							}
-						}
-					}
-				}
+				// E. Restore product variant stocks
+				_ = RestoreOrderStock(db, o.id)
 			}
 		}
 	} else {

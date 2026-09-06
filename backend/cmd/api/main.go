@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"xar-backend-go/internal/config"
 	"xar-backend-go/internal/routes"
 	"xar-backend-go/internal/services"
@@ -67,13 +68,27 @@ func main() {
 
 	allowedOrigins := os.Getenv("ALLOWED_ORIGINS")
 	if allowedOrigins == "" {
-		allowedOrigins = "https://mameko.pages.dev,https://mameko.my.id,http://localhost:3000,http://127.0.0.1:3000"
+		allowedOrigins = "https://xarproject.pages.dev,https://mameko.pages.dev,https://mameko.my.id,http://localhost:3000,http://127.0.0.1:3000"
 	}
 
 	// Middleware
 	app.Use(logger.New())
 	app.Use(cors.New(cors.Config{
-		AllowOrigins:     allowedOrigins,
+		AllowOriginsFunc: func(origin string) bool {
+			if origin == "" {
+				return true
+			}
+			// Izinkan semua localhost & 127.0.0.1 (port berapa pun: 3000, 3001, 3002, dll)
+			if strings.HasPrefix(origin, "http://localhost:") || strings.HasPrefix(origin, "http://127.0.0.1:") || origin == "http://localhost" || origin == "http://127.0.0.1" {
+				return true
+			}
+			for _, o := range strings.Split(allowedOrigins, ",") {
+				if strings.EqualFold(strings.TrimSpace(o), origin) {
+					return true
+				}
+			}
+			return false
+		},
 		AllowHeaders:     "Origin, Content-Type, Accept, Authorization, Cache-Control, Pragma",
 		AllowCredentials: true,
 	}))
@@ -81,6 +96,6 @@ func main() {
 	// Setup Routes
 	routes.SetupRoutes(app)
 
-	// Start server on port 8080, specifically on 127.0.0.1
-	log.Fatal(app.Listen("127.0.0.1:8080"))
+	// Start server on port 8080 (dual-stack: binds IPv4 127.0.0.1 and IPv6 [::1])
+	log.Fatal(app.Listen(":8080"))
 }

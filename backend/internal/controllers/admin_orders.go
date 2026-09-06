@@ -294,8 +294,9 @@ func UpdateAdminOrderStatus(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	// If cancelled by admin, delete any uploaded payment proof image from Cloudinary
+	// If cancelled by admin, restore product stocks and delete any uploaded payment proof image from Cloudinary
 	if req.Status == "cancelled" {
+		_ = services.RestoreOrderStock(config.DB, orderID)
 		var proofURL sql.NullString
 		_ = config.DB.QueryRow(`SELECT COALESCE(shipping_detail->>'payment_proof_url', '') FROM orders WHERE id::text = $1 OR order_number = $1`, orderID).Scan(&proofURL)
 		if proofURL.Valid && proofURL.String != "" {

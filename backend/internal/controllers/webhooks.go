@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 	"xar-backend-go/internal/config"
+	"xar-backend-go/internal/services"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -107,6 +108,10 @@ func MidtransPaymentWebhook(c *fiber.Ctx) error {
 	_, err := config.DB.Exec(query, nextStatus, fmt.Sprintf("[%s]", string(historyBytes)), orderID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	if nextStatus == "cancelled" || nextStatus == "expire" || nextStatus == "deny" {
+		_ = services.RestoreOrderStock(config.DB, orderID)
 	}
 
 	return c.JSON(fiber.Map{"success": true, "status": nextStatus})

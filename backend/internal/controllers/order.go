@@ -759,6 +759,9 @@ func CancelOrder(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Pesanan tidak dapat dibatalkan atau tidak ditemukan."})
 	}
 
+	// Restore product variant stocks
+	_ = services.RestoreOrderStock(config.DB, orderID)
+
 	// Delete payment proof from Cloudinary if user uploaded one
 	if proofURL.Valid && proofURL.String != "" {
 		go services.DeleteCloudinaryImage(proofURL.String)
@@ -1390,13 +1393,13 @@ func CreateCheckoutTransaction(c *fiber.Ctx) error {
 
 	// Claim vouchers if applicable
 	if req.DiscountVoucherClaimID != nil && *req.DiscountVoucherClaimID != "" {
-		_, err := config.DB.Exec("UPDATE user_vouchers SET status = 'used', used_at = NOW(), order_id = $1::text WHERE id::text = $2", orderID, *req.DiscountVoucherClaimID)
+		_, err := config.DB.Exec("UPDATE user_vouchers SET status = 'used', used_at = NOW(), order_id = $1::uuid WHERE id::text = $2", orderID, *req.DiscountVoucherClaimID)
 		if err != nil {
 			fmt.Println("Error updating discount voucher status:", err)
 		}
 	}
 	if req.ShippingVoucherClaimID != nil && *req.ShippingVoucherClaimID != "" {
-		_, err := config.DB.Exec("UPDATE user_vouchers SET status = 'used', used_at = NOW(), order_id = $1::text WHERE id::text = $2", orderID, *req.ShippingVoucherClaimID)
+		_, err := config.DB.Exec("UPDATE user_vouchers SET status = 'used', used_at = NOW(), order_id = $1::uuid WHERE id::text = $2", orderID, *req.ShippingVoucherClaimID)
 		if err != nil {
 			fmt.Println("Error updating shipping voucher status:", err)
 		}
