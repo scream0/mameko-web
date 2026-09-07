@@ -7,6 +7,7 @@ import { useScrollLock } from "@/hooks/useScrollLock";
 import toast from "react-hot-toast";
 import styles from "./UserChatModal.module.css";
 import chatConfig from "@/data/ui/userChatConfig.json";
+import { getApiBaseUrl } from "@/lib/apiClient";
 
 export default function UserChatModal({ isOpen, onClose, user }: any) {
   useScrollLock(Boolean(isOpen));
@@ -137,7 +138,7 @@ export default function UserChatModal({ isOpen, onClose, user }: any) {
       if (!token) return;
 
       const res = await fetch(
-        (process.env.NEXT_PUBLIC_API_URL || "") + "/api/user/chats",
+        getApiBaseUrl() + "/api/user/chats",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -161,7 +162,7 @@ export default function UserChatModal({ isOpen, onClose, user }: any) {
         .map((m: any) => m.id);
       if (unreadIds.length > 0) {
         await fetch(
-          (process.env.NEXT_PUBLIC_API_URL || "") + "/api/user/chats/read",
+          getApiBaseUrl() + "/api/user/chats/read",
           {
             method: "PUT",
             headers: {
@@ -232,7 +233,7 @@ export default function UserChatModal({ isOpen, onClose, user }: any) {
         formData.append("folder", "chats");
 
         const res = await fetch(
-          (process.env.NEXT_PUBLIC_API_URL || "") + "/api/user/cloudinary",
+          getApiBaseUrl() + "/api/user/cloudinary",
           {
             method: "POST",
             headers: { Authorization: `Bearer ${token}` },
@@ -248,7 +249,7 @@ export default function UserChatModal({ isOpen, onClose, user }: any) {
       }
 
       const res = await fetch(
-        (process.env.NEXT_PUBLIC_API_URL || "") + "/api/user/chats",
+        getApiBaseUrl() + "/api/user/chats",
         {
           method: "POST",
           headers: {

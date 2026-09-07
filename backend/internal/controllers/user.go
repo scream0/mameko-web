@@ -209,13 +209,21 @@ func UpdateUser(c *fiber.Ctx) error {
 		avatarURL = req.PhotoURL
 	}
 
+	targetRole := actor.Role
+	if targetRole == "" {
+		targetRole = "customer"
+	}
+	targetEmail := actor.Email
+
 	query := `
 		INSERT INTO profiles (
-			id, full_name, phone, avatar_url, username, gender, birth_date, photo_url, photo_public_id,
+			id, email, role, full_name, phone, avatar_url, username, gender, birth_date, photo_url, photo_public_id,
 			newsletter_subscribed, bank_name, bank_account_number, bank_account_name, updated_at
 		)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, NOW())
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, NOW())
 		ON CONFLICT (id) DO UPDATE SET
+			email = COALESCE(NULLIF(profiles.email, ''), EXCLUDED.email),
+			role = COALESCE(NULLIF(profiles.role, ''), EXCLUDED.role),
 			full_name = COALESCE(EXCLUDED.full_name, profiles.full_name),
 			phone = COALESCE(EXCLUDED.phone, profiles.phone),
 			avatar_url = COALESCE(EXCLUDED.avatar_url, profiles.avatar_url),
@@ -232,7 +240,7 @@ func UpdateUser(c *fiber.Ctx) error {
 	`
 
 	_, err = config.DB.Exec(query, 
-		targetUserID, req.FullName, req.Phone, avatarURL, req.Username, req.Gender, req.BirthDate, req.PhotoURL,
+		targetUserID, targetEmail, targetRole, req.FullName, req.Phone, avatarURL, req.Username, req.Gender, req.BirthDate, req.PhotoURL,
 		req.PhotoPublicID, req.NewsletterSubscribed, req.BankName, req.BankAccountNumber, req.BankAccountName,
 	)
 	if err != nil {

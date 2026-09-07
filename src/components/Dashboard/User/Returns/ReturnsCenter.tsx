@@ -13,6 +13,7 @@ import {
   SkeletonLines,
 } from "@/components/UI/Skeleton/Skeleton";
 import { useRouter } from "next/navigation";
+import { getApiBaseUrl } from "@/lib/apiClient";
 
 interface ReturnsCenterProps {
   onNavigateOrders?: () => void;
@@ -31,7 +32,7 @@ export default function ReturnsCenter({ onNavigateOrders }: ReturnsCenterProps) 
         sessionToken ||
         (await auth.getSession()).data.session?.access_token;
       const res = await fetch(
-        (process.env.NEXT_PUBLIC_API_URL || "") + "/api/user/returns",
+        getApiBaseUrl() + "/api/user/returns",
         {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         },

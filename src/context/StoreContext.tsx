@@ -256,6 +256,20 @@ const handleUserData = useCallback(async (currentUser, token) => {
   }, [handleUserData]);
 
   useEffect(() => {
+    const handleProfileUpdate = () => {
+      auth.getSession().then(({ data: { session } }) => {
+        if (session?.user && handleUserDataRef.current) {
+          handleUserDataRef.current(session.user, session.access_token);
+        }
+      });
+    };
+    if (typeof window !== "undefined") {
+      window.addEventListener("user-profile-updated", handleProfileUpdate);
+      return () => window.removeEventListener("user-profile-updated", handleProfileUpdate);
+    }
+  }, []);
+
+  useEffect(() => {
     let subscription = null;
     let lastUserId = null;
 

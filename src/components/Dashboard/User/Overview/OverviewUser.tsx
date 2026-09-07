@@ -10,6 +10,7 @@ import { shouldSkipAuthEvent } from "@/utils/authHelpers";
 import toast from "react-hot-toast";
 import overviewConfig from "@/data/ui/overviewUserConfig.json";
 import { OverviewUserSkeleton } from "@/components/UI/Skeleton/SkeletonLayouts";
+import { getApiBaseUrl } from "@/lib/apiClient";
 
 // Mapping status agar kelas warna badge sinkron dengan OrdersSection
 const STATUS_INFO = overviewConfig.status;
@@ -89,12 +90,12 @@ export default function OverviewUser({ setActiveTab }) {
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
         // Ambil data pesanan dan profil secara paralel
-        const orderPromise = fetch((process.env.NEXT_PUBLIC_API_URL || "") + `/api/user/orders?userId=${userId}`, { headers }).catch(e => {
+        const orderPromise = fetch(`${getApiBaseUrl()}/api/user/orders?userId=${userId}`, { headers }).catch(e => {
           console.error("Gagal mengambil orders:", e);
           return null;
         });
         
-        const userPromise = fetch((process.env.NEXT_PUBLIC_API_URL || "") + `/api/user/profile`, { headers }).catch(e => {
+        const userPromise = fetch(`${getApiBaseUrl()}/api/user/profile`, { headers }).catch(e => {
           console.error("Gagal mengambil user profile:", e);
           return null;
         });
@@ -113,19 +114,21 @@ export default function OverviewUser({ setActiveTab }) {
         }
 
         let userBalance = 0;
-        let fetchedFullName = currentUser.user_metadata?.full_name || currentUser.user_metadata?.name || "";
+        let fetchedFullName = "";
 
         if (userRes && userRes.ok) {
           const userResult = await userRes.json();
           if (userResult.exists && userResult.data) {
             userBalance = Number(userResult.data.balance || 0);
-            if (!fetchedFullName) {
-              fetchedFullName =
-                userResult.data.full_name ||
-                userResult.data.username ||
-                fetchedFullName;
-            }
+            fetchedFullName =
+              userResult.data.full_name ||
+              userResult.data.username ||
+              "";
           }
+        }
+
+        if (!fetchedFullName) {
+          fetchedFullName = currentUser.user_metadata?.full_name || currentUser.user_metadata?.name || "";
         }
 
         // Fallback nama profil dari alamat pengiriman
@@ -204,6 +207,14 @@ export default function OverviewUser({ setActiveTab }) {
     }
 
     fetchDashboardData();
+
+    const handleProfileUpdate = () => {
+      fetchDashboardData();
+    };
+    window.addEventListener("user-profile-updated", handleProfileUpdate);
+    return () => {
+      window.removeEventListener("user-profile-updated", handleProfileUpdate);
+    };
   }, [currentUser, currentSession]);
 
   // Rekomendasi Produk Berbasis Database Produk

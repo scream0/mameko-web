@@ -10,6 +10,7 @@ import notificationsConfig from "@/data/ui/notificationsConfig.json";
 import { NotificationsSkeleton } from "@/components/UI/Skeleton/SkeletonLayouts";
 import ConfirmationModal from "@/components/UI/Modal/ConfirmationModal";
 import { AppIcon } from "@/components/UI/Icon/AppIcon";
+import { getApiBaseUrl } from "@/lib/apiClient";
 
 // Format waktu menjadi "Baru saja", "5 menit lalu", dst.
 function timeAgo(dateString: any) {
@@ -56,7 +57,7 @@ export default function NotificationsSection({ onUnreadCountChange }: any) {
       setLoading(true);
       const token = session?.access_token;
       
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/user/notifications", {
+      const res = await fetch(getApiBaseUrl() + "/api/user/notifications", {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       let result = {};
@@ -183,7 +184,7 @@ export default function NotificationsSection({ onUnreadCountChange }: any) {
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
 
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/user/notifications", {
+      const res = await fetch(getApiBaseUrl() + "/api/user/notifications", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -209,7 +210,7 @@ export default function NotificationsSection({ onUnreadCountChange }: any) {
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
 
-      await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/user/notifications", {
+      await fetch(getApiBaseUrl() + "/api/user/notifications", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -269,7 +270,7 @@ export default function NotificationsSection({ onUnreadCountChange }: any) {
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
 
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + `/api/user/notifications?id=${notification.id}`,
+      const res = await fetch(getApiBaseUrl() + `/api/user/notifications?id=${notification.id}`,
         {
           method: "DELETE",
           headers: token ? { Authorization: `Bearer ${token}` } : {},

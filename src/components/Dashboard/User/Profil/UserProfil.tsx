@@ -15,6 +15,7 @@ import AddressManagerModal from "./AddressManagerModal";
 import { EditProfileModal, AddressFormModal, PasswordModal, OTPModal } from "./ProfileModals";
 import { shouldSkipAuthEvent, logoutUser } from "@/utils/authHelpers";
 import ConfirmationModal from "@/components/UI/Modal/ConfirmationModal";
+import { getApiBaseUrl } from "@/lib/apiClient";
 
 
 const WishlistSection = lazy(() => import("@/components/Dashboard/User/Wishlist/WishlistSection"));
@@ -162,7 +163,7 @@ export default function ProfileSection() {
       const token = currentSession.access_token;
       const headers = { Authorization: `Bearer ${token}` };
 
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
+      const apiBase = getApiBaseUrl();
       const [res, resVouchers, resAddresses] = await Promise.all([
         fetch(`${apiBase}/api/user/profile`, { headers, cache: "no-store" }),
         fetch(`${apiBase}/api/user/vouchers/available`, { headers, cache: "no-store" }),
@@ -209,7 +210,9 @@ export default function ProfileSection() {
 
       if (res.ok && result.exists && result.data) {
         const data = result.data;
-        const photoUrlToUse = data.avatar_url || defaultPhoto;
+        const photoUrlToUse = data.photo_url !== undefined && data.photo_url !== null
+          ? data.photo_url
+          : (data.avatar_url || defaultPhoto);
         
         const rawVouchers = data.user_vouchers || [];
         const formattedVouchers = rawVouchers.map((v: any) => ({
@@ -291,7 +294,7 @@ export default function ProfileSection() {
       if (tempProfile.photoPublicId) data.append("oldPublicId", tempProfile.photoPublicId);
       if (tempProfile.photoURL) data.append("oldUrl", tempProfile.photoURL);
 
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/user/cloudinary", {
+      const res = await fetch(getApiBaseUrl() + "/api/user/cloudinary", {
         method: "POST",
         headers: token ? { Authorization: `Bearer ${token}` } : {},
         body: data,
@@ -327,7 +330,7 @@ export default function ProfileSection() {
       const userId = currentUser.id || currentUser.uid;
       const token = currentSession.access_token;
 
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/user/cloudinary", {
+      const res = await fetch(getApiBaseUrl() + "/api/user/cloudinary", {
         method: "DELETE",
         headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         body: JSON.stringify({ userId, publicId: tempProfile.photoPublicId }),
@@ -349,19 +352,19 @@ export default function ProfileSection() {
       const token = currentSession?.access_token;
       const payload = {
         username: cleanUsername,
-        full_name: tempProfile.fullName,
-        phone: tempProfile.phone,
-        gender: tempProfile.gender,
-        birth_date: tempProfile.birthDate,
-        photo_url: tempProfile.photoURL,
-        photo_public_id: tempProfile.photoPublicId,
-        newsletter_subscribed: tempProfile.newsletterSubscribed,
-        bank_name: tempProfile.bankName,
-        bank_account_number: tempProfile.bankAccountNumber,
-        bank_account_name: tempProfile.bankAccountName,
+        full_name: tempProfile.fullName || "",
+        phone: tempProfile.phone || "",
+        gender: tempProfile.gender || "",
+        birth_date: tempProfile.birthDate || "",
+        photo_url: tempProfile.photoURL ?? "",
+        photo_public_id: tempProfile.photoPublicId ?? "",
+        newsletter_subscribed: tempProfile.newsletterSubscribed ?? true,
+        bank_name: tempProfile.bankName || "",
+        bank_account_number: tempProfile.bankAccountNumber || "",
+        bank_account_name: tempProfile.bankAccountName || "",
       };
 
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/user/profile", {
+      const res = await fetch(getApiBaseUrl() + "/api/user/profile", {
         method: "POST",
         headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         body: JSON.stringify(payload),
@@ -373,6 +376,12 @@ export default function ProfileSection() {
       setProfile((prev) => ({ ...prev, ...tempProfile, username: cleanUsername }));
       setIsProfileModalOpen(false);
       toast.success(profileConfig.toasts.saveProfileSuccess, { id: toastId });
+
+      // Sinkronkan ulang data dari backend dan beri sinyal ke Navbar/Dashboard
+      await fetchProfile();
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("user-profile-updated", { detail: { profile: payload } }));
+      }
     } catch (err) {
       toast.error(err.message, { id: toastId });
     } finally {
@@ -388,21 +397,22 @@ export default function ProfileSection() {
       return;
     }
 
-    // Jika nomor HP berubah dan tidak kosong, trigger OTP
-    if (tempProfile.phone && tempProfile.phone !== profile.phone) {
+    const cleanPhone = (tempProfile.phone || "").trim();
+    // Jika nomor HP berubah, tidak kosong, dan belum diverifikasi, minta OTP
+    if (cleanPhone && cleanPhone !== profile.phone && !verifiedPhones.includes(cleanPhone)) {
       const toastId = toast.loading("Mengirim kode verifikasi WhatsApp...");
       setLoading(true);
       try {
-        const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/auth/send-whatsapp-otp", {
+        const res = await fetch(getApiBaseUrl() + "/api/auth/send-whatsapp-otp", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ phone: tempProfile.phone }),
+          body: JSON.stringify({ phone: cleanPhone }),
         });
         const result = await res.json();
         if (!res.ok) throw new Error(result.error || "Gagal mengirim OTP");
         
         toast.dismiss(toastId);
-        setOtpPhone(tempProfile.phone);
+        setOtpPhone(cleanPhone);
         setOtpTarget("profile");
         setIsOtpModalOpen(true);
       } catch (err) {
@@ -420,7 +430,7 @@ export default function ProfileSection() {
     const toastId = toast.loading("Memverifikasi OTP...");
     setLoading(true);
     try {
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/auth/verify-whatsapp-otp", {
+      const res = await fetch(getApiBaseUrl() + "/api/auth/verify-whatsapp-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone: otpPhone, code: otp }),
@@ -491,7 +501,7 @@ export default function ProfileSection() {
       const userId = currentUser.id || currentUser.uid;
       const token = currentSession?.access_token;
 
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + `/api/user/profile`, {
+      const res = await fetch(getApiBaseUrl() + `/api/user/profile`, {
         method: "DELETE",
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
@@ -518,7 +528,7 @@ export default function ProfileSection() {
     const userId = currentSession?.user?.id;
     if (!userId) return;
     
-    const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
+    const apiBase = getApiBaseUrl();
     const res = await fetch(`${apiBase}/api/user/${userId}/addresses`, {
       headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
       cache: "no-store",
@@ -559,7 +569,7 @@ export default function ProfileSection() {
       const token = currentSession?.access_token;
       const userId = currentSession?.user?.id;
       const headers = { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) };
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
+      const apiBase = getApiBaseUrl();
 
       let res;
       if (isEditing && addrId) {
@@ -633,7 +643,7 @@ export default function ProfileSection() {
       const toastId = toast.loading("Mengirim kode OTP WhatsApp ke telepon penerima...");
       setLoading(true);
       try {
-        const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/auth/send-whatsapp-otp", {
+        const res = await fetch(getApiBaseUrl() + "/api/auth/send-whatsapp-otp", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ phone: cleanPhone }),
@@ -669,7 +679,7 @@ export default function ProfileSection() {
     try {
       const token = currentSession?.access_token;
       const userId = currentSession?.user?.id;
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
+      const apiBase = getApiBaseUrl();
       const res = await fetch(`${apiBase}/api/user/${userId}/addresses/${id}`, {
         method: "DELETE",
         headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
@@ -706,7 +716,7 @@ export default function ProfileSection() {
 
       const token = currentSession?.access_token;
       const userId = currentSession?.user?.id;
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
+      const apiBase = getApiBaseUrl();
       const res = await fetch(`${apiBase}/api/user/${userId}/addresses/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
@@ -877,7 +887,7 @@ export default function ProfileSection() {
         onClose={() => setIsOtpModalOpen(false)}
         onSubmit={handleVerifyOTP}
         onResend={async (phone: any) => {
-          const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/auth/send-whatsapp-otp", {
+          const res = await fetch(getApiBaseUrl() + "/api/auth/send-whatsapp-otp", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ phone })

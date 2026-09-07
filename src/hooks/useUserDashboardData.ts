@@ -216,9 +216,23 @@ export function useUserDashboardData() {
 
     initAuth();
 
+    const handleProfileUpdate = () => {
+      auth.getSession().then(({ data: { session } }) => {
+        if (session?.user && !isCancelled) {
+          fetchUserData(session.user, session.access_token);
+        }
+      });
+    };
+    if (typeof window !== "undefined") {
+      window.addEventListener("user-profile-updated", handleProfileUpdate);
+    }
+
     return () => {
       isCancelled = true;
       if (subscription) subscription.unsubscribe();
+      if (typeof window !== "undefined") {
+        window.removeEventListener("user-profile-updated", handleProfileUpdate);
+      }
     };
   }, [retryKey]);
 
