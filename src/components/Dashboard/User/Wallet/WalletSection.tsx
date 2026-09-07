@@ -86,10 +86,14 @@ export default function WalletSection({ profile, onOpenBankSettings }: WalletSec
       toast.error(walletConfig.toasts.insufficientBalance);
       return;
     }
+    const bankName = profile?.bankName || (profile as any)?.bank_name || "";
+    const bankAccountNumber = profile?.bankAccountNumber || (profile as any)?.bank_account_number || "";
+    const bankAccountName = profile?.bankAccountName || (profile as any)?.bank_account_name || "";
+
     if (
-      !profile?.bankName ||
-      !profile?.bankAccountNumber ||
-      !profile?.bankAccountName
+      !bankName ||
+      !bankAccountNumber ||
+      !bankAccountName
     ) {
       toast.error(walletConfig.toasts.bankRequired);
       return;
@@ -109,9 +113,9 @@ export default function WalletSection({ profile, onOpenBankSettings }: WalletSec
           },
           body: JSON.stringify({
             amount,
-            bankName: profile?.bankName || "",
-            accountNumber: profile?.bankAccountNumber || "",
-            accountHolder: profile?.bankAccountName || "",
+            bankName,
+            accountNumber: bankAccountNumber,
+            accountHolder: bankAccountName,
           }),
         },
       );
@@ -174,8 +178,12 @@ export default function WalletSection({ profile, onOpenBankSettings }: WalletSec
     return typeMap[type] || (type === "refund" ? "Pengembalian Dana" : "Penarikan Dana");
   };
 
+  const currentBankName = profile?.bankName || (profile as any)?.bank_name || "";
+  const currentBankAccountNumber = profile?.bankAccountNumber || (profile as any)?.bank_account_number || "";
+  const currentBankAccountName = profile?.bankAccountName || (profile as any)?.bank_account_name || "";
+
   const hasBankInfo = Boolean(
-    profile?.bankName && profile?.bankAccountNumber && profile?.bankAccountName,
+    currentBankName && currentBankAccountNumber && currentBankAccountName,
   );
 
   return (
@@ -354,7 +362,7 @@ export default function WalletSection({ profile, onOpenBankSettings }: WalletSec
                       {walletConfig.modal.bankLabels.bank}
                     </span>
                     <span className={styles.bankInfoValue}>
-                      {profile.bankName}
+                      {currentBankName}
                     </span>
                   </div>
                   <div className={styles.bankInfoItem}>
@@ -362,7 +370,7 @@ export default function WalletSection({ profile, onOpenBankSettings }: WalletSec
                       {walletConfig.modal.bankLabels.account}
                     </span>
                     <span className={styles.bankInfoValue}>
-                      {profile.bankAccountNumber}
+                      {currentBankAccountNumber}
                     </span>
                   </div>
                   <div className={styles.bankInfoItem}>
@@ -370,7 +378,7 @@ export default function WalletSection({ profile, onOpenBankSettings }: WalletSec
                       {walletConfig.modal.bankLabels.holder}
                     </span>
                     <span className={styles.bankInfoValue}>
-                      {profile.bankAccountName}
+                      {currentBankAccountName}
                     </span>
                   </div>
                 </div>

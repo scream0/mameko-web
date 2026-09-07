@@ -33,13 +33,27 @@ func GetUser(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "Forbidden"})
 	}
 
-	query := `SELECT id, full_name, email, phone, role, COALESCE(NULLIF(photo_url, ''), avatar_url) as avatar_url, created_at, updated_at FROM profiles WHERE id = $1 LIMIT 1`
+	query := `
+		SELECT 
+			id, full_name, email, phone, role, 
+			COALESCE(NULLIF(photo_url, ''), avatar_url) as avatar_url,
+			username, gender, birth_date, photo_url, photo_public_id,
+			newsletter_subscribed, bank_name, bank_account_number, bank_account_name,
+			created_at, updated_at 
+		FROM profiles 
+		WHERE id = $1 LIMIT 1
+	`
 	var p models.UserProfile
 	var fName, email, phone, role, avatar sql.NullString
+	var username, gender, birthDate, photoUrl, photoPublicId, bankName, bankAccNum, bankAccName sql.NullString
+	var newsletterSubscribed sql.NullBool
 	var cAt, uAt sql.NullTime
 
 	err = config.DB.QueryRow(query, targetUserID).Scan(
-		&p.ID, &fName, &email, &phone, &role, &avatar, &cAt, &uAt,
+		&p.ID, &fName, &email, &phone, &role, &avatar,
+		&username, &gender, &birthDate, &photoUrl, &photoPublicId,
+		&newsletterSubscribed, &bankName, &bankAccNum, &bankAccName,
+		&cAt, &uAt,
 	)
 
 	if err != nil {
@@ -69,6 +83,33 @@ func GetUser(c *fiber.Ctx) error {
 	}
 	if avatar.Valid {
 		p.AvatarURL = &avatar.String
+	}
+	if username.Valid {
+		p.Username = &username.String
+	}
+	if gender.Valid {
+		p.Gender = &gender.String
+	}
+	if birthDate.Valid {
+		p.BirthDate = &birthDate.String
+	}
+	if photoUrl.Valid {
+		p.PhotoURL = &photoUrl.String
+	}
+	if photoPublicId.Valid {
+		p.PhotoPublicID = &photoPublicId.String
+	}
+	if newsletterSubscribed.Valid {
+		p.NewsletterSubscribed = &newsletterSubscribed.Bool
+	}
+	if bankName.Valid {
+		p.BankName = &bankName.String
+	}
+	if bankAccNum.Valid {
+		p.BankAccountNumber = &bankAccNum.String
+	}
+	if bankAccName.Valid {
+		p.BankAccountName = &bankAccName.String
 	}
 	if cAt.Valid {
 		p.CreatedAt = &cAt.Time
@@ -202,12 +243,21 @@ func UpdateUser(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{
 		"success": true,
 		"data": models.UserProfile{
-			ID:        targetUserID,
-			FullName:  req.FullName,
-			Phone:     req.Phone,
-			Role:      actor.Role,
-			AvatarURL: avatarURL,
-			UpdatedAt: &now,
+			ID:                   targetUserID,
+			Username:             req.Username,
+			FullName:             req.FullName,
+			Phone:                req.Phone,
+			Gender:               req.Gender,
+			BirthDate:            req.BirthDate,
+			Role:                 actor.Role,
+			AvatarURL:            avatarURL,
+			PhotoURL:             req.PhotoURL,
+			PhotoPublicID:        req.PhotoPublicID,
+			NewsletterSubscribed: req.NewsletterSubscribed,
+			BankName:             req.BankName,
+			BankAccountNumber:    req.BankAccountNumber,
+			BankAccountName:      req.BankAccountName,
+			UpdatedAt:            &now,
 		},
 	})
 }

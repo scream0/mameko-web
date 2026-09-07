@@ -187,9 +187,17 @@ func GetAdminWithdrawals(c *fiber.Ctx) error {
 	}
 
 	rows, err := config.DB.Query(`
-		SELECT id, user_id, amount, bank_name, account_number, account_holder, status, created_at, updated_at
-		FROM withdrawals
-		ORDER BY created_at DESC
+		SELECT 
+			w.id, w.user_id, w.amount, 
+			COALESCE(NULLIF(w.bank_name, ''), NULLIF(p.bank_name, ''), '-') as bank_name,
+			COALESCE(NULLIF(w.account_number, ''), NULLIF(p.bank_account_number, ''), '-') as account_number,
+			COALESCE(NULLIF(w.account_holder, ''), NULLIF(p.bank_account_name, ''), '-') as account_holder,
+			w.status, w.created_at, w.updated_at,
+			COALESCE(NULLIF(p.full_name, ''), NULLIF(p.username, ''), NULLIF(p.email, ''), 'User') as user_name,
+			COALESCE(p.email, '') as user_email
+		FROM withdrawals w
+		LEFT JOIN profiles p ON w.user_id = p.id
+		ORDER BY w.created_at DESC
 	`)
 	if err != nil {
 		return c.JSON(fiber.Map{"withdrawals": []interface{}{}})
@@ -198,22 +206,37 @@ func GetAdminWithdrawals(c *fiber.Ctx) error {
 
 	withdrawals := make([]map[string]interface{}, 0)
 	for rows.Next() {
-		var id, uID, bank, accNum, accHolder, status string
+		var id, uID, bank, accNum, accHolder, status, userName, userEmail string
 		var amount float64
 		var cAt, uAt time.Time
-		if err := rows.Scan(&id, &uID, &amount, &bank, &accNum, &accHolder, &status, &cAt, &uAt); err == nil {
+		if err := rows.Scan(&id, &uID, &amount, &bank, &accNum, &accHolder, &status, &cAt, &uAt, &userName, &userEmail); err == nil {
 			withdrawals = append(withdrawals, map[string]interface{}{
-				"id":            id,
-				"userId":        uID,
-				"amount":        amount,
-				"bankName":      bank,
-				"accountNumber": accNum,
-				"accountHolder": accHolder,
-				"status":        status,
-				"createdAt":     cAt,
-				"created_at":    cAt,
-				"updatedAt":     uAt,
-				"updated_at":    uAt,
+				"id":                  id,
+				"userId":              uID,
+				"user_id":             uID,
+				"amount":              amount,
+				"bankName":            bank,
+				"bank_name":           bank,
+				"accountNumber":       accNum,
+				"account_number":      accNum,
+				"accountHolder":       accHolder,
+				"account_holder":      accHolder,
+				"status":              status,
+				"userName":            userName,
+				"user_name":           userName,
+				"userEmail":           userEmail,
+				"createdAt":           cAt,
+				"created_at":          cAt,
+				"updatedAt":           uAt,
+				"updated_at":          uAt,
+				"profiles": map[string]interface{}{
+					"full_name":           userName,
+					"username":            userName,
+					"email":               userEmail,
+					"bank_name":           bank,
+					"bank_account_number": accNum,
+					"bank_account_name":   accHolder,
+				},
 			})
 		}
 	}

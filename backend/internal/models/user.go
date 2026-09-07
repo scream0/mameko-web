@@ -3,16 +3,25 @@ package models
 import "time"
 
 type UserProfile struct {
-	ID           string                   `json:"id"`
-	FullName     *string                  `json:"full_name"`
-	Email        *string                  `json:"email"`
-	Phone        *string                  `json:"phone,omitempty"`
-	Role         string                   `json:"role"`
-	AvatarURL    *string                  `json:"avatar_url,omitempty"`
-	UserMetadata map[string]interface{}   `json:"user_metadata,omitempty"`
-	UserVouchers []map[string]interface{} `json:"user_vouchers,omitempty"`
-	CreatedAt    *time.Time               `json:"created_at,omitempty"`
-	UpdatedAt    *time.Time               `json:"updated_at,omitempty"`
+	ID                   string                   `json:"id"`
+	Username             *string                  `json:"username,omitempty"`
+	FullName             *string                  `json:"full_name"`
+	Email                *string                  `json:"email"`
+	Phone                *string                  `json:"phone,omitempty"`
+	Gender               *string                  `json:"gender,omitempty"`
+	BirthDate            *string                  `json:"birth_date,omitempty"`
+	Role                 string                   `json:"role"`
+	AvatarURL            *string                  `json:"avatar_url,omitempty"`
+	PhotoURL             *string                  `json:"photo_url,omitempty"`
+	PhotoPublicID        *string                  `json:"photo_public_id,omitempty"`
+	NewsletterSubscribed *bool                    `json:"newsletter_subscribed,omitempty"`
+	BankName             *string                  `json:"bank_name,omitempty"`
+	BankAccountNumber    *string                  `json:"bank_account_number,omitempty"`
+	BankAccountName      *string                  `json:"bank_account_name,omitempty"`
+	UserMetadata         map[string]interface{}   `json:"user_metadata,omitempty"`
+	UserVouchers         []map[string]interface{} `json:"user_vouchers,omitempty"`
+	CreatedAt            *time.Time               `json:"created_at,omitempty"`
+	UpdatedAt            *time.Time               `json:"updated_at,omitempty"`
 }
 
 type UpdateUserRequest struct {

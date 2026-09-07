@@ -119,10 +119,10 @@ export default function AdminWithdrawals() {
                     return d && !isNaN(d.getTime()) ? d.toLocaleString('id-ID') : '-';
                   })()}</td>
                   <td>
-                    <div><b>{w.profiles?.full_name || w.profiles?.username || 'User'}</b></div>
+                    <div><b>{w.userName || w.user_name || w.profiles?.full_name || w.profiles?.username || 'User'}</b></div>
                     <div className={styles.subTextMuted}>
-                      {w.profiles?.bank_name} - {w.profiles?.bank_account_number} <br/>
-                      (A/N: {w.profiles?.bank_account_name})
+                      {w.bankName || w.bank_name || w.profiles?.bank_name || '-'} - {w.accountNumber || w.account_number || w.profiles?.bank_account_number || '-'} <br/>
+                      (A/N: {w.accountHolder || w.account_holder || w.profiles?.bank_account_name || '-'})
                     </div>
                   </td>
                   <td className={styles.boldText}>{money(w.amount)}</td>
