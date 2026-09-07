@@ -97,6 +97,9 @@ export default function ProfileSection() {
 
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
   const [otpPhone, setOtpPhone] = useState("");
+  const [otpTarget, setOtpTarget] = useState<"profile" | "address">("profile");
+  const [verifiedPhones, setVerifiedPhones] = useState<string[]>([]);
+  const pendingAddressRef = useRef<any>(null);
 
   const [currentSession, setCurrentSession] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
@@ -232,6 +235,9 @@ export default function ProfileSection() {
           bankAccountNumber: data.bank_account_number || "",
           bankAccountName: data.bank_account_name || "",
         });
+        if (data.phone) {
+          setVerifiedPhones((prev) => Array.from(new Set([...prev, data.phone.trim()])));
+        }
       } else {
         setProfile({
           username: defaultUsername,
@@ -397,6 +403,7 @@ export default function ProfileSection() {
         
         toast.dismiss(toastId);
         setOtpPhone(tempProfile.phone);
+        setOtpTarget("profile");
         setIsOtpModalOpen(true);
       } catch (err) {
         toast.error(err.message, { id: toastId });
@@ -422,10 +429,18 @@ export default function ProfileSection() {
       if (!res.ok) throw new Error(result.error || "OTP tidak valid");
       
       toast.success("Nomor telepon diverifikasi!", { id: toastId });
+      setVerifiedPhones((prev) => Array.from(new Set([...prev, otpPhone])));
       setIsOtpModalOpen(false);
       
-      const cleanUsername = tempProfile.username?.trim();
-      await saveProfileDirectly(cleanUsername);
+      if (otpTarget === "address") {
+        if (pendingAddressRef.current) {
+          const { payload, isEditing, id } = pendingAddressRef.current;
+          await saveAddressDirectly(payload, isEditing, id);
+        }
+      } else {
+        const cleanUsername = tempProfile.username?.trim();
+        await saveProfileDirectly(cleanUsername);
+      }
     } catch (err) {
       toast.error(err.message, { id: toastId });
     } finally {
@@ -514,12 +529,13 @@ export default function ProfileSection() {
     }
   };
 
-  const handleSaveAddress = async (e: any) => {
-    e.preventDefault();
+  const saveAddressDirectly = async (payloadToSave?: any, isEditingParam?: boolean, addressIdParam?: any) => {
     const toastId = toast.loading(profileConfig.toasts.saveAddressLoading);
     setLoading(true);
     try {
-      const isEditing = !!currentAddress.id;
+      const isEditing = isEditingParam !== undefined ? isEditingParam : !!currentAddress?.id;
+      const addrId = addressIdParam !== undefined ? addressIdParam : currentAddress?.id;
+
       if (!isEditing && addresses.length >= 3) {
         toast.dismiss(toastId);
         toast.error("Maksimal hanya dapat menyimpan 3 alamat.");
@@ -527,17 +543,17 @@ export default function ProfileSection() {
         return;
       }
 
-      const isPrimary = currentAddress.isPrimary || addresses.length === 0;
-      const payload = {
-        recipientName: currentAddress.recipientName,
-        recipientPhone: currentAddress.recipientPhone,
-        street: currentAddress.street,
-        city: currentAddress.city,
-        cityId: currentAddress.cityId,
-        province: currentAddress.province,
-        postalCode: currentAddress.postalCode,
-        label: currentAddress.label || "Rumah",
-        isPrimary: isPrimary
+      const isPrimary = payloadToSave?.isPrimary ?? (currentAddress?.isPrimary || addresses.length === 0);
+      const payload = payloadToSave || {
+        recipientName: currentAddress?.recipientName,
+        recipientPhone: currentAddress?.recipientPhone,
+        street: currentAddress?.street,
+        city: currentAddress?.city,
+        cityId: currentAddress?.cityId,
+        province: currentAddress?.province,
+        postalCode: currentAddress?.postalCode,
+        label: currentAddress?.label || "Rumah",
+        isPrimary: isPrimary,
       };
 
       const token = currentSession?.access_token;
@@ -546,17 +562,17 @@ export default function ProfileSection() {
       const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
 
       let res;
-      if (isEditing) {
-        res = await fetch(`${apiBase}/api/user/${userId}/addresses/${currentAddress.id}`, {
+      if (isEditing && addrId) {
+        res = await fetch(`${apiBase}/api/user/${userId}/addresses/${addrId}`, {
           method: "PUT",
           headers,
-          body: JSON.stringify(payload)
+          body: JSON.stringify(payload),
         });
       } else {
         res = await fetch(`${apiBase}/api/user/${userId}/addresses`, {
           method: "POST",
           headers,
-          body: JSON.stringify(payload)
+          body: JSON.stringify(payload),
         });
       }
 
@@ -569,11 +585,76 @@ export default function ProfileSection() {
       toast.success(profileConfig.toasts.saveAddressSuccess, { id: toastId });
       setIsAddressModalOpen(false);
       setCurrentAddress(null);
-    } catch (err) {
+      pendingAddressRef.current = null;
+    } catch (err: any) {
       toast.error(err.message, { id: toastId });
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSaveAddress = async (e: any) => {
+    e.preventDefault();
+    if (!currentAddress) return;
+
+    const cleanPhone = (currentAddress.recipientPhone || "").trim();
+    if (!cleanPhone) {
+      toast.error("Nomor telepon penerima wajib diisi.");
+      return;
+    }
+
+    const isEditing = !!currentAddress.id;
+    if (!isEditing && addresses.length >= 3) {
+      toast.error("Maksimal hanya dapat menyimpan 3 alamat.");
+      return;
+    }
+
+    const originalAddr = isEditing ? addresses.find((a: any) => a.id === currentAddress.id) : null;
+    const isInitialPhone = Boolean(originalAddr && originalAddr.recipientPhone?.trim() === cleanPhone);
+    const isProfilePhone = Boolean(profile.phone && profile.phone.trim() === cleanPhone);
+    const isExplicitlyVerified = verifiedPhones.includes(cleanPhone);
+
+    const isVerified = isInitialPhone || isProfilePhone || isExplicitlyVerified;
+
+    const isPrimary = currentAddress.isPrimary || addresses.length === 0;
+    const payload = {
+      recipientName: currentAddress.recipientName,
+      recipientPhone: cleanPhone,
+      street: currentAddress.street,
+      city: currentAddress.city,
+      cityId: currentAddress.cityId,
+      province: currentAddress.province,
+      postalCode: currentAddress.postalCode,
+      label: currentAddress.label || "Rumah",
+      isPrimary: isPrimary,
+    };
+
+    if (!isVerified) {
+      const toastId = toast.loading("Mengirim kode OTP WhatsApp ke telepon penerima...");
+      setLoading(true);
+      try {
+        const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/auth/send-whatsapp-otp", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone: cleanPhone }),
+        });
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.error || "Gagal mengirim OTP ke nomor penerima");
+
+        toast.dismiss(toastId);
+        pendingAddressRef.current = { payload, isEditing, id: currentAddress.id };
+        setOtpPhone(cleanPhone);
+        setOtpTarget("address");
+        setIsOtpModalOpen(true);
+      } catch (err: any) {
+        toast.error(err.message, { id: toastId });
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
+    await saveAddressDirectly(payload, isEditing, currentAddress.id);
   };
 
   const handleDeleteAddress = (id: any) => {
@@ -776,6 +857,9 @@ export default function ProfileSection() {
         handleSaveAddress={handleSaveAddress}
         profileConfig={profileConfig}
         loading={loading}
+        verifiedPhones={verifiedPhones}
+        profilePhone={profile.phone || ""}
+        initialPhone={currentAddress?.id ? addresses.find((a: any) => a.id === currentAddress.id)?.recipientPhone || "" : ""}
       />
 
       <PasswordModal

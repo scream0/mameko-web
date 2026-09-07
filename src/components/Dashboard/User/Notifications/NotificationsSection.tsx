@@ -27,7 +27,10 @@ function timeAgo(dateString: any) {
   return `${days} ${notificationsConfig.timeAgo.daysAgo}`;
 }
 
-const capitalize = (s: any) => s.charAt(0).toUpperCase() + s.slice(1);
+const capitalize = (s: any) => {
+  if (typeof s !== "string" || !s) return "";
+  return s.charAt(0).toUpperCase() + s.slice(1);
+};
 
 const TYPE_ICON: Record<string, JSX.Element> = {
   order: <AppIcon name="package" size={18} />,
@@ -373,11 +376,11 @@ export default function NotificationsSection({ onUnreadCountChange }: any) {
               >
                 <div
                   className={`${styles.notificationIcon} ${
-                    styles[`icon${capitalize(notification.type)}`] ||
+                    styles[`icon${capitalize(notification.type || "system")}`] ||
                     styles.iconSystem
                   }`}
                 >
-                  {TYPE_ICON[notification.type] || <AppIcon name="bell" size={18} />}
+                  {TYPE_ICON[notification.type || "system"] || <AppIcon name="bell" size={18} />}
                 </div>
                 <div className={styles.notificationContent}>
                   <div className={styles.notificationTitleRow}>
@@ -392,7 +395,8 @@ export default function NotificationsSection({ onUnreadCountChange }: any) {
                   <div className={styles.notificationMeta}>
                     <span className={styles.typeBadge}>
                       {notificationsConfig.typeLabels[notification.type] ||
-                        notification.type}
+                        notification.type ||
+                        "Sistem"}
                     </span>
                     <span className={styles.timeAgo}>
                       {timeAgo(notification.createdAt)}

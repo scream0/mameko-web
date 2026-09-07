@@ -199,13 +199,18 @@ export function AddressFormModal({
   profileConfig,
   loading,
   verifiedPhones = [],
-  onSendOtp,
+  profilePhone = "",
+  initialPhone = "",
 }) {
   if (!isOpen || !currentAddress) return null;
 
   const cfg = profileConfig.modals.address;
-  const isPhoneVerified = verifiedPhones.includes(currentAddress.recipientPhone);
-  const isValidPhone = currentAddress.recipientPhone?.length >= 9;
+  const cleanPhone = (currentAddress.recipientPhone || "").trim();
+  const isPhoneVerified =
+    verifiedPhones.includes(cleanPhone) ||
+    (profilePhone && profilePhone === cleanPhone) ||
+    (initialPhone && initialPhone === cleanPhone);
+  const isValidPhone = cleanPhone.length >= 8;
 
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
@@ -234,18 +239,51 @@ export function AddressFormModal({
               />
             </div>
             <div className={styles.formGroup}>
-              <label className={styles.inputLabel}>{cfg.recipientPhone} *</label>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+                <label className={styles.inputLabel} style={{ marginBottom: 0 }}>{cfg.recipientPhone} *</label>
+                {isValidPhone && (
+                  isPhoneVerified ? (
+                    <span style={{ fontSize: "11px", color: "var(--success-color, #10b981)", fontWeight: 600, display: "flex", alignItems: "center", gap: "3px" }}>
+                      ✓ Terverifikasi WhatsApp
+                    </span>
+                  ) : (
+                    <span style={{ fontSize: "11px", color: "var(--warning-color, #f59e0b)", fontWeight: 500, display: "flex", alignItems: "center", gap: "3px" }}>
+                      ⚠️ Wajib OTP saat simpan
+                    </span>
+                  )
+                )}
+              </div>
               <input
                 type="text"
-                value={currentAddress.recipientPhone}
+                value={currentAddress.recipientPhone || ""}
                 onChange={(e) => setCurrentAddress({ ...currentAddress, recipientPhone: e.target.value })}
                 required
                 className={styles.formInput}
                 placeholder={cfg.recipientPhonePlaceholder || "08xxxxxxxxxx"}
               />
-              <small className={styles.inputHelpText || styles.fieldHelpText}>
-                {cfg.recipientPhoneHint || "Nomor aktif penerima untuk konfirmasi kurir saat pengiriman"}
-              </small>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "4px", flexWrap: "wrap", gap: "4px" }}>
+                <small className={styles.inputHelpText || styles.fieldHelpText}>
+                  {cfg.recipientPhoneHint || "Nomor aktif penerima untuk konfirmasi kurir saat pengiriman"}
+                </small>
+                {profilePhone && profilePhone !== cleanPhone && (
+                  <button
+                    type="button"
+                    onClick={() => setCurrentAddress({ ...currentAddress, recipientPhone: profilePhone })}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      color: "var(--primary-accent)",
+                      fontSize: "11px",
+                      cursor: "pointer",
+                      textDecoration: "underline",
+                      padding: 0,
+                      fontWeight: 600,
+                    }}
+                  >
+                    Gunakan No. HP Profil ({profilePhone})
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 
@@ -318,10 +356,14 @@ export function AddressFormModal({
             </button>
             <button
               type="submit"
-              disabled={loading || !currentAddress?.recipientName || !currentAddress?.recipientPhone || currentAddress.recipientPhone.length < 8}
+              disabled={loading || !currentAddress?.recipientName || !currentAddress?.recipientPhone || cleanPhone.length < 8}
               className={styles.actionBtnPrimary}
             >
-              {loading ? cfg.saving : cfg.save}
+              {loading
+                ? cfg.saving
+                : !isPhoneVerified && isValidPhone
+                ? "Verifikasi & Simpan Alamat"
+                : cfg.save || "Simpan Alamat"}
             </button>
           </div>
         </form>

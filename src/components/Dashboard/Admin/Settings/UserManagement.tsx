@@ -321,7 +321,7 @@ export default function UserManagement() {
                     <td>
                       <div className={styles.customerCell}>
                         <div className={styles.avatar}>
-                          {user.name?.charAt(0)?.toUpperCase() || "U"}
+                          {String(user.name || "U").charAt(0).toUpperCase()}
                         </div>
                         <div>
                           <span className={styles.customerName}>{user.name}</span>
@@ -344,7 +344,7 @@ export default function UserManagement() {
                       >
                         {config.roleOptions.map((role) => (
                           <option key={role} value={role}>
-                            {role.charAt(0).toUpperCase() + role.slice(1)}
+                            {role ? String(role).charAt(0).toUpperCase() + String(role).slice(1) : ""}
                           </option>
                         ))}
                       </select>

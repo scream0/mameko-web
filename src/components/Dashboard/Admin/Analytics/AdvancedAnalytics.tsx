@@ -92,7 +92,7 @@ export default function AdvancedAnalytics() {
       rawStatus = String(rawStatus).toLowerCase();
 
       let label = config.statusLabels[rawStatus] || rawStatus;
-      label = label.charAt(0).toUpperCase() + label.slice(1);
+      label = label ? String(label).charAt(0).toUpperCase() + String(label).slice(1) : "";
 
       statusCounts[label] = (statusCounts[label] || 0) + 1;
     });

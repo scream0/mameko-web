@@ -546,14 +546,24 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
   const handleDownloadInvoice = async () => {
     if (!order) return;
 
-    try {
-      const toastId = toast.loading(orderDetailConfig.invoice.loading);
-      // Dynamically import html2pdf to prevent SSR issues
-      const html2pdf = (await import("html2pdf.js")).default;
+    const toastId = toast.loading(orderDetailConfig.invoice.loading);
+    let invoiceElement: HTMLDivElement | null = null;
 
-      const invoiceElement = document.createElement("div");
+    try {
+      // Dynamically import html2pdf to prevent SSR issues
+      const html2pdfModule = await import("html2pdf.js");
+      const html2pdf = html2pdfModule.default || html2pdfModule;
+
+      invoiceElement = document.createElement("div");
+      invoiceElement.style.position = "fixed";
+      invoiceElement.style.left = "-9999px";
+      invoiceElement.style.top = "0";
+      invoiceElement.style.width = "794px"; // Standard A4 width at 96 DPI
+      invoiceElement.style.backgroundColor = "#ffffff";
+      invoiceElement.style.zIndex = "-9999";
+
       invoiceElement.innerHTML = `
-        <div style="padding: 40px; font-family: 'Inter', sans-serif; color: #111;">
+        <div style="padding: 40px; font-family: 'Inter', sans-serif; color: #111; background-color: #ffffff;">
           <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #eaeaea; padding-bottom: 20px; margin-bottom: 20px;">
             <div style="display: flex; align-items: center;">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 458.47 321.05" style="width: 45px; height: 45px; color: #000; margin-right: 15px;" fill="currentColor">
@@ -646,25 +656,27 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
         </div>
       `;
 
+      document.body.appendChild(invoiceElement);
+
       const opt = {
-        margin: [0.5, 0.5, 0.5, 0.5],
+        margin: [0.4, 0.4, 0.4, 0.4],
         filename: `${orderDetailConfig.invoice.filenamePrefix}${order.order_number || resolvedOrderId}.pdf`,
         image: { type: "jpeg", quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
+        html2canvas: { scale: 2, useCORS: true, logging: false },
         jsPDF: { unit: "in", format: "a4", orientation: "portrait" }
       };
 
-      html2pdf().from(invoiceElement).set(opt).save().then(() => {
-        toast.dismiss(toastId);
-        toast.success(orderDetailConfig.invoice.success);
-      }).catch((err) => {
-        console.error(err);
-        toast.dismiss(toastId);
-        toast.error(orderDetailConfig.invoice.error);
-      });
+      await html2pdf().from(invoiceElement).set(opt).save();
+      toast.dismiss(toastId);
+      toast.success(orderDetailConfig.invoice.success);
     } catch (error) {
-      console.error(error);
-      toast.error(orderDetailConfig.invoice.moduleError);
+      console.error("Download invoice error:", error);
+      toast.dismiss(toastId);
+      toast.error(orderDetailConfig.invoice.error || "Gagal mengunduh invoice.");
+    } finally {
+      if (invoiceElement && document.body.contains(invoiceElement)) {
+        document.body.removeChild(invoiceElement);
+      }
     }
   };
 

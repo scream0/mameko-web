@@ -33,7 +33,7 @@ export default function UserSettings({
     addresses?.find((addr: any) => addr.isPrimary) ||
     (addresses && addresses.length > 0 ? addresses[0] : null);
 
-  const fallbackInitial = (
+  const fallbackInitial = String(
     profile?.fullName ||
     profile?.username ||
     "U"

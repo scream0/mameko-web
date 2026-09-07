@@ -8,10 +8,11 @@ import { shouldSkipAuthEvent } from "@/utils/authHelpers";
 import { getApiBaseUrl } from "@/lib/apiClient";
 
 function toTitleCase(value) {
+  if (!value || typeof value !== "string") return "";
   return value
     .split(" ")
     .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .map((part) => (part ? part.charAt(0).toUpperCase() + part.slice(1).toLowerCase() : ""))
     .join(" ");
 }
 
