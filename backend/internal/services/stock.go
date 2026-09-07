@@ -7,13 +7,33 @@ import (
 	"strings"
 )
 
-// RestoreOrderStock restores product variant stock in products.variants for a cancelled order
+// RestoreOrderStock restores product variant stock in products.variants for a cancelled order (idempotent)
 func RestoreOrderStock(db *sql.DB, orderID string) error {
 	if db == nil || strings.TrimSpace(orderID) == "" {
 		return nil
 	}
 
 	cleanID := strings.TrimSpace(orderID)
+
+	// Pastikan kolom stock_restored_at ada pada tabel orders
+	_, _ = db.Exec(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS stock_restored_at TIMESTAMPTZ;`)
+
+	// Cek dan tandai stock_restored_at secara atomik untuk mencegah double-restoration
+	res, err := db.Exec(`
+		UPDATE orders 
+		SET stock_restored_at = NOW(), updated_at = NOW() 
+		WHERE (id::text = $1 OR order_number = $1) AND stock_restored_at IS NULL
+	`, cleanID)
+	if err != nil {
+		log.Printf("[Stock] Gagal update stock_restored_at untuk order %s: %v", cleanID, err)
+		return err
+	}
+
+	rowsAff, _ := res.RowsAffected()
+	if rowsAff == 0 {
+		log.Printf("[Stock] Stok untuk order %s sudah pernah dikembalikan atau order tidak ditemukan. Melewati.", cleanID)
+		return nil
+	}
 
 	rows, err := db.Query(`
 		SELECT product_id, variant_name, quantity 

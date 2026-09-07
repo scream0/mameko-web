@@ -768,7 +768,11 @@ func CancelOrder(c *fiber.Ctx) error {
 	}
 
 	// Release any locked vouchers
-	_, _ = config.DB.Exec(`UPDATE user_vouchers SET used_at = NULL, order_id = NULL WHERE order_id = $1`, orderID)
+	_, _ = config.DB.Exec(`
+		UPDATE user_vouchers 
+		SET used_at = NULL, order_id = NULL 
+		WHERE order_id IN (SELECT id FROM orders WHERE id::text = $1 OR order_number = $1)
+	`, orderID)
 
 	return c.JSON(fiber.Map{"success": true, "message": "Pesanan berhasil dibatalkan."})
 }
@@ -1103,6 +1107,63 @@ func CreateCheckoutTransaction(c *fiber.Ctx) error {
 		custPhone = recipientPhone
 	}
 
+	// 0. Validasi Ketersediaan Stok Produk Sebelum Memproses Transaksi
+	for _, it := range req.Items {
+		pID := it.ProductID
+		if pID == "" {
+			pID = it.ID
+		}
+		if pID == "" {
+			continue
+		}
+		vName := it.VariantName
+		if vName == "" {
+			vName = it.Size
+		}
+		qty := it.Quantity
+		if qty <= 0 {
+			qty = 1
+		}
+
+		var productName string
+		var variantsJSON []byte
+		err := config.DB.QueryRow("SELECT name, variants FROM products WHERE id::text = $1", pID).Scan(&productName, &variantsJSON)
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"success": false,
+				"error":   fmt.Sprintf("Produk tidak ditemukan atau sudah tidak aktif (ID: %s)", pID),
+			})
+		}
+
+		if len(variantsJSON) > 0 {
+			var variants []map[string]interface{}
+			if err := json.Unmarshal(variantsJSON, &variants); err == nil && len(variants) > 0 {
+				foundVariant := false
+				for _, v := range variants {
+					sizeVal, _ := v["size"].(string)
+					if strings.EqualFold(strings.TrimSpace(sizeVal), strings.TrimSpace(vName)) || len(variants) == 1 {
+						foundVariant = true
+						stockVal, _ := v["stock"].(float64)
+						currentStock := int(stockVal)
+						if currentStock < qty {
+							return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+								"success": false,
+								"error":   fmt.Sprintf("Stok produk '%s' (%s) tidak mencukupi. Tersedia: %d, diminta: %d.", productName, sizeVal, currentStock, qty),
+							})
+						}
+						break
+					}
+				}
+				if !foundVariant && vName != "" {
+					return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+						"success": false,
+						"error":   fmt.Sprintf("Varian '%s' untuk produk '%s' tidak ditemukan.", vName, productName),
+					})
+				}
+			}
+		}
+	}
+
 	// Calculate gross amount
 	grossAmount := req.Amount - req.DiscountAmount + req.ShippingCost
 	if grossAmount < 0 {
@@ -1314,15 +1375,16 @@ func CreateCheckoutTransaction(c *fiber.Ctx) error {
 			id, order_number, user_id, status, amount, total_amount,
 			shipping_cost, discount_amount, payment_type, customer_name,
 			customer_email, customer_phone, shipping_address, shipping_detail,
-			snap_token, status_history, created_at, updated_at
+			snap_token, status_history, stock_reserved_at, created_at, updated_at
 		) VALUES (
 			$1, $2, $3, 'pending', $4, $5,
 			$6, $7, $8, $9,
 			$10, $11, $12::jsonb, $13::jsonb,
-			$14, $15::jsonb, NOW(), NOW()
+			$14, $15::jsonb, NOW(), NOW(), NOW()
 		) ON CONFLICT (id) DO UPDATE SET
 			status = EXCLUDED.status,
 			snap_token = EXCLUDED.snap_token,
+			stock_reserved_at = COALESCE(orders.stock_reserved_at, NOW()),
 			updated_at = NOW()
 	`
 
