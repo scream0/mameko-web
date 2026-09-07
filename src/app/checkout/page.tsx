@@ -8,7 +8,7 @@ import { useStore } from "@/context/StoreContext";
 import toast from "react-hot-toast";
 import { normalizeAddress } from "@/utils/address";
 import MyVouchers from "@/components/Dashboard/User/Vouchers/MyVouchers";
-import { AddressFormModal, OTPModal } from "@/components/Dashboard/User/Profil/ProfileModals";
+import { AddressFormModal } from "@/components/Dashboard/User/Profil/ProfileModals";
 import profileConfig from "@/data/ui/userProfilConfig.json";
 import { DEFAULT_ACTIVE_COURIERS, DEFAULT_ORIGIN_AREA_ID } from "@/config/shipping";
 import Link from "next/link";
@@ -22,10 +22,10 @@ import { optimizeCloudinaryUrl, IMAGE_PRESETS } from "@/utils/imageOptimizer";
 const ORIGIN_AREA_FALLBACK = DEFAULT_ORIGIN_AREA_ID;
 const MAX_APPLIED_VOUCHERS = 2;
 
-const emptyAddressForm = (displayName = "") => ({
+const emptyAddressForm = (displayName = "", phone = "") => ({
   label: checkoutConfig.address.defaultLabelName || "Rumah",
   recipientName: displayName || "",
-  recipientPhone: "",
+  recipientPhone: phone || "",
   street: "",
   district: "",
   province: "",
@@ -274,36 +274,41 @@ export default function CheckoutPage() {
   const [showAddressModal, setShowAddressModal] = useState(false);
   const [addressForm, setAddressForm] = useState(emptyAddressForm());
   const [savingAddress, setSavingAddress] = useState(false);
-
-  // ── Address OTP ──
-  const [verifiedPhones, setVerifiedPhones] = useState<any[]>([]);
-  const [isAddressOtpModalOpen, setIsAddressOtpModalOpen] = useState(false);
-  const [addressOtpPhone, setAddressOtpPhone] = useState("");
+  const [userProfilePhone, setUserProfilePhone] = useState("");
 
   useEffect(() => {
     if (!currentUser) return;
 
-    const loadAddresses = async () => {
+    // Prefill phone from current auth user if available
+    const authPhone = currentUser.phone || currentUser.user_metadata?.phone || "";
+    if (authPhone) setUserProfilePhone(authPhone);
+
+    const loadAddressesAndProfile = async () => {
       setAddressLoading(true);
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        const r = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/user/addresses", {
-          headers: session?.access_token
-            ? { Authorization: `Bearer ${session.access_token}` }
-            : {},
-          cache: "no-store",
-        });
-        const result = await r.json();
+        const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
+        const headers = session?.access_token
+          ? { Authorization: `Bearer ${session.access_token}` }
+          : {};
 
-        if (r.ok) {
+        const [rAddresses, rProfile] = await Promise.all([
+          fetch(`${apiBase}/api/user/addresses`, { headers, cache: "no-store" }),
+          fetch(`${apiBase}/api/user/profile`, { headers, cache: "no-store" }),
+        ]);
+
+        if (rAddresses.ok) {
+          const result = await rAddresses.json();
           const addrs = (result.data || result || []).map((addr: any) => normalizeAddress(addr));
           setAddresses(addrs);
-          // Pre-verify phones that already exist in addresses
-          setVerifiedPhones((prev) => {
-            const existing = new Set(prev);
-            addrs.forEach((a: any) => { if (a.recipientPhone) existing.add(a.recipientPhone); });
-            return [...existing];
-          });
+        }
+
+        if (rProfile.ok) {
+          const pResult = await rProfile.json();
+          const prof = pResult.data || pResult;
+          if (prof?.phone) {
+            setUserProfilePhone(prof.phone);
+          }
         }
       } catch {
         toast.error(checkoutConfig.toasts.fetchAddressError);
@@ -312,7 +317,7 @@ export default function CheckoutPage() {
       }
     };
 
-    void loadAddresses();
+    void loadAddressesAndProfile();
   }, [currentUser]);
 
   // ── Courier ──
@@ -341,61 +346,22 @@ export default function CheckoutPage() {
     }
   }, [addresses, selectedAddressId]);
 
-  // ── Send OTP for address phone verification ──
-  const handleSendAddressOtp = async (phone: any) => {
-    const toastId = toast.loading(checkoutConfig.toasts.sendOtpLoading);
-    try {
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/auth/send-whatsapp-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone }),
-      });
-      const result = await res.json();
-      if (!res.ok) throw new Error(result.error || checkoutConfig.toasts.sendOtpFailed);
-      toast.dismiss(toastId);
-      setAddressOtpPhone(phone);
-      setIsAddressOtpModalOpen(true);
-    } catch (err: any) {
-      toast.error(err.message, { id: toastId });
-    }
-  };
-
-  // ── Verify OTP for address phone ──
-  const handleVerifyAddressOtp = async (otp: any) => {
-    const toastId = toast.loading(checkoutConfig.toasts.verifyOtpLoading);
-    try {
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/auth/verify-whatsapp-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: addressOtpPhone, code: otp }),
-      });
-      const result = await res.json();
-      if (!res.ok) throw new Error(result.error || checkoutConfig.toasts.verifyOtpInvalid);
-      toast.success(checkoutConfig.toasts.phoneVerified, { id: toastId });
-      setIsAddressOtpModalOpen(false);
-      setVerifiedPhones((prev) => [...prev, addressOtpPhone]);
-    } catch (err) {
-      toast.error(err.message, { id: toastId });
-    }
-  };
-
   const handleSaveAddress = async (e: any) => {
     e.preventDefault();
     if (!currentUser) return;
-    if (!addressForm.province || !addressForm.city || !addressForm.street || !addressForm.recipientName || !addressForm.postalCode) {
-      toast.error(checkoutConfig.toasts.addressFieldsRequired);
+    if (!addressForm.province || !addressForm.city || !addressForm.street || !addressForm.recipientName || !addressForm.postalCode || !addressForm.recipientPhone) {
+      toast.error(checkoutConfig.toasts.addressFieldsRequired || "Semua kolom alamat & nomor telepon penerima wajib diisi.");
+      return;
+    }
+
+    if (addressForm.recipientPhone.replace(/\D/g, "").length < 8) {
+      toast.error("Nomor telepon penerima minimal 8 digit angka.");
       return;
     }
 
     const isEditing = !!addressForm.id && addresses.some((a) => a.id === addressForm.id);
     if (!isEditing && addresses.length >= 3) {
       toast.error(checkoutConfig.toasts.maxAddressesReached);
-      return;
-    }
-
-    // Require OTP for new phone numbers
-    if (addressForm.recipientPhone && !verifiedPhones.includes(addressForm.recipientPhone)) {
-      toast.error(checkoutConfig.toasts.phoneVerificationRequired);
       return;
     }
 
@@ -439,6 +405,17 @@ export default function CheckoutPage() {
       const result = await res.json();
       if (!res.ok) throw new Error(result.error || checkoutConfig.toasts.addressSaveFailed);
 
+      // Auto-sync nomor HP ke profil pengguna jika profil belum memiliki nomor HP
+      if (addressForm.recipientPhone && (!userProfilePhone || userProfilePhone.trim() === "")) {
+        fetch(`${apiBase}/api/user/profile`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ phone: addressForm.recipientPhone }),
+        }).then(() => {
+          setUserProfilePhone(addressForm.recipientPhone);
+        }).catch(() => {});
+      }
+
       // Reload from server to get canonical data
       const reloadRes = await fetch(`${apiBase}/api/user/addresses`, {
         headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {},
@@ -454,7 +431,7 @@ export default function CheckoutPage() {
       }
 
       setShowAddressModal(false);
-      setAddressForm(emptyAddressForm());
+      setAddressForm(emptyAddressForm(currentUser?.user_metadata?.name || currentUser?.displayName, userProfilePhone || addressForm.recipientPhone));
       toast.success(checkoutConfig.toasts.addressSaveSuccess);
     } catch (err) {
       toast.error(err.message || checkoutConfig.toasts.addressSaveFailed);
@@ -471,6 +448,42 @@ export default function CheckoutPage() {
       w += itemWeight * (Number(item.quantity) || 1);
     }
     return w;
+  }, [cart.items, products]);
+
+  // Real-time stock validation for cart items against products catalog
+  const stockValidation = useMemo(() => {
+    let hasInsufficient = false;
+    const itemsMap: Record<string, { requested: number; available: number; isExceeded: boolean }> = {};
+
+    for (const item of cart.items || []) {
+      const prod = (products || []).find((p: any) => String(p.id) === String(item.id || item.productId));
+      let availableStock = 0;
+      if (prod) {
+        if (prod.variants && Array.isArray(prod.variants) && prod.variants.length > 0) {
+          const matchedVariant = prod.variants.find(
+            (v: any) => String(v.size || "").trim().toLowerCase() === String(item.size || "").trim().toLowerCase()
+          );
+          availableStock = matchedVariant ? Number(matchedVariant.stock || 0) : 0;
+        } else {
+          availableStock = Number(prod.stock || 0);
+        }
+      }
+      const requested = Number(item.quantity || 1);
+      const isExceeded = requested > availableStock;
+      if (isExceeded) {
+        hasInsufficient = true;
+      }
+      itemsMap[item.cartId || `${item.id}-${item.size}`] = {
+        requested,
+        available: availableStock,
+        isExceeded,
+      };
+    }
+
+    return {
+      hasInsufficient,
+      itemsMap,
+    };
   }, [cart.items, products]);
 
   const selectedAddress = useMemo(
@@ -747,6 +760,10 @@ export default function CheckoutPage() {
 
   // ── Handle payment ──
   const handlePay = async () => {
+    if (stockValidation.hasInsufficient) {
+      toast.error(checkoutConfig.stockValidation?.insufficientDesc || "Stok produk tidak mencukupi");
+      return;
+    }
     if (!selectedAddress) {
       toast.error(checkoutConfig.toasts.selectAddressPrompt);
       return;
@@ -867,7 +884,7 @@ export default function CheckoutPage() {
               <button
                 className={styles.sectionAction}
                 onClick={() => {
-                  setAddressForm(emptyAddressForm(currentUser?.user_metadata?.name));
+                  setAddressForm(emptyAddressForm(currentUser?.user_metadata?.name || currentUser?.displayName, userProfilePhone));
                   setShowAddressModal(true);
                 }}
               >
@@ -885,7 +902,7 @@ export default function CheckoutPage() {
                 <button
                   type="button"
                   onClick={() => {
-                    setAddressForm(emptyAddressForm(currentUser?.user_metadata?.name));
+                    setAddressForm(emptyAddressForm(currentUser?.user_metadata?.name || currentUser?.displayName, userProfilePhone));
                     setShowAddressModal(true);
                   }}
                   className={styles.sectionAction}
@@ -1229,6 +1246,17 @@ export default function CheckoutPage() {
                     <p className={styles.summaryItemName}>{item.name}</p>
                     <p className={styles.summaryItemVariant}>{item.size}</p>
                     <p className={styles.summaryItemQty}>x{item.quantity}</p>
+                    {(() => {
+                      const itemStock = stockValidation.itemsMap[item.cartId || `${item.id}-${item.size}`];
+                      if (!itemStock?.isExceeded) return null;
+                      return (
+                        <span className={styles.stockExceededBadge}>
+                          ⚠️ {itemStock.available <= 0
+                            ? checkoutConfig.stockValidation?.outOfStockBadge || "Stok Habis"
+                            : (checkoutConfig.stockValidation?.remainingStockTemplate || "Sisa stok: {count}").replace("{count}", String(itemStock.available))}
+                        </span>
+                      );
+                    })()}
                   </div>
                   <div className={styles.summaryItemPriceBox}>
                     {hasDiscount && (
@@ -1294,17 +1322,34 @@ export default function CheckoutPage() {
             <span>{rupiah(grandTotal)}</span>
           </div>
 
+          {stockValidation.hasInsufficient && (
+            <div className={styles.stockAlertBanner}>
+              <div className={styles.stockAlertHeader}>
+                <span className={styles.stockAlertIcon}>⚠️</span>
+                <strong>{checkoutConfig.stockValidation?.insufficientTitle || "Stok Tidak Mencukupi"}</strong>
+              </div>
+              <p className={styles.stockAlertDesc}>
+                {checkoutConfig.stockValidation?.insufficientDesc}
+              </p>
+              <Link href="/dashboard?tab=shop" className={styles.adjustCartLink}>
+                {checkoutConfig.stockValidation?.adjustCartBtn || "Sesuaikan Keranjang"}
+              </Link>
+            </div>
+          )}
+
           <button
             className={styles.payButton}
             onClick={handlePay}
-            disabled={isStoreProcessing || !selectedAddress || !selectedCourierKey}
+            disabled={isStoreProcessing || !selectedAddress || !selectedCourierKey || stockValidation.hasInsufficient}
           >
             <span className={styles.payButtonMain}>
               {isStoreProcessing ? checkoutConfig.summary.processingBtn : `${checkoutConfig.summary.payNowPrefix}${rupiah(grandTotal)}`}
             </span>
-            {(!selectedAddress || !selectedCourierKey) && (
+            {(!selectedAddress || !selectedCourierKey || stockValidation.hasInsufficient) && (
               <span className={styles.payButtonSub}>
-                {!selectedAddress
+                {stockValidation.hasInsufficient
+                  ? checkoutConfig.stockValidation?.insufficientTitle
+                  : !selectedAddress
                   ? checkoutConfig.summary.selectAddressSub
                   : checkoutConfig.summary.selectCourierSub}
               </span>
@@ -1339,27 +1384,18 @@ export default function CheckoutPage() {
         </div>
       )}
 
-      {/* ─── MODAL TAMBAH ALAMAT ─── */}
+      {/* ─── MODAL TAMBAH / EDIT ALAMAT ─── */}
       <AddressFormModal
         isOpen={showAddressModal}
-        onClose={() => { setShowAddressModal(false); setAddressForm(emptyAddressForm()); }}
+        onClose={() => {
+          setShowAddressModal(false);
+          setAddressForm(emptyAddressForm(currentUser?.user_metadata?.name || currentUser?.displayName, userProfilePhone));
+        }}
         currentAddress={addressForm}
         setCurrentAddress={setAddressForm}
         handleSaveAddress={handleSaveAddress}
         profileConfig={profileConfig}
         loading={savingAddress}
-        verifiedPhones={verifiedPhones}
-        onSendOtp={handleSendAddressOtp}
-      />
-
-      {/* ─── OTP MODAL (verifikasi nomor HP penerima) ─── */}
-      <OTPModal
-        isOpen={isAddressOtpModalOpen}
-        onClose={() => setIsAddressOtpModalOpen(false)}
-        onSubmit={handleVerifyAddressOtp}
-        onResend={handleSendAddressOtp}
-        phone={addressOtpPhone}
-        loading={false}
       />
     </div>
   );

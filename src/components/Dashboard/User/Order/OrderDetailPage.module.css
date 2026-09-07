@@ -244,6 +244,7 @@
 .primaryBtn,
 .secondaryBtn,
 .payBtn,
+.cancelOrderBtn,
 .trackBtn {
   font-family: var(--font-sans, "Lato", sans-serif);
   font-size: 0.875rem;
@@ -324,6 +325,27 @@
 
 .payBtn:active {
   transform: translateY(0);
+}
+
+/* Cancel Order Button */
+.cancelOrderBtn {
+  background: rgba(var(--danger-color-rgb, 239, 68, 68), 0.08);
+  color: var(--danger-color, #ef4444);
+  border: 1.5px solid rgba(var(--danger-color-rgb, 239, 68, 68), 0.3);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+}
+
+.cancelOrderBtn:hover:not(:disabled) {
+  background: rgba(var(--danger-color-rgb, 239, 68, 68), 0.15);
+  border-color: var(--danger-color, #ef4444);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+
+.cancelOrderBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
 }
 
 /* Track Button */
@@ -1300,6 +1322,14 @@
     content: "Total Item:";
     font-size: 0.8rem;
     color: var(--text-secondary);
+  }
+
+  .countdownBody {
+    width: 100%;
+  }
+
+  .countdownTimerBox {
+    align-self: flex-start;
   }
 }
 

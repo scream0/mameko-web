@@ -1162,6 +1162,83 @@
   color: var(--text-secondary);
 }
 
+/* Stock Validation Alerts */
+.stockExceededBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.09);
+  border: 1px solid rgba(220, 38, 38, 0.24);
+  padding: 0.18rem 0.5rem;
+  border-radius: 6px;
+  margin-top: 0.3rem;
+  width: fit-content;
+}
+
+[data-theme="dark"] .stockExceededBadge {
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.16);
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+.stockAlertBanner {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.9rem 1rem;
+  margin-top: 1rem;
+  border-radius: 12px;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.28);
+}
+
+[data-theme="dark"] .stockAlertBanner {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.36);
+}
+
+.stockAlertHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #dc2626;
+}
+
+[data-theme="dark"] .stockAlertHeader {
+  color: #f87171;
+}
+
+.stockAlertIcon {
+  font-size: 1rem;
+}
+
+.stockAlertDesc {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.adjustCartLink {
+  align-self: flex-start;
+  margin-top: 0.2rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--primary-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: opacity 0.2s ease;
+}
+
+.adjustCartLink:hover {
+  opacity: 0.8;
+}
+
 .payButton {
   position: relative;
   width: 100%;

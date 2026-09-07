@@ -25,7 +25,7 @@ export default function LoginForm() {
     fields = [],
   } = form || {};
 
-  const cooldownSeconds = Number(settings.resendCooldownSeconds) || 60;
+  const cooldownSeconds = Number(settings.resendCooldownSeconds) || 120;
   const otpLength = Number(settings.otpLength) || 6;
 
   const [email, setEmail] = useState("");

@@ -11,6 +11,8 @@ import { AppIcon } from "@/components/UI/Icon/AppIcon";
 import ordersConfig from "@/data/ui/ordersConfig.json";
 import orderDetailConfig from "@/data/ui/orderDetailConfig.json";
 import { getApiBaseUrl } from "@/lib/apiClient";
+import ConfirmationModal from "@/components/UI/Modal/ConfirmationModal";
+import { loadMidtransSnap } from "@/lib/midtrans";
 
 const STATUS_INFO = orderDetailConfig.status;
 const RETURN_STATUS_INFO = orderDetailConfig.returnStatus;
@@ -699,70 +701,6 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
     }
   };
 
-  const handleContinuePayment = async () => {
-    let snapToken = order?.snap_token;
-
-    if (!snapToken) {
-      try {
-        toast.loading("Menghubungkan sistem pembayaran...", { id: "snap-token-loader" });
-        const { data: { session } } = await auth.getSession();
-        const token = session?.access_token;
-
-        const res = await fetch(getApiBaseUrl() + `/api/user/orders/${resolvedOrderId}/pay`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          body: JSON.stringify({ userId: user?.id }),
-        });
-
-        const contentType = res.headers.get("content-type");
-        if (!contentType || !contentType.includes("application/json")) {
-          throw new Error(`Server merespons error (Status ${res.status}).`);
-        }
-
-        const data = await res.json();
-        toast.dismiss("snap-token-loader");
-
-        if (!res.ok) {
-          throw new Error(data.error || "Gagal menghasilkan token pembayaran.");
-        }
-
-        snapToken = data.snap_token;
-        setOrder((prev) => ({ ...prev, snap_token: snapToken }));
-      } catch (err) {
-        toast.dismiss("snap-token-loader");
-        toast.error(err.message || "Gagal memuat sistem pembayaran.");
-        return;
-      }
-    }
-
-    if (!snapToken) {
-      toast.error("Token pembayaran tidak ditemukan. Silakan hubungi admin.");
-      return;
-    }
-
-    if (typeof window.snap === "undefined") {
-      toast.error("Modul pembayaran sedang dimuat, coba sesaat lagi.");
-      return;
-    }
-
-    window.snap.pay(snapToken, {
-      onSuccess: function (result: any) {
-        toast.success("Pembayaran Berhasil!");
-        syncPaymentStatus(result);
-      },
-      onPending: function (result: any) {
-        toast("Menunggu pembayaran Anda diselesaikan.", { icon: "⏳" });
-        syncPaymentStatus(result);
-      },
-      onClose: function () {
-        toast("Popup pembayaran ditutup.", { icon: "ℹ️" });
-      },
-    });
-  };
-
   const handleBackToOrders = () => {
     router.push("/dashboard?tab=orders");
   };
@@ -1008,6 +946,129 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
     return raw.includes("manual");
   }, [order]);
 
+  // ── Pending Order Actions (Payment Resume & Cancellation) ──
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [isPaying, setIsPaying] = useState(false);
+
+  const handleContinuePayment = async () => {
+    if (isManualPayment) {
+      const el = document.querySelector(`.${styles.manualTransferPanel}`);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+      return;
+    }
+
+    let snapToken = order?.snap_token || order?.snapToken;
+    setIsPaying(true);
+
+    try {
+      const { data: { session } } = await auth.getSession();
+      const token = session?.access_token;
+      const userId = user?.id || user?.uid;
+
+      if (!snapToken) {
+        const res = await fetch(getApiBaseUrl() + `/api/user/orders/${order.id}/pay`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ userId }),
+        });
+        const resData = await res.json();
+        if (!res.ok) {
+          throw new Error(resData.error || "Gagal menyiapkan pembayaran.");
+        }
+        snapToken = resData.snapToken || resData.snap_token || resData.token;
+      }
+
+      if (!snapToken) {
+        throw new Error("Token pembayaran Midtrans tidak ditemukan.");
+      }
+
+      const snapInstance = await loadMidtransSnap();
+      if (!snapInstance || typeof snapInstance.pay !== "function") {
+        throw new Error("Gagal memuat sistem pembayaran Midtrans. Coba muat ulang halaman.");
+      }
+
+      snapInstance.pay(snapToken, {
+        onSuccess: () => {
+          toast.success("Pembayaran berhasil!");
+          setOrder((prev: any) => ({ ...prev, status: "paid" }));
+          if (typeof window !== "undefined") {
+            window.dispatchEvent(new Event("product-stock-updated"));
+            window.dispatchEvent(new Event("order-status-updated"));
+          }
+        },
+        onPending: () => {
+          toast("Menunggu pembayaran Anda...");
+          if (typeof window !== "undefined") {
+            window.dispatchEvent(new Event("order-status-updated"));
+          }
+        },
+        onError: (err: any) => {
+          console.error("Snap error:", err);
+          toast.error("Pembayaran gagal. Silakan coba kembali.");
+        },
+        onClose: () => {
+          toast("Pembayaran belum diselesaikan.");
+        },
+      });
+    } catch (err: any) {
+      console.error("Continue payment error:", err);
+      toast.error(err.message || "Gagal melanjutkan pembayaran.");
+    } finally {
+      setIsPaying(false);
+    }
+  };
+
+  const handleConfirmCancelOrder = async () => {
+    if (!order || isCancelling) return;
+    setIsCancelling(true);
+    const toastId = toast.loading(orderDetailConfig.pendingActions?.cancelLoading || "Membatalkan pesanan...");
+
+    try {
+      const { data: { session } } = await auth.getSession();
+      const token = session?.access_token;
+      const userId = user?.id || user?.uid;
+
+      const res = await fetch(getApiBaseUrl() + `/api/user/orders/${order.id}/cancel?userId=${userId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+        body: JSON.stringify({ orderId: order.id, userId }),
+      });
+
+      const result = await res.json();
+      if (!res.ok) {
+        throw new Error(result.error || orderDetailConfig.pendingActions?.cancelErrorToast || "Gagal membatalkan pesanan.");
+      }
+
+      toast.success(orderDetailConfig.pendingActions?.cancelSuccessToast || "Pesanan berhasil dibatalkan.", { id: toastId });
+
+      setOrder((prev: any) => ({
+        ...prev,
+        status: "cancelled",
+      }));
+
+      setIsCancelModalOpen(false);
+
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("product-stock-updated"));
+        window.dispatchEvent(new Event("order-status-updated"));
+      }
+    } catch (err: any) {
+      console.error("Cancel Order Error:", err);
+      toast.error(err.message || orderDetailConfig.pendingActions?.cancelErrorToast || "Gagal membatalkan pesanan.", { id: toastId });
+    } finally {
+      setIsCancelling(false);
+    }
+  };
+
   // ── 24-Hour Countdown Timer for Pending Orders ──
   const [timeLeft, setTimeLeft] = useState(null);
 
@@ -1110,10 +1171,25 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
           </div>
 
           <div className={styles.heroActions}>
-            {isPendingStatus && !isManualPayment && (
-              <button onClick={handleContinuePayment} className={styles.payBtn}>
+            {isPendingStatus && (
+              <button
+                onClick={handleContinuePayment}
+                className={styles.payBtn}
+                disabled={isPaying || timeLeft?.expired}
+              >
                 <AppIcon name="creditcard" size={16} />
-                <span>Bayar Sekarang</span>
+                <span>{orderDetailConfig.pendingActions?.payNowBtn || "Lanjutkan Pembayaran"}</span>
+              </button>
+            )}
+
+            {isPendingStatus && !timeLeft?.expired && (
+              <button
+                onClick={() => setIsCancelModalOpen(true)}
+                className={styles.cancelOrderBtn}
+                disabled={isCancelling}
+              >
+                <AppIcon name="x" size={16} />
+                <span>{orderDetailConfig.pendingActions?.cancelOrderBtn || "Batalkan Pesanan"}</span>
               </button>
             )}
 
@@ -1126,18 +1202,19 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
 
         {/* ─── RETURN STATUS ADMIN NOTE BANNER ─── */}
         {order.return_status && order.return_admin_note && (
-          <div style={{
-            background: order.return_status === 'approved' ? 'rgba(16, 185, 129, 0.08)' : order.return_status === 'rejected' ? 'rgba(239, 68, 68, 0.08)' : 'rgba(245, 158, 11, 0.08)',
-            borderLeft: `4px solid ${order.return_status === 'approved' ? '#10b981' : order.return_status === 'rejected' ? '#ef4444' : '#f59e0b'}`,
-            borderRadius: "0 8px 8px 0",
-            padding: "12px 16px",
-            marginBottom: "1.5rem",
-            color: "var(--text-primary)",
-            fontSize: "0.9rem",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.05)"
-          }}>
-            <strong style={{ display: "block", marginBottom: "4px" }}>
-              {order.return_status === 'approved' ? 'Catatan Retur (Disetujui):' : order.return_status === 'rejected' ? 'Catatan Retur (Ditolak):' : 'Catatan Retur (Pending):'}
+          <div className={`${styles.bannerReturnNotes} ${
+            order.return_status === 'approved'
+              ? styles.bannerReturnNotesApproved
+              : order.return_status === 'rejected'
+              ? styles.bannerReturnNotesRejected
+              : styles.bannerReturnNotesPending
+          }`}>
+            <strong className={styles.bannerReturnNotesTitle}>
+              {order.return_status === 'approved'
+                ? (orderDetailConfig.statusNotes?.returnApproved || 'Catatan Retur (Disetujui):')
+                : order.return_status === 'rejected'
+                ? (orderDetailConfig.statusNotes?.returnRejected || 'Catatan Retur (Ditolak):')
+                : (orderDetailConfig.statusNotes?.returnPending || 'Catatan Retur (Pending):')}
             </strong>
             {order.return_admin_note}
           </div>
@@ -1145,43 +1222,24 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
 
         {/* ─── 24-HOUR PAYMENT COUNTDOWN BANNER (PENDING) ─── */}
         {isPendingStatus && (
-          <div style={{
-            background: timeLeft?.expired ? "rgba(239, 68, 68, 0.08)" : "rgba(245, 158, 11, 0.08)",
-            border: `1.5px solid ${timeLeft?.expired ? "#ef4444" : "#f59e0b"}`,
-            borderRadius: "10px",
-            padding: "14px 18px",
-            marginBottom: "1.5rem",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-            gap: "12px"
-          }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <span style={{ fontSize: "1.6rem" }}>{timeLeft?.expired ? "⚠️" : "⏱️"}</span>
+          <div className={`${styles.bannerCountdown} ${timeLeft?.expired ? styles.bannerCountdownExpired : ""}`}>
+            <div className={styles.countdownBody}>
+              <span className={styles.countdownIcon}>{timeLeft?.expired ? "⚠️" : "⏱️"}</span>
               <div>
-                <div style={{ fontWeight: 700, fontSize: "0.95rem", color: timeLeft?.expired ? "#ef4444" : "#d97706" }}>
-                  {timeLeft?.expired ? "Batas Waktu Pembayaran Telah Habis" : "Batas Waktu Pembayaran: 24 Jam"}
-                </div>
-                <div style={{ fontSize: "0.8rem", color: "var(--text-secondary)", marginTop: "2px" }}>
+                <div className={`${styles.countdownTitle} ${timeLeft?.expired ? styles.countdownTitleExpired : ""}`}>
                   {timeLeft?.expired
-                    ? "Pesanan ini otomatis dibatalkan oleh sistem karena melebihi batas waktu 24 jam."
-                    : "Selesaikan pembayaran sebelum batas waktu berakhir agar pesanan tidak dibatalkan otomatis."}
+                    ? (orderDetailConfig.banners?.countdown?.titleExpired || "Batas Waktu Pembayaran Telah Habis")
+                    : (orderDetailConfig.banners?.countdown?.titleActive || "Batas Waktu Pembayaran: 24 Jam")}
+                </div>
+                <div className={styles.countdownDesc}>
+                  {timeLeft?.expired
+                    ? (orderDetailConfig.banners?.countdown?.descExpired || "Pesanan ini otomatis dibatalkan oleh sistem karena melebihi batas waktu 24 jam.")
+                    : (orderDetailConfig.banners?.countdown?.descActive || "Selesaikan pembayaran sebelum batas waktu berakhir agar pesanan tidak dibatalkan otomatis.")}
                 </div>
               </div>
             </div>
             {!timeLeft?.expired && timeLeft && (
-              <div style={{
-                background: "var(--surface-primary)",
-                padding: "8px 14px",
-                borderRadius: "8px",
-                border: "1px solid var(--border-color)",
-                fontWeight: 800,
-                fontSize: "1.15rem",
-                color: "var(--primary-accent)",
-                letterSpacing: "1px",
-                fontFamily: "monospace"
-              }}>
+              <div className={styles.countdownTimerBox}>
                 {String(timeLeft.hours).padStart(2, "0")}:{String(timeLeft.minutes).padStart(2, "0")}:{String(timeLeft.seconds).padStart(2, "0")}
               </div>
             )}
@@ -1190,23 +1248,14 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
 
         {/* ─── CANCELLATION NOTICE BANNER ─── */}
         {["cancelled", "canceled"].includes((order.status || "").toLowerCase()) && (
-          <div style={{
-            background: "rgba(239, 68, 68, 0.08)",
-            border: "1px solid rgba(239, 68, 68, 0.3)",
-            borderRadius: "10px",
-            padding: "14px 18px",
-            marginBottom: "1.5rem",
-            display: "flex",
-            alignItems: "center",
-            gap: "12px"
-          }}>
-            <span style={{ fontSize: "1.6rem" }}>❌</span>
+          <div className={styles.bannerCancelled}>
+            <span className={styles.countdownIcon}>❌</span>
             <div>
-              <div style={{ fontWeight: 700, fontSize: "0.95rem", color: "var(--danger-color, #ef4444)" }}>
-                {combinedHistory.find(h => String(h.label || "").toLowerCase().includes("batal"))?.label || "Pesanan Dibatalkan"}
+              <div className={styles.bannerCancelledTitle}>
+                {combinedHistory.find(h => String(h.label || "").toLowerCase().includes("batal"))?.label || orderDetailConfig.banners?.cancellation?.defaultTitle || "Pesanan Dibatalkan"}
               </div>
-              <div style={{ fontSize: "0.8rem", color: "var(--text-secondary)", marginTop: "2px" }}>
-                {combinedHistory.find(h => String(h.label || "").toLowerCase().includes("batal"))?.note || "Pesanan ini telah dibatalkan dan tidak dapat diproses lebih lanjut."}
+              <div className={styles.bannerCancelledDesc}>
+                {combinedHistory.find(h => String(h.label || "").toLowerCase().includes("batal"))?.note || orderDetailConfig.banners?.cancellation?.defaultDesc || "Pesanan ini telah dibatalkan dan tidak dapat diproses lebih lanjut."}
               </div>
             </div>
           </div>
@@ -1214,23 +1263,14 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
 
         {/* ─── 14-DAY AUTO COMPLETE NOTICE (SHIPPED) ─── */}
         {["shipped", "delivered"].includes((order.status || "").toLowerCase()) && (
-          <div style={{
-            background: "rgba(59, 130, 246, 0.08)",
-            border: "1px solid rgba(59, 130, 246, 0.3)",
-            borderRadius: "10px",
-            padding: "14px 18px",
-            marginBottom: "1.5rem",
-            display: "flex",
-            alignItems: "center",
-            gap: "12px"
-          }}>
-            <span style={{ fontSize: "1.6rem" }}>🚚</span>
+          <div className={styles.bannerShippedNotice}>
+            <span className={styles.countdownIcon}>🚚</span>
             <div>
-              <div style={{ fontWeight: 700, fontSize: "0.95rem", color: "#2563eb" }}>
-                Pesanan Sedang Dikirim
+              <div className={styles.bannerShippedTitle}>
+                {orderDetailConfig.banners?.shippedNotice?.title || "Pesanan Sedang Dikirim"}
               </div>
-              <div style={{ fontSize: "0.8rem", color: "var(--text-secondary)", marginTop: "2px" }}>
-                Pesanan akan otomatis selesai dalam 14 hari sejak pengiriman jika Anda tidak melakukan konfirmasi penerimaan manual atau mengajukan pengembalian.
+              <div className={styles.bannerShippedDesc}>
+                {orderDetailConfig.banners?.shippedNotice?.desc || "Pesanan akan otomatis selesai dalam 14 hari sejak pengiriman jika Anda tidak melakukan konfirmasi penerimaan manual atau mengajukan pengembalian."}
               </div>
             </div>
           </div>
@@ -1697,6 +1737,15 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
             </div>
           </div>
         )}
+
+        {/* ─── CONFIRMATION MODAL FOR CANCEL ORDER ─── */}
+        <ConfirmationModal
+          isOpen={isCancelModalOpen}
+          onClose={() => setIsCancelModalOpen(false)}
+          onConfirm={handleConfirmCancelOrder}
+          title={orderDetailConfig.pendingActions?.cancelConfirmTitle || "Batalkan Pesanan"}
+          message={orderDetailConfig.pendingActions?.cancelConfirmDesc || "Apakah Anda yakin ingin membatalkan pesanan ini?"}
+        />
 
       </div>
     </div>

@@ -146,6 +146,30 @@ export default function AdminDashboard() {
     router.replace(`${pathname}?${nextParams.toString()}`, { scroll: false });
   }, [currentTabParam, pathname, router, searchParams]);
 
+  // Track Admin Presence across entire Admin Dashboard (paused when on chat tab, which manages its own presence)
+  useEffect(() => {
+    if (!user || !isAdmin || activeTab === "chat") return;
+
+    const presenceChannel = supabase.channel("public:chats:presence", {
+      config: { presence: { key: `admin_${user.id || "current"}` } },
+    });
+
+    presenceChannel.subscribe(async (status) => {
+      if (status === "SUBSCRIBED") {
+        await presenceChannel.track({
+          role: "admin",
+          userId: user.id,
+          id: user.id,
+          email: user.email,
+        });
+      }
+    });
+
+    return () => {
+      supabase.removeChannel(presenceChannel);
+    };
+  }, [user, isAdmin, activeTab]);
+
   useEffect(() => {
     if (!isMobileMenuOpen) {
       return;

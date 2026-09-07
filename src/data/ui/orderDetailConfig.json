@@ -69,6 +69,17 @@
       "desc": "Pesanan akan otomatis selesai dalam 14 hari sejak pengiriman jika Anda tidak melakukan konfirmasi penerimaan manual atau mengajukan pengembalian."
     }
   },
+  "pendingActions": {
+    "payNowBtn": "Lanjutkan Pembayaran",
+    "cancelOrderBtn": "Batalkan Pesanan",
+    "cancelConfirmTitle": "Batalkan Pesanan Ini?",
+    "cancelConfirmDesc": "Pesanan yang dibatalkan tidak dapat dipulihkan. Stok produk yang dipesan akan langsung dikembalikan ke etalase toko.",
+    "cancelConfirmOk": "Ya, Batalkan",
+    "cancelConfirmBack": "Kembali",
+    "cancelLoading": "Membatalkan pesanan...",
+    "cancelSuccessToast": "Pesanan berhasil dibatalkan dan stok produk telah dikembalikan.",
+    "cancelErrorToast": "Gagal membatalkan pesanan."
+  },
   "manualTransfer": {
     "title": "Instruksi Transfer Manual",
     "instructionPrefix": "Silakan transfer tepat sebesar ",

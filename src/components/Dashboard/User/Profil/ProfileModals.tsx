@@ -243,29 +243,9 @@ export function AddressFormModal({
                 className={styles.formInput}
                 placeholder={cfg.recipientPhonePlaceholder || "08xxxxxxxxxx"}
               />
-              {typeof onSendOtp === "function" && (
-                <div className={styles.otpStatusRow}>
-                  {isPhoneVerified && currentAddress.recipientPhone ? (
-                    <span className={styles.otpVerifiedTag}>
-                      ✓ {cfg.phoneVerified || "Nomor terverifikasi"}
-                    </span>
-                  ) : (
-                    <>
-                      <span className={styles.otpUnverifiedTag}>
-                        {currentAddress.recipientPhone ? (cfg.phoneUnverified || "Belum diverifikasi") : ""}
-                      </span>
-                      <button
-                        type="button"
-                        disabled={!isValidPhone || loading}
-                        onClick={() => typeof onSendOtp === 'function' && onSendOtp(currentAddress.recipientPhone)}
-                        className={`${styles.actionBtnPrimary} ${styles.otpActionBtn}`}
-                      >
-                        {loading ? (cfg.sendingOtp || "Mengirim...") : (cfg.sendOtpBtn || "Kirim OTP via WA")}
-                      </button>
-                    </>
-                  )}
-                </div>
-              )}
+              <small className={styles.inputHelpText || styles.fieldHelpText}>
+                {cfg.recipientPhoneHint || "Nomor aktif penerima untuk konfirmasi kurir saat pengiriman"}
+              </small>
             </div>
           </div>
 
@@ -338,7 +318,7 @@ export function AddressFormModal({
             </button>
             <button
               type="submit"
-              disabled={loading || !isPhoneVerified}
+              disabled={loading || !currentAddress?.recipientName || !currentAddress?.recipientPhone || currentAddress.recipientPhone.length < 8}
               className={styles.actionBtnPrimary}
             >
               {loading ? cfg.saving : cfg.save}
@@ -447,7 +427,7 @@ export function OTPModal({
   React.useEffect(() => {
     if (isOpen) {
       setOtp(new Array(6).fill(""));
-      setResendTimer(60);
+      setResendTimer(120);
       setTimeout(() => {
         if (inputRefs.current[0]) inputRefs.current[0].focus();
       }, 100);

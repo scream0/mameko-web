@@ -89,6 +89,7 @@ export default function UserChatModal({ isOpen, onClose, user }: any) {
           if (status === "SUBSCRIBED") {
             await presenceChannel.track({
               role: "user",
+              userId: user.uid || user.id,
               id: user.uid || user.id,
             });
           }

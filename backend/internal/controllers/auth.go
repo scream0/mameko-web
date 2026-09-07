@@ -3,6 +3,7 @@ package controllers
 import (
 	"crypto/rand"
 	"fmt"
+	"log"
 	"math/big"
 	"strings"
 	"sync"
@@ -71,9 +72,11 @@ func SendWhatsAppOTP(c *fiber.Ctx) error {
 	msg := fmt.Sprintf("*VERIFIKASI MAKE ME KOOL*\n\nKode OTP Anda adalah: *%s*\nBerlaku selama 5 menit. Jangan berikan kode ini kepada siapapun.", code)
 	err := whatsapp.SendMessage(phone, msg)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+		log.Printf("⚠️ [OTP GATEWAY LOG] WhatsApp Offline / Gagal Kirim: %v | Target: %s | OTP Code: %s\n", err, phone, code)
+		return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{
 			"success": false,
-			"error": "Failed to send WhatsApp message: " + err.Error(),
+			"error":   "WhatsApp Gateway belum terhubung. Silakan hubungkan WhatsApp di Pengaturan Admin (Scan QR).",
+			"details": err.Error(),
 		})
 	}
 

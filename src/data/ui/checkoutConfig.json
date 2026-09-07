@@ -81,6 +81,13 @@
     "selectAddressSub": "Pilih alamat terlebih dahulu",
     "selectCourierSub": "Pilih kurir terlebih dahulu"
   },
+  "stockValidation": {
+    "insufficientTitle": "Stok Produk Tidak Mencukupi",
+    "insufficientDesc": "Beberapa produk di keranjang melebihi stok yang tersedia. Harap sesuaikan jumlah belanja sebelum melanjutkan pembayaran.",
+    "remainingStockTemplate": "Sisa stok: {count}",
+    "outOfStockBadge": "Stok Habis",
+    "adjustCartBtn": "Sesuaikan Keranjang"
+  },
   "emptyCart": {
     "title": "Keranjang Belanja Kosong",
     "desc": "Tambahkan produk terlebih dahulu sebelum checkout",
@@ -112,5 +119,12 @@
     "sendOtpFailed": "Gagal mengirim OTP",
     "verifyOtpLoading": "Memverifikasi OTP...",
     "verifyOtpInvalid": "OTP tidak valid"
+  },
+  "stockValidation": {
+    "insufficientTitle": "Stok Produk Tidak Mencukupi",
+    "insufficientDesc": "Satu atau lebih produk di keranjang melebihi stok yang tersedia saat ini. Mohon sesuaikan jumlah pesanan Anda.",
+    "remainingStockTemplate": "Sisa stok: {count}",
+    "outOfStockBadge": "Stok Habis",
+    "adjustCartBtn": "Sesuaikan Keranjang"
   }
 }

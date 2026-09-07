@@ -168,34 +168,8 @@ export function UserDashboardSkeleton() {
 }
 
 /* --- Shop catalog skeleton --- */
-export function ShopSkeleton({ count = 8 }: { count?: number }) {
-  return (
-    <div className={styles.workspaceInner} style={{ background: "transparent", border: "none", boxShadow: "none", padding: "0" }}>
-      <div className={styles.flexCol} style={{ gap: "0.4rem", marginBottom: "1.25rem" }}>
-        <SkeletonTitle width="35%" height={24} />
-        <SkeletonText width="55%" height={13} />
-      </div>
+export { ShopSkeleton } from "./ShopSkeleton";
 
-      {/* Category pills */}
-      <div className={styles.flexRow} style={{ gap: "0.5rem", flexWrap: "wrap", marginBottom: "1rem" }}>
-        {Array.from({ length: 5 }).map((_, i) => (
-          <Skeleton key={`cat-${i}`} width={i === 0 ? 72 : 54} height={32} radius={999} />
-        ))}
-      </div>
-
-      {/* Toolbar */}
-      <div className={styles.shopSkeletonToolbar}>
-        <Skeleton width="100%" height={42} radius={10} />
-        <Skeleton width={150} height={42} radius={10} />
-      </div>
-
-      {/* Product grid */}
-      <div className={styles.shopSkeletonGrid}>
-        <ProductCardSkeletons count={count} />
-      </div>
-    </div>
-  );
-}
 
 /* --- Orders list skeleton --- */
 export function OrdersSkeleton({ count = 3 }: { count?: number }) {

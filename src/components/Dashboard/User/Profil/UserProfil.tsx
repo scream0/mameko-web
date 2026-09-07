@@ -98,10 +98,6 @@ export default function ProfileSection() {
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
   const [otpPhone, setOtpPhone] = useState("");
 
-  const [verifiedPhones, setVerifiedPhones] = useState([]);
-  const [isAddressOtpModalOpen, setIsAddressOtpModalOpen] = useState(false);
-  const [addressOtpPhone, setAddressOtpPhone] = useState("");
-
   const [currentSession, setCurrentSession] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
 
@@ -437,49 +433,6 @@ export default function ProfileSection() {
     }
   };
 
-  const handleSendAddressOtp = async (phone: any) => {
-    const toastId = toast.loading("Mengirim kode verifikasi WhatsApp...");
-    setLoading(true);
-    try {
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/auth/send-whatsapp-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone }),
-      });
-      const result = await res.json();
-      if (!res.ok) throw new Error(result.error || "Gagal mengirim OTP");
-      
-      toast.dismiss(toastId);
-      setAddressOtpPhone(phone);
-      setIsAddressOtpModalOpen(true);
-    } catch (err) {
-      toast.error(err.message, { id: toastId });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleVerifyAddressOtp = async (otp: any) => {
-    const toastId = toast.loading("Memverifikasi OTP...");
-    setLoading(true);
-    try {
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/auth/verify-whatsapp-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: addressOtpPhone, code: otp }),
-      });
-      const result = await res.json();
-      if (!res.ok) throw new Error(result.error || "OTP tidak valid");
-      
-      toast.success("Nomor telepon diverifikasi!", { id: toastId });
-      setIsAddressOtpModalOpen(false);
-      setVerifiedPhones((prev) => [...prev, addressOtpPhone]);
-    } catch (err) {
-      toast.error(err.message, { id: toastId });
-    } finally {
-      setLoading(false);
-    }
-  };
 
 
   const handlePasswordChange = async (e: any) => {
@@ -785,9 +738,6 @@ export default function ProfileSection() {
         onEdit={(addr: any) => { 
           setCurrentAddress(addr); 
           setIsAddressModalOpen(true); 
-          if (addr.recipientPhone) {
-            setVerifiedPhones(prev => prev.includes(addr.recipientPhone) ? prev : [...prev, addr.recipientPhone]);
-          }
         }}
         onDelete={handleDeleteAddress}
         onOpenAdd={() => {
@@ -826,8 +776,6 @@ export default function ProfileSection() {
         handleSaveAddress={handleSaveAddress}
         profileConfig={profileConfig}
         loading={loading}
-        verifiedPhones={verifiedPhones}
-        onSendOtp={handleSendAddressOtp}
       />
 
       <PasswordModal
@@ -854,15 +802,6 @@ export default function ProfileSection() {
           else toast.success("Kode OTP baru telah dikirim");
         }}
         phone={otpPhone}
-        loading={loading}
-      />
-
-      <OTPModal
-        isOpen={isAddressOtpModalOpen}
-        onClose={() => setIsAddressOtpModalOpen(false)}
-        onSubmit={handleVerifyAddressOtp}
-        onResend={handleSendAddressOtp}
-        phone={addressOtpPhone}
         loading={loading}
       />
       

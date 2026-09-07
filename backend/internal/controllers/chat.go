@@ -132,14 +132,19 @@ func AdminGetChatList(c *fiber.Ctx) error {
 			MAX(c.created_at) as last_activity, 
 			COUNT(CASE WHEN c.is_read = false AND c.sender_role = 'user' THEN 1 END) as unread_count,
 			COALESCE(p.full_name, (au.raw_user_meta_data->>'full_name')::text, (au.raw_user_meta_data->>'name')::text, au.email) as full_name,
-			COALESCE(p.avatar_url, (au.raw_user_meta_data->>'avatar_url')::text, (au.raw_user_meta_data->>'picture')::text) as avatar_url,
+			COALESCE(
+				NULLIF(p.photo_url, ''),
+				NULLIF(p.avatar_url, ''),
+				NULLIF((au.raw_user_meta_data->>'avatar_url')::text, ''),
+				NULLIF((au.raw_user_meta_data->>'picture')::text, '')
+			) as avatar_url,
 			au.email,
 			(SELECT message FROM chats WHERE user_id = c.user_id ORDER BY created_at DESC LIMIT 1) as last_message,
 			(SELECT image_url FROM chats WHERE user_id = c.user_id ORDER BY created_at DESC LIMIT 1) as last_image
 		FROM chats c
 		LEFT JOIN profiles p ON c.user_id::text = p.id::text
 		LEFT JOIN auth.users au ON c.user_id::text = au.id::text
-		GROUP BY c.user_id, p.full_name, p.avatar_url, au.raw_user_meta_data, au.email
+		GROUP BY c.user_id, p.full_name, p.photo_url, p.avatar_url, au.raw_user_meta_data, au.email
 		ORDER BY last_activity DESC
 	`
 	rows, err := config.DB.Query(query)

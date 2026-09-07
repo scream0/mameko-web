@@ -10,7 +10,28 @@
     "footer": "Footer",
     "payment": "Pembayaran",
     "couriers": "Pengiriman",
+    "whatsapp": "WhatsApp Gateway",
     "account": "Akun Pengguna"
+  },
+  "whatsapp": {
+    "sectionTitle": "WhatsApp Gateway (whatsmeow)",
+    "sectionDesc": "Hubungkan nomor WhatsApp untuk pengiriman otomatis kode OTP verifikasi dan notifikasi pesanan pelanggan.",
+    "statusTitle": "Status Koneksi",
+    "connectedBadge": "Terhubung",
+    "disconnectedBadge": "Terputus / Belum Login",
+    "connectedPhoneLabel": "Nomor WhatsApp Terhubung:",
+    "pairBtn": "Tautkan WhatsApp (Scan QR)",
+    "refreshQrBtn": "Perbarui QR Code",
+    "logoutBtn": "Putuskan Koneksi (Logout)",
+    "logoutConfirm": "Apakah Anda yakin ingin memutuskan koneksi WhatsApp ini?",
+    "qrModalTitle": "Scan QR Code WhatsApp",
+    "qrModalDesc": "Buka aplikasi WhatsApp di HP Anda > Perangkat Tertaut > Tautkan Perangkat, lalu arahkan kamera ke kode QR di bawah ini.",
+    "qrTimerNotice": "QR Code diperbarui otomatis dalam",
+    "seconds": "detik",
+    "testTitle": "Uji Coba Pengiriman Pesan",
+    "testPhonePlaceholder": "Nomor WhatsApp tujuan (contoh: 08123456789)",
+    "testMsgPlaceholder": "Tulis pesan uji coba...",
+    "testBtn": "Kirim Pesan Uji Coba"
   },
   "store": {
     "sectionTitle": "Informasi Toko",

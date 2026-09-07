@@ -1,0 +1,207 @@
+/* ====================================================
+   SHOP SKELETON (Ultra-Lightweight & GPU-Accelerated)
+   Exact 1:1 card geometry matching Shop.module.css
+   ==================================================== */
+
+.skeletonGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: clamp(10px, 2.5vw, 18px);
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .skeletonGrid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .skeletonGrid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+  }
+}
+
+/* --- Skeleton Card --- */
+.skeletonCard {
+  background: rgba(var(--surface-primary-rgb), 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  contain: content;
+}
+
+:global([data-theme="dark"]) .skeletonCard {
+  background: rgba(var(--surface-primary-rgb), 0.45);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+/* --- GPU-Accelerated Shimmer Base --- */
+.shimmer {
+  position: relative;
+  overflow: hidden;
+  background: var(--skeleton-base, rgba(148, 184, 179, 0.12));
+}
+
+.shimmer::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform: translate3d(-100%, 0, 0);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--skeleton-shine, rgba(255, 255, 255, 0.18)) 50%,
+    transparent 100%
+  );
+  animation: shimmerSweep 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  will-change: transform;
+  pointer-events: none;
+}
+
+@keyframes shimmerSweep {
+  0% {
+    transform: translate3d(-100%, 0, 0);
+  }
+  100% {
+    transform: translate3d(100%, 0, 0);
+  }
+}
+
+/* Stagger shimmer animations slightly per card to look organic */
+.skeletonCard:nth-child(2n) .shimmer::after {
+  animation-delay: 0.15s;
+}
+.skeletonCard:nth-child(3n) .shimmer::after {
+  animation-delay: 0.3s;
+}
+.skeletonCard:nth-child(4n) .shimmer::after {
+  animation-delay: 0.45s;
+}
+
+/* --- Card Image Section --- */
+.imageWrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: var(--surface-secondary);
+  overflow: hidden;
+}
+
+.categoryBadgePlaceholder {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 48px;
+  height: 18px;
+  border-radius: 9999px;
+  z-index: 2;
+}
+
+.wishlistButtonPlaceholder {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  z-index: 2;
+}
+
+/* --- Card Body Section --- */
+.cardBody {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 0.55rem;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.titleLine {
+  height: 16px;
+  width: 72%;
+  border-radius: 4px;
+}
+
+.cartButtonPlaceholder {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.priceRow {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 0.1rem;
+}
+
+.priceLine {
+  height: 18px;
+  width: 45%;
+  border-radius: 4px;
+}
+
+.discountBadgePlaceholder {
+  height: 16px;
+  width: 32%;
+  border-radius: 4px;
+}
+
+.ratingLine {
+  height: 12px;
+  width: 38%;
+  border-radius: 4px;
+  margin-top: 0.1rem;
+}
+
+.footerRow {
+  margin-top: auto;
+  padding-top: 0.45rem;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.stockLine {
+  height: 12px;
+  width: 42%;
+  border-radius: 4px;
+}
+
+.detailLine {
+  height: 12px;
+  width: 22%;
+  border-radius: 4px;
+}
+
+/* --- Accessibility: Respect reduced motion --- */
+@media (prefers-reduced-motion: reduce) {
+  .shimmer::after {
+    animation: none;
+    display: none;
+  }
+  .shimmer {
+    opacity: 0.7;
+  }
+}

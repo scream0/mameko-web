@@ -33,7 +33,7 @@ func GetUser(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "Forbidden"})
 	}
 
-	query := `SELECT id, full_name, email, phone, role, avatar_url, created_at, updated_at FROM profiles WHERE id = $1 LIMIT 1`
+	query := `SELECT id, full_name, email, phone, role, COALESCE(NULLIF(photo_url, ''), avatar_url) as avatar_url, created_at, updated_at FROM profiles WHERE id = $1 LIMIT 1`
 	var p models.UserProfile
 	var fName, email, phone, role, avatar sql.NullString
 	var cAt, uAt sql.NullTime

@@ -133,6 +133,20 @@ export function StoreProvider({ children }) {
 
   useEffect(() => {
     fetchProducts();
+
+    const handleStockUpdate = () => {
+      fetchProducts();
+    };
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("product-stock-updated", handleStockUpdate);
+    }
+
+    return () => {
+      if (typeof window !== "undefined") {
+        window.removeEventListener("product-stock-updated", handleStockUpdate);
+      }
+    };
   }, [fetchProducts]);
 
 const handleUserData = useCallback(async (currentUser, token) => {

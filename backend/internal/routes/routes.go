@@ -196,4 +196,10 @@ func SetupRoutes(app *fiber.App) {
 	adminAuth.Put("/vouchers/:id", controllers.UpdateVoucher)
 	adminAuth.Delete("/vouchers", controllers.DeleteVoucher)
 	adminAuth.Delete("/vouchers/:id", controllers.DeleteVoucher)
+
+	// WhatsApp Gateway Administration
+	adminAuth.Get("/whatsapp/status", controllers.GetWhatsAppStatus)
+	adminAuth.Get("/whatsapp/qr", controllers.GetWhatsAppQR)
+	adminAuth.Post("/whatsapp/logout", controllers.LogoutWhatsApp)
+	adminAuth.Post("/whatsapp/test", controllers.TestSendWhatsApp)
 }

@@ -1,6 +1,6 @@
 // @ts-nocheck
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import toast from "react-hot-toast";
 import styles from "./SettingsView.module.css";
 import { auth } from "@/lib/supabaseClient";
@@ -84,6 +84,7 @@ const TAB_KEYS = [
   "footer",
   "payment",
   "couriers",
+  "whatsapp",
   "account",
 ];
 
@@ -684,6 +685,10 @@ export default function SettingsView() {
           />
         )}
 
+        {activeTab === "whatsapp" && (
+          <WhatsAppTab cfg={cfg} />
+        )}
+
         {activeTab === "account" && (
           <div className={styles.tabContent}>
             <div className={styles.accountSectionHeader}>
@@ -699,15 +704,17 @@ export default function SettingsView() {
           </div>
         )}
 
-        <button
-          type="submit"
-          disabled={loading || uploadingImage || activeTab === "account"}
-          className={styles.saveBtn}
-        >
-          {loading || uploadingImage
-            ? cfg.buttons?.saving || "Menyimpan..."
-            : cfg.buttons?.save || "Simpan Perubahan"}
-        </button>
+        {activeTab !== "whatsapp" && activeTab !== "account" && (
+          <button
+            type="submit"
+            disabled={loading || uploadingImage}
+            className={styles.saveBtn}
+          >
+            {loading || uploadingImage
+              ? cfg.buttons?.saving || "Menyimpan..."
+              : cfg.buttons?.save || "Simpan Perubahan"}
+          </button>
+        )}
       </form>
     </div>
   );
@@ -2262,6 +2269,331 @@ function ProductTab({ settings, updateTab, cfg }) {
           </h2>
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ============================================================
+   TAB: WHATSAPP GATEWAY (120s QR Timer & Auto-Polling)
+   ============================================================ */
+function WhatsAppTab({ cfg }) {
+  const waCfg = cfg.whatsapp || {};
+  const [status, setStatus] = useState<any>({ connected: false, loggedIn: false });
+  const [loadingStatus, setLoadingStatus] = useState(true);
+
+  // QR Modal
+  const [showQrModal, setShowQrModal] = useState(false);
+  const [qrData, setQrData] = useState<any>(null);
+  const [qrCountdown, setQrCountdown] = useState(120);
+  const [loadingQr, setLoadingQr] = useState(false);
+
+  // Test Message
+  const [testPhone, setTestPhone] = useState("");
+  const [testMessage, setTestMessage] = useState("");
+  const [isSendingTest, setIsSendingTest] = useState(false);
+
+  const fetchStatus = useCallback(async () => {
+    try {
+      const { data: { session } } = await auth.getSession();
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
+      const res = await fetch(`${apiBase}/api/admin/whatsapp/status`, {
+        headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {},
+        cache: "no-store",
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.data) {
+          setStatus(json.data);
+          return json.data;
+        }
+      }
+    } catch (e) {
+      console.error("Gagal memuat status WhatsApp:", e);
+    } finally {
+      setLoadingStatus(false);
+    }
+    return null;
+  }, []);
+
+  useEffect(() => {
+    fetchStatus();
+    const interval = setInterval(fetchStatus, 10000);
+    return () => clearInterval(interval);
+  }, [fetchStatus]);
+
+  // Handle open QR modal
+  const handleOpenQR = async () => {
+    setShowQrModal(true);
+    setLoadingQr(true);
+    setQrCountdown(120);
+    try {
+      const { data: { session } } = await auth.getSession();
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
+      const res = await fetch(`${apiBase}/api/admin/whatsapp/qr`, {
+        headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {},
+        cache: "no-store",
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Gagal memuat QR code");
+      setQrData(json.data);
+      if (json.data?.seconds && json.data.seconds > 10) {
+        setQrCountdown(json.data.seconds);
+      } else {
+        setQrCountdown(120);
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Gagal memuat QR WhatsApp");
+    } finally {
+      setLoadingQr(false);
+    }
+  };
+
+  // Countdown & auto-refresh for QR (120 detik)
+  useEffect(() => {
+    if (!showQrModal) return;
+    if (qrCountdown <= 0) {
+      handleOpenQR();
+      return;
+    }
+    const timer = setInterval(() => {
+      setQrCountdown((prev) => prev - 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [showQrModal, qrCountdown]);
+
+  // Poll status while QR modal is open to detect scan/login success automatically
+  useEffect(() => {
+    if (!showQrModal) return;
+    const pollTimer = setInterval(async () => {
+      const current = await fetchStatus();
+      if (current?.loggedIn && current?.connected) {
+        setShowQrModal(false);
+        toast.success("Selamat! WhatsApp Gateway berhasil terhubung.");
+      }
+    }, 3000);
+    return () => clearInterval(pollTimer);
+  }, [showQrModal, fetchStatus]);
+
+  // Handle Logout / Disconnect
+  const handleLogoutWA = async () => {
+    if (!window.confirm(waCfg.logoutConfirm || "Apakah Anda yakin ingin memutuskan koneksi WhatsApp ini?")) {
+      return;
+    }
+    const toastId = toast.loading("Memutuskan sesi WhatsApp...");
+    try {
+      const { data: { session } } = await auth.getSession();
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
+      const res = await fetch(`${apiBase}/api/admin/whatsapp/logout`, {
+        method: "POST",
+        headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {},
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Gagal logout WhatsApp");
+      toast.success("Sesi WhatsApp berhasil diputuskan.", { id: toastId });
+      fetchStatus();
+    } catch (err: any) {
+      toast.error(err.message || "Gagal logout", { id: toastId });
+    }
+  };
+
+  // Handle Send Test
+  const handleSendTest = async (e: any) => {
+    e.preventDefault();
+    if (!testPhone) {
+      toast.error("Nomor tujuan wajib diisi.");
+      return;
+    }
+    setIsSendingTest(true);
+    const toastId = toast.loading("Mengirim pesan uji coba...");
+    try {
+      const { data: { session } } = await auth.getSession();
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
+      const res = await fetch(`${apiBase}/api/admin/whatsapp/test`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+        },
+        body: JSON.stringify({
+          phone: testPhone,
+          message: testMessage || "Halo! Ini adalah pesan uji coba dari sistem Mameko WhatsApp Gateway.",
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Gagal mengirim pesan");
+      toast.success(json.message || "Pesan uji coba terkirim!", { id: toastId });
+      setTestMessage("");
+    } catch (err: any) {
+      toast.error(err.message || "Gagal mengirim pesan", { id: toastId });
+    } finally {
+      setIsSendingTest(false);
+    }
+  };
+
+  return (
+    <div className={styles.tabContent}>
+      {/* 1. Header & Status Section */}
+      <div className={styles.formSection}>
+        <h4 className={styles.sectionTitle}>
+          {waCfg.sectionTitle || "WhatsApp Gateway (whatsmeow)"}
+        </h4>
+        <p className={styles.couriersDesc}>
+          {waCfg.sectionDesc || "Hubungkan nomor WhatsApp untuk pengiriman otomatis kode OTP verifikasi dan notifikasi pesanan pelanggan."}
+        </p>
+
+        <div className={styles.waStatusCard}>
+          <div className={styles.waStatusRow}>
+            <div>
+              <strong>{waCfg.statusTitle || "Status Koneksi"}: </strong>
+              {loadingStatus ? (
+                <span>Memeriksa...</span>
+              ) : status.connected && status.loggedIn ? (
+                <span className={styles.waBadgeConnected}>
+                  🟢 {waCfg.connectedBadge || "Terhubung"}
+                </span>
+              ) : (
+                <span className={styles.waBadgeDisconnected}>
+                  🔴 {waCfg.disconnectedBadge || "Terputus / Belum Login"}
+                </span>
+              )}
+            </div>
+
+            {status.connected && status.loggedIn ? (
+              <button
+                type="button"
+                onClick={handleLogoutWA}
+                className={styles.removeBtn}
+              >
+                {waCfg.logoutBtn || "Putuskan Koneksi (Logout)"}
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleOpenQR}
+                className={styles.addRowBtn}
+              >
+                {waCfg.pairBtn || "Tautkan WhatsApp (Scan QR)"}
+              </button>
+            )}
+          </div>
+
+          {status.loggedIn && status.phone && (
+            <div>
+              <small className={styles.fieldDesc}>
+                {waCfg.connectedPhoneLabel || "Nomor WhatsApp Terhubung:"} <strong>+{status.phone}</strong>
+              </small>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* 2. Test Message Section */}
+      <div className={styles.formSection}>
+        <h4 className={styles.sectionTitle}>
+          {waCfg.testTitle || "Uji Coba Pengiriman Pesan"}
+        </h4>
+        <div className={styles.row2}>
+          <div className={styles.inputGroup}>
+            <label className={styles.fieldLabel}>Nomor WhatsApp Tujuan</label>
+            <input
+              type="text"
+              value={testPhone}
+              onChange={(e) => setTestPhone(e.target.value)}
+              placeholder={waCfg.testPhonePlaceholder || "Contoh: 08123456789"}
+              className={styles.inputField}
+            />
+          </div>
+          <div className={styles.inputGroup}>
+            <label className={styles.fieldLabel}>Pesan Uji Coba</label>
+            <input
+              type="text"
+              value={testMessage}
+              onChange={(e) => setTestMessage(e.target.value)}
+              placeholder={waCfg.testMsgPlaceholder || "Tulis pesan uji coba..."}
+              className={styles.inputField}
+            />
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={handleSendTest}
+          disabled={isSendingTest || !status.connected || !status.loggedIn}
+          className={styles.addRowBtn}
+        >
+          {isSendingTest ? "Mengirim..." : waCfg.testBtn || "Kirim Pesan Uji Coba"}
+        </button>
+        {(!status.connected || !status.loggedIn) && (
+          <small className={styles.fieldDesc} style={{ display: "block", marginTop: "0.5rem", color: "var(--warning-color, #f59e0b)" }}>
+            * Hubungkan WhatsApp terlebih dahulu sebelum dapat mengirim pesan uji coba.
+          </small>
+        )}
+      </div>
+
+      {/* 3. QR Code Modal (120 detik) */}
+      {showQrModal && (
+        <div className={styles.waQrModalOverlay} onClick={() => setShowQrModal(false)}>
+          <div className={styles.waQrModalBox} onClick={(e) => e.stopPropagation()}>
+            <h3 className={styles.sectionTitle} style={{ margin: "0 0 0.5rem 0" }}>
+              {waCfg.qrModalTitle || "Scan QR Code WhatsApp"}
+            </h3>
+            <p className={styles.fieldDesc} style={{ marginBottom: "1rem" }}>
+              {waCfg.qrModalDesc || "Buka aplikasi WhatsApp di HP Anda > Perangkat Tertaut > Tautkan Perangkat, lalu arahkan kamera ke kode QR di bawah ini."}
+            </p>
+
+            {loadingQr ? (
+              <div style={{ padding: "3rem 0" }}>
+                <div className={styles.loadingSpinner} style={{ margin: "0 auto 1rem auto" }}></div>
+                <p className={styles.fieldDesc}>Membuat kode QR WhatsApp...</p>
+              </div>
+            ) : qrData?.qr ? (
+              <>
+                <div className={styles.waQrImageWrapper}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={qrData.qr}
+                    alt="WhatsApp QR Code"
+                    className={styles.waQrImage}
+                  />
+                </div>
+                <p className={styles.waTimerText}>
+                  {waCfg.qrTimerNotice || "QR Code diperbarui otomatis dalam"}{" "}
+                  <span className={styles.waTimerHighlight}>{qrCountdown}</span> {waCfg.seconds || "detik"}
+                </p>
+                <div style={{ display: "flex", gap: "0.5rem", justifyContent: "center" }}>
+                  <button
+                    type="button"
+                    onClick={handleOpenQR}
+                    className={styles.addRowBtn}
+                  >
+                    {waCfg.refreshQrBtn || "Perbarui QR Code"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowQrModal(false)}
+                    className={styles.removeBtn}
+                  >
+                    Tutup
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div>
+                <p className={styles.fieldDesc} style={{ color: "var(--danger-color, #ef4444)" }}>
+                  Gagal membuat QR Code WhatsApp. Pastikan server backend sedang aktif.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleOpenQR}
+                  className={styles.addRowBtn}
+                  style={{ marginTop: "1rem" }}
+                >
+                  Coba Lagi
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

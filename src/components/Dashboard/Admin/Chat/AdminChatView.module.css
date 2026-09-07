@@ -185,6 +185,15 @@
   background: rgba(0,0,0,0.1);
 }
 
+.headerAvatarWrapper {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
 .headerUserTitle {
   display: flex;
   align-items: center;

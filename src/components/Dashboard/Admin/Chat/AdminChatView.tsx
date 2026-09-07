@@ -62,6 +62,20 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
   useEffect(() => {
     fetchUsers();
 
+    // Safely clean up any lingering channels before creating new ones
+    const existingMessages = supabase
+      .getChannels()
+      .find((c) => c.topic === "realtime:admin_public_chats");
+    if (existingMessages) {
+      supabase.removeChannel(existingMessages);
+    }
+    const existingPresence = supabase
+      .getChannels()
+      .find((c) => c.topic === "realtime:public:chats:presence");
+    if (existingPresence) {
+      supabase.removeChannel(existingPresence);
+    }
+
     const channel = supabase
       .channel("admin_public_chats")
       .on(
@@ -110,8 +124,8 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
       .subscribe();
 
     // Presence & Realtime typing
-    const presenceChannel = supabase.channel("online-users", {
-      config: { presence: { key: "admin" } }
+    const presenceChannel = supabase.channel("public:chats:presence", {
+      config: { presence: { key: "admin_chat_view" } }
     });
 
     presenceChannel
@@ -120,7 +134,8 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
         const online = new Set();
         Object.values(state).forEach((presences: any) => {
           presences.forEach((p: any) => {
-            if (p.userId) online.add(p.userId);
+            const uid = p.userId || p.id;
+            if (uid && p.role === "user") online.add(uid);
           });
         });
         setOnlineUsers(online);
@@ -136,7 +151,7 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
       })
       .subscribe(async (status) => {
         if (status === "SUBSCRIBED") {
-          await presenceChannel.track({ role: "admin" });
+          await presenceChannel.track({ role: "admin", id: "admin" });
         }
       });
 
@@ -183,7 +198,7 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
         id: item.user_id || item.id,
         name: item.full_name || item.name || item.email || "User",
         email: item.email || "",
-        avatar: item.avatar_url || item.avatar || null,
+        avatar: item.avatar_url || item.photo_url || item.avatar || null,
         lastMessage: item.last_message || item.lastMessage || (item.last_image ? "📷 [Gambar]" : ""),
         unreadCount: Number(item.unread_count ?? item.unreadCount ?? 0),
         lastActivity: item.last_activity,
@@ -346,13 +361,14 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
                 >
                   <div className={styles.avatarWrapper}>
                     <div className={styles.avatarPlaceholder}>
-                      <AppIcon name="user" size={20} />
+                      <AppIcon name="user" size={18} />
                     </div>
                     {u.avatar && (
                       <img
                         src={u.avatar}
-                        alt=""
+                        alt={u.name || "User"}
                         className={styles.avatarImg}
+                        referrerPolicy="no-referrer"
                         onError={(e: any) => {
                           e.target.style.display = "none";
                         }}
@@ -394,9 +410,27 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
               >
                 <AppIcon name="arrow-left" size={18} />
               </button>
+
+              <div className={styles.headerAvatarWrapper}>
+                <div className={styles.avatarPlaceholder}>
+                  <AppIcon name="user" size={20} />
+                </div>
+                {selectedUser.avatar && (
+                  <img
+                    src={selectedUser.avatar}
+                    alt={selectedUser.name || "User"}
+                    className={styles.avatarImg}
+                    referrerPolicy="no-referrer"
+                    onError={(e: any) => {
+                      e.target.style.display = "none";
+                    }}
+                  />
+                )}
+              </div>
+
               <div className={styles.headerUserTitle}>
                 <span className={styles.headerUserName}>
-                  {adminChatConfig.chattingWith} {selectedUser.name || selectedUser.email || "User"}
+                  {selectedUser.name || selectedUser.email || "User"}
                 </span>
                 <span
                   className={`${styles.statusBadge} ${onlineUsers.has(selectedUser.id) ? styles.statusBadgeOnline : ""}`}

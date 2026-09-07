@@ -17,7 +17,7 @@
     "emptyFieldsMessage": "Semua kolom wajib diisi.",
     "errorMessage": "Email atau password salah.",
     "settings": {
-      "resendCooldownSeconds": 60,
+      "resendCooldownSeconds": 120,
       "otpLength": 6
     },
     "titles": {
