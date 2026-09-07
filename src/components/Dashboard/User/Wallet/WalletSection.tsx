@@ -107,7 +107,12 @@ export default function WalletSection({ profile, onOpenBankSettings }: WalletSec
             "Content-Type": "application/json",
             Authorization: token ? `Bearer ${token}` : undefined,
           },
-          body: JSON.stringify({ amount }),
+          body: JSON.stringify({
+            amount,
+            bankName: profile?.bankName || "",
+            accountNumber: profile?.bankAccountNumber || "",
+            accountHolder: profile?.bankAccountName || "",
+          }),
         },
       );
       const data = await res.json();
@@ -254,13 +259,19 @@ export default function WalletSection({ profile, onOpenBankSettings }: WalletSec
                         {getTransactionTypeText(trx.type)}
                       </span>
                       <span className={styles.transactionDate}>
-                        {new Date(trx.created_at).toLocaleDateString("id-ID", {
-                          day: "numeric",
-                          month: "short",
-                          year: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
+                        {(() => {
+                          const rawDate = trx.createdAt || trx.created_at;
+                          const dateObj = rawDate ? new Date(rawDate) : null;
+                          return dateObj && !isNaN(dateObj.getTime())
+                            ? dateObj.toLocaleDateString("id-ID", {
+                                day: "numeric",
+                                month: "short",
+                                year: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })
+                            : "-";
+                        })()}
                       </span>
                       {trx.description && (
                         <span className={styles.transactionDesc}>

@@ -870,7 +870,7 @@ func RequestOrderReturn(c *fiber.Ctx) error {
 	_, _ = config.DB.Exec(`
 		INSERT INTO notifications (title, message, audience, link, created_at, updated_at)
 		VALUES ($1, $2, 'admin', $3, NOW(), NOW())
-	`, "Pengajuan Retur Baru", fmt.Sprintf("Ada pengajuan retur baru untuk pesanan %s.", actualOrderID), "/admin/orders?tab=returns")
+	`, "Pengajuan Retur Baru", fmt.Sprintf("Ada pengajuan retur baru untuk pesanan %s.", actualOrderID), "/dashboard?tab=orders&subtab=returns")
 
 	// WhatsApp Notification
 	go func() {

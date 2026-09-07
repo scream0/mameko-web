@@ -236,10 +236,32 @@ export default function NotificationCenter({ onUnreadCountChange }: any) {
     }
   };
 
+  const resolveNotificationLink = (rawLink: string) => {
+    if (!rawLink) return "";
+    const link = rawLink.trim();
+    if (link.startsWith("/admin/orders")) {
+      const queryIdx = link.indexOf("?");
+      const query = queryIdx !== -1 ? link.substring(queryIdx + 1) : "";
+      const params = new URLSearchParams(query);
+      const subtab = params.get("tab") || params.get("subtab") || "orders";
+      return `/dashboard?tab=orders&subtab=${subtab}`;
+    }
+    if (link === "/dashboard/orders" || link === "/orders") {
+      return "/dashboard?tab=orders";
+    }
+    if (link === "/dashboard/wallet" || link === "/wallet") {
+      return "/dashboard?tab=profile&subtab=wallet";
+    }
+    return link;
+  };
+
   const handleNotificationClick = (notification: any) => {
     markRead(notification);
     if (notification.link) {
-      router.push(notification.link);
+      const targetLink = resolveNotificationLink(notification.link);
+      if (targetLink) {
+        router.push(targetLink);
+      }
     }
   };
 

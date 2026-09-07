@@ -18,6 +18,7 @@ type WalletTransaction struct {
 	Description string     `json:"description"`
 	ReferenceID *string    `json:"referenceId,omitempty"`
 	CreatedAt   *time.Time `json:"createdAt"`
+	CreatedAtSnake *time.Time `json:"created_at,omitempty"`
 }
 
 type WithdrawRequest struct {

@@ -113,7 +113,11 @@ export default function AdminWithdrawals() {
             <tbody>
               {withdrawals.map((w) => (
                 <tr key={w.id}>
-                  <td>{new Date(w.created_at).toLocaleString('id-ID')}</td>
+                  <td>{(() => {
+                    const rawDate = w.createdAt || w.created_at;
+                    const d = rawDate ? new Date(rawDate) : null;
+                    return d && !isNaN(d.getTime()) ? d.toLocaleString('id-ID') : '-';
+                  })()}</td>
                   <td>
                     <div><b>{w.profiles?.full_name || w.profiles?.username || 'User'}</b></div>
                     <div className={styles.subTextMuted}>

@@ -1,6 +1,7 @@
 // @ts-nocheck
 "use client";
 import { useEffect, useState } from "react";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import toast from "react-hot-toast";
 import { auth, db } from "@/lib/supabaseClient";
 import styles from "./OrdersManagement.module.css";
@@ -19,6 +20,12 @@ const money = (value: any) =>
 const orderValue = (order: any) => Number(order.amount || order.total_amount || order.total || 0);
 
 export default function OrdersManagement({ onOrderUpdate }: any) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const subtabParam = searchParams.get("subtab") || (searchParams.get("tab") === "returns" ? "returns" : null);
+
   const [orders, setOrders] = useState<any[]>([]);
   const [storeSettings, setStoreSettings] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -28,7 +35,29 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
   const [pagination, setPagination] = useState({ currentPage: 1, totalPages: 1, totalOrders: 0 });
   const [updatingId, setUpdatingId] = useState(null);
   const [activeOrder, setActiveOrder] = useState(null);
-  const [adminTab, setAdminTab] = useState('orders'); // 'orders', 'returns', 'withdrawals'
+  const [adminTab, setAdminTab] = useState(
+    subtabParam && ['orders', 'returns', 'withdrawals'].includes(subtabParam)
+      ? subtabParam
+      : 'orders'
+  );
+
+  useEffect(() => {
+    if (subtabParam && ['orders', 'returns', 'withdrawals'].includes(subtabParam)) {
+      setAdminTab(subtabParam);
+    }
+  }, [subtabParam]);
+
+  const handleTabChange = (newTab: string) => {
+    setAdminTab(newTab);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("tab", "orders");
+    if (newTab === "orders") {
+      params.delete("subtab");
+    } else {
+      params.set("subtab", newTab);
+    }
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
+  };
   const [shippingDraft, setShippingDraft] = useState({ courierName: "", serviceType: "", trackingNumber: "" });
   const [shippingMode, setShippingMode] = useState("auto"); // "auto" | "manual"
   const [selectedOrders, setSelectedOrders] = useState<any[]>([]);
@@ -654,13 +683,13 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
       <div className={styles.adminTabs}>
         <button 
           className={`${styles.tabBtn} ${adminTab === 'orders' ? styles.activeTab : ''}`}
-          onClick={() => setAdminTab('orders')}
+          onClick={() => handleTabChange('orders')}
         >
           {adminOrdersConfig.tabs.orders}
         </button>
         <button 
           className={`${styles.tabBtn} ${adminTab === 'returns' ? styles.activeTab : ''} ${styles.tabBtnRelative}`}
-          onClick={() => setAdminTab('returns')}
+          onClick={() => handleTabChange('returns')}
         >
           {adminOrdersConfig.tabs.returns}
           {pendingReturnsCount > 0 && (
@@ -669,7 +698,7 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
         </button>
         <button 
           className={`${styles.tabBtn} ${adminTab === 'withdrawals' ? styles.activeTab : ''}`}
-          onClick={() => setAdminTab('withdrawals')}
+          onClick={() => handleTabChange('withdrawals')}
         >
           {adminOrdersConfig.tabs.withdrawals}
         </button>

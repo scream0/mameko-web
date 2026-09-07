@@ -166,7 +166,7 @@ func UpdateAdminReturn(c *fiber.Ctx) error {
 		_, _ = config.DB.Exec(`
 			INSERT INTO notifications (user_id, title, message, audience, link, created_at, updated_at)
 			VALUES ($1, $2, $3, 'user', $4, NOW(), NOW())
-		`, userID, "Update Status Retur", userNotificationMsg, "/dashboard/orders")
+		`, userID, "Update Status Retur", userNotificationMsg, fmt.Sprintf("/dashboard/order-detail?id=%s", orderID))
 	}
 
 	historyJSON := fmt.Sprintf(`[{"status_to": "%s", "actor": "admin", "actor_label": "Admin MAMEKO", "notes": "%s", "created_at": "%s"}]`, orderStatus, historyNote, time.Now().Format(time.RFC3339))
@@ -211,7 +211,9 @@ func GetAdminWithdrawals(c *fiber.Ctx) error {
 				"accountHolder": accHolder,
 				"status":        status,
 				"createdAt":     cAt,
+				"created_at":    cAt,
 				"updatedAt":     uAt,
+				"updated_at":    uAt,
 			})
 		}
 	}
@@ -263,6 +265,16 @@ func UpdateAdminWithdrawal(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
+	// If rejected, refund the balance back to user's wallet
+	if newStatus == "rejected" {
+		_, _ = config.DB.Exec(`UPDATE wallets SET balance = balance + $1, updated_at = NOW() WHERE user_id = $2`, amount, userID)
+		refundDesc := fmt.Sprintf("Pengembalian dana penarikan ditolak: %s", req.Description)
+		_, _ = config.DB.Exec(`
+			INSERT INTO wallet_transactions (wallet_id, amount, type, description, reference_id, created_at, updated_at)
+			VALUES ($1, $2, 'refund', $3, $4, NOW(), NOW())
+		`, userID, amount, refundDesc, id)
+	}
+
 	// Send notification
 	notifMsg := ""
 	switch newStatus {
@@ -276,7 +288,7 @@ func UpdateAdminWithdrawal(c *fiber.Ctx) error {
 		_, _ = config.DB.Exec(`
 			INSERT INTO notifications (user_id, title, message, audience, link, created_at, updated_at)
 			VALUES ($1, $2, $3, 'user', $4, NOW(), NOW())
-		`, userID, "Info Penarikan Dana", notifMsg, "/dashboard/wallet")
+		`, userID, "Info Penarikan Dana", notifMsg, "/dashboard?tab=profile&subtab=wallet")
 	}
 
 	return c.JSON(fiber.Map{"success": true, "message": "Withdrawal request updated"})
