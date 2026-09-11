@@ -163,6 +163,11 @@
   min-height: 85vh;
 }
 
+.heroInner.noVisual {
+  grid-template-columns: minmax(0, 860px);
+  justify-content: center;
+}
+
 /* Kaca Kristal (Content Box) - Glassmorphism Premium */
 .content {
   position: relative;

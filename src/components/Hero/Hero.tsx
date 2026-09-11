@@ -80,7 +80,7 @@ export function Hero() {
             ...heroData,
             ...h,
             tagline: h.tagline?.trim() ? h.tagline : heroData.tagline,
-            image: h.image?.trim() ? h.image : (heroData.image),
+            image: h.image?.trim() ? h.image : "",
             imageAlt: h.imageAlt?.trim() ? h.imageAlt : (heroData.imageAlt || "Hero Visual"),
             title: {
               main: h.title?.main?.trim() ? h.title.main : heroData.title.main,
@@ -159,11 +159,11 @@ export function Hero() {
     return () => observer.disconnect();
   }, []);
 
-  // Ambil URL gambar latar belakang dari resolvedHero (jika ada) dengan fallback default
+  // Ambil URL gambar latar belakang dari resolvedHero (hanya jika ada data dari DB)
   const heroBackgroundImage =
     (resolvedHero?.image && resolvedHero.image.trim() !== "")
       ? resolvedHero.image
-      : (heroData?.image || "/assets/images/hero-perfume.webp");
+      : "";
   const heroImageAlt =
     (resolvedHero?.imageAlt && resolvedHero.imageAlt.trim() !== "")
       ? resolvedHero.imageAlt
@@ -184,7 +184,7 @@ export function Hero() {
         <HeroParticles />
       </div>
 
-      <div className={styles.heroInner}>
+      <div className={`${styles.heroInner} ${!heroBackgroundImage ? styles.noVisual : ""}`}>
         {/* Left Side: Glassmorphism Content */}
         <main
           ref={contentRef}

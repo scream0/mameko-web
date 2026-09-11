@@ -19,8 +19,8 @@ const FeatureItem = ({ number, title, desc }) => (
 );
 
 export function About() {
-  // Fallback: gambar & konten dari JSON, akan di-override data DB jika tersedia
-  const [aboutImage, setAboutImage] = useState(aboutData?.image?.src || "/assets/images/about-bg.jpg");
+  // Gambar & konten dari settings DB (kosongkan jika tidak ada data dari DB)
+  const [aboutImage, setAboutImage] = useState(aboutData?.image?.src || "");
   const [aboutImageAlt, setAboutImageAlt] = useState(
     aboutData?.image?.alt || "About image",
   );
@@ -29,11 +29,15 @@ export function About() {
     aboutData?.features || [],
   );
   const [aboutImgSrc, setAboutImgSrc] = useState(
-    optimizeCloudinaryUrl(aboutData?.image?.src || "/assets/images/about-bg.jpg", IMAGE_PRESETS.ABOUT)
+    aboutData?.image?.src ? optimizeCloudinaryUrl(aboutData.image.src, IMAGE_PRESETS.ABOUT) : ""
   );
 
   useEffect(() => {
-    setAboutImgSrc(optimizeCloudinaryUrl(aboutImage, IMAGE_PRESETS.ABOUT) || "/assets/images/about-bg.jpg");
+    if (aboutImage && aboutImage.trim() !== "") {
+      setAboutImgSrc(optimizeCloudinaryUrl(aboutImage, IMAGE_PRESETS.ABOUT) || aboutImage);
+    } else {
+      setAboutImgSrc("");
+    }
   }, [aboutImage]);
 
   const aboutRef = useRef(null);
@@ -66,9 +70,11 @@ export function About() {
         const data = await getPublicSettings({ force: true });
         if (!data || !isMounted) return;
 
-        // Gambar About dari settings DB
+        // Gambar About dari settings DB (kosongkan jika tidak ada di DB)
         if (data?.about?.image && data.about.image.trim() !== "") {
           setAboutImage(data.about.image);
+        } else {
+          setAboutImage("");
         }
         if (data?.about?.imageAlt && data.about.imageAlt.trim() !== "") {
           setAboutImageAlt(data.about.imageAlt);
@@ -114,27 +120,29 @@ export function About() {
     <section id="about" className={`${styles.about} ${isVisible ? styles.visible : ""}`} ref={aboutRef}>
       <div className={styles.aboutContainer}>
         {/* Layout Utama */}
-        <div className={styles.aboutRow}>
-          {/* Sisi Kiri: Visual Editorial */}
-          <div className={styles.aboutImgWrapper}>
-            {/* Glowing Blob Decoration */}
-            <div className={styles.aboutGlowBlob}></div>
+        <div className={`${styles.aboutRow} ${!aboutImgSrc ? styles.noVisual : ""}`}>
+          {/* Sisi Kiri: Visual Editorial jika ada */}
+          {aboutImgSrc && (
+            <div className={styles.aboutImgWrapper}>
+              {/* Glowing Blob Decoration */}
+              <div className={styles.aboutGlowBlob}></div>
 
-            <div className={styles.imgFrame}></div>
-            {/* Kontainer Gambar + Shimmer */}
-            <div className={styles.imgContainer}>
-              <Image
-                src={aboutImgSrc}
-                alt={aboutImageAlt}
-                className={styles.aboutImg}
-                width={600}
-                height={750}
-                loading="lazy"
-                sizes="(max-width: 768px) 100vw, 50vw"
-                onError={() => setAboutImgSrc("/placeholder.jpg")}
-              />
+              <div className={styles.imgFrame}></div>
+              {/* Kontainer Gambar + Shimmer */}
+              <div className={styles.imgContainer}>
+                <Image
+                  src={aboutImgSrc}
+                  alt={aboutImageAlt}
+                  className={styles.aboutImg}
+                  width={600}
+                  height={750}
+                  loading="lazy"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  onError={() => setAboutImgSrc("")}
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Sisi Kanan: Konten Luxury */}
           <div className={styles.aboutContent}>

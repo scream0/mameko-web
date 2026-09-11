@@ -78,6 +78,11 @@
   align-items: center;
 }
 
+.aboutRow.noVisual {
+  grid-template-columns: minmax(0, 860px);
+  justify-content: center;
+}
+
 /* --- B. Image Wrapper (Clean Modern Frame) --- */
 .aboutImgWrapper {
   position: relative;

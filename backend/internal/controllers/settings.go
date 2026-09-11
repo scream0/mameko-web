@@ -27,8 +27,8 @@ var defaultSettingsJSON = `{
 	"biteshipIsProduction": false,
 	"biteshipAutoOrder": false,
 	"hero": {
-		"image": "/assets/images/hero-perfume.webp",
-		"imageAlt": "MAMEKO Artisanal Fragrance",
+		"image": "",
+		"imageAlt": "Hero Visual",
 		"tagline": "Artisanal Craftsmanship",
 		"title": { "main": "Meracik Batas Antara", "highlight": "Aroma & Rasa" },
 		"description": {
@@ -42,8 +42,8 @@ var defaultSettingsJSON = `{
 		}
 	},
 	"about": {
-		"image": "/assets/images/about-bg.jpg",
-		"imageAlt": "Artisanal Craftsmanship",
+		"image": "",
+		"imageAlt": "About Image",
 		"imagePublicId": "",
 		"content": {
 			"tagline": "The Story Behind",
@@ -241,14 +241,6 @@ func GetSettings(c *fiber.Ctx) error {
 	heroRaw := getSectionRaw("hero")
 	if heroRaw != nil {
 		if b, err := json.Marshal(heroRaw); err == nil {
-			var heroMap map[string]interface{}
-			if json.Unmarshal(b, &heroMap) == nil {
-				if img, exists := heroMap["image"].(string); !exists || strings.TrimSpace(img) == "" {
-					heroMap["image"] = "/assets/images/hero-perfume.webp"
-					heroMap["imageAlt"] = "MAMEKO Artisanal Fragrance"
-					b, _ = json.Marshal(heroMap)
-				}
-			}
 			s.Hero = b
 		}
 	}
@@ -256,14 +248,6 @@ func GetSettings(c *fiber.Ctx) error {
 	aboutRaw := getSectionRaw("about")
 	if aboutRaw != nil {
 		if b, err := json.Marshal(aboutRaw); err == nil {
-			var aboutMap map[string]interface{}
-			if json.Unmarshal(b, &aboutMap) == nil {
-				if img, exists := aboutMap["image"].(string); !exists || strings.TrimSpace(img) == "" {
-					aboutMap["image"] = "/assets/images/about-bg.jpg"
-					aboutMap["imageAlt"] = "Artisanal Craftsmanship"
-					b, _ = json.Marshal(aboutMap)
-				}
-			}
 			s.About = b
 		}
 	}
