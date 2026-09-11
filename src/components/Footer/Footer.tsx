@@ -42,43 +42,43 @@ export function Footer() {
       try {
         const data = await getPublicSettings({ force: true });
         if (!data?.footer || !isMounted) return;
+        const f = data.footer;
         setFooterInfo({
           ...footerData,
-          ...data.footer,
+          ...f,
           branding: {
             ...(footerData?.branding || {}),
-            ...(data.footer?.branding || {}),
+            ...(f?.branding || {}),
             logo: {
-              ...(footerData?.branding?.logo || {}),
-              ...(data.footer?.branding?.logo || {}),
+              text: f?.branding?.logo?.text?.trim() ? f.branding.logo.text : footerData.branding.logo.text,
+              subtext: f?.branding?.logo?.subtext?.trim() ? f.branding.logo.subtext : footerData.branding.logo.subtext,
+              href: f?.branding?.logo?.href?.trim() ? f.branding.logo.href : footerData.branding.logo.href,
             },
+            description: f?.branding?.description?.trim() ? f.branding.description : footerData.branding.description,
             socials:
-              Array.isArray(data.footer?.branding?.socials) &&
-                data.footer.branding.socials.length > 0
-                ? data.footer.branding.socials
+              Array.isArray(f?.branding?.socials) && f.branding.socials.length > 0 && f.branding.socials.some((s: any) => s?.label || s?.href)
+                ? f.branding.socials
+                : Array.isArray(f?.socials) && f.socials.length > 0 && f.socials.some((s: any) => s?.label || s?.href)
+                ? f.socials
                 : footerData?.branding?.socials || [],
           },
           navigation: {
-            ...(footerData?.navigation || {}),
-            ...(data.footer?.navigation || {}),
+            title: f?.navigation?.title?.trim() ? f.navigation.title : footerData.navigation.title,
             links:
-              Array.isArray(data.footer?.navigation?.links) &&
-                data.footer.navigation.links.length > 0
-                ? data.footer.navigation.links
+              Array.isArray(f?.navigation?.links) && f.navigation.links.length > 0 && f.navigation.links.some((l: any) => l?.label || l?.href)
+                ? f.navigation.links
                 : footerData?.navigation?.links || [],
           },
           payment: {
-            ...(footerData?.payment || {}),
-            ...(data.footer?.payment || {}),
+            title: f?.payment?.title?.trim() ? f.payment.title : footerData.payment.title,
+            subtitle: f?.payment?.subtitle?.trim() ? f.payment.subtitle : footerData.payment.subtitle,
             methods:
-              Array.isArray(data.footer?.payment?.methods) &&
-                data.footer.payment.methods.length > 0
-                ? data.footer.payment.methods
+              Array.isArray(f?.payment?.methods) && f.payment.methods.length > 0 && f.payment.methods.some((m: any) => typeof m === "string" ? m.trim() : m)
+                ? f.payment.methods
                 : footerData?.payment?.methods || [],
           },
           copyright: {
-            ...(footerData?.copyright || {}),
-            ...(data.footer?.copyright || {}),
+            text: f?.copyright?.text?.trim() ? f.copyright.text : footerData.copyright.text,
           },
         });
       } catch (error) {

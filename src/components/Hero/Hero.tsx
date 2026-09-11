@@ -75,27 +75,30 @@ export function Hero() {
         if (!data || !isMounted) return;
 
         if (data?.hero) {
+          const h = data.hero;
           setResolvedHero({
             ...heroData,
-            ...data.hero,
+            ...h,
+            tagline: h.tagline?.trim() ? h.tagline : heroData.tagline,
+            image: h.image?.trim() ? h.image : (heroData.image || "/assets/images/hero-perfume.webp"),
+            imageAlt: h.imageAlt?.trim() ? h.imageAlt : (heroData.imageAlt || "Hero Visual"),
             title: {
-              ...(heroData?.title || {}),
-              ...(data.hero?.title || {}),
+              main: h.title?.main?.trim() ? h.title.main : heroData.title.main,
+              highlight: h.title?.highlight?.trim() ? h.title.highlight : heroData.title.highlight,
             },
             description: {
-              ...(heroData?.description || {}),
-              ...(data.hero?.description || {}),
+              prefix: (h.description?.prefix && h.description.prefix.trim() !== "") ? h.description.prefix : heroData.description.prefix,
+              italic: (h.description?.italic && h.description.italic.trim() !== "") ? h.description.italic : heroData.description.italic,
+              suffix: (h.description?.suffix && h.description.suffix.trim() !== "") ? h.description.suffix : heroData.description.suffix,
             },
             buttons: {
-              ...(heroData?.buttons || {}),
-              ...(data.hero?.buttons || {}),
               primary: {
-                ...(heroData?.buttons?.primary || {}),
-                ...(data.hero?.buttons?.primary || {}),
+                label: h.buttons?.primary?.label?.trim() ? h.buttons.primary.label : heroData.buttons.primary.label,
+                href: h.buttons?.primary?.href?.trim() ? h.buttons.primary.href : heroData.buttons.primary.href,
               },
               secondary: {
-                ...(heroData?.buttons?.secondary || {}),
-                ...(data.hero?.buttons?.secondary || {}),
+                label: h.buttons?.secondary?.label?.trim() ? h.buttons.secondary.label : heroData.buttons.secondary.label,
+                href: h.buttons?.secondary?.href?.trim() ? h.buttons.secondary.href : heroData.buttons.secondary.href,
               },
             },
           });
@@ -158,9 +161,13 @@ export function Hero() {
 
   // Ambil URL gambar latar belakang dari resolvedHero (jika ada) dengan fallback default
   const heroBackgroundImage =
-    resolvedHero?.image || heroData?.image || "/assets/images/hero-perfume.webp";
+    (resolvedHero?.image && resolvedHero.image.trim() !== "")
+      ? resolvedHero.image
+      : (heroData?.image || "/assets/images/hero-perfume.webp");
   const heroImageAlt =
-    resolvedHero?.imageAlt || heroData?.imageAlt || "Hero Visual";
+    (resolvedHero?.imageAlt && resolvedHero.imageAlt.trim() !== "")
+      ? resolvedHero.imageAlt
+      : (heroData?.imageAlt || "Hero Visual");
 
   return (
     <section id="home" className={`${styles.hero} ${isDimmed ? styles.dimmed : ""}`}>

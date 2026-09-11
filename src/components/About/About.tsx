@@ -67,14 +67,21 @@ export function About() {
         if (!data || !isMounted) return;
 
         // Gambar About dari settings DB
-        if (data?.about?.image) setAboutImage(data.about.image);
-        if (data?.about?.imageAlt) setAboutImageAlt(data.about.imageAlt);
+        if (data?.about?.image && data.about.image.trim() !== "") {
+          setAboutImage(data.about.image);
+        }
+        if (data?.about?.imageAlt && data.about.imageAlt.trim() !== "") {
+          setAboutImageAlt(data.about.imageAlt);
+        }
 
         // Konten About dari settings DB (fallback parsial ke JSON)
         if (data?.about?.content) {
+          const c = data.about.content;
           setAboutContent({
-            ...(aboutData?.content || {}),
-            ...data.about.content,
+            tagline: c.tagline?.trim() ? c.tagline : (aboutData?.content?.tagline || ""),
+            heading: c.heading?.trim() ? c.heading : (aboutData?.content?.heading || ""),
+            leadText: c.leadText?.trim() ? c.leadText : (aboutData?.content?.leadText || ""),
+            bodyText: c.bodyText?.trim() ? c.bodyText : (aboutData?.content?.bodyText || ""),
           });
         }
 

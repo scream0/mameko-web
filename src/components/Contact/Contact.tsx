@@ -45,33 +45,43 @@ export function Contact() {
       try {
         const data = await getPublicSettings({ force: true });
         if (!data?.contact || !isMounted) return;
+        const c = data.contact;
         setContactInfo({
           ...contactData,
-          ...data.contact,
+          ...c,
+          whatsappNumber: c.whatsappNumber?.trim() ? c.whatsappNumber : contactData.whatsappNumber,
           header: {
-            ...(contactData?.header || {}),
-            ...(data.contact?.header || {}),
+            tagline: c.header?.tagline?.trim() ? c.header.tagline : contactData.header.tagline,
             title: {
-              ...(contactData?.header?.title || {}),
-              ...(data.contact?.header?.title || {}),
+              main: c.header?.title?.main?.trim() ? c.header.title.main : contactData.header.title.main,
+              highlight: c.header?.title?.highlight?.trim() ? c.header.title.highlight : contactData.header.title.highlight,
             },
           },
           infoItems:
-            Array.isArray(data.contact?.infoItems) &&
-            data.contact.infoItems.length > 0
-              ? data.contact.infoItems
+            Array.isArray(c.infoItems) &&
+            c.infoItems.length > 0 &&
+            c.infoItems.some((i: any) => (i.title && i.title.trim()) || (i.value && i.value.trim()))
+              ? c.infoItems
               : contactData?.infoItems || [],
           headquarters: {
-            ...(contactData?.headquarters || {}),
-            ...(data.contact?.headquarters || {}),
+            title: c.headquarters?.title?.trim() ? c.headquarters.title : contactData.headquarters.title,
+            address:
+              Array.isArray(c.headquarters?.address) &&
+              c.headquarters.address.length > 0 &&
+              c.headquarters.address.some((a: any) => typeof a === "string" && a.trim())
+                ? c.headquarters.address
+                : contactData.headquarters.address,
+            coordinates: c.headquarters?.coordinates?.trim() ? c.headquarters.coordinates : contactData.headquarters.coordinates,
           },
           form: {
-            ...(contactData?.form || {}),
-            ...(data.contact?.form || {}),
+            title: c.form?.title?.trim() ? c.form.title : contactData.form.title,
             fields: {
-              ...(contactData?.form?.fields || {}),
-              ...(data.contact?.form?.fields || {}),
+              name: c.form?.fields?.name?.trim() ? c.form.fields.name : contactData.form.fields.name,
+              email: c.form?.fields?.email?.trim() ? c.form.fields.email : contactData.form.fields.email,
+              phone: c.form?.fields?.phone?.trim() ? c.form.fields.phone : contactData.form.fields.phone,
+              message: c.form?.fields?.message?.trim() ? c.form.fields.message : contactData.form.fields.message,
             },
+            submitText: c.form?.submitText?.trim() ? c.form.submitText : contactData.form.submitText,
           },
         });
       } catch (error) {

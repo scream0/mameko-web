@@ -111,123 +111,161 @@ export default function SettingsView() {
   const cfg = settingsConfig;
 
   // Map dari settings DB ke state lokal bertab
-  const mapSettingsToState = (data: any) => ({
-    store: {
-      storeName: data?.storeName || "",
-      storeEmail: data?.storeEmail || "",
-      currency: data?.currency || "IDR",
-      adminLocale: data?.adminLocale || "id",
-      lowStockThreshold: Number(data?.lowStockThreshold ?? 10),
-      storeCityId: data?.storeCityId || "",
-      storeCityName: data?.storeCityName || "",
-      enableMidtrans: data?.enableMidtrans ?? true,
-      enableManualTransfer: data?.enableManualTransfer ?? false,
-      midtransIsProduction: data?.midtransIsProduction ?? false,
-    },
-    couriers: {
-      activeCouriers: data?.activeCouriers || ["jne", "jnt", "sicepat", "anteraja"],
-      biteshipIsProduction: data?.biteshipIsProduction ?? false,
-      biteshipAutoOrder: data?.biteshipAutoOrder ?? false,
-    },
-    hero: {
-      image: data?.hero?.image || "",
-      imageAlt: data?.hero?.imageAlt || "",
-      imagePublicId: data?.hero?.imagePublicId || "",
-      tagline: data?.hero?.tagline || "",
-      title: {
-        main: data?.hero?.title?.main || "",
-        highlight: data?.hero?.title?.highlight || "",
+  // Map dari settings DB ke state lokal bertab
+  const mapSettingsToState = (data: any) => {
+    const raw = data?.value && typeof data.value === "object" ? data.value : {};
+    const pick = (primary: any, secondary: any, fallback = "") => {
+      if (primary !== undefined && primary !== null && String(primary).trim() !== "") return primary;
+      if (secondary !== undefined && secondary !== null && String(secondary).trim() !== "") return secondary;
+      return fallback;
+    };
+
+    return {
+      store: {
+        storeName: pick(data?.storeName, raw?.storeName),
+        storeEmail: pick(data?.storeEmail, raw?.storeEmail),
+        currency: data?.currency || raw?.currency || "IDR",
+        adminLocale: data?.adminLocale || raw?.adminLocale || "id",
+        lowStockThreshold: Number(data?.lowStockThreshold ?? raw?.lowStockThreshold ?? 10),
+        storeCityId: pick(data?.storeCityId, raw?.storeCityId),
+        storeCityName: pick(data?.storeCityName, raw?.storeCityName),
+        enableMidtrans: data?.enableMidtrans ?? raw?.enableMidtrans ?? true,
+        enableManualTransfer: data?.enableManualTransfer ?? raw?.enableManualTransfer ?? false,
+        midtransIsProduction: data?.midtransIsProduction ?? raw?.midtransIsProduction ?? false,
       },
-      description: {
-        prefix: data?.hero?.description?.prefix || "",
-        italic: data?.hero?.description?.italic || "",
-        suffix: data?.hero?.description?.suffix || "",
+      couriers: {
+        activeCouriers: data?.activeCouriers || raw?.activeCouriers || ["jne", "jnt", "sicepat", "anteraja"],
+        biteshipIsProduction: data?.biteshipIsProduction ?? raw?.biteshipIsProduction ?? false,
+        biteshipAutoOrder: data?.biteshipAutoOrder ?? raw?.biteshipAutoOrder ?? false,
       },
-      buttons: {
-        primary: {
-          label: data?.hero?.buttons?.primary?.label || "",
-          href: data?.hero?.buttons?.primary?.href || "",
-        },
-        secondary: {
-          label: data?.hero?.buttons?.secondary?.label || "",
-          href: data?.hero?.buttons?.secondary?.href || "",
-        },
-      },
-    },
-    about: {
-      image: data?.about?.image || "",
-      imageAlt: data?.about?.imageAlt || "",
-      imagePublicId: data?.about?.imagePublicId || "",
-      content: {
-        tagline: data?.about?.content?.tagline || "",
-        heading: data?.about?.content?.heading || "",
-        leadText: data?.about?.content?.leadText || "",
-        bodyText: data?.about?.content?.bodyText || "",
-      },
-      features: data?.about?.features || [{ number: "01", title: "", desc: "" }],
-    },
-    product: {
-      header: {
-        tagline: data?.product?.header?.tagline || "",
+      hero: {
+        image: pick(data?.hero?.image, raw?.hero?.image),
+        imageAlt: pick(data?.hero?.imageAlt, raw?.hero?.imageAlt),
+        imagePublicId: pick(data?.hero?.imagePublicId, raw?.hero?.imagePublicId),
+        tagline: pick(data?.hero?.tagline, raw?.hero?.tagline),
         title: {
-          main: data?.product?.header?.title?.main || "",
-          highlight: data?.product?.header?.title?.highlight || "",
+          main: pick(data?.hero?.title?.main, raw?.hero?.title?.main),
+          highlight: pick(data?.hero?.title?.highlight, raw?.hero?.title?.highlight),
+        },
+        description: {
+          prefix: pick(data?.hero?.description?.prefix, raw?.hero?.description?.prefix),
+          italic: pick(data?.hero?.description?.italic, raw?.hero?.description?.italic),
+          suffix: pick(data?.hero?.description?.suffix, raw?.hero?.description?.suffix),
+        },
+        buttons: {
+          primary: {
+            label: pick(data?.hero?.buttons?.primary?.label, raw?.hero?.buttons?.primary?.label),
+            href: pick(data?.hero?.buttons?.primary?.href, raw?.hero?.buttons?.primary?.href),
+          },
+          secondary: {
+            label: pick(data?.hero?.buttons?.secondary?.label, raw?.hero?.buttons?.secondary?.label),
+            href: pick(data?.hero?.buttons?.secondary?.href, raw?.hero?.buttons?.secondary?.href),
+          },
         },
       },
-    },
-    contact: {
-      whatsappNumber: data?.contact?.whatsappNumber || "",
-      header: {
-        tagline: data?.contact?.header?.tagline || "",
-        title: {
-          main: data?.contact?.header?.title?.main || "",
-          highlight: data?.contact?.header?.title?.highlight || "",
+      about: {
+        image: pick(data?.about?.image, raw?.about?.image),
+        imageAlt: pick(data?.about?.imageAlt, raw?.about?.imageAlt),
+        imagePublicId: pick(data?.about?.imagePublicId, raw?.about?.imagePublicId),
+        content: {
+          tagline: pick(data?.about?.content?.tagline, raw?.about?.content?.tagline),
+          heading: pick(data?.about?.content?.heading, raw?.about?.content?.heading),
+          leadText: pick(data?.about?.content?.leadText, raw?.about?.content?.leadText),
+          bodyText: pick(data?.about?.content?.bodyText, raw?.about?.content?.bodyText),
+        },
+        features:
+          Array.isArray(data?.about?.features) && data.about.features.length > 0
+            ? data.about.features
+            : Array.isArray(raw?.about?.features) && raw.about.features.length > 0
+            ? raw.about.features
+            : [{ number: "01", title: "", desc: "" }],
+      },
+      product: {
+        header: {
+          tagline: pick(data?.product?.header?.tagline, raw?.product?.header?.tagline),
+          title: {
+            main: pick(data?.product?.header?.title?.main, raw?.product?.header?.title?.main),
+            highlight: pick(data?.product?.header?.title?.highlight, raw?.product?.header?.title?.highlight),
+          },
         },
       },
-      infoItems: data?.contact?.infoItems || [
-        { icon: "mail", title: "", value: "" },
-      ],
-      headquarters: {
-        title: data?.contact?.headquarters?.title || "",
-        address: data?.contact?.headquarters?.address || [""],
-        coordinates: data?.contact?.headquarters?.coordinates || "",
-      },
-      form: {
-        title: data?.contact?.form?.title || "",
-        fields: {
-          name: data?.contact?.form?.fields?.name || "",
-          email: data?.contact?.form?.fields?.email || "",
-          phone: data?.contact?.form?.fields?.phone || "",
-          message: data?.contact?.form?.fields?.message || "",
+      contact: {
+        whatsappNumber: pick(data?.contact?.whatsappNumber, raw?.contact?.whatsappNumber),
+        header: {
+          tagline: pick(data?.contact?.header?.tagline, raw?.contact?.header?.tagline),
+          title: {
+            main: pick(data?.contact?.header?.title?.main, raw?.contact?.header?.title?.main),
+            highlight: pick(data?.contact?.header?.title?.highlight, raw?.contact?.header?.title?.highlight),
+          },
         },
-        submitText: data?.contact?.form?.submitText || "",
-      },
-      bankAccounts: data?.contact?.bankAccounts || [],
-    },
-    footer: {
-      branding: {
-        logo: {
-          text: data?.footer?.branding?.logo?.text || "",
-          subtext: data?.footer?.branding?.logo?.subtext || "",
-          href: data?.footer?.branding?.logo?.href || "",
+        infoItems:
+          Array.isArray(data?.contact?.infoItems) && data.contact.infoItems.length > 0
+            ? data.contact.infoItems
+            : Array.isArray(raw?.contact?.infoItems) && raw.contact.infoItems.length > 0
+            ? raw.contact.infoItems
+            : [{ icon: "mail", title: "", value: "" }],
+        headquarters: {
+          title: pick(data?.contact?.headquarters?.title, raw?.contact?.headquarters?.title),
+          address:
+            Array.isArray(data?.contact?.headquarters?.address) && data.contact.headquarters.address.length > 0
+              ? data.contact.headquarters.address
+              : Array.isArray(raw?.contact?.headquarters?.address) && raw.contact.headquarters.address.length > 0
+              ? raw.contact.headquarters.address
+              : [""],
+          coordinates: pick(data?.contact?.headquarters?.coordinates, raw?.contact?.headquarters?.coordinates),
         },
-        description: data?.footer?.branding?.description || "",
-        socials: data?.footer?.branding?.socials || [
-          { href: "", icon: "", label: "" },
-        ],
+        form: {
+          title: pick(data?.contact?.form?.title, raw?.contact?.form?.title),
+          fields: {
+            name: pick(data?.contact?.form?.fields?.name, raw?.contact?.form?.fields?.name),
+            email: pick(data?.contact?.form?.fields?.email, raw?.contact?.form?.fields?.email),
+            phone: pick(data?.contact?.form?.fields?.phone, raw?.contact?.form?.fields?.phone),
+            message: pick(data?.contact?.form?.fields?.message, raw?.contact?.form?.fields?.message),
+          },
+          submitText: pick(data?.contact?.form?.submitText, raw?.contact?.form?.submitText),
+        },
+        bankAccounts: data?.contact?.bankAccounts || raw?.contact?.bankAccounts || [],
       },
-      navigation: {
-        title: data?.footer?.navigation?.title || "",
-        links: data?.footer?.navigation?.links || [{ label: "", href: "" }],
+      footer: {
+        branding: {
+          logo: {
+            text: pick(data?.footer?.branding?.logo?.text, raw?.footer?.branding?.logo?.text),
+            subtext: pick(data?.footer?.branding?.logo?.subtext, raw?.footer?.branding?.logo?.subtext),
+            href: pick(data?.footer?.branding?.logo?.href, raw?.footer?.branding?.logo?.href),
+          },
+          description: pick(data?.footer?.branding?.description, raw?.footer?.branding?.description),
+          socials:
+            Array.isArray(data?.footer?.branding?.socials) && data.footer.branding.socials.length > 0
+              ? data.footer.branding.socials
+              : Array.isArray(raw?.footer?.branding?.socials) && raw.footer.branding.socials.length > 0
+              ? raw.footer.branding.socials
+              : Array.isArray(data?.footer?.socials) && data.footer.socials.length > 0
+              ? data.footer.socials
+              : [{ href: "", icon: "", label: "" }],
+        },
+        navigation: {
+          title: pick(data?.footer?.navigation?.title, raw?.footer?.navigation?.title),
+          links:
+            Array.isArray(data?.footer?.navigation?.links) && data.footer.navigation.links.length > 0
+              ? data.footer.navigation.links
+              : Array.isArray(raw?.footer?.navigation?.links) && raw.footer.navigation.links.length > 0
+              ? raw.footer.navigation.links
+              : [{ label: "", href: "" }],
+        },
+        payment: {
+          title: pick(data?.footer?.payment?.title, raw?.footer?.payment?.title),
+          subtitle: pick(data?.footer?.payment?.subtitle, raw?.footer?.payment?.subtitle),
+          methods:
+            Array.isArray(data?.footer?.payment?.methods) && data.footer.payment.methods.length > 0
+              ? data.footer.payment.methods
+              : Array.isArray(raw?.footer?.payment?.methods) && raw.footer.payment.methods.length > 0
+              ? raw.footer.payment.methods
+              : [""],
+        },
+        copyright: { text: pick(data?.footer?.copyright?.text, raw?.footer?.copyright?.text) },
       },
-      payment: {
-        title: data?.footer?.payment?.title || "",
-        subtitle: data?.footer?.payment?.subtitle || "",
-        methods: data?.footer?.payment?.methods || [""],
-      },
-      copyright: { text: data?.footer?.copyright?.text || "" },
-    },
-  });
+    };
+  };
 
   useEffect(() => {
     let subscription = null;
@@ -408,114 +446,144 @@ export default function SettingsView() {
   // Susun payload dari state bertab
   const buildPayload = () => {
     const s = settings;
-    const strictValue = (val: any) => (val === undefined ? "" : val);
+    const r = rawSettings || {};
+    const rawVal = r?.value && typeof r.value === "object" ? r.value : {};
+    const strictValue = (val: any, ...fallbacks: any[]) => {
+      if (val !== undefined && val !== null && String(val).trim() !== "") return val;
+      for (const fb of fallbacks) {
+        if (fb !== undefined && fb !== null && String(fb).trim() !== "") return fb;
+      }
+      return "";
+    };
+
     return {
-      storeName: strictValue(s.store.storeName),
-      storeEmail: strictValue(s.store.storeEmail),
-      currency: s.store.currency,
-      adminLocale: s.store.adminLocale === "en" ? "en" : "id",
-      lowStockThreshold: Number(s.store.lowStockThreshold) || 10,
-      storeCityId: strictValue(s.store.storeCityId),
-      storeCityName: strictValue(s.store.storeCityName),
-      enableMidtrans: Boolean(s.store.enableMidtrans),
-      enableManualTransfer: Boolean(s.store.enableManualTransfer),
-      midtransIsProduction: Boolean(s.store.midtransIsProduction),
-      activeCouriers: s.couriers.activeCouriers || ["jne", "jnt", "sicepat"],
-      biteshipIsProduction: Boolean(s.couriers.biteshipIsProduction),
-      biteshipAutoOrder: Boolean(s.couriers.biteshipAutoOrder),
+      storeName: strictValue(s.store.storeName, r.storeName, rawVal.storeName),
+      storeEmail: strictValue(s.store.storeEmail, r.storeEmail, rawVal.storeEmail),
+      currency: s.store.currency || r.currency || "IDR",
+      adminLocale: (s.store.adminLocale || r.adminLocale) === "en" ? "en" : "id",
+      lowStockThreshold: Number(s.store.lowStockThreshold || r.lowStockThreshold) || 10,
+      storeCityId: strictValue(s.store.storeCityId, r.storeCityId, rawVal.storeCityId),
+      storeCityName: strictValue(s.store.storeCityName, r.storeCityName, rawVal.storeCityName),
+      enableMidtrans: Boolean(s.store.enableMidtrans ?? r.enableMidtrans),
+      enableManualTransfer: Boolean(s.store.enableManualTransfer ?? r.enableManualTransfer),
+      midtransIsProduction: Boolean(s.store.midtransIsProduction ?? r.midtransIsProduction),
+      activeCouriers:
+        s.couriers.activeCouriers && s.couriers.activeCouriers.length > 0
+          ? s.couriers.activeCouriers
+          : r.activeCouriers || ["jne", "jnt", "sicepat"],
+      biteshipIsProduction: Boolean(s.couriers.biteshipIsProduction ?? r.biteshipIsProduction),
+      biteshipAutoOrder: Boolean(s.couriers.biteshipAutoOrder ?? r.biteshipAutoOrder),
       hero: {
-        image: strictValue(s.hero.image),
-        imageAlt: strictValue(s.hero.imageAlt),
-        imagePublicId: strictValue(s.hero.imagePublicId),
-        tagline: strictValue(s.hero.tagline),
+        image: strictValue(s.hero.image, r.hero?.image, rawVal.hero?.image),
+        imageAlt: strictValue(s.hero.imageAlt, r.hero?.imageAlt, rawVal.hero?.imageAlt),
+        imagePublicId: strictValue(s.hero.imagePublicId, r.hero?.imagePublicId, rawVal.hero?.imagePublicId),
+        tagline: strictValue(s.hero.tagline, r.hero?.tagline, rawVal.hero?.tagline),
         title: {
-          main: strictValue(s.hero.title?.main),
-          highlight: strictValue(s.hero.title?.highlight),
+          main: strictValue(s.hero.title?.main, r.hero?.title?.main, rawVal.hero?.title?.main),
+          highlight: strictValue(s.hero.title?.highlight, r.hero?.title?.highlight, rawVal.hero?.title?.highlight),
         },
         description: {
-          prefix: strictValue(s.hero.description?.prefix),
-          italic: strictValue(s.hero.description?.italic),
-          suffix: strictValue(s.hero.description?.suffix),
+          prefix: strictValue(s.hero.description?.prefix, r.hero?.description?.prefix, rawVal.hero?.description?.prefix),
+          italic: strictValue(s.hero.description?.italic, r.hero?.description?.italic, rawVal.hero?.description?.italic),
+          suffix: strictValue(s.hero.description?.suffix, r.hero?.description?.suffix, rawVal.hero?.description?.suffix),
         },
         buttons: {
           primary: {
-            label: strictValue(s.hero.buttons?.primary?.label),
-            href: strictValue(s.hero.buttons?.primary?.href),
+            label: strictValue(s.hero.buttons?.primary?.label, r.hero?.buttons?.primary?.label, rawVal.hero?.buttons?.primary?.label),
+            href: strictValue(s.hero.buttons?.primary?.href, r.hero?.buttons?.primary?.href, rawVal.hero?.buttons?.primary?.href),
           },
           secondary: {
-            label: strictValue(s.hero.buttons?.secondary?.label),
-            href: strictValue(s.hero.buttons?.secondary?.href),
+            label: strictValue(s.hero.buttons?.secondary?.label, r.hero?.buttons?.secondary?.label, rawVal.hero?.buttons?.secondary?.label),
+            href: strictValue(s.hero.buttons?.secondary?.href, r.hero?.buttons?.secondary?.href, rawVal.hero?.buttons?.secondary?.href),
           },
         },
       },
       about: {
-        image: strictValue(s.about.image),
-        imageAlt: strictValue(s.about.imageAlt),
-        imagePublicId: strictValue(s.about.imagePublicId),
+        image: strictValue(s.about.image, r.about?.image, rawVal.about?.image),
+        imageAlt: strictValue(s.about.imageAlt, r.about?.imageAlt, rawVal.about?.imageAlt),
+        imagePublicId: strictValue(s.about.imagePublicId, r.about?.imagePublicId, rawVal.about?.imagePublicId),
         content: {
-          tagline: strictValue(s.about.content?.tagline),
-          heading: strictValue(s.about.content?.heading),
-          leadText: strictValue(s.about.content?.leadText),
-          bodyText: strictValue(s.about.content?.bodyText),
+          tagline: strictValue(s.about.content?.tagline, r.about?.content?.tagline, rawVal.about?.content?.tagline),
+          heading: strictValue(s.about.content?.heading, r.about?.content?.heading, rawVal.about?.content?.heading),
+          leadText: strictValue(s.about.content?.leadText, r.about?.content?.leadText, rawVal.about?.content?.leadText),
+          bodyText: strictValue(s.about.content?.bodyText, r.about?.content?.bodyText, rawVal.about?.content?.bodyText),
         },
-        features: s.about.features || [],
+        features:
+          Array.isArray(s.about.features) && s.about.features.length > 0 && s.about.features.some((f: any) => f.title?.trim() || f.desc?.trim())
+            ? s.about.features
+            : r.about?.features || rawVal.about?.features || [],
       },
       product: {
         header: {
-          tagline: strictValue(s.product?.header?.tagline),
+          tagline: strictValue(s.product?.header?.tagline, r.product?.header?.tagline, rawVal.product?.header?.tagline),
           title: {
-            main: strictValue(s.product?.header?.title?.main),
-            highlight: strictValue(s.product?.header?.title?.highlight),
+            main: strictValue(s.product?.header?.title?.main, r.product?.header?.title?.main, rawVal.product?.header?.title?.main),
+            highlight: strictValue(s.product?.header?.title?.highlight, r.product?.header?.title?.highlight, rawVal.product?.header?.title?.highlight),
           },
         },
       },
       contact: {
-        whatsappNumber: strictValue(s.contact.whatsappNumber),
+        whatsappNumber: strictValue(s.contact.whatsappNumber, r.contact?.whatsappNumber, rawVal.contact?.whatsappNumber),
         header: {
-          tagline: strictValue(s.contact.header?.tagline),
+          tagline: strictValue(s.contact.header?.tagline, r.contact?.header?.tagline, rawVal.contact?.header?.tagline),
           title: {
-            main: strictValue(s.contact.header?.title?.main),
-            highlight: strictValue(s.contact.header?.title?.highlight),
+            main: strictValue(s.contact.header?.title?.main, r.contact?.header?.title?.main, rawVal.contact?.header?.title?.main),
+            highlight: strictValue(s.contact.header?.title?.highlight, r.contact?.header?.title?.highlight, rawVal.contact?.header?.title?.highlight),
           },
         },
-        infoItems: s.contact.infoItems || [],
+        infoItems:
+          Array.isArray(s.contact.infoItems) && s.contact.infoItems.length > 0 && s.contact.infoItems.some((i: any) => i.title?.trim() || i.value?.trim())
+            ? s.contact.infoItems
+            : r.contact?.infoItems || rawVal.contact?.infoItems || [],
         headquarters: {
-          title: strictValue(s.contact.headquarters?.title),
-          address: s.contact.headquarters?.address || [],
-          coordinates: strictValue(s.contact.headquarters?.coordinates),
+          title: strictValue(s.contact.headquarters?.title, r.contact?.headquarters?.title, rawVal.contact?.headquarters?.title),
+          address:
+            Array.isArray(s.contact.headquarters?.address) && s.contact.headquarters.address.length > 0 && s.contact.headquarters.address.some((a: any) => a?.trim())
+              ? s.contact.headquarters.address
+              : r.contact?.headquarters?.address || rawVal.contact?.headquarters?.address || [],
+          coordinates: strictValue(s.contact.headquarters?.coordinates, r.contact?.headquarters?.coordinates, rawVal.contact?.headquarters?.coordinates),
         },
         form: {
-          title: strictValue(s.contact.form?.title),
+          title: strictValue(s.contact.form?.title, r.contact?.form?.title, rawVal.contact?.form?.title),
           fields: {
-            name: strictValue(s.contact.form?.fields?.name),
-            email: strictValue(s.contact.form?.fields?.email),
-            phone: strictValue(s.contact.form?.fields?.phone),
-            message: strictValue(s.contact.form?.fields?.message),
+            name: strictValue(s.contact.form?.fields?.name, r.contact?.form?.fields?.name, rawVal.contact?.form?.fields?.name),
+            email: strictValue(s.contact.form?.fields?.email, r.contact?.form?.fields?.email, rawVal.contact?.form?.fields?.email),
+            phone: strictValue(s.contact.form?.fields?.phone, r.contact?.form?.fields?.phone, rawVal.contact?.form?.fields?.phone),
+            message: strictValue(s.contact.form?.fields?.message, r.contact?.form?.fields?.message, rawVal.contact?.form?.fields?.message),
           },
-          submitText: strictValue(s.contact.form?.submitText),
+          submitText: strictValue(s.contact.form?.submitText, r.contact?.form?.submitText, rawVal.contact?.form?.submitText),
         },
-        bankAccounts: s.contact.bankAccounts || [],
+        bankAccounts: s.contact.bankAccounts || r.contact?.bankAccounts || rawVal.contact?.bankAccounts || [],
       },
       footer: {
         branding: {
           logo: {
-            text: strictValue(s.footer.branding?.logo?.text),
-            subtext: strictValue(s.footer.branding?.logo?.subtext),
-            href: strictValue(s.footer.branding?.logo?.href),
+            text: strictValue(s.footer.branding?.logo?.text, r.footer?.branding?.logo?.text, rawVal.footer?.branding?.logo?.text),
+            subtext: strictValue(s.footer.branding?.logo?.subtext, r.footer?.branding?.logo?.subtext, rawVal.footer?.branding?.logo?.subtext),
+            href: strictValue(s.footer.branding?.logo?.href, r.footer?.branding?.logo?.href, rawVal.footer?.branding?.logo?.href),
           },
-          description: strictValue(s.footer.branding?.description),
-          socials: s.footer.branding?.socials || [],
+          description: strictValue(s.footer.branding?.description, r.footer?.branding?.description, rawVal.footer?.branding?.description),
+          socials:
+            Array.isArray(s.footer.branding?.socials) && s.footer.branding.socials.length > 0 && s.footer.branding.socials.some((soc: any) => soc.label?.trim() || soc.href?.trim())
+              ? s.footer.branding.socials
+              : r.footer?.branding?.socials || rawVal.footer?.branding?.socials || [],
         },
         navigation: {
-          title: strictValue(s.footer.navigation?.title),
-          links: s.footer.navigation?.links || [],
+          title: strictValue(s.footer.navigation?.title, r.footer?.navigation?.title, rawVal.footer?.navigation?.title),
+          links:
+            Array.isArray(s.footer.navigation?.links) && s.footer.navigation.links.length > 0 && s.footer.navigation.links.some((l: any) => l.label?.trim() || l.href?.trim())
+              ? s.footer.navigation.links
+              : r.footer?.navigation?.links || rawVal.footer?.navigation?.links || [],
         },
         payment: {
-          title: strictValue(s.footer.payment?.title),
-          subtitle: strictValue(s.footer.payment?.subtitle),
-          methods: s.footer.payment?.methods || [],
+          title: strictValue(s.footer.payment?.title, r.footer?.payment?.title, rawVal.footer?.payment?.title),
+          subtitle: strictValue(s.footer.payment?.subtitle, r.footer?.payment?.subtitle, rawVal.footer?.payment?.subtitle),
+          methods:
+            Array.isArray(s.footer.payment?.methods) && s.footer.payment.methods.length > 0 && s.footer.payment.methods.some((m: any) => m?.trim())
+              ? s.footer.payment.methods
+              : r.footer?.payment?.methods || rawVal.footer?.payment?.methods || [],
         },
-        copyright: { text: strictValue(s.footer.copyright?.text) },
+        copyright: { text: strictValue(s.footer.copyright?.text, r.footer?.copyright?.text, rawVal.footer?.copyright?.text) },
       },
       ...(rawSettings?.promoBannerEnabled !== undefined
         ? {

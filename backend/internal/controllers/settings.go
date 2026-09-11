@@ -215,8 +215,32 @@ func GetSettings(c *fiber.Ctx) error {
 	if val, ok := rowMap["biteship_auto_order"].(bool); ok {
 		s.BiteshipAutoOrder = val
 	}
-	if val, ok := rowMap["hero"]; ok && val != nil {
+	// Parse legacy value JSON column if present for seamless backward compatibility
+	var legacyValue map[string]interface{}
+	if val, ok := rowMap["value"]; ok && val != nil {
 		if b, err := json.Marshal(val); err == nil {
+			_ = json.Unmarshal(b, &legacyValue)
+		}
+	}
+
+	// Helper to get raw JSON for a section, falling back to legacy value
+	getSectionRaw := func(colName string) interface{} {
+		if val, ok := rowMap[colName]; ok && val != nil {
+			if b, err := json.Marshal(val); err == nil && len(b) > 2 && string(b) != "{}" && string(b) != "null" {
+				return val
+			}
+		}
+		if legacyValue != nil {
+			if val, ok := legacyValue[colName]; ok && val != nil {
+				return val
+			}
+		}
+		return nil
+	}
+
+	heroRaw := getSectionRaw("hero")
+	if heroRaw != nil {
+		if b, err := json.Marshal(heroRaw); err == nil {
 			var heroMap map[string]interface{}
 			if json.Unmarshal(b, &heroMap) == nil {
 				if img, exists := heroMap["image"].(string); !exists || strings.TrimSpace(img) == "" {
@@ -228,8 +252,10 @@ func GetSettings(c *fiber.Ctx) error {
 			s.Hero = b
 		}
 	}
-	if val, ok := rowMap["about"]; ok && val != nil {
-		if b, err := json.Marshal(val); err == nil {
+
+	aboutRaw := getSectionRaw("about")
+	if aboutRaw != nil {
+		if b, err := json.Marshal(aboutRaw); err == nil {
 			var aboutMap map[string]interface{}
 			if json.Unmarshal(b, &aboutMap) == nil {
 				if img, exists := aboutMap["image"].(string); !exists || strings.TrimSpace(img) == "" {
@@ -241,18 +267,24 @@ func GetSettings(c *fiber.Ctx) error {
 			s.About = b
 		}
 	}
-	if val, ok := rowMap["product"]; ok && val != nil {
-		if b, err := json.Marshal(val); err == nil {
+
+	productRaw := getSectionRaw("product")
+	if productRaw != nil {
+		if b, err := json.Marshal(productRaw); err == nil {
 			s.Product = b
 		}
 	}
-	if val, ok := rowMap["contact"]; ok && val != nil {
-		if b, err := json.Marshal(val); err == nil {
+
+	contactRaw := getSectionRaw("contact")
+	if contactRaw != nil {
+		if b, err := json.Marshal(contactRaw); err == nil {
 			s.Contact = b
 		}
 	}
-	if val, ok := rowMap["footer"]; ok && val != nil {
-		if b, err := json.Marshal(val); err == nil {
+
+	footerRaw := getSectionRaw("footer")
+	if footerRaw != nil {
+		if b, err := json.Marshal(footerRaw); err == nil {
 			s.Footer = b
 		}
 	}
