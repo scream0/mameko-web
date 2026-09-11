@@ -80,7 +80,7 @@ export function Hero() {
             ...heroData,
             ...h,
             tagline: h.tagline?.trim() ? h.tagline : heroData.tagline,
-            image: h.image?.trim() ? h.image : (heroData.image || "/assets/images/hero-perfume.webp"),
+            image: h.image?.trim() ? h.image : (heroData.image),
             imageAlt: h.imageAlt?.trim() ? h.imageAlt : (heroData.imageAlt || "Hero Visual"),
             title: {
               main: h.title?.main?.trim() ? h.title.main : heroData.title.main,
