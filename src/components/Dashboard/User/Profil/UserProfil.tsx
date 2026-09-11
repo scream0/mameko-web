@@ -16,6 +16,7 @@ import { EditProfileModal, AddressFormModal, PasswordModal, OTPModal } from "./P
 import { shouldSkipAuthEvent, logoutUser } from "@/utils/authHelpers";
 import ConfirmationModal from "@/components/UI/Modal/ConfirmationModal";
 import { getApiBaseUrl } from "@/lib/apiClient";
+import { convertToWebP } from "@/utils/imageConverter";
 
 
 const WishlistSection = lazy(() => import("@/components/Dashboard/User/Wishlist/WishlistSection"));
@@ -286,8 +287,11 @@ export default function ProfileSection() {
       const userId = currentUser.id || currentUser.uid;
       const token = currentSession.access_token;
 
+      // Konversi avatar ke WebP sebelum diunggah
+      const webpFile = await convertToWebP(file, { maxWidth: 800, maxHeight: 800, quality: 0.85 });
+
       const data = new FormData();
-      data.append("file", file);
+      data.append("file", webpFile);
       data.append("userId", userId);
       data.append("folder", "avatars");
       data.append("publicId", `avatar-${userId}`);

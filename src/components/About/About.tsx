@@ -20,7 +20,7 @@ const FeatureItem = ({ number, title, desc }) => (
 
 export function About() {
   // Fallback: gambar & konten dari JSON, akan di-override data DB jika tersedia
-  const [aboutImage, setAboutImage] = useState(aboutData?.image?.src || null);
+  const [aboutImage, setAboutImage] = useState(aboutData?.image?.src || "/assets/images/about-bg.jpg");
   const [aboutImageAlt, setAboutImageAlt] = useState(
     aboutData?.image?.alt || "About image",
   );
@@ -28,6 +28,13 @@ export function About() {
   const [aboutFeatures, setAboutFeatures] = useState(
     aboutData?.features || [],
   );
+  const [aboutImgSrc, setAboutImgSrc] = useState(
+    optimizeCloudinaryUrl(aboutData?.image?.src || "/assets/images/about-bg.jpg", IMAGE_PRESETS.ABOUT)
+  );
+
+  useEffect(() => {
+    setAboutImgSrc(optimizeCloudinaryUrl(aboutImage, IMAGE_PRESETS.ABOUT) || "/assets/images/about-bg.jpg");
+  }, [aboutImage]);
 
   const aboutRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -110,13 +117,14 @@ export function About() {
             {/* Kontainer Gambar + Shimmer */}
             <div className={styles.imgContainer}>
               <Image
-                src={optimizeCloudinaryUrl(aboutImage, IMAGE_PRESETS.ABOUT) || "/assets/images/about-bg.jpg"}
+                src={aboutImgSrc}
                 alt={aboutImageAlt}
                 className={styles.aboutImg}
                 width={600}
                 height={750}
                 loading="lazy"
                 sizes="(max-width: 768px) 100vw, 50vw"
+                onError={() => setAboutImgSrc("/placeholder.jpg")}
               />
             </div>
           </div>

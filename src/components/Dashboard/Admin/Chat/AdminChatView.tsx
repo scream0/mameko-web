@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import { AppIcon } from "@/components/UI/Icon/AppIcon";
 import styles from "./AdminChatView.module.css";
 import adminChatConfig from "@/data/ui/adminChatConfig.json";
+import { convertToWebP } from "@/utils/imageConverter";
 
 const playNotificationSound = () => {
   try {
@@ -295,8 +296,9 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
 
       let imageUrl = null;
       if (fileToUpload) {
+        const webpFile = await convertToWebP(fileToUpload, { maxWidth: 1200, maxHeight: 1200, quality: 0.82 });
         const formData = new FormData();
-        formData.append("file", fileToUpload);
+        formData.append("file", webpFile);
         formData.append("folder", "chats");
 
         const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/user/cloudinary", {

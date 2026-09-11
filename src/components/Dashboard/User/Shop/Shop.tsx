@@ -43,6 +43,7 @@ export default function Shop({ searchQuery = "", onBukaDetail, initialData }) {
   );
 
   const [wishlist, setWishlist] = useState([]);
+  const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
 
   // Debounced search query
   const [debouncedSearch, setDebouncedSearch] = useState(searchQuery);
@@ -431,7 +432,7 @@ export default function Shop({ searchQuery = "", onBukaDetail, initialData }) {
                 >
                   {/* Image Section */}
                   <div className={styles.productCardImageWrapper}>
-                    {productImg ? (
+                    {productImg && !failedImages[pId] ? (
                       <Image
                         src={optimizeCloudinaryUrl(productImg, IMAGE_PRESETS.PRODUCT_CARD)}
                         alt={product.name}
@@ -439,11 +440,17 @@ export default function Shop({ searchQuery = "", onBukaDetail, initialData }) {
                         width={320}
                         height={320}
                         sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                        onError={() => setFailedImages((prev) => ({ ...prev, [pId]: true }))}
                       />
                     ) : (
-                      <div className={styles.productCardPlaceholder}>
-                        {shopConfig.card?.placeholderImageText || "MAMEKO PARFUM"}
-                      </div>
+                      <Image
+                        src="/placeholder.jpg"
+                        alt={product.name || "MAMEKO PARFUM"}
+                        className={styles.productCardImg}
+                        width={320}
+                        height={320}
+                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                      />
                     )}
 
                     <span className={styles.cardCategoryBadge}>

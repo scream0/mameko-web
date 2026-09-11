@@ -147,12 +147,14 @@ func GenerateCloudinarySignature(c *fiber.Ctx) error {
 			_ = mw.WriteField("folder", folder)
 			_ = mw.WriteField("overwrite", "true")
 			_ = mw.WriteField("invalidate", "true")
+			_ = mw.WriteField("format", "webp")
 			if publicID != "" {
 				_ = mw.WriteField("public_id", publicID)
 			}
 
 			signParams := []string{
 				fmt.Sprintf("folder=%s", folder),
+				"format=webp",
 				"invalidate=true",
 				"overwrite=true",
 				fmt.Sprintf("timestamp=%s", timestamp),
@@ -169,6 +171,7 @@ func GenerateCloudinarySignature(c *fiber.Ctx) error {
 			// Unsigned upload fallback
 			_ = mw.WriteField("upload_preset", uploadPreset)
 			_ = mw.WriteField("folder", folder)
+			_ = mw.WriteField("format", "webp")
 			_ = mw.WriteField("overwrite", "true")
 			_ = mw.WriteField("invalidate", "true")
 			if publicID != "" {

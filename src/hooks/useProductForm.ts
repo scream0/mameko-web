@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { auth } from "@/lib/supabaseClient";
+import { convertToWebP } from "@/utils/imageConverter";
 
 // Konfigurasi bisa digabungkan nanti jika diperlukan
 import addConfig from "@/data/ui/addProductConfig.json";
@@ -113,8 +114,11 @@ export function useProductForm(initialProduct = null, onSuccess) {
   const uploadImage = async (file, publicIdName, oldPublicId = null, oldUrl = null) => {
     if (!file) return { secure_url: null, public_id: null };
 
+    // Konversi file ke WebP terlebih dahulu sebelum diunggah
+    const webpFile = await convertToWebP(file);
+
     const data = new FormData();
-    data.append("file", file);
+    data.append("file", webpFile);
     data.append("folder", "products");
     data.append("publicId", publicIdName);
     if (oldPublicId) {

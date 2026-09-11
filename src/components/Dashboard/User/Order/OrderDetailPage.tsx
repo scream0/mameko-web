@@ -13,6 +13,7 @@ import orderDetailConfig from "@/data/ui/orderDetailConfig.json";
 import { getApiBaseUrl } from "@/lib/apiClient";
 import ConfirmationModal from "@/components/UI/Modal/ConfirmationModal";
 import { loadMidtransSnap } from "@/lib/midtrans";
+import { convertToWebP } from "@/utils/imageConverter";
 
 const STATUS_INFO = orderDetailConfig.status;
 const RETURN_STATUS_INFO = orderDetailConfig.returnStatus;
@@ -783,8 +784,9 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
       let reviewPhoto = null;
       if (reviewPhotoFile) {
         toast.loading(orderDetailConfig.reviewModal.toasts.uploadingPhoto, { id: toastId });
+        const webpReviewFile = await convertToWebP(reviewPhotoFile, { maxWidth: 1200, maxHeight: 1200, quality: 0.82 });
         const uploadData = new FormData();
-        uploadData.append("file", reviewPhotoFile);
+        uploadData.append("file", webpReviewFile);
         uploadData.append("userId", userId);
         uploadData.append("folder", "reviews");
 
@@ -889,8 +891,9 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
       const { data: { session } } = await auth.getSession();
       const token = session?.access_token;
 
+      const webpProofFile = await convertToWebP(proofFile, { maxWidth: 1400, maxHeight: 1400, quality: 0.82 });
       const uploadData = new FormData();
-      uploadData.append("file", proofFile);
+      uploadData.append("file", webpProofFile);
       uploadData.append("userId", user.id || user.uid);
       uploadData.append("folder", "payments");
       uploadData.append("publicIdName", `proof_${order.order_number || order.id}`);

@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 import styles from "./UserChatModal.module.css";
 import chatConfig from "@/data/ui/userChatConfig.json";
 import { getApiBaseUrl } from "@/lib/apiClient";
+import { convertToWebP } from "@/utils/imageConverter";
 
 export default function UserChatModal({ isOpen, onClose, user }: any) {
   useScrollLock(Boolean(isOpen));
@@ -227,8 +228,9 @@ export default function UserChatModal({ isOpen, onClose, user }: any) {
 
       let imageUrl = null;
       if (fileToUpload) {
+        const webpFile = await convertToWebP(fileToUpload, { maxWidth: 1200, maxHeight: 1200, quality: 0.82 });
         const formData = new FormData();
-        formData.append("file", fileToUpload);
+        formData.append("file", webpFile);
         formData.append("userId", user.uid || user.id);
         formData.append("folder", "chats");
 

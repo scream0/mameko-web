@@ -156,8 +156,11 @@ export function Hero() {
     return () => observer.disconnect();
   }, []);
 
-  // Ambil URL gambar latar belakang dari resolvedHero (jika ada)
-  const heroBackgroundImage = resolvedHero?.image;
+  // Ambil URL gambar latar belakang dari resolvedHero (jika ada) dengan fallback default
+  const heroBackgroundImage =
+    resolvedHero?.image || heroData?.image || "/assets/images/hero-perfume.webp";
+  const heroImageAlt =
+    resolvedHero?.imageAlt || heroData?.imageAlt || "Hero Visual";
 
   return (
     <section id="home" className={`${styles.hero} ${isDimmed ? styles.dimmed : ""}`}>
@@ -228,7 +231,7 @@ export function Hero() {
               <div className={styles.heroVisualGlow}></div>
               <Image
                 src={optimizeCloudinaryUrl(heroBackgroundImage, IMAGE_PRESETS.HERO)}
-                alt="Hero Visual"
+                alt={heroImageAlt}
                 className={styles.heroVisualImg}
                 width={600}
                 height={700}

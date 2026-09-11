@@ -15,6 +15,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import ReturnsCenter from "@/components/Dashboard/User/Returns/ReturnsCenter"; // Sesuaikan path jika berbeda
 import ConfirmationModal from "@/components/UI/Modal/ConfirmationModal";
 import { getApiBaseUrl } from "@/lib/apiClient";
+import { convertToWebP } from "@/utils/imageConverter";
 
 function getStatusInfo(rawStatus: any) {
   const key = (rawStatus || "pending").toLowerCase();
@@ -722,8 +723,9 @@ export default function OrdersSection() {
       let reviewPhoto = null;
       if (reviewPhotoFile) {
         toast.loading(ordersConfig.toasts.uploadingReviewPhoto || "Mengunggah foto ulasan...", { id: toastId });
+        const webpReviewFile = await convertToWebP(reviewPhotoFile, { maxWidth: 1200, maxHeight: 1200, quality: 0.82 });
         const uploadData = new FormData();
-        uploadData.append("file", reviewPhotoFile);
+        uploadData.append("file", webpReviewFile);
         uploadData.append("userId", userId);
         uploadData.append("folder", "reviews");
 
@@ -878,8 +880,9 @@ export default function OrdersSection() {
       let evidenceUrl = null;
       if (returnEvidenceFile) {
         toast.loading(ordersConfig.toasts.uploadingReviewPhoto || "Mengunggah bukti foto...", { id: toastId });
+        const webpEvidenceFile = await convertToWebP(returnEvidenceFile, { maxWidth: 1200, maxHeight: 1200, quality: 0.82 });
         const uploadData = new FormData();
-        uploadData.append("file", returnEvidenceFile);
+        uploadData.append("file", webpEvidenceFile);
         uploadData.append("userId", userId);
         uploadData.append("folder", "returns");
 

@@ -11,6 +11,7 @@ import {
   getAdminSettings,
   saveSettings,
 } from "@/services/settingsService";
+import { convertToWebP } from "@/utils/imageConverter";
 import UserManagement from "./UserManagement";
 
 const EMPTY = {
@@ -311,11 +312,12 @@ export default function SettingsView() {
       const payload = buildPayload();
       const user = currentSession.user;
 
-      // 1. Unggah gambar Hero jika ada file baru
+      // 1. Unggah gambar Hero jika ada file baru (dikonversi ke WebP)
       if (selectedHeroImageFile) {
         setUploadingImage(true);
+        const webpHeroFile = await convertToWebP(selectedHeroImageFile);
         const heroFormData = new FormData();
-        heroFormData.append("file", selectedHeroImageFile);
+        heroFormData.append("file", webpHeroFile);
         heroFormData.append("userId", user.id);
         heroFormData.append("folder", "storefront");
         heroFormData.append("publicId", `storefront/hero-${user.id}`);
@@ -341,11 +343,12 @@ export default function SettingsView() {
         setSelectedHeroImageFile(null);
       }
 
-      // 2. Unggah gambar About jika ada file baru
+      // 2. Unggah gambar About jika ada file baru (dikonversi ke WebP)
       if (selectedAboutImageFile) {
         setUploadingImage(true);
+        const webpAboutFile = await convertToWebP(selectedAboutImageFile);
         const aboutFormData = new FormData();
-        aboutFormData.append("file", selectedAboutImageFile);
+        aboutFormData.append("file", webpAboutFile);
         aboutFormData.append("userId", user.id);
         aboutFormData.append("folder", "storefront");
         aboutFormData.append("publicId", `storefront/about-${user.id}`);
