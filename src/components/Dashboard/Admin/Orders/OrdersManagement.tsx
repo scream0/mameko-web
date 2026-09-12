@@ -6,7 +6,6 @@ import toast from "react-hot-toast";
 import { auth, db } from "@/lib/supabaseClient";
 import styles from "./OrdersManagement.module.css";
 import { Logo } from "@/components/UI/Logo/logo";
-import AdminWithdrawals from "./AdminWithdrawals";
 import adminOrdersConfig from "@/data/ui/adminOrdersConfig.json";
 
 const money = (value: any) =>
@@ -34,29 +33,6 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
   const [pagination, setPagination] = useState({ currentPage: 1, totalPages: 1, totalOrders: 0 });
   const [updatingId, setUpdatingId] = useState(null);
   const [activeOrder, setActiveOrder] = useState(null);
-  const [adminTab, setAdminTab] = useState(
-    subtabParam && ['orders', 'withdrawals'].includes(subtabParam)
-      ? subtabParam
-      : 'orders'
-  );
-
-  useEffect(() => {
-    if (subtabParam && ['orders', 'withdrawals'].includes(subtabParam)) {
-      setAdminTab(subtabParam);
-    }
-  }, [subtabParam]);
-
-  const handleTabChange = (newTab: string) => {
-    setAdminTab(newTab);
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("tab", "orders");
-    if (newTab === "orders") {
-      params.delete("subtab");
-    } else {
-      params.set("subtab", newTab);
-    }
-    router.push(`${pathname}?${params.toString()}`, { scroll: false });
-  };
   const [shippingDraft, setShippingDraft] = useState({ courierName: "", serviceType: "", trackingNumber: "" });
   const [shippingMode, setShippingMode] = useState("auto"); // "auto" | "manual"
   const [selectedOrders, setSelectedOrders] = useState<any[]>([]);
@@ -652,25 +628,8 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
           <span>{runningAutomation ? adminOrdersConfig.automation.processing : adminOrdersConfig.automation.label}</span>
         </button>
       </div>
-      
-      <div className={styles.adminTabs}>
-        <button 
-          className={`${styles.tabBtn} ${adminTab === 'orders' ? styles.activeTab : ''}`}
-          onClick={() => handleTabChange('orders')}
-        >
-          {adminOrdersConfig.tabs.orders}
-        </button>
-        <button 
-          className={`${styles.tabBtn} ${adminTab === 'withdrawals' ? styles.activeTab : ''}`}
-          onClick={() => handleTabChange('withdrawals')}
-        >
-          {adminOrdersConfig.tabs.withdrawals}
-        </button>
-      </div>
 
-      {adminTab === 'orders' && (
-        <>
-          <div className={styles.controls}>
+      <div className={styles.controls}>
             <form onSubmit={handleSearch} className={styles.searchForm}>
               <input
                 value={searchTerm}
@@ -1328,12 +1287,6 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
         </div>
       );
     })()}
-        </>
-      )}
-
-      {adminTab === 'withdrawals' && (
-        <AdminWithdrawals />
-      )}
     </section>
   );
 }

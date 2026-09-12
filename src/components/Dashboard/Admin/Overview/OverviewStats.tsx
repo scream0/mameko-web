@@ -7,6 +7,7 @@ import overviewConfig from "@/data/ui/overviewConfig.json";
 import { StatsSkeleton } from "@/components/UI/Skeleton/SkeletonLayouts";
 import { calculateDashboardStats } from "@/utils/dashboardSummary";
 import { auth, supabase } from "@/lib/supabaseClient";
+import { getApiBaseUrl } from "@/lib/apiClient";
 
 export default function OverviewStats() {
   const [stats, setStats] = useState({
@@ -26,7 +27,10 @@ export default function OverviewStats() {
 
       // 1. Coba ambil ringkasan langsung dari endpoint server /api/admin/overview
       try {
-        const overviewRes = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/admin/overview", { headers });
+        const overviewRes = await fetch(getApiBaseUrl() + "/api/admin/overview", {
+          headers,
+          cache: "no-store",
+        });
         if (overviewRes.ok) {
           const overviewResult = await overviewRes.json();
           const d = overviewResult.data || overviewResult;
@@ -46,8 +50,8 @@ export default function OverviewStats() {
 
       // 2. Fallback: Hitung agregat lokal dari daftar produk dan pesanan
       const [res, ordersRes] = await Promise.all([
-        fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/products?limit=200", { headers }),
-        fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/admin/orders?limit=1000", { headers }),
+        fetch(getApiBaseUrl() + "/api/products?limit=200", { headers, cache: "no-store" }),
+        fetch(getApiBaseUrl() + "/api/admin/orders?limit=1000", { headers, cache: "no-store" }),
       ]);
 
       const productsResult = res.ok

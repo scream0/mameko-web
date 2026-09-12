@@ -9,8 +9,7 @@
     "title": "Batalkan otomatis pesanan belum bayar >24 jam dan selesaikan pesanan terkirim >14 hari"
   },
   "tabs": {
-    "orders": "Daftar Pesanan",
-    "withdrawals": "Penarikan (Withdrawals)"
+    "orders": "Daftar Pesanan"
   },
   "search": {
     "placeholder": "Cari ID pesanan atau pelanggan",

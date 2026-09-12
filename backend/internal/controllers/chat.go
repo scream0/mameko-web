@@ -194,6 +194,11 @@ func AdminGetChatList(c *fiber.Ctx) error {
 			log.Printf("AdminGetChatList Scan error: %v", err)
 			continue
 		}
+		chatPresenceLock.RLock()
+		uLastSeen, uExists := userLastSeen[userID]
+		chatPresenceLock.RUnlock()
+		uOnline := uExists && !uLastSeen.IsZero() && time.Since(uLastSeen) < 2*time.Minute
+
 		list = append(list, map[string]interface{}{
 			"user_id":       userID,
 			"last_activity": lastActivity,
@@ -203,6 +208,10 @@ func AdminGetChatList(c *fiber.Ctx) error {
 			"email":         email,
 			"last_message":  lastMessage,
 			"last_image":    lastImage,
+			"is_online":     uOnline,
+			"isOnline":      uOnline,
+			"last_seen":     uLastSeen,
+			"lastSeen":      uLastSeen,
 		})
 	}
 	if err := rows.Err(); err != nil {
@@ -356,6 +365,10 @@ func UserHeartbeat(c *fiber.Ctx) error {
 
 // GetAdminOnlineStatus returns whether an admin was recently active (within last 2 minutes)
 func GetAdminOnlineStatus(c *fiber.Ctx) error {
+	c.Set("Cache-Control", "no-cache, no-store, must-revalidate")
+	c.Set("Pragma", "no-cache")
+	c.Set("Expires", "0")
+
 	chatPresenceLock.RLock()
 	lastSeen := adminLastSeen
 	chatPresenceLock.RUnlock()
@@ -373,6 +386,10 @@ func GetAdminOnlineStatus(c *fiber.Ctx) error {
 
 // GetUserOnlineStatus returns whether a specific user was recently active (within last 2 minutes)
 func GetUserOnlineStatus(c *fiber.Ctx) error {
+	c.Set("Cache-Control", "no-cache, no-store, must-revalidate")
+	c.Set("Pragma", "no-cache")
+	c.Set("Expires", "0")
+
 	userID := strings.TrimSpace(c.Params("userId"))
 	if userID == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "userId is required"})

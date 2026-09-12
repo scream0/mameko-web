@@ -36,9 +36,18 @@ export default function UserChatModal({ isOpen, onClose, user }: any) {
         data: { session },
       } = await supabase.auth.getSession();
       const token = session?.access_token;
-      const res = await fetch(`${getApiBaseUrl()}/api/chats/status`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+      let res = await fetch(`${getApiBaseUrl()}/api/chats/status`, {
+        headers,
+        cache: "no-store",
       });
+      if (!res.ok && token) {
+        res = await fetch(`${getApiBaseUrl()}/api/user/chats/status`, {
+          headers,
+          cache: "no-store",
+        });
+      }
       if (res.ok) {
         const json = await res.json();
         if (json && typeof json.is_online === "boolean") {
@@ -58,14 +67,23 @@ export default function UserChatModal({ isOpen, onClose, user }: any) {
         data: { session },
       } = await supabase.auth.getSession();
       const token = session?.access_token;
-      await fetch(`${getApiBaseUrl()}/api/heartbeat`, {
+      const headers = {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      };
+      const body = JSON.stringify({ role: "user", user_id: userId });
+      const res = await fetch(`${getApiBaseUrl()}/api/heartbeat`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({ role: "user", user_id: userId }),
+        headers,
+        body,
       });
+      if (!res.ok && token) {
+        await fetch(`${getApiBaseUrl()}/api/user/heartbeat`, {
+          method: "POST",
+          headers,
+          body,
+        });
+      }
     } catch {
       // ignore network errors
     }

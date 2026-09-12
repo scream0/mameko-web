@@ -7,6 +7,7 @@ import { AppIcon } from "@/components/UI/Icon/AppIcon";
 import styles from "./AdminChatView.module.css";
 import adminChatConfig from "@/data/ui/adminChatConfig.json";
 import { convertToWebP } from "@/utils/imageConverter";
+import { getApiBaseUrl } from "@/lib/apiClient";
 
 const playNotificationSound = () => {
   try {
@@ -162,7 +163,7 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.access_token) {
-          fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/heartbeat", {
+          fetch(getApiBaseUrl() + "/api/heartbeat", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -194,8 +195,9 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
         try {
           const { data: { session } } = await supabase.auth.getSession();
           if (session?.access_token) {
-            const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + `/api/admin/chats/${selectedUser.id}/status`, {
-              headers: { Authorization: `Bearer ${session.access_token}` }
+            const res = await fetch(getApiBaseUrl() + `/api/admin/chats/${selectedUser.id}/status`, {
+              headers: { Authorization: `Bearer ${session.access_token}` },
+              cache: "no-store",
             });
             if (res.ok) {
               const data = await res.json();
@@ -226,8 +228,9 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
       const token = session?.access_token;
       if (!token) return;
 
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/admin/chats", {
-        headers: { Authorization: `Bearer ${token}` }
+      const res = await fetch(getApiBaseUrl() + "/api/admin/chats", {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store",
       });
       const result = res.headers?.get("content-type")?.includes("application/json") ? await res.json() : {};
       if (!res.ok || !result.success) throw new Error(result.error || `HTTP ${res.status}`);
@@ -241,8 +244,14 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
         lastMessage: item.last_message || item.lastMessage || (item.last_image ? "📷 [Gambar]" : ""),
         unreadCount: Number(item.unread_count ?? item.unreadCount ?? 0),
         lastActivity: item.last_activity,
+        isOnline: Boolean(item.is_online || item.isOnline),
       }));
       setUsers(userList);
+
+      const onlineFromBackend = rawList.filter((item: any) => item.is_online || item.isOnline).map((item: any) => item.user_id || item.id);
+      if (onlineFromBackend.length > 0) {
+        setOnlineUsers((prev: any) => new Set([...prev, ...onlineFromBackend]));
+      }
 
       const totalUnread = userList.reduce((acc: number, u: any) => acc + (u.unreadCount || 0), 0);
       if (onUnreadCountChange) {
@@ -259,8 +268,9 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
       const token = session?.access_token;
       if (!token) return;
 
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/admin/chats/" + userId, {
-        headers: { Authorization: `Bearer ${token}` }
+      const res = await fetch(getApiBaseUrl() + "/api/admin/chats/" + userId, {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store",
       });
       const result = res.headers?.get("content-type")?.includes("application/json") ? await res.json() : {};
       if (!res.ok || !result.success) throw new Error(result.error || `HTTP ${res.status}`);
@@ -271,7 +281,7 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
       // Mark unread as read
       const unreadIds = data.filter((m: any) => m.sender_role === "user" && !m.is_read).map((m: any) => m.id);
       if (unreadIds.length > 0) {
-        await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/admin/chats/" + userId + "/read", {
+        await fetch(getApiBaseUrl() + "/api/admin/chats/" + userId + "/read", {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -339,7 +349,7 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
         formData.append("file", webpFile);
         formData.append("folder", "chats");
 
-        const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/user/cloudinary", {
+        const res = await fetch(getApiBaseUrl() + "/api/user/cloudinary", {
           method: "POST",
           headers: { Authorization: `Bearer ${token}` },
           body: formData,
@@ -352,7 +362,7 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
         }
       }
 
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/admin/chats", {
+      const res = await fetch(getApiBaseUrl() + "/api/admin/chats", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
