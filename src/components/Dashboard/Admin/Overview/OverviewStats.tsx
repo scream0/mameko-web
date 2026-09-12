@@ -24,6 +24,27 @@ export default function OverviewStats() {
       const token = session?.access_token;
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
+      // 1. Coba ambil ringkasan langsung dari endpoint server /api/admin/overview
+      try {
+        const overviewRes = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/admin/overview", { headers });
+        if (overviewRes.ok) {
+          const overviewResult = await overviewRes.json();
+          const d = overviewResult.data || overviewResult;
+          if (d && (d.totalOrders !== undefined || d.total_orders !== undefined)) {
+            setStats({
+              totalRevenue: Number(d.totalRevenue ?? d.total_revenue ?? 0),
+              totalOrders: Number(d.totalOrders ?? d.total_orders ?? 0),
+              activeProducts: Number(d.activeProducts ?? d.active_products ?? 0),
+              lowStockCount: Number(d.lowStockCount ?? d.low_stock_count ?? 0),
+            });
+            return;
+          }
+        }
+      } catch {
+        // Lanjut ke kalkulasi lokal via /api/products & /api/admin/orders jika overview server offline
+      }
+
+      // 2. Fallback: Hitung agregat lokal dari daftar produk dan pesanan
       const [res, ordersRes] = await Promise.all([
         fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/products?limit=200", { headers }),
         fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/admin/orders?limit=1000", { headers }),
@@ -39,7 +60,7 @@ export default function OverviewStats() {
         : {};
       const orders = (ordersResult.data || ordersResult.orders || []).filter(Boolean);
 
-      const summary = calculateDashboardStats(orders, products);
+      const summary = calculateDashboardStats({ products, orders });
       setStats(summary);
     } catch (err: any) {
       console.error("OverviewStats fetch error:", err);

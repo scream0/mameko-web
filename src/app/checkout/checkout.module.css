@@ -1239,6 +1239,29 @@
   opacity: 0.8;
 }
 
+.nonRefundableNotice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 0.65rem 0.95rem;
+  border-radius: 8px;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  color: #b45309;
+  font-size: 0.76rem;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.4;
+}
+
+[data-theme="dark"] .nonRefundableNotice {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.32);
+  color: #fbbf24;
+}
+
 .payButton {
   position: relative;
   width: 100%;

@@ -28,8 +28,10 @@ type StoreSettings struct {
 	PromoEndDate         string          `json:"promoEndDate"`
 	PromoCode            string          `json:"promoCode"`
 	PromoDestination     string          `json:"promoDestination"`
-	PromoTargetType      string          `json:"promoTargetType"`
-	PromoTargetVariants  json.RawMessage `json:"promoTargetVariants"`
+	PromoTargetType       string          `json:"promoTargetType"`
+	PromoTargetProductIds []string        `json:"promoTargetProductIds"`
+	PromoTargetVariants   json.RawMessage `json:"promoTargetVariants"`
 	ActiveCouriers       json.RawMessage `json:"activeCouriers"`
+	EnabledCouriers      json.RawMessage `json:"enabledCouriers,omitempty"`
 }
 

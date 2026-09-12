@@ -137,12 +137,6 @@ export default function OrdersSection() {
   const [reviewPhotoPreview, setReviewPhotoPreview] = useState(null);
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
-  const [returnModalOrder, setReturnModalOrder] = useState(null);
-  const [returnReason, setReturnReason] = useState("");
-  const [returnEvidenceFile, setReturnEvidenceFile] = useState(null);
-  const [returnEvidencePreview, setReturnEvidencePreview] = useState(null);
-  const [isSubmittingReturn, setIsSubmittingReturn] = useState(false);
-
   useEffect(() => {
     let subscription = null;
 
@@ -293,7 +287,7 @@ export default function OrdersSection() {
   const filteredOrders = useMemo(() => {
     let result = orders;
 
-    if (filter !== "all" && filter !== "return") {
+    if (filter !== "all") {
       if (filter === "pending") {
         result = result.filter((o) => ["pending", "unpaid"].includes(o.status));
       } else if (filter === "processing") {
@@ -301,7 +295,7 @@ export default function OrdersSection() {
       } else if (filter === "shipping") {
         result = result.filter((o) => ["shipping", "shipped"].includes(o.status));
       } else if (filter === "history") {
-        result = result.filter((o) => ["completed", "delivered", "cancelled", "canceled", "return_requested", "returning", "returned", "return_rejected"].includes(o.status));
+        result = result.filter((o) => ["completed", "delivered", "cancelled", "canceled"].includes(o.status));
       }
     }
 
@@ -810,133 +804,6 @@ export default function OrdersSection() {
     return order.hasBeenReviewed;
   };
 
-  const handleReturnPhotoChange = (e: any) => {
-    const file = e.target.files[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error(ordersConfig.modals.return.toasts.maxSize || "Ukuran foto maksimal 5 MB.");
-        return;
-      }
-      setReturnEvidenceFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setReturnEvidencePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleRemoveReturnPhoto = () => {
-    setReturnEvidenceFile(null);
-    setReturnEvidencePreview(null);
-  };
-
-  const openReturnModal = async (order: any) => {
-    const toastId = toast.loading(ordersConfig.modals.return.bankCheckLoading || "Memeriksa kelengkapan profil...");
-    try {
-      const { data: { session } } = await auth.getSession();
-      const token = session?.access_token;
-      
-      const res = await fetch(getApiBaseUrl() + "/api/user/profile", {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      const data = await res.json();
-      if (res.ok && data.profile) {
-        const p = data.profile;
-        const bankName = p.bank_name || p.bankName;
-        const bankAcc = p.bank_account_number || p.bankAccountNumber;
-        const bankHolder = p.bank_account_name || p.bankAccountName;
-        
-        if (!bankName || !bankAcc || !bankHolder) {
-          toast.dismiss(toastId);
-          toast.error(ordersConfig.modals.return.bankRequired || "Silakan lengkapi informasi Rekening Bank di Pengaturan Profil terlebih dahulu untuk keperluan pencairan dana retur.", { duration: 5000 });
-          return;
-        }
-      }
-      toast.dismiss(toastId);
-    } catch (err) {
-      console.error(err);
-      toast.dismiss(toastId);
-    }
-
-    setReturnModalOrder(order);
-    setReturnReason("");
-    setReturnEvidenceFile(null);
-    setReturnEvidencePreview(null);
-  };
-
-  const handleReturnSubmit = async (e: any) => {
-    e.preventDefault();
-    if (!returnModalOrder || !currentUser || isSubmittingReturn) return;
-
-    setIsSubmittingReturn(true);
-    const toastId = toast.loading(ordersConfig.modals.return.toasts.submitting || "Mengajukan return pesanan...");
-
-    try {
-      const { data: { session } } = await auth.getSession();
-      const token = session?.access_token;
-      const userId = currentUser.id || currentUser.uid;
-
-      let evidenceUrl = null;
-      if (returnEvidenceFile) {
-        toast.loading(ordersConfig.toasts.uploadingReviewPhoto || "Mengunggah bukti foto...", { id: toastId });
-        const webpEvidenceFile = await convertToWebP(returnEvidenceFile, { maxWidth: 1200, maxHeight: 1200, quality: 0.82 });
-        const uploadData = new FormData();
-        uploadData.append("file", webpEvidenceFile);
-        uploadData.append("userId", userId);
-        uploadData.append("folder", "returns");
-
-        const uploadRes = await fetch(getApiBaseUrl() + "/api/user/cloudinary", {
-          method: "POST",
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-          body: uploadData,
-        });
-        const uploadResult = await uploadRes.json();
-        if (!uploadRes.ok) {
-          let errorMsg = uploadResult.error || ordersConfig.toasts.uploadPhotoError || "Gagal mengunggah foto bukti.";
-          if (errorMsg.toLowerCase().includes("cloudinary")) {
-            errorMsg = ordersConfig.toasts.uploadPhotoError || "Gagal mengunggah foto. Silakan coba lagi nanti.";
-          }
-          throw new Error(errorMsg);
-        }
-        evidenceUrl = uploadResult.secure_url;
-      }
-
-      toast.loading(ordersConfig.modals.return.submittingBtn || "Menyimpan pengajuan retur...", { id: toastId });
-      const res = await fetch(getApiBaseUrl() + `/api/user/orders/${returnModalOrder.id}/return`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: token ? `Bearer ${token}` : "",
-        },
-        body: JSON.stringify({ userId, reason: returnReason, evidence: evidenceUrl }),
-      });
-
-      const result = await res.json();
-      if (!res.ok) {
-        throw new Error(result.error || ordersConfig.modals.return.toasts.error || "Gagal mengajukan return pesanan.");
-      }
-
-      toast.success(ordersConfig.modals.return.toasts.success || "Pengajuan return berhasil dikirim.", { id: toastId });
-
-      setOrders((prev) =>
-        prev.map((o) =>
-          o.id === returnModalOrder.id ? { ...o, status: "return_requested" } : o
-        )
-      );
-
-      setReturnModalOrder(null);
-      setReturnReason("");
-      setReturnEvidenceFile(null);
-      setReturnEvidencePreview(null);
-    } catch (error) {
-      console.error("Gagal mengajukan return:", error);
-      toast.error(error.message || ordersConfig.modals.return.toasts.error || "Gagal mengajukan return.", { id: toastId });
-    } finally {
-      setIsSubmittingReturn(false);
-    }
-  };
-
   return (
     <div className={styles.workspaceInner}>
       {/* Header & Search */}
@@ -1017,29 +884,7 @@ export default function OrdersSection() {
               const isPending = ["pending", "unpaid"].includes(order.status);
               const isDelivered = ["shipping", "shipped", "delivered", "completed"].includes(order.status);
 
-              // Cek masa garansi pengembalian (default 7 hari dari ordersConfig)
-              const isReturnPeriodValid = () => {
-                if (!isFinished) return true; // jika masih dikirim, masih valid
-                const lastUpdate = new Date(order.updated_at || order.updatedAt || order.created_at || order.createdAt || Date.now());
-                const now = new Date();
-                const diffHours = (now.getTime() - lastUpdate.getTime()) / (1000 * 60 * 60);
-                const maxHours = (ordersConfig.returnPeriodDays || 7) * 24;
-                return diffHours <= maxHours;
-              };
-
-              const returnStatus = order.return_status || "";
-              const hasAnyReturn = returnStatus !== "";
-              const canReturn = ["shipping", "shipped", "delivered", "completed"].includes(order.status) && !["return_requested", "returning", "returned", "return_rejected"].includes(order.status) && !hasAnyReturn && isReturnPeriodValid();
-
-              // Override status badge if there's a return in progress
               let statusInfo = getStatusInfo(order.status);
-              if (returnStatus === "pending") {
-                statusInfo = { label: ordersConfig.returnStatus?.pending?.label || "⏳ Return Diproses", badgeClass: "statusReturn" };
-              } else if (returnStatus === "approved") {
-                statusInfo = { label: ordersConfig.returnStatus?.approved?.label || "✅ Return Disetujui", badgeClass: "statusCompleted" };
-              } else if (returnStatus === "rejected") {
-                statusInfo = { label: ordersConfig.returnStatus?.rejected?.label || "❌ Return Ditolak", badgeClass: "statusCancelled" };
-              }
               const reviewableItems =
                 order.items && order.items.length > 0
                   ? order.items
@@ -1157,26 +1002,6 @@ export default function OrdersSection() {
                           className={styles.confirmBtn}
                         >
                           {isConfirming ? (ordersConfig.buttons.processingConfirm || "Memproses...") : (ordersConfig.buttons.confirmReceived || "Konfirmasi Diterima")}
-                        </button>
-                      )}
-                      {canReturn && (
-                        <button
-                          onClick={() => openReturnModal(order)}
-                          className={styles.returnBtn}
-                        >
-                          {ordersConfig.buttons.applyReturn || "Ajukan Return"}
-                        </button>
-                      )}
-                      {(hasAnyReturn || ["return_requested", "returning", "returned", "return_rejected"].includes(order.status)) && (
-                        <button
-                          onClick={() => {
-                            setFilter("return");
-                            router.replace("/dashboard?tab=orders&status=return");
-                          }}
-                          className={styles.trackReturnBtn}
-                        >
-                          <AppIcon name="rotate-ccw" size={14} />
-                          <span>{ordersConfig.buttons.trackReturn || "Pantau Retur"}</span>
                         </button>
                       )}
                       <button
@@ -1357,100 +1182,6 @@ export default function OrdersSection() {
                   )}
                 </button>
               </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* --- MODAL RETURN / RETURN CENTER --- */}
-      {returnModalOrder && (
-        <div
-          className={styles.modalOverlay}
-          onClick={() => setReturnModalOrder(null)}
-        >
-          <div
-            className={styles.modalContent}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className={styles.modalHeader}>
-              <h3 className={styles.modalTitle}>{ordersConfig.modals.return.title || "Pengajuan Return Pesanan"}</h3>
-              <button
-                onClick={() => setReturnModalOrder(null)}
-                className={styles.modalCloseBtn}
-              >
-                <AppIcon name="x" size={18} strokeWidth={2} />
-              </button>
-            </div>
-
-            <form onSubmit={handleReturnSubmit} className={styles.modalBody}>
-              <div>
-                <span className={styles.modalFieldLabel}>{ordersConfig.modals.return.orderIdLabel || "ID Pesanan"}</span>
-                <strong>{returnModalOrder.order_number || returnModalOrder.id}</strong>
-              </div>
-              <div>
-                <span className={styles.modalFieldLabel}>{ordersConfig.modals.return.productLabel || "Produk / Detail"}</span>
-                <strong>{returnModalOrder.name}</strong>
-              </div>
-              <div>
-                <span className={styles.modalFieldLabel}>{ordersConfig.modals.return.reasonLabel || "Alasan Return"}</span>
-                <textarea
-                  rows={3}
-                  required
-                  placeholder={ordersConfig.modals.return.reasonPlaceholder || "Tuliskan alasan pengembalian/return produk secara detail..."}
-                  value={returnReason}
-                  onChange={(e) => setReturnReason(e.target.value)}
-                  className={styles.formTextarea}
-                />
-              </div>
-              <div className={styles.photoUploadContainer}>
-                <span className={styles.modalFieldLabel}>{ordersConfig.modals.return.evidenceLabel || "Foto Bukti Barang (Opsional namun sangat disarankan)"}</span>
-                {returnEvidencePreview ? (
-                  <div className={styles.photoPreviewWrapper}>
-                    <img
-                      src={returnEvidencePreview}
-                      alt="Bukti Preview"
-                      className={styles.photoPreviewImg}
-                    />
-                    <div className={styles.photoPreviewOverlay}>
-                      <button
-                        type="button"
-                        onClick={handleRemoveReturnPhoto}
-                        className={styles.removePhotoBtn}
-                      >
-                        <AppIcon name="trash" size={13} />
-                        <span>{ordersConfig.modals.return.removePhoto || "Hapus Foto"}</span>
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <label className={styles.photoUploadDropzone}>
-                    <input
-                      type="file"
-                      accept="image/jpeg,image/png,image/webp"
-                      onChange={handleReturnPhotoChange}
-                      className={styles.fileInputHidden}
-                    />
-                    <div className={styles.dropzoneIconCircle}>
-                      <AppIcon name="camera" size={22} />
-                    </div>
-                    <div className={styles.dropzoneTextGroup}>
-                      <span className={styles.dropzoneMainText}>
-                        {ordersConfig.modals.return.dropzoneMain || "Pilih foto bukti barang atau seret ke sini"}
-                      </span>
-                      <span className={styles.dropzoneSubText}>
-                        {ordersConfig.modals.return.dropzoneSub || "Format JPG, PNG, WebP (Maksimal 5 MB)"}
-                      </span>
-                    </div>
-                  </label>
-                )}
-              </div>
-              <button
-                type="submit"
-                className={styles.modalCloseActionBtn}
-                disabled={isSubmittingReturn}
-              >
-                {isSubmittingReturn ? (ordersConfig.modals.return.submittingBtn || "Mengirim Pengajuan...") : (ordersConfig.modals.return.submitBtn || "Kirim Pengajuan Return")}
-              </button>
             </form>
           </div>
         </div>

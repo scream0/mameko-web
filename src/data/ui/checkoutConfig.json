@@ -79,7 +79,8 @@
     "processingBtn": "Memproses Pembayaran...",
     "payNowPrefix": "Bayar Sekarang • ",
     "selectAddressSub": "Pilih alamat terlebih dahulu",
-    "selectCourierSub": "Pilih kurir terlebih dahulu"
+    "selectCourierSub": "Pilih kurir terlebih dahulu",
+    "nonRefundableNotice": "Barang yang sudah dibeli tidak dapat dikembalikan."
   },
   "stockValidation": {
     "insufficientTitle": "Stok Produk Tidak Mencukupi",

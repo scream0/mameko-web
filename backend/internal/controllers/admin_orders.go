@@ -35,8 +35,10 @@ func GetAdminOrders(c *fiber.Ctx) error {
 	if page < 1 {
 		page = 1
 	}
-	if limit < 1 || limit > 100 {
+	if limit < 1 {
 		limit = 20
+	} else if limit > 1000 {
+		limit = 1000
 	}
 	offset := (page - 1) * limit
 
@@ -330,3 +332,91 @@ func RunManualOrderAutomation(c *fiber.Ctx) error {
 		"data":    res,
 	})
 }
+
+// BulkUpdateAdminOrderStatus updates status for multiple orders
+func BulkUpdateAdminOrderStatus(c *fiber.Ctx) error {
+	if config.DB == nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Database not initialized"})
+	}
+
+	var req struct {
+		OrderIDs []string `json:"order_ids"`
+		OrderIds []string `json:"orderIds"`
+		IDs      []string `json:"ids"`
+		Status   string   `json:"status"`
+		Notes    string   `json:"notes"`
+	}
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid format"})
+	}
+
+	status := strings.TrimSpace(req.Status)
+	if status == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Status is required"})
+	}
+
+	targetIDs := req.OrderIDs
+	if len(targetIDs) == 0 {
+		targetIDs = req.OrderIds
+	}
+	if len(targetIDs) == 0 {
+		targetIDs = req.IDs
+	}
+	if len(targetIDs) == 0 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "No order IDs provided"})
+	}
+
+	note := req.Notes
+	if note == "" {
+		note = fmt.Sprintf("Status diubah massal menjadi %s oleh admin", status)
+	}
+
+	histEntry := map[string]interface{}{
+		"status":      status,
+		"status_to":   status,
+		"notes":       note,
+		"actor":       "admin",
+		"actor_label": "Admin Toko",
+		"timestamp":   time.Now().UTC().Format(time.RFC3339),
+		"created_at":  time.Now().UTC().Format(time.RFC3339),
+	}
+	hBytes, _ := json.Marshal(histEntry)
+
+	updatedCount := 0
+	for _, orderID := range targetIDs {
+		orderID = strings.TrimSpace(orderID)
+		if orderID == "" {
+			continue
+		}
+
+		query := `
+			UPDATE orders SET
+				status = $1,
+				status_history = COALESCE(status_history, '[]'::jsonb) || $2::jsonb,
+				updated_at = NOW()
+			WHERE id::text = $3 OR order_number = $3
+		`
+		res, err := config.DB.Exec(query, status, fmt.Sprintf("[%s]", string(hBytes)), orderID)
+		if err == nil {
+			if rowsAffected, _ := res.RowsAffected(); rowsAffected > 0 {
+				updatedCount++
+				if status == "cancelled" {
+					_ = services.RestoreOrderStock(config.DB, orderID)
+					var proofURL sql.NullString
+					_ = config.DB.QueryRow(`SELECT COALESCE(shipping_detail->>'payment_proof_url', '') FROM orders WHERE id::text = $1 OR order_number = $1`, orderID).Scan(&proofURL)
+					if proofURL.Valid && proofURL.String != "" {
+						go services.DeleteCloudinaryImage(proofURL.String)
+					}
+				}
+			}
+		}
+	}
+
+	return c.JSON(fiber.Map{
+		"success":       true,
+		"message":       fmt.Sprintf("Berhasil memperbarui %d pesanan ke status %s", updatedCount, status),
+		"updated_count": updatedCount,
+		"status":        status,
+	})
+}
+

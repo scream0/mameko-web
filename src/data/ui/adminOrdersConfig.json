@@ -10,7 +10,6 @@
   },
   "tabs": {
     "orders": "Daftar Pesanan",
-    "returns": "Pengembalian Dana (Refund)",
     "withdrawals": "Penarikan (Withdrawals)"
   },
   "search": {
@@ -26,9 +25,6 @@
     { "value": "processing", "label": "Diproses" },
     { "value": "shipped", "label": "Dikirim" },
     { "value": "delivered", "label": "Selesai" },
-    { "value": "return_requested", "label": "Pengajuan Return" },
-    { "value": "returning", "label": "Return Dikirim" },
-    { "value": "returned", "label": "Return Selesai" },
     { "value": "cancelled", "label": "Dibatalkan" }
   ],
   "summary": {

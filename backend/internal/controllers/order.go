@@ -12,7 +12,6 @@ import (
 	"xar-backend-go/internal/middleware"
 	"xar-backend-go/internal/models"
 	"xar-backend-go/internal/services"
-	"xar-backend-go/internal/whatsapp"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -819,74 +818,11 @@ func ConfirmOrderReceived(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{"success": true, "message": "Pesanan berhasil dikonfirmasi selesai."})
 }
 
-// RequestOrderReturn submits a return request
+// RequestOrderReturn submits a return request (Disabled: non-refundable policy)
 func RequestOrderReturn(c *fiber.Ctx) error {
-	if config.DB == nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Database not initialized"})
-	}
-
-	orderID := strings.TrimSpace(c.Params("id"))
-	authHeader := c.Get("Authorization")
-	user, err := middleware.ParseSupabaseToken(authHeader)
-	if err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
-	}
-
-	var req struct {
-		Reason     string  `json:"reason"`
-		Evidence   *string `json:"evidence"`
-		BankName   *string `json:"bankName"`
-		BankNumber *string `json:"bankNumber"`
-		BankHolder *string `json:"bankHolder"`
-	}
-	if err := c.BodyParser(&req); err != nil || strings.TrimSpace(req.Reason) == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Alasan retur wajib diisi."})
-	}
-
-	// Update order status, status_history, and get actual UUID
-	var actualOrderID string
-	historyJSON := fmt.Sprintf(`[{"status_to": "return_requested", "actor": "user", "notes": "Pengajuan return sedang diproses.", "created_at": "%s"}]`, time.Now().Format(time.RFC3339))
-	err = config.DB.QueryRow(`
-		UPDATE orders SET status = 'return_requested', status_history = COALESCE(status_history, '[]'::jsonb) || $3::jsonb, updated_at = NOW()
-		WHERE (id::text = $1 OR order_number = $1) AND user_id::text = $2
-		RETURNING id
-	`, orderID, user.ID, historyJSON).Scan(&actualOrderID)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to update order status: " + err.Error()})
-	}
-
-	// Insert into return_requests table if exists
-	_, err = config.DB.Exec(`
-		INSERT INTO return_requests (order_id, user_id, reason, evidence_url, status, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, 'pending', NOW(), NOW())
-	`, actualOrderID, user.ID, req.Reason, req.Evidence)
-	if err != nil {
-		// Log the error but don't fail the request completely since the order status was updated
-		fmt.Printf("Warning: failed to insert return_request for order %s: %v\n", actualOrderID, err)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Pesanan diupdate tapi gagal mencatat form retur: " + err.Error()})
-	}
-
-	// Insert Admin Notification
-	_, _ = config.DB.Exec(`
-		INSERT INTO notifications (title, message, audience, link, created_at, updated_at)
-		VALUES ($1, $2, 'admin', $3, NOW(), NOW())
-	`, "Pengajuan Retur Baru", fmt.Sprintf("Ada pengajuan retur baru untuk pesanan %s.", actualOrderID), "/dashboard?tab=orders&subtab=returns")
-
-	// WhatsApp Notification
-	go func() {
-		// Dapatkan nomor admin dari settings (jika ada) atau gunakan ENV (atau default)
-		adminPhone := "081234567890" // default placeholder
-		var dbPhone string
-		err := config.DB.QueryRow(`SELECT contact->>'whatsappNumber' FROM store_config WHERE id = 'main' LIMIT 1`).Scan(&dbPhone)
-		if err == nil && dbPhone != "" {
-			adminPhone = dbPhone
-		}
-		
-		waMsg := fmt.Sprintf("⚠️ *Pengajuan Retur Baru*\n\nOrder ID: %s\nAlasan: %s\n\nSilakan cek di Dashboard Admin.", actualOrderID, req.Reason)
-		_ = whatsapp.SendMessage(adminPhone, waMsg)
-	}()
-
-	return c.JSON(fiber.Map{"success": true, "message": "Pengajuan retur berhasil dikirim."})
+	return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+		"error": "Fitur pengembalian barang tidak tersedia. Barang yang sudah dibeli tidak dapat dikembalikan.",
+	})
 }
 
 // SyncOrderPayment synchronizes local order status when user finishes Midtrans Snap

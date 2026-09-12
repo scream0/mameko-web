@@ -9,7 +9,7 @@ import ConfirmationModal from "@/components/UI/Modal/ConfirmationModal";
 import styles from "./ProductManager.module.css";
 import pmConfig from "@/data/ui/productManagerConfig.json";
 
-const PRODUCTS_PER_PAGE = 100;
+const PRODUCTS_PER_PAGE = 15;
 const DEBOUNCE_DELAY = 500;
 
 export default function ProductManager() {
@@ -376,3 +376,4 @@ export default function ProductManager() {
     </div>
   );
 }
+

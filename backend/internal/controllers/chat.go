@@ -4,12 +4,35 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"sync"
+	"time"
 	"xar-backend-go/internal/config"
 	"xar-backend-go/internal/middleware"
 	"xar-backend-go/internal/models"
 
 	"github.com/gofiber/fiber/v2"
 )
+
+var (
+	chatPresenceLock sync.RWMutex
+	adminLastSeen    time.Time
+	userLastSeen     = make(map[string]time.Time)
+)
+
+func recordAdminActivity() {
+	chatPresenceLock.Lock()
+	adminLastSeen = time.Now()
+	chatPresenceLock.Unlock()
+}
+
+func recordUserActivity(userID string) {
+	if strings.TrimSpace(userID) == "" {
+		return
+	}
+	chatPresenceLock.Lock()
+	userLastSeen[userID] = time.Now()
+	chatPresenceLock.Unlock()
+}
 
 // --- USER ENDPOINTS ---
 
@@ -23,6 +46,7 @@ func GetUserChats(c *fiber.Ctx) error {
 	if !ok || user == nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
 	}
+	recordUserActivity(user.ID)
 
 	query := `
 		SELECT id, user_id, message, image_url, sender_role, is_read, created_at
@@ -61,6 +85,7 @@ func UserSendMessage(c *fiber.Ctx) error {
 	if !ok || user == nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
 	}
+	recordUserActivity(user.ID)
 
 	var req map[string]interface{}
 	if err := c.BodyParser(&req); err != nil {
@@ -126,6 +151,7 @@ func UserMarkAsRead(c *fiber.Ctx) error {
 
 // AdminGetChatList gets the list of users who have chatted
 func AdminGetChatList(c *fiber.Ctx) error {
+	recordAdminActivity()
 	query := `
 		SELECT 
 			c.user_id, 
@@ -188,6 +214,7 @@ func AdminGetChatList(c *fiber.Ctx) error {
 
 // AdminGetUserChats gets the chat history for a specific user ID
 func AdminGetUserChats(c *fiber.Ctx) error {
+	recordAdminActivity()
 	userID := c.Params("userId")
 	if userID == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "userId is required"})
@@ -222,6 +249,7 @@ func AdminGetUserChats(c *fiber.Ctx) error {
 
 // AdminSendMessage sends a message to a user as an admin
 func AdminSendMessage(c *fiber.Ctx) error {
+	recordAdminActivity()
 	var req map[string]interface{}
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid format"})
@@ -262,6 +290,7 @@ func AdminSendMessage(c *fiber.Ctx) error {
 
 // AdminMarkAsRead marks all user messages as read for a specific user
 func AdminMarkAsRead(c *fiber.Ctx) error {
+	recordAdminActivity()
 	userID := c.Params("userId")
 	if userID == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "userId is required"})
@@ -285,3 +314,83 @@ func AdminMarkAsRead(c *fiber.Ctx) error {
 	
 	return c.JSON(fiber.Map{"success": true})
 }
+
+// UserHeartbeat records online presence heartbeat for user or admin
+func UserHeartbeat(c *fiber.Ctx) error {
+	user, _ := c.Locals("user").(*middleware.AuthUser)
+
+	var req struct {
+		Role   string `json:"role"`
+		UserID string `json:"user_id"`
+	}
+	_ = c.BodyParser(&req)
+
+	userID := ""
+	role := ""
+
+	if user != nil {
+		userID = user.ID
+		role = user.Role
+	}
+
+	if req.Role != "" {
+		role = strings.ToLower(req.Role)
+	}
+	if req.UserID != "" {
+		userID = req.UserID
+	}
+
+	if role == "admin" || role == "superadmin" {
+		recordAdminActivity()
+	} else if userID != "" {
+		recordUserActivity(userID)
+	} else {
+		recordAdminActivity()
+	}
+
+	return c.JSON(fiber.Map{
+		"success":   true,
+		"timestamp": time.Now().Unix(),
+	})
+}
+
+// GetAdminOnlineStatus returns whether an admin was recently active (within last 2 minutes)
+func GetAdminOnlineStatus(c *fiber.Ctx) error {
+	chatPresenceLock.RLock()
+	lastSeen := adminLastSeen
+	chatPresenceLock.RUnlock()
+
+	isOnline := !lastSeen.IsZero() && time.Since(lastSeen) < 2*time.Minute
+
+	return c.JSON(fiber.Map{
+		"success":   true,
+		"is_online": isOnline,
+		"isOnline":  isOnline,
+		"last_seen": lastSeen,
+		"lastSeen":  lastSeen,
+	})
+}
+
+// GetUserOnlineStatus returns whether a specific user was recently active (within last 2 minutes)
+func GetUserOnlineStatus(c *fiber.Ctx) error {
+	userID := strings.TrimSpace(c.Params("userId"))
+	if userID == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "userId is required"})
+	}
+
+	chatPresenceLock.RLock()
+	lastSeen, exists := userLastSeen[userID]
+	chatPresenceLock.RUnlock()
+
+	isOnline := exists && !lastSeen.IsZero() && time.Since(lastSeen) < 2*time.Minute
+
+	return c.JSON(fiber.Map{
+		"success":   true,
+		"user_id":   userID,
+		"is_online": isOnline,
+		"isOnline":  isOnline,
+		"last_seen": lastSeen,
+		"lastSeen":  lastSeen,
+	})
+}
+

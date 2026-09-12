@@ -17,6 +17,7 @@ import checkoutConfig from "@/data/ui/checkoutConfig.json";
 import { getDiscountedPrice } from "@/utils/promo";
 import { loadMidtransSnap } from "@/lib/midtrans";
 import { optimizeCloudinaryUrl, IMAGE_PRESETS } from "@/utils/imageOptimizer";
+import { AppIcon } from "@/components/UI/Icon/AppIcon";
 
 // ID area Biteship untuk kota asal toko (di-resolve via nama kota di admin).
 const ORIGIN_AREA_FALLBACK = DEFAULT_ORIGIN_AREA_ID;
@@ -1334,6 +1335,13 @@ export default function CheckoutPage() {
               <Link href="/dashboard?tab=shop" className={styles.adjustCartLink}>
                 {checkoutConfig.stockValidation?.adjustCartBtn || "Sesuaikan Keranjang"}
               </Link>
+            </div>
+          )}
+
+          {checkoutConfig.summary.nonRefundableNotice && (
+            <div className={styles.nonRefundableNotice}>
+              <AppIcon name="alert-triangle" size={15} />
+              <span>{checkoutConfig.summary.nonRefundableNotice}</span>
             </div>
           )}
 

@@ -21,11 +21,6 @@
       "icon": "package"
     },
     {
-      "id": "returns",
-      "label": "Retur & Refund",
-      "icon": "rotate-ccw"
-    },
-    {
       "id": "notifications",
       "label": "Notifikasi",
       "icon": "bell"

@@ -158,7 +158,26 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
 
     presenceChannelRef.current = presenceChannel;
 
+    const sendAdminHeartbeat = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.access_token) {
+          fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/heartbeat", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${session.access_token}`,
+            },
+            body: JSON.stringify({ role: "admin" }),
+          }).catch(() => {});
+        }
+      } catch {}
+    };
+    sendAdminHeartbeat();
+    const heartbeatTimer = setInterval(sendAdminHeartbeat, 20000);
+
     return () => {
+      clearInterval(heartbeatTimer);
       supabase.removeChannel(channel);
       if (presenceChannelRef.current) {
         supabase.removeChannel(presenceChannelRef.current);
@@ -169,6 +188,25 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
   useEffect(() => {
     if (selectedUser) {
       fetchMessages(selectedUser.id);
+
+      // Check user online status via backend in case user is on mobile app
+      const checkUserStatus = async () => {
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session?.access_token) {
+            const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + `/api/admin/chats/${selectedUser.id}/status`, {
+              headers: { Authorization: `Bearer ${session.access_token}` }
+            });
+            if (res.ok) {
+              const data = await res.json();
+              if (data && data.is_online) {
+                setOnlineUsers((prev: any) => new Set([...prev, selectedUser.id]));
+              }
+            }
+          }
+        } catch {}
+      };
+      checkUserStatus();
     } else {
       setMessages([]);
     }

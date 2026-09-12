@@ -6,7 +6,6 @@ import toast from "react-hot-toast";
 import { auth, db } from "@/lib/supabaseClient";
 import styles from "./OrdersManagement.module.css";
 import { Logo } from "@/components/UI/Logo/logo";
-import AdminReturns from "./AdminReturns";
 import AdminWithdrawals from "./AdminWithdrawals";
 import adminOrdersConfig from "@/data/ui/adminOrdersConfig.json";
 
@@ -24,7 +23,7 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const subtabParam = searchParams.get("subtab") || (searchParams.get("tab") === "returns" ? "returns" : null);
+  const subtabParam = searchParams.get("subtab");
 
   const [orders, setOrders] = useState<any[]>([]);
   const [storeSettings, setStoreSettings] = useState(null);
@@ -36,13 +35,13 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
   const [updatingId, setUpdatingId] = useState(null);
   const [activeOrder, setActiveOrder] = useState(null);
   const [adminTab, setAdminTab] = useState(
-    subtabParam && ['orders', 'returns', 'withdrawals'].includes(subtabParam)
+    subtabParam && ['orders', 'withdrawals'].includes(subtabParam)
       ? subtabParam
       : 'orders'
   );
 
   useEffect(() => {
-    if (subtabParam && ['orders', 'returns', 'withdrawals'].includes(subtabParam)) {
+    if (subtabParam && ['orders', 'withdrawals'].includes(subtabParam)) {
       setAdminTab(subtabParam);
     }
   }, [subtabParam]);
@@ -65,27 +64,6 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
   const [printOrders, setPrintOrders] = useState<any[]>([]);
   const [bulkUpdating, setBulkUpdating] = useState(false);
   const [printType, setPrintType] = useState("slip");
-  const [pendingReturnsCount, setPendingReturnsCount] = useState(0);
-
-  const fetchReturnsCount = async () => {
-    try {
-      const token = await getSupabaseToken();
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/admin/returns", {
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-      });
-      const data = (res.headers?.get("content-type")?.includes("application/json") ? await res.json() : {});
-      if (data.returns) {
-        const count = data.returns.filter((r: any) => r.status === 'return_requested' || r.status === 'pending').length;
-        setPendingReturnsCount(count);
-      }
-    } catch (error) {
-      console.error("Failed to fetch returns count", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchReturnsCount();
-  }, []);
 
   const getAddressStr = (addr: any) => {
     if (!addr) return "Alamat tidak tersedia";
@@ -205,11 +183,6 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
           } else {
             // For new order inserts, refresh current view
             loadOrders(page, statusFilter, searchTerm);
-            fetchReturnsCount();
-          }
-          // Always refresh returns count on any order change (in case status changed to/from return_requested)
-          if (payload.eventType === 'UPDATE') {
-            fetchReturnsCount();
           }
         }
 
@@ -686,15 +659,6 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
           onClick={() => handleTabChange('orders')}
         >
           {adminOrdersConfig.tabs.orders}
-        </button>
-        <button 
-          className={`${styles.tabBtn} ${adminTab === 'returns' ? styles.activeTab : ''} ${styles.tabBtnRelative}`}
-          onClick={() => handleTabChange('returns')}
-        >
-          {adminOrdersConfig.tabs.returns}
-          {pendingReturnsCount > 0 && (
-            <span className={styles.tabBadge}>{pendingReturnsCount}</span>
-          )}
         </button>
         <button 
           className={`${styles.tabBtn} ${adminTab === 'withdrawals' ? styles.activeTab : ''}`}
@@ -1365,10 +1329,6 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
       );
     })()}
         </>
-      )}
-
-      {adminTab === 'returns' && (
-        <AdminReturns />
       )}
 
       {adminTab === 'withdrawals' && (

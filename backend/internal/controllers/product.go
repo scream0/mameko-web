@@ -125,9 +125,14 @@ func GetProducts(c *fiber.Ctx) error {
 		argIdx++
 	}
 
-	if category != "" && category != "all" {
-		whereClauses = append(whereClauses, fmt.Sprintf("category = $%d", argIdx))
-		args = append(args, category)
+	if category != "" && category != "all" && category != "cat-all" {
+		cleanCat := strings.TrimSpace(category)
+		if strings.HasPrefix(strings.ToLower(cleanCat), "cat-") {
+			cleanCat = cleanCat[4:]
+		}
+		cleanCat = strings.ReplaceAll(cleanCat, "-", " ")
+		whereClauses = append(whereClauses, fmt.Sprintf("(category ILIKE $%d OR LOWER(category) = LOWER($%d) OR LOWER(REPLACE(category, ' ', '-')) = LOWER($%d))", argIdx, argIdx, argIdx))
+		args = append(args, cleanCat)
 		argIdx++
 	}
 
@@ -418,6 +423,13 @@ func CreateProduct(c *fiber.Ctx) error {
 	desc, _ := req["description"].(string)
 	category, _ := req["category"].(string)
 	if category == "" {
+		if cid, ok := req["category_id"].(string); ok && cid != "" {
+			category = cid
+		} else if cid, ok := req["categoryId"].(string); ok && cid != "" {
+			category = cid
+		}
+	}
+	if category == "" {
 		category = "Parfum"
 	}
 
@@ -450,6 +462,9 @@ func CreateProduct(c *fiber.Ctx) error {
 		cityID = fmt.Sprintf("%v", cid)
 	}
 	stockLoc, _ := req["stockLocation"].(string)
+	if stockLoc == "" {
+		stockLoc, _ = req["stock_location"].(string)
+	}
 
 	variantsJSON, _ := json.Marshal(req["variants"])
 	if len(variantsJSON) == 0 || string(variantsJSON) == "null" {
@@ -479,14 +494,27 @@ func CreateProduct(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Gagal menyimpan produk: " + err.Error()})
 	}
 
+	productData := fiber.Map{
+		"id":            newID,
+		"name":          name,
+		"description":   desc,
+		"category":      category,
+		"weight":        weight,
+		"length":        length,
+		"width":         width,
+		"height":        height,
+		"status":        status,
+		"image_url":     imgURL,
+		"city":          city,
+		"stockLocation": stockLoc,
+		"created_at":    createdAt,
+	}
+
 	return c.JSON(fiber.Map{
 		"success": true,
 		"message": "Produk berhasil ditambahkan",
-		"product": fiber.Map{
-			"id":         newID,
-			"name":       name,
-			"created_at": createdAt,
-		},
+		"data":    productData,
+		"product": productData,
 	})
 }
 
@@ -523,6 +551,13 @@ func UpdateProduct(c *fiber.Ctx) error {
 	desc, _ := req["description"].(string)
 	category, _ := req["category"].(string)
 	if category == "" {
+		if cid, ok := req["category_id"].(string); ok && cid != "" {
+			category = cid
+		} else if cid, ok := req["categoryId"].(string); ok && cid != "" {
+			category = cid
+		}
+	}
+	if category == "" {
 		category = "Parfum"
 	}
 
@@ -555,6 +590,9 @@ func UpdateProduct(c *fiber.Ctx) error {
 		cityID = fmt.Sprintf("%v", cid)
 	}
 	stockLoc, _ := req["stockLocation"].(string)
+	if stockLoc == "" {
+		stockLoc, _ = req["stock_location"].(string)
+	}
 
 	variantsJSON, _ := json.Marshal(req["variants"])
 	if len(variantsJSON) == 0 || string(variantsJSON) == "null" {
@@ -594,9 +632,26 @@ func UpdateProduct(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Gagal memperbarui produk: " + err.Error()})
 	}
 
+	productData := fiber.Map{
+		"id":            productID,
+		"name":          name,
+		"description":   desc,
+		"category":      category,
+		"weight":        weight,
+		"length":        length,
+		"width":         width,
+		"height":        height,
+		"status":        status,
+		"image_url":     imgURL,
+		"city":          city,
+		"stockLocation": stockLoc,
+	}
+
 	return c.JSON(fiber.Map{
 		"success": true,
 		"message": "Produk berhasil diperbarui",
+		"data":    productData,
+		"product": productData,
 	})
 }
 
@@ -630,4 +685,37 @@ func DeleteProduct(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(fiber.Map{"success": true, "message": "Produk berhasil dihapus"})
+}
+
+// GetProductCategories returns dynamic distinct categories from products
+func GetProductCategories(c *fiber.Ctx) error {
+	if config.DB == nil {
+		return c.JSON(fiber.Map{"success": true, "data": []fiber.Map{}})
+	}
+	rows, err := config.DB.Query(`
+		SELECT DISTINCT category 
+		FROM products 
+		WHERE category IS NOT NULL AND TRIM(category) != ''
+		ORDER BY category ASC
+	`)
+	if err != nil {
+		return c.JSON(fiber.Map{"success": true, "data": []fiber.Map{}})
+	}
+	defer rows.Close()
+
+	var list []fiber.Map
+	for rows.Next() {
+		var cat string
+		if err := rows.Scan(&cat); err == nil && strings.TrimSpace(cat) != "" {
+			cat = strings.TrimSpace(cat)
+			list = append(list, fiber.Map{
+				"id":   "cat-" + strings.ToLower(strings.ReplaceAll(cat, " ", "-")),
+				"name": cat,
+			})
+		}
+	}
+	return c.JSON(fiber.Map{
+		"success": true,
+		"data":    list,
+	})
 }

@@ -27,6 +27,13 @@ type ratesCacheEntry struct {
 	timestamp time.Time
 }
 
+// InvalidateRatesCache clears the in-memory shipping rates cache
+func InvalidateRatesCache() {
+	ratesCacheLock.Lock()
+	ratesCacheMap = make(map[string]ratesCacheEntry)
+	ratesCacheLock.Unlock()
+}
+
 // getStoreOriginAreaId retrieves the store's default Biteship Area ID
 func getStoreOriginAreaId() string {
 	if config.DB == nil {
@@ -40,6 +47,33 @@ func getStoreOriginAreaId() string {
 	}
 
 	return config.DefaultStoreOriginAreaID
+}
+
+// getStoreActiveCouriers retrieves enabled couriers from store_config
+func getStoreActiveCouriers() string {
+	if config.DB == nil {
+		return config.DefaultActiveCouriers
+	}
+
+	var activeCouriersJSON []byte
+	_ = config.DB.QueryRow("SELECT active_couriers FROM store_config WHERE id = 'main' LIMIT 1").Scan(&activeCouriersJSON)
+	if len(activeCouriersJSON) > 0 {
+		var list []string
+		if err := json.Unmarshal(activeCouriersJSON, &list); err == nil && len(list) > 0 {
+			var cleaned []string
+			for _, c := range list {
+				c = strings.TrimSpace(strings.ToLower(c))
+				if c != "" {
+					cleaned = append(cleaned, c)
+				}
+			}
+			if len(cleaned) > 0 {
+				return strings.Join(cleaned, ",")
+			}
+		}
+	}
+
+	return config.DefaultActiveCouriers
 }
 
 func buildFallbackCosts(weight int, requestedCourier string) []fiber.Map {
@@ -224,7 +258,7 @@ func CalculateOngkir(c *fiber.Ctx) error {
 	}
 
 	if couriers == "" {
-		couriers = config.DefaultActiveCouriers
+		couriers = getStoreActiveCouriers()
 	}
 
 	// If no destination area is specified, return fallback immediately

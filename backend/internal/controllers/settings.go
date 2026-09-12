@@ -27,8 +27,6 @@ var defaultSettingsJSON = `{
 	"biteshipIsProduction": false,
 	"biteshipAutoOrder": false,
 	"hero": {
-		"image": "",
-		"imageAlt": "Hero Visual",
 		"tagline": "Artisanal Craftsmanship",
 		"title": { "main": "Meracik Batas Antara", "highlight": "Aroma & Rasa" },
 		"description": {
@@ -42,8 +40,8 @@ var defaultSettingsJSON = `{
 		}
 	},
 	"about": {
-		"image": "",
-		"imageAlt": "About Image",
+		"image": "/assets/images/about-bg.jpg",
+		"imageAlt": "Artisanal Craftsmanship",
 		"imagePublicId": "",
 		"content": {
 			"tagline": "The Story Behind",
@@ -215,60 +213,28 @@ func GetSettings(c *fiber.Ctx) error {
 	if val, ok := rowMap["biteship_auto_order"].(bool); ok {
 		s.BiteshipAutoOrder = val
 	}
-	// Parse legacy value JSON column if present for seamless backward compatibility
-	var legacyValue map[string]interface{}
-	if val, ok := rowMap["value"]; ok && val != nil {
-		if b, err := json.Marshal(val); err == nil {
-			_ = json.Unmarshal(b, &legacyValue)
-		}
-	}
-
-	// Helper to get raw JSON for a section, falling back to legacy value
-	getSectionRaw := func(colName string) interface{} {
-		if val, ok := rowMap[colName]; ok && val != nil {
-			if b, err := json.Marshal(val); err == nil && len(b) > 2 && string(b) != "{}" && string(b) != "null" {
-				return val
-			}
-		}
-		if legacyValue != nil {
-			if val, ok := legacyValue[colName]; ok && val != nil {
-				return val
-			}
-		}
-		return nil
-	}
-
-	heroRaw := getSectionRaw("hero")
-	if heroRaw != nil {
-		if b, err := json.Marshal(heroRaw); err == nil {
+	if val, ok := rowMap["hero"]; ok && val != nil {
+		if b, err := json.Marshal(val); err == nil && string(b) != "{}" && string(b) != "null" {
 			s.Hero = b
 		}
 	}
-
-	aboutRaw := getSectionRaw("about")
-	if aboutRaw != nil {
-		if b, err := json.Marshal(aboutRaw); err == nil {
+	if val, ok := rowMap["about"]; ok && val != nil {
+		if b, err := json.Marshal(val); err == nil && string(b) != "{}" && string(b) != "null" {
 			s.About = b
 		}
 	}
-
-	productRaw := getSectionRaw("product")
-	if productRaw != nil {
-		if b, err := json.Marshal(productRaw); err == nil {
+	if val, ok := rowMap["product"]; ok && val != nil {
+		if b, err := json.Marshal(val); err == nil && string(b) != "{}" && string(b) != "null" {
 			s.Product = b
 		}
 	}
-
-	contactRaw := getSectionRaw("contact")
-	if contactRaw != nil {
-		if b, err := json.Marshal(contactRaw); err == nil {
+	if val, ok := rowMap["contact"]; ok && val != nil {
+		if b, err := json.Marshal(val); err == nil && string(b) != "{}" && string(b) != "null" {
 			s.Contact = b
 		}
 	}
-
-	footerRaw := getSectionRaw("footer")
-	if footerRaw != nil {
-		if b, err := json.Marshal(footerRaw); err == nil {
+	if val, ok := rowMap["footer"]; ok && val != nil {
+		if b, err := json.Marshal(val); err == nil && string(b) != "{}" && string(b) != "null" {
 			s.Footer = b
 		}
 	}
@@ -382,6 +348,9 @@ func UpdateSettings(c *fiber.Ctx) error {
 	hasPromoUpdates := hasPromoBanner || hasPromoDiscount || hasPromoCode || hasPromoTarget
 
 	couriersStr := string(req.ActiveCouriers)
+	if (couriersStr == "" || couriersStr == "null" || couriersStr == "[]") && len(req.EnabledCouriers) > 0 {
+		couriersStr = string(req.EnabledCouriers)
+	}
 	if couriersStr == "" || couriersStr == "null" {
 		couriersStr = "[]"
 	}
@@ -424,11 +393,11 @@ func UpdateSettings(c *fiber.Ctx) error {
 			midtrans_is_production = EXCLUDED.midtrans_is_production,
 			biteship_is_production = EXCLUDED.biteship_is_production,
 			biteship_auto_order = EXCLUDED.biteship_auto_order,
-			hero = EXCLUDED.hero,
-			about = EXCLUDED.about,
-			product = EXCLUDED.product,
-			contact = EXCLUDED.contact,
-			footer = EXCLUDED.footer,
+			hero = CASE WHEN $13::text = '{}' OR $13::text = '' OR $13::text = 'null' THEN store_config.hero ELSE EXCLUDED.hero END,
+			about = CASE WHEN $14::text = '{}' OR $14::text = '' OR $14::text = 'null' THEN store_config.about ELSE EXCLUDED.about END,
+			product = CASE WHEN $15::text = '{}' OR $15::text = '' OR $15::text = 'null' THEN store_config.product ELSE EXCLUDED.product END,
+			contact = CASE WHEN $16::text = '{}' OR $16::text = '' OR $16::text = 'null' THEN store_config.contact ELSE EXCLUDED.contact END,
+			footer = CASE WHEN $17::text = '{}' OR $17::text = '' OR $17::text = 'null' THEN store_config.footer ELSE EXCLUDED.footer END,
 			active_couriers = EXCLUDED.active_couriers,
 			promo_banner_enabled = CASE WHEN $29::boolean THEN EXCLUDED.promo_banner_enabled ELSE store_config.promo_banner_enabled END,
 			promo_banner_text = CASE WHEN $29::boolean THEN EXCLUDED.promo_banner_text ELSE store_config.promo_banner_text END,
@@ -460,6 +429,8 @@ func UpdateSettings(c *fiber.Ctx) error {
 			"error": "Failed to save settings: " + err.Error(),
 		})
 	}
+
+	InvalidateRatesCache()
 
 	return c.JSON(fiber.Map{
 		"success": true,

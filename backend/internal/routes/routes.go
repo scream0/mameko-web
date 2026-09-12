@@ -32,6 +32,7 @@ func SetupRoutes(app *fiber.App) {
 	// Auth Webhooks & Gateways
 	api.Post("/auth/login", controllers.Login)
 	api.Post("/auth/logout", controllers.Logout)
+	api.Post("/auth/refresh", controllers.RefreshToken)
 	api.Post("/auth/send-whatsapp-otp", controllers.SendWhatsAppOTP)
 	api.Post("/auth/verify-whatsapp-otp", controllers.VerifyWhatsAppOTP)
 	api.Post("/webhook/payment", controllers.MidtransPaymentWebhook)
@@ -46,6 +47,7 @@ func SetupRoutes(app *fiber.App) {
 	api.Delete("/reviews", middleware.RequireAdmin(), controllers.DeleteReview)
 	
 	// Products
+	api.Get("/products/categories", controllers.GetProductCategories)
 	api.Get("/products", controllers.GetProducts)
 	api.Post("/products", middleware.RequireAdmin(), controllers.CreateProduct)
 	api.Put("/products", middleware.RequireAdmin(), controllers.UpdateProduct)
@@ -125,6 +127,15 @@ func SetupRoutes(app *fiber.App) {
 	userAuth.Get("/chats", controllers.GetUserChats)
 	userAuth.Post("/chats", controllers.UserSendMessage)
 	userAuth.Put("/chats/read", controllers.UserMarkAsRead)
+	userAuth.Get("/chats/status", controllers.GetAdminOnlineStatus)
+	userAuth.Post("/heartbeat", controllers.UserHeartbeat)
+	// Direct aliases for /api/chats & /api/heartbeat
+	api.Get("/chats", middleware.RequireAuth(), controllers.GetUserChats)
+	api.Post("/chats", middleware.RequireAuth(), controllers.UserSendMessage)
+	api.Put("/chats/read", middleware.RequireAuth(), controllers.UserMarkAsRead)
+	api.Get("/chats/status", controllers.GetAdminOnlineStatus)
+	api.Post("/heartbeat", controllers.UserHeartbeat)
+	api.Post("/chats/heartbeat", controllers.UserHeartbeat)
 	userAuth.Post("/cloudinary", controllers.GenerateCloudinarySignature)
 	userAuth.Delete("/cloudinary", controllers.GenerateCloudinarySignature)
 
@@ -136,10 +147,12 @@ func SetupRoutes(app *fiber.App) {
 
 	// Settings & Automations
 	adminAuth.Post("/settings", controllers.UpdateSettings)
+	adminAuth.Put("/settings", controllers.UpdateSettings)
 	adminAuth.Get("/automation", controllers.GetAutomationRules)
 	adminAuth.Post("/automation", controllers.UpdateAutomationRules)
 
 	// Orders, Returns, and Withdrawals (Backoffice)
+	adminAuth.Get("/overview", controllers.GetAdminOverview)
 	adminAuth.Get("/orders", controllers.GetAdminOrders)
 	adminAuth.Get("/orders/:id", controllers.GetAdminOrderDetail)
 	adminAuth.Post("/orders/run-automation", controllers.RunManualOrderAutomation)
@@ -147,6 +160,8 @@ func SetupRoutes(app *fiber.App) {
 	adminAuth.Post("/orders/:id/shipping", controllers.UpdateAdminOrderShipping)
 	adminAuth.Put("/orders/:id/status", controllers.UpdateAdminOrderStatus)
 	adminAuth.Post("/orders/:id/status", controllers.UpdateAdminOrderStatus)
+	adminAuth.Post("/orders/bulk-status", controllers.BulkUpdateAdminOrderStatus)
+	adminAuth.Put("/orders/bulk-status", controllers.BulkUpdateAdminOrderStatus)
 	adminAuth.Post("/orders/:id/sync", controllers.SyncOrderPayment)
 	adminAuth.Post("/orders/:id/sync-tracking", controllers.SyncBiteshipOrder)
 	adminAuth.Post("/orders/:id/tracking/sync", controllers.SyncBiteshipOrder)
@@ -188,6 +203,7 @@ func SetupRoutes(app *fiber.App) {
 	adminAuth.Get("/chats/:userId", controllers.AdminGetUserChats)
 	adminAuth.Post("/chats", controllers.AdminSendMessage)
 	adminAuth.Put("/chats/:userId/read", controllers.AdminMarkAsRead)
+	adminAuth.Get("/chats/:userId/status", controllers.GetUserOnlineStatus)
 
 	// Vouchers (Admin view, create, update, delete)
 	adminAuth.Get("/vouchers", controllers.GetAdminVouchers)

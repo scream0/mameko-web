@@ -90,7 +90,7 @@ export default function UserDashboard({ user }) {
     if (currentTabParam === "wallet") {
       router.replace("/dashboard?tab=profile&subtab=wallet");
     } else if (currentTabParam === "returns") {
-      router.replace("/dashboard?tab=orders&status=return");
+      router.replace("/dashboard?tab=orders");
     }
   }, [currentTabParam, router]);
 

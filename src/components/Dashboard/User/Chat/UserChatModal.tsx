@@ -19,7 +19,10 @@ export default function UserChatModal({ isOpen, onClose, user }: any) {
   const [isUploading, setIsUploading] = useState(false);
   const [zoomedImage, setZoomedImage] = useState<string | null>(null);
   const [isAdminOnline, setIsAdminOnline] = useState(false);
+  const [backendAdminOnline, setBackendAdminOnline] = useState(false);
   const [isAdminTyping, setIsAdminTyping] = useState(false);
+
+  const isEffectiveAdminOnline = isAdminOnline || backendAdminOnline;
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
@@ -27,9 +30,57 @@ export default function UserChatModal({ isOpen, onClose, user }: any) {
   const presenceChannelRef = useRef<any>(null);
   const typingTimeoutRef = useRef<any>(null);
 
+  const checkAdminStatus = async () => {
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      const res = await fetch(`${getApiBaseUrl()}/api/chats/status`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json && typeof json.is_online === "boolean") {
+          setBackendAdminOnline(json.is_online);
+        }
+      }
+    } catch {
+      // ignore network errors
+    }
+  };
+
+  const sendHeartbeat = async () => {
+    const userId = user?.uid || user?.id;
+    if (!userId) return;
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      await fetch(`${getApiBaseUrl()}/api/heartbeat`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ role: "user", user_id: userId }),
+      });
+    } catch {
+      // ignore network errors
+    }
+  };
+
   useEffect(() => {
     if (isOpen && user) {
       fetchMessages();
+      checkAdminStatus();
+      sendHeartbeat();
+
+      const pollInterval = setInterval(() => {
+        checkAdminStatus();
+        sendHeartbeat();
+      }, 15000);
 
       const channel = supabase
         .channel("public:chats:user")
@@ -98,6 +149,7 @@ export default function UserChatModal({ isOpen, onClose, user }: any) {
         });
 
       return () => {
+        clearInterval(pollInterval);
         supabase.removeChannel(channel);
         supabase.removeChannel(presenceChannel);
       };
@@ -300,11 +352,11 @@ export default function UserChatModal({ isOpen, onClose, user }: any) {
             <div className={styles.statusIndicator}>
               <span
                 className={`${styles.statusDot} ${
-                  isAdminOnline ? styles.online : ""
+                  isEffectiveAdminOnline ? styles.online : ""
                 }`}
               />
               <span>
-                {isAdminOnline
+                {isEffectiveAdminOnline
                   ? chatConfig?.header?.statusOnline || "Online"
                   : chatConfig?.header?.statusOffline || "Offline"}
               </span>
