@@ -88,7 +88,7 @@ export default function UserDashboard({ user }) {
 
   useEffect(() => {
     if (currentTabParam === "wallet") {
-      router.replace("/dashboard?tab=profile&subtab=wallet");
+      router.replace("/dashboard?tab=profile");
     } else if (currentTabParam === "returns") {
       router.replace("/dashboard?tab=orders");
     }

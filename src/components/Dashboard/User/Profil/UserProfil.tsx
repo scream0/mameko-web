@@ -21,7 +21,6 @@ import { convertToWebP } from "@/utils/imageConverter";
 
 const WishlistSection = lazy(() => import("@/components/Dashboard/User/Wishlist/WishlistSection"));
 const UserSettings = lazy(() => import("@/components/Dashboard/User/Settings/UserSettings"));
-const WalletSection = lazy(() => import("@/components/Dashboard/User/Wallet/WalletSection"));
 
 export default function ProfileSection() {
   const router = useRouter();
@@ -37,13 +36,13 @@ export default function ProfileSection() {
   const [loggingOut, setLoggingOut] = useState(false);
   
   const [activeTab, setActiveTab] = useState(
-    subtabParam && ["profile", "wishlist", "wallet", "settings"].includes(subtabParam)
+    subtabParam && ["profile", "wishlist", "settings"].includes(subtabParam)
       ? subtabParam
       : "profile"
   );
 
   useEffect(() => {
-    if (subtabParam && ["profile", "wishlist", "wallet", "settings"].includes(subtabParam)) {
+    if (subtabParam && ["profile", "wishlist", "settings"].includes(subtabParam)) {
       setActiveTab(subtabParam);
     } else if (!subtabParam) {
       setActiveTab("profile");
@@ -765,24 +764,7 @@ export default function ProfileSection() {
             </div>
             <WishlistSection />
           </div>
-        ) : activeTab === "wallet" ? (
-          <div className={styles.tabContainer}>
-            <div className={styles.tabHeaderCard}>
-              <button onClick={() => handleSubtabChange("profile")} className={styles.backToProfileBtn}>
-                <AppIcon name="arrow-left" size={16} />
-                <span>{profileConfig.nav?.backToProfile || "Kembali ke Profil"}</span>
-              </button>
-              <h3 className={styles.tabTitle}>{profileConfig.nav?.wallet || "Dompet & Penarikan Dana"}</h3>
-            </div>
-            <WalletSection 
-              profile={profile} 
-              onOpenBankSettings={() => {
-                handleSubtabChange("profile");
-                setTempProfile({ ...profile });
-                setIsProfileModalOpen(true);
-              }}
-            />
-          </div>
+
         ) : (
           <>
             {/* Wrapper Header Profil yang menyatukan Tombol Navbar di Pojok Kanan Atas */}
@@ -795,13 +777,7 @@ export default function ProfileSection() {
                 >
                   <AppIcon name="heart" className={styles.svgIcon} />
                 </button>
-                <button 
-                  className={`${styles.chatIconBtnNavbar} ${activeTab === "wallet" ? styles.topNavBtnActive : ""}`} 
-                  onClick={() => handleSubtabChange("wallet")} 
-                  title={profileConfig.nav?.wallet || "Dompet & Penarikan Dana"} 
-                >
-                  <AppIcon name="wallet" className={styles.svgIcon} />
-                </button>
+
                 <button 
                   className={`${styles.cartIconBtnNavbar} ${activeTab === "settings" ? styles.topNavBtnActive : ""}`} 
                   onClick={() => handleSubtabChange("settings")} 

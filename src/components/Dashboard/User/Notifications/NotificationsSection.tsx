@@ -241,7 +241,7 @@ export default function NotificationsSection({ onUnreadCountChange }: any) {
       return "/dashboard?tab=orders";
     }
     if (link === "/dashboard/wallet" || link === "/wallet") {
-      return "/dashboard?tab=profile&subtab=wallet";
+      return "/dashboard?tab=profile";
     }
     return link;
   };
