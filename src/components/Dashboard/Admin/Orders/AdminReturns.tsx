@@ -1,4 +1,5 @@
 // @ts-nocheck
+import { getApiBaseUrl } from "@/lib/apiClient";
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { auth } from "@/lib/supabaseClient";
@@ -19,7 +20,7 @@ export default function AdminReturns() {
     setLoading(true);
     try {
       const token = await getSupabaseToken();
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/admin/returns", {
+      const res = await fetch(getApiBaseUrl() + "/api/admin/returns", {
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       });
       const data = (res.headers?.get("content-type")?.includes("application/json") ? await res.json() : {});
@@ -64,7 +65,7 @@ export default function AdminReturns() {
     const toastId = toast.loading(`Processing return...`);
     try {
       const token = await getSupabaseToken();
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + `/api/admin/returns/${id}`, {
+      const res = await fetch(getApiBaseUrl() + `/api/admin/returns/${id}`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',

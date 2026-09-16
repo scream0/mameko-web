@@ -63,7 +63,11 @@ export function StoreProvider({ children }) {
   const syncCartWithDB = useCallback(async (cartToSync) => {
     if (!currentSession) return; // Only sync if user is logged in
     try {
-      const token = currentSession.access_token;
+      const { data: freshSessionData } = await auth.getSession();
+      const token = freshSessionData?.session?.access_token || currentSession?.access_token;
+      if (freshSessionData?.session) {
+        setCurrentSession(freshSessionData.session);
+      }
       const response = await fetch(getApiBaseUrl() + "/api/user/cart", {
         method: 'POST',
         headers: {
@@ -630,7 +634,11 @@ const handleUserData = useCallback(async (currentUser, token) => {
 
     try {
       const userId = user.id || user.uid;
-      const token = currentSession?.access_token;
+      const { data: freshSessionData } = await auth.getSession();
+      const token = freshSessionData?.session?.access_token || currentSession?.access_token;
+      if (freshSessionData?.session) {
+        setCurrentSession(freshSessionData.session);
+      }
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
       const userRes = await fetch(getApiBaseUrl() + `/api/user/profile`, { headers });
@@ -670,8 +678,13 @@ const handleUserData = useCallback(async (currentUser, token) => {
       }
 
       orderId = crypto.randomUUID();
+      // Pastikan diskon tidak terhitung ganda:
+      // Item cart dikirim dengan harga diskon jika ada activePromo.
+      // Jika customParams.amount diberikan (dari CheckoutPage), gunakan itu.
+      // Jika dipanggil langsung tanpa customParams (misal dari sidebar), amount = subtotal setelah promo, dan discountAmount = 0
+      // karena item sudah menggunakan harga yang terdiskon.
       const baseSubtotal = customParams.amount ?? (activePromo ? discountedCartTotal : cartTotal);
-      const totalDiscount = Number(customParams.discountAmount ?? promoSavings ?? 0);
+      const totalDiscount = Number(customParams.discountAmount ?? 0);
       let totalWeight = 0;
       for (const item of cart.items) {
         const product = products.find(
@@ -820,7 +833,11 @@ const handleUserData = useCallback(async (currentUser, token) => {
     try {
       setIsProcessing(true);
       const userId = user.id || user.uid;
-      const token = currentSession?.access_token;
+      const { data: freshSessionData } = await auth.getSession();
+      const token = freshSessionData?.session?.access_token || currentSession?.access_token;
+      if (freshSessionData?.session) {
+        setCurrentSession(freshSessionData.session);
+      }
       const headers = {
         "Content-Type": "application/json",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),

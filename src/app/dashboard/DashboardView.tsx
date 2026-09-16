@@ -1,5 +1,6 @@
 // @ts-nocheck
 "use client";
+import { getApiBaseUrl } from "@/lib/apiClient";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
 
@@ -35,7 +36,7 @@ export default function DashboardView() {
     ) {
       toast.success(`Pembayaran untuk pesanan #${orderId} berhasil!`);
 
-      fetch((process.env.NEXT_PUBLIC_API_URL || "") + `/api/user/orders/${orderId}/sync`, {
+      fetch(getApiBaseUrl() + `/api/user/orders/${orderId}/sync`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ transaction_status: transactionStatus === "200" ? "success" : transactionStatus }),

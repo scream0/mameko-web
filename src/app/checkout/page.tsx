@@ -1,5 +1,6 @@
 // @ts-nocheck
 "use client";
+import { getApiBaseUrl } from "@/lib/apiClient";
 import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
@@ -127,9 +128,9 @@ export default function CheckoutPage() {
       const headers: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
       const [profileRes, vouchersRes] = await Promise.all([
         token
-          ? fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/user/profile", { headers, cache: "no-store" })
+          ? fetch(getApiBaseUrl() + "/api/user/profile", { headers, cache: "no-store" })
           : Promise.resolve(null),
-        fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/vouchers/public", { cache: "no-store" }),
+        fetch(getApiBaseUrl() + "/api/vouchers/public", { cache: "no-store" }),
       ]);
 
       let publicVouchers = [];
@@ -186,7 +187,7 @@ export default function CheckoutPage() {
     initAuth();
 
     // Fetch store settings for couriers and payment methods
-    fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/settings?public=true")
+    fetch(getApiBaseUrl() + "/api/settings?public=true")
       .then((res) => res.json())
       .then((data) => {
         if (data) {
@@ -196,7 +197,7 @@ export default function CheckoutPage() {
           }
           // Resolve origin area dari nama kota toko
           if (data.storeCityName) {
-            fetch((process.env.NEXT_PUBLIC_API_URL || "") + `/api/biteship/areas?q=${encodeURIComponent(data.storeCityName)}`)
+            fetch(getApiBaseUrl() + `/api/biteship/areas?q=${encodeURIComponent(data.storeCityName)}`)
               .then((r) => r.json())
               .then((d) => { if (d.areas?.[0]?.id) setOriginAreaId(d.areas[0].id); })
               .catch(() => { });
@@ -261,10 +262,16 @@ export default function CheckoutPage() {
     };
   }, []);
 
-  // Preload Midtrans Snap script khusus halaman checkout
+  // Preload Midtrans Snap script khusus halaman checkout sesuai environment toko
   useEffect(() => {
-    loadMidtransSnap().catch(() => {});
-  }, []);
+    if (storeSettings) {
+      const isProd = Boolean(storeSettings.midtransIsProduction);
+      const clientKey = isProd
+        ? process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY_PRODUCTION
+        : process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY_SANDBOX;
+      loadMidtransSnap(clientKey, isProd).catch(() => {});
+    }
+  }, [storeSettings]);
 
   // ── Address ──
   const [addresses, setAddresses] = useState<any[]>([]);
@@ -288,7 +295,7 @@ export default function CheckoutPage() {
       setAddressLoading(true);
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
+        const apiBase = getApiBaseUrl();
         const headers = session?.access_token
           ? { Authorization: `Bearer ${session.access_token}` }
           : {};
@@ -382,7 +389,7 @@ export default function CheckoutPage() {
         isPrimary,
       };
 
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
+      const apiBase = getApiBaseUrl();
       const headers = {
         "Content-Type": "application/json",
         ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),

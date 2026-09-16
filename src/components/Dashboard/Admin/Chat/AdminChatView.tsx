@@ -97,7 +97,7 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
                 if (incoming.sender_role === "user" && !incoming.is_read) {
                   supabase.auth.getSession().then(({ data: { session } }) => {
                     if (session?.access_token) {
-                      fetch((process.env.NEXT_PUBLIC_API_URL || "") + `/api/admin/chats/${incoming.user_id}/read`, {
+                      fetch(getApiBaseUrl() + `/api/admin/chats/${incoming.user_id}/read`, {
                         method: "PUT",
                         headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
                         body: JSON.stringify({ ids: [incoming.id] })

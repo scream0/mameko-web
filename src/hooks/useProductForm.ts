@@ -1,4 +1,5 @@
 // @ts-nocheck
+import { getApiBaseUrl } from "@/lib/apiClient";
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { auth } from "@/lib/supabaseClient";
@@ -129,7 +130,7 @@ export function useProductForm(initialProduct = null, onSuccess) {
     }
 
     const { data: { session } } = await auth.getSession();
-    const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/user/cloudinary", { method: "POST", headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}, body: data });
+    const res = await fetch(getApiBaseUrl() + "/api/user/cloudinary", { method: "POST", headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}, body: data });
     const result = await res.json();
 
     if (!res.ok) {
@@ -212,7 +213,7 @@ export function useProductForm(initialProduct = null, onSuccess) {
       }
 
       // 4. Submit to products API
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/products", {
+      const res = await fetch(getApiBaseUrl() + "/api/products", {
         method: isEditMode ? "PUT" : "POST",
         headers: { "Content-Type": "application/json", ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}) },
         body: JSON.stringify(payload),

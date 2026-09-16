@@ -1,5 +1,6 @@
 // @ts-nocheck
 "use client";
+import { getApiBaseUrl } from "@/lib/apiClient";
 import { useState, useEffect, useMemo } from "react";
 import styles from "./TransactionTable.module.css";
 import toast from "react-hot-toast";
@@ -28,7 +29,7 @@ export default function TransactionTable() {
     try {
       setLoading(true);
       const ordersRes = await fetch(
-        (process.env.NEXT_PUBLIC_API_URL || "") + "/api/admin/orders?limit=1000",
+        getApiBaseUrl() + "/api/admin/orders?limit=1000",
         { headers: await getAuthHeaders() }
       );
       const ordersResult = ordersRes.headers?.get("content-type")?.includes("application/json")

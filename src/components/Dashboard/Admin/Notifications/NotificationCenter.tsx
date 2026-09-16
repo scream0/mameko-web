@@ -1,5 +1,6 @@
 // @ts-nocheck
 "use client";
+import { getApiBaseUrl } from "@/lib/apiClient";
 import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { auth, supabase } from "@/lib/supabaseClient";
@@ -67,7 +68,7 @@ export default function NotificationCenter({ onUnreadCountChange }: any) {
       const token = await getSupabaseToken();
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
       
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/admin/notifications?scope=system", {
+      const res = await fetch(getApiBaseUrl() + "/api/admin/notifications?scope=system", {
         headers,
       });
       const contentType = res.headers.get("content-type");
@@ -185,7 +186,7 @@ export default function NotificationCenter({ onUnreadCountChange }: any) {
         return;
       }
 
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/admin/notifications", {
+      const res = await fetch(getApiBaseUrl() + "/api/admin/notifications", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -220,7 +221,7 @@ export default function NotificationCenter({ onUnreadCountChange }: any) {
     if (notification.isRead) return;
     try {
       const token = await getSupabaseToken();
-      await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/admin/notifications", {
+      await fetch(getApiBaseUrl() + "/api/admin/notifications", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -281,7 +282,7 @@ export default function NotificationCenter({ onUnreadCountChange }: any) {
         return;
       }
 
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + `/api/admin/notifications?id=${notification.id}`,
+      const res = await fetch(getApiBaseUrl() + `/api/admin/notifications?id=${notification.id}`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
@@ -306,7 +307,7 @@ export default function NotificationCenter({ onUnreadCountChange }: any) {
     try {
       setSubmitting(true);
       const token = await getSupabaseToken();
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/admin/notifications", {
+      const res = await fetch(getApiBaseUrl() + "/api/admin/notifications", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

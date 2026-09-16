@@ -12,6 +12,7 @@
     "title": "WELCOME BACK",
     "buttonText": "LOGIN",
     "emailPlaceholder": "EMAIL ADDRESS",
+    "phonePlaceholder": "NOMOR WHATSAPP (CONTOH: 08123456789)",
     "passwordPlaceholder": "PASSWORD",
     "otpPlaceholder": "Masukkan 6 digit OTP",
     "emptyFieldsMessage": "Semua kolom wajib diisi.",
@@ -22,25 +23,26 @@
     },
     "titles": {
       "register": "CREATE ACCOUNT",
-      "phone": "PHONE SIGN IN"
+      "phone": "WHATSAPP SIGN IN"
     },
     "buttons": {
       "signUp": "SIGN UP",
       "sendOtp": "KIRIM KODE OTP",
       "verifyOtp": "VERIFIKASI OTP",
       "resendOtp": "Kirim Ulang Kode OTP",
-      "changeEmail": "Ubah Alamat Email"
+      "changeEmail": "Ubah Alamat Email",
+      "changePhone": "Ubah Nomor WhatsApp"
     },
     "labels": {
       "rememberMe": "Remember Me",
       "forgotPassword": "Forgot Password?",
-      "oauthDivider": "ATAU LANJUTKAN DENGAN EMAIL",
+      "oauthDivider": "ATAU LANJUTKAN DENGAN",
       "otpNoticePrefix": "Masukkan kode yang dikirim ke",
       "resendCountdown": "Kirim Ulang Kode ({time})"
     },
     "switchText": {
-      "emailMode": "Masuk dengan Email & Password",
-      "phoneMode": "Masuk dengan Nomor HP",
+      "emailMode": "Masuk dengan Email OTP",
+      "phoneMode": "Masuk dengan WhatsApp OTP",
       "signIn": "Already have an account? Sign In",
       "signUp": "Don't have an account? Sign Up"
     },
@@ -61,7 +63,7 @@
       "otpLengthRequired": "Silakan masukkan kode OTP 6 digit.",
       "allFieldsRequired": "Semua kolom registrasi wajib diisi.",
       "passwordMismatch": "Konfirmasi password tidak cocok.",
-      "phoneRequired": "Silakan isi nomor HP Anda terlebih dahulu.",
+      "phoneRequired": "Silakan isi nomor WhatsApp Anda terlebih dahulu.",
       "invalidPhoneFormat": "Format nomor HP tidak valid. Gunakan format standar (Contoh: 0812xxx).",
       "emailRequiredForReset": "Silakan masukkan email Anda terlebih dahulu untuk mereset password."
     },
@@ -80,8 +82,10 @@
       "invalidOtp": "Kode OTP salah atau telah kedaluwarsa. Silakan minta kode baru.",
       "otpFailed": "Kode OTP salah atau gagal diverifikasi.",
       "otpSentSuccess": "Kode OTP telah dikirim ke email Anda. Silakan periksa kotak masuk (atau spam).",
+      "whatsappOtpSentSuccess": "Kode OTP telah dikirim ke nomor WhatsApp Anda.",
       "tooManyRequests": "Terlalu banyak permintaan OTP. Mohon tunggu 1 menit sebelum mencoba lagi.",
       "otpRequestFailed": "Gagal mengirim kode OTP. Pastikan email valid.",
+      "whatsappOtpFailed": "Gagal mengirim OTP ke WhatsApp. Pastikan nomor terdaftar dan WhatsApp gateway aktif.",
       "loginFailed": "Terjadi masalah saat mencoba masuk. Silakan coba lagi.",
       "otpSent": "Kode OTP sukses dikirim melalui SMS ke",
       "invalidPhoneBackend": "Format nomor HP tidak dikenali oleh sistem backend.",

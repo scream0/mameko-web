@@ -1,5 +1,6 @@
 // @ts-nocheck
 "use client";
+import { getApiBaseUrl } from "@/lib/apiClient";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import toast from "react-hot-toast";
@@ -67,7 +68,7 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
       if (targetSearch.trim()) params.set("search", targetSearch.trim());
 
       const token = await getSupabaseToken();
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + `/api/admin/orders?${params.toString()}`, {
+      const res = await fetch(getApiBaseUrl() + `/api/admin/orders?${params.toString()}`, {
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       });
       const data = (res.headers?.get("content-type")?.includes("application/json") ? await res.json() : {});
@@ -227,7 +228,7 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
     try {
       const orderId = order.id || order.orderId;
       const token = await getSupabaseToken();
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + `/api/admin/orders/${orderId}`, {
+      const res = await fetch(getApiBaseUrl() + `/api/admin/orders/${orderId}`, {
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       });
       const data = (res.headers?.get("content-type")?.includes("application/json") ? await res.json() : {});
@@ -289,7 +290,7 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
     try {
       setUpdatingId(orderId);
       const token = await getSupabaseToken();
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + `/api/admin/orders/${orderId}/status`, {
+      const res = await fetch(getApiBaseUrl() + `/api/admin/orders/${orderId}/status`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -330,7 +331,7 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
     try {
       setUpdatingId(orderId);
       const token = await getSupabaseToken();
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + `/api/admin/orders/${orderId}/shipping`, {
+      const res = await fetch(getApiBaseUrl() + `/api/admin/orders/${orderId}/shipping`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -378,7 +379,7 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
     try {
       setUpdatingId(orderId);
       const token = await getSupabaseToken();
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + `/api/biteship/order`, {
+      const res = await fetch(getApiBaseUrl() + `/api/biteship/order`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -428,7 +429,7 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
     try {
       setUpdatingId(orderId);
       const token = await getSupabaseToken();
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + `/api/admin/orders/${orderId}/sync`, {
+      const res = await fetch(getApiBaseUrl() + `/api/admin/orders/${orderId}/sync`, {
         method: "POST",
         headers: {
           Authorization: token ? `Bearer ${token}` : "",
@@ -463,7 +464,7 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
     try {
       setUpdatingId(orderId);
       const token = await getSupabaseToken();
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + `/api/admin/orders/${orderId}/tracking/sync`, {
+      const res = await fetch(getApiBaseUrl() + `/api/admin/orders/${orderId}/tracking/sync`, {
         method: "POST",
         headers: {
           Authorization: token ? `Bearer ${token}` : "",
@@ -530,7 +531,7 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
     try {
       const token = await getSupabaseToken();
       const promises = selectedOrders.map(async (orderId) => {
-        const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + `/api/admin/orders/${orderId}/status`, {
+        const res = await fetch(getApiBaseUrl() + `/api/admin/orders/${orderId}/status`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -563,7 +564,7 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
     try {
       setUpdatingId(orderId);
       const token = await getSupabaseToken();
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + `/api/admin/orders/${orderId}/status`, {
+      const res = await fetch(getApiBaseUrl() + `/api/admin/orders/${orderId}/status`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -590,7 +591,7 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
     try {
       setRunningAutomation(true);
       const token = await getSupabaseToken();
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
+      const apiBase = getApiBaseUrl();
       const res = await fetch(`${apiBase}/api/admin/orders/run-automation`, {
         method: "POST",
         headers: {

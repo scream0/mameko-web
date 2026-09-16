@@ -1,5 +1,6 @@
 // @ts-nocheck
 "use client";
+import { getApiBaseUrl } from "@/lib/apiClient";
 import { useState, useEffect } from "react";
 import styles from "./ReviewManager.module.css";
 import { useScrollLock } from "@/hooks/useScrollLock";
@@ -51,7 +52,7 @@ export default function ReviewManager() {
       const token = session?.access_token;
       if (!token) throw new Error(reviewConfig.toasts.authRequired);
 
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/reviews?all=true&limit=100", {
+      const res = await fetch(getApiBaseUrl() + "/api/reviews?all=true&limit=100", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -113,7 +114,7 @@ export default function ReviewManager() {
       const token = session?.access_token;
       if (!token) throw new Error(reviewConfig.toasts.authRequired);
 
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/reviews", {
+      const res = await fetch(getApiBaseUrl() + "/api/reviews", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -148,7 +149,7 @@ export default function ReviewManager() {
       const token = session?.access_token;
       if (!token) throw new Error(reviewConfig.toasts.authRequired);
 
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/reviews", {
+      const res = await fetch(getApiBaseUrl() + "/api/reviews", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -188,7 +189,7 @@ export default function ReviewManager() {
       const token = session?.access_token;
       if (!token) throw new Error(reviewConfig.toasts.authRequired);
 
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/reviews", {
+      const res = await fetch(getApiBaseUrl() + "/api/reviews", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -226,7 +227,7 @@ export default function ReviewManager() {
       const token = session?.access_token;
       if (!token) throw new Error(reviewConfig.toasts.authRequired);
 
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/reviews", {
+      const res = await fetch(getApiBaseUrl() + "/api/reviews", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

@@ -1,5 +1,6 @@
 // @ts-nocheck
 "use client";
+import { getApiBaseUrl } from "@/lib/apiClient";
 import { useEffect, useState, useMemo } from "react";
 import toast from "react-hot-toast";
 import { auth } from "@/lib/supabaseClient";
@@ -128,7 +129,7 @@ export default function PromoManagement() {
       // 2. Ambil daftar produk & variannya
       try {
         const prodRes = await fetch(
-          (process.env.NEXT_PUBLIC_API_URL || "") + "/api/products?limit=200"
+          getApiBaseUrl() + "/api/products?limit=200"
         );
         if (prodRes.ok) {
           const pData = await prodRes.json();
@@ -140,7 +141,7 @@ export default function PromoManagement() {
 
       // 3. Ambil daftar voucher
       const vouchersRes = await fetch(
-        (process.env.NEXT_PUBLIC_API_URL || "") + "/api/admin/vouchers",
+        getApiBaseUrl() + "/api/admin/vouchers",
         { headers }
       );
       if (vouchersRes.ok) {
@@ -381,7 +382,7 @@ export default function PromoManagement() {
 
     try {
       const { token } = await getSupabaseTokenAndSession();
-      const url = (process.env.NEXT_PUBLIC_API_URL || "") + "/api/admin/vouchers";
+      const url = getApiBaseUrl() + "/api/admin/vouchers";
       const method = isEdit ? "PUT" : "POST";
       const payload: any = {
         code: voucherForm.code.toUpperCase().trim(),
@@ -459,7 +460,7 @@ export default function PromoManagement() {
       const { token } = await getSupabaseTokenAndSession();
       const nextStatus = !currentStatus;
       const res = await fetch(
-        (process.env.NEXT_PUBLIC_API_URL || "") + "/api/admin/vouchers",
+        getApiBaseUrl() + "/api/admin/vouchers",
         {
           method: "PUT",
           headers: {
@@ -497,7 +498,7 @@ export default function PromoManagement() {
     try {
       const { token } = await getSupabaseTokenAndSession();
       const res = await fetch(
-        (process.env.NEXT_PUBLIC_API_URL || "") + `/api/admin/vouchers?id=${id}`,
+        getApiBaseUrl() + `/api/admin/vouchers?id=${id}`,
         {
           method: "DELETE",
           headers: { Authorization: token ? `Bearer ${token}` : "" },

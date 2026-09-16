@@ -1,6 +1,7 @@
 // @ts-nocheck
 "use client";
 
+import { getApiBaseUrl } from "@/lib/apiClient";
 import { useEffect, useState } from "react";
 import { auth } from "@/lib/supabaseClient";
 import { shouldSkipAuthEvent } from "@/utils/authHelpers";
@@ -37,7 +38,7 @@ export function useAdminAuth() {
         const userId = currentUser.id || currentUser.uid;
         const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : {};
 
-        const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + `/api/user/profile`, {
+        const res = await fetch(getApiBaseUrl() + `/api/user/profile`, {
           headers,
           signal: abortController.signal,
         });

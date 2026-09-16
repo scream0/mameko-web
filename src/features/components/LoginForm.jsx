@@ -6,6 +6,7 @@ import { useStore } from "@/context/StoreContext";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { getSafeAuthRedirect } from "@/utils/authRedirect";
+import { getApiBaseUrl } from "@/lib/apiClient";
 import Script from "next/script";
 
 export default function LoginForm() {
@@ -22,13 +23,17 @@ export default function LoginForm() {
     messages = {},
     defaults = {},
     googleAuth = {},
-    fields = [],
+    switchText = {},
+    titles = {},
   } = form || {};
 
   const cooldownSeconds = Number(settings.resendCooldownSeconds) || 120;
   const otpLength = Number(settings.otpLength) || 6;
 
+  // Auth Mode: "email" | "phone"
+  const [authMode, setAuthMode] = useState("email");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [isClient, setIsClient] = useState(false);
 
@@ -40,8 +45,12 @@ export default function LoginForm() {
         setEmail(savedEmail);
         setRememberMe(true);
       }
+      const savedPhone = localStorage.getItem("rememberedPhone");
+      if (savedPhone) {
+        setPhone(savedPhone);
+      }
     } catch (e) {
-      console.error("Gagal membaca rememberedEmail:", e);
+      console.error("Gagal membaca storage login:", e);
     }
   }, []);
 
@@ -165,14 +174,14 @@ export default function LoginForm() {
   }, [handleGoogleCredentialResponse, googleAuth]);
 
   useEffect(() => {
-    if (!otpSent) {
+    if (!otpSent && authMode === "email") {
       const timer = setTimeout(initGoogleButton, 200);
       return () => clearTimeout(timer);
     }
-  }, [otpSent, initGoogleButton]);
+  }, [otpSent, authMode, initGoogleButton]);
 
   // ==========================================
-  // OTP BOX HANDLERS & AUTO-SUBMIT
+  // OTP BOX HANDLERS & VERIFICATION
   // ==========================================
   const handleVerifyOtp = useCallback(async (codeToVerify) => {
     const otpCode = codeToVerify || otpArray.join("");
@@ -185,41 +194,73 @@ export default function LoginForm() {
     setIsLoading(true);
 
     try {
-      const { data, error: verifyError } = await supabase.auth.verifyOtp({
-        email: email.trim().toLowerCase(),
-        token: otpCode,
-        type: "email",
-      });
-
-      if (verifyError) throw verifyError;
-
-      let userName = data.user?.user_metadata?.name;
-      // Jika user baru dan tidak punya nama, gunakan nama depan dari email
-      if (!userName) {
-        userName = email.split("@")[0];
-        await supabase.auth.updateUser({
-          data: { name: userName, role: "customer" },
+      if (authMode === "email") {
+        const { data, error: verifyError } = await supabase.auth.verifyOtp({
+          email: email.trim().toLowerCase(),
+          token: otpCode,
+          type: "email",
         });
-      }
 
-      setCustomer({
-        name: userName,
-        email: data.user?.email,
-        phone: data.user?.user_metadata?.phone || "",
-      });
+        if (verifyError) throw verifyError;
 
-      try {
-        if (rememberMe) {
-          localStorage.setItem("rememberedEmail", email);
-        } else {
-          localStorage.removeItem("rememberedEmail");
+        let userName = data.user?.user_metadata?.name;
+        if (!userName) {
+          userName = email.split("@")[0];
+          await supabase.auth.updateUser({
+            data: { name: userName, role: "customer" },
+          });
         }
-      } catch (e) {
-        console.error("Gagal memperbarui rememberedEmail:", e);
-      }
 
-      setSuccessMessage(messages.loginSuccess || "Berhasil masuk! Mengalihkan...");
-      await handlePostLoginRedirect(data.user.id);
+        setCustomer({
+          name: userName,
+          email: data.user?.email,
+          phone: data.user?.user_metadata?.phone || "",
+        });
+
+        try {
+          if (rememberMe) {
+            localStorage.setItem("rememberedEmail", email);
+          } else {
+            localStorage.removeItem("rememberedEmail");
+          }
+        } catch (e) {
+          console.error("Gagal memperbarui rememberedEmail:", e);
+        }
+
+        setSuccessMessage(messages.loginSuccess || "Berhasil masuk! Mengalihkan...");
+        await handlePostLoginRedirect(data.user.id);
+      } else {
+        // Mode WhatsApp OTP
+        const cleanPhone = phone.trim().replace(/[^\d+]/g, "");
+        const res = await fetch(getApiBaseUrl() + "/api/auth/verify-whatsapp-otp", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone: cleanPhone, code: otpCode }),
+        });
+        const resData = await res.json();
+        if (!res.ok || !resData.success) {
+          throw new Error(resData.error || messages.invalidOtp || "Kode OTP WhatsApp tidak valid.");
+        }
+
+        try {
+          if (rememberMe) {
+            localStorage.setItem("rememberedPhone", phone);
+          } else {
+            localStorage.removeItem("rememberedPhone");
+          }
+        } catch (e) {
+          console.error("Gagal memperbarui rememberedPhone:", e);
+        }
+
+        setCustomer({
+          name: `User ${cleanPhone.slice(-4)}`,
+          phone: cleanPhone,
+          email: "",
+        });
+
+        setSuccessMessage(messages.loginSuccess || "Berhasil masuk! Mengalihkan...");
+        window.location.replace(callbackUrl);
+      }
     } catch (err) {
       const errMsg = err?.message || "";
       if (errMsg.includes("expired") || errMsg.includes("invalid") || errMsg.includes("Token")) {
@@ -229,21 +270,18 @@ export default function LoginForm() {
       }
       setIsLoading(false);
     }
-  }, [email, otpArray, otpLength, rememberMe, setCustomer, handlePostLoginRedirect, validation.otpLengthRequired, messages.invalidOtp, messages.otpFailed, messages.loginSuccess]);
+  }, [authMode, email, phone, otpArray, otpLength, rememberMe, setCustomer, handlePostLoginRedirect, callbackUrl, validation.otpLengthRequired, messages.invalidOtp, messages.otpFailed, messages.loginSuccess]);
 
   const handleOtpChange = (index, value) => {
-    // Hanya terima satu digit angka
     const digit = value.replace(/\D/g, "").slice(-1);
     const newOtpArray = [...otpArray];
     newOtpArray[index] = digit;
     setOtpArray(newOtpArray);
 
-    // Auto-advance ke kotak berikutnya
     if (digit && index < otpLength - 1) {
       inputRefs.current[index + 1]?.focus();
     }
 
-    // Auto-submit bila ke-6 digit sudah terisi semua
     if (digit && newOtpArray.every((d) => d !== "")) {
       handleVerifyOtp(newOtpArray.join(""));
     }
@@ -281,35 +319,60 @@ export default function LoginForm() {
   };
 
   const requestOtpCode = async () => {
-    const cleanEmail = email.trim().toLowerCase();
-    if (!cleanEmail || !cleanEmail.includes("@")) {
-      setError(validation.invalidEmail || "Masukkan alamat email yang valid.");
-      return;
-    }
-
     setError("");
     setSuccessMessage("");
     setIsLoading(true);
 
     try {
-      const redirectUrl = typeof window !== "undefined" ? `${window.location.origin}/auth/callback` : undefined;
-      const { error: signInError } = await supabase.auth.signInWithOtp({
-        email: cleanEmail,
-        options: {
-          emailRedirectTo: redirectUrl,
-        },
-      });
-      if (signInError) throw signInError;
-      
-      setSuccessMessage(messages.otpSentSuccess || "Kode OTP telah dikirim ke email Anda. Silakan periksa kotak masuk (atau spam).");
-      setOtpSent(true);
-      setResendTimer(cooldownSeconds);
+      if (authMode === "email") {
+        const cleanEmail = email.trim().toLowerCase();
+        if (!cleanEmail || !cleanEmail.includes("@")) {
+          setError(validation.invalidEmail || "Masukkan alamat email yang valid.");
+          setIsLoading(false);
+          return;
+        }
+
+        const redirectUrl = typeof window !== "undefined" ? `${window.location.origin}/auth/callback` : undefined;
+        const { error: signInError } = await supabase.auth.signInWithOtp({
+          email: cleanEmail,
+          options: {
+            emailRedirectTo: redirectUrl,
+          },
+        });
+        if (signInError) throw signInError;
+        
+        setSuccessMessage(messages.otpSentSuccess || "Kode OTP telah dikirim ke email Anda.");
+        setOtpSent(true);
+        setResendTimer(cooldownSeconds);
+      } else {
+        // Mode WhatsApp
+        const cleanPhone = phone.trim().replace(/[^\d+]/g, "");
+        if (!cleanPhone || cleanPhone.length < 9) {
+          setError(validation.invalidPhoneFormat || "Format nomor HP tidak valid. Contoh: 0812xxx");
+          setIsLoading(false);
+          return;
+        }
+
+        const res = await fetch(getApiBaseUrl() + "/api/auth/send-whatsapp-otp", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone: cleanPhone }),
+        });
+        const resData = await res.json();
+        if (!res.ok || !resData.success) {
+          throw new Error(resData.error || messages.whatsappOtpFailed || "Gagal mengirim OTP ke WhatsApp.");
+        }
+
+        setSuccessMessage(messages.whatsappOtpSentSuccess || `Kode OTP telah dikirim ke WhatsApp ${cleanPhone}.`);
+        setOtpSent(true);
+        setResendTimer(cooldownSeconds);
+      }
     } catch (err) {
       const errMsg = err?.message || "";
       if (errMsg.includes("rate_limit") || err?.status === 429) {
         setError(messages.tooManyRequests || "Terlalu banyak permintaan OTP. Mohon tunggu 1 menit sebelum mencoba lagi.");
       } else {
-        setError(errMsg || messages.otpRequestFailed || "Gagal mengirim kode OTP. Pastikan email valid.");
+        setError(errMsg || messages.otpRequestFailed || "Gagal mengirim kode OTP.");
       }
     } finally {
       setIsLoading(false);
@@ -322,8 +385,12 @@ export default function LoginForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!email) {
+    if (authMode === "email" && !email) {
       setError(validation.emailRequired || "Email wajib diisi.");
+      return;
+    }
+    if (authMode === "phone" && !phone) {
+      setError(validation.phoneRequired || "Nomor WhatsApp wajib diisi.");
       return;
     }
 
@@ -334,7 +401,14 @@ export default function LoginForm() {
     }
   };
 
-  const emailPlaceholder = fields.find((f) => f.name === "email")?.placeholder || form?.emailPlaceholder || "EMAIL ADDRESS";
+  const toggleAuthMode = () => {
+    setAuthMode((prev) => (prev === "email" ? "phone" : "email"));
+    setOtpSent(false);
+    setOtpArray(Array(otpLength).fill(""));
+    setResendTimer(0);
+    setError("");
+    setSuccessMessage("");
+  };
 
   return (
     <div className={styles.formWrapper}>
@@ -345,16 +419,18 @@ export default function LoginForm() {
       />
 
       <div className={styles.loginCard}>
-        <h2 className={styles.loginTitle}>{form?.title || "WELCOME BACK"}</h2>
+        <h2 className={styles.loginTitle}>
+          {authMode === "phone" ? (titles.phone || "WHATSAPP SIGN IN") : (form?.title || "WELCOME BACK")}
+        </h2>
 
-        {!otpSent && (
+        {!otpSent && authMode === "email" && (
           <>
             <div className={styles.socialWrapper}>
               <div id="googleButtonDiv" className={styles.googleBtnWrapper}></div>
             </div>
 
             <div className={styles.divider}>
-              <span>{labels.oauthDivider || "ATAU LANJUTKAN DENGAN EMAIL"}</span>
+              <span>{labels.oauthDivider || "ATAU LANJUTKAN DENGAN"}</span>
             </div>
           </>
         )}
@@ -363,20 +439,34 @@ export default function LoginForm() {
           {error && <div className={styles.errorMessage}>{error}</div>}
           {successMessage && <div className={styles.successMessage}>{successMessage}</div>}
 
-          {/* Email Field */}
+          {/* Email / Phone Field */}
           {!otpSent && (
             <div className={styles.inputWrapper}>
-              <input
-                type="email"
-                name="email"
-                autoComplete="email"
-                placeholder={emailPlaceholder}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className={styles.inputField}
-                disabled={isLoading}
-                required
-              />
+              {authMode === "email" ? (
+                <input
+                  type="email"
+                  name="email"
+                  autoComplete="email"
+                  placeholder={form?.emailPlaceholder || "EMAIL ADDRESS"}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className={styles.inputField}
+                  disabled={isLoading}
+                  required
+                />
+              ) : (
+                <input
+                  type="tel"
+                  name="phone"
+                  autoComplete="tel"
+                  placeholder={form?.phonePlaceholder || "NOMOR WHATSAPP (CONTOH: 08123456789)"}
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className={styles.inputField}
+                  disabled={isLoading}
+                  required
+                />
+              )}
             </div>
           )}
 
@@ -385,7 +475,9 @@ export default function LoginForm() {
             {otpSent && (
               <p className={styles.otpNoticeText}>
                 {labels.otpNoticePrefix || "Masukkan kode yang dikirim ke"} <br />
-                <strong className={styles.otpNoticeEmail}>{email}</strong>
+                <strong className={styles.otpNoticeEmail}>
+                  {authMode === "email" ? email : phone}
+                </strong>
               </p>
             )}
             <div className={styles.otpContainer}>
@@ -439,6 +531,17 @@ export default function LoginForm() {
             )}
           </button>
 
+          {!otpSent && (
+            <button
+              type="button"
+              className={`${styles.switchModeBtn} ${styles.changeEmailBtn}`}
+              onClick={toggleAuthMode}
+              disabled={isLoading}
+            >
+              {authMode === "email" ? (switchText.phoneMode || "Masuk dengan WhatsApp OTP") : (switchText.emailMode || "Masuk dengan Email OTP")}
+            </button>
+          )}
+
           {otpSent && (
             <>
               {resendTimer > 0 ? (
@@ -470,7 +573,7 @@ export default function LoginForm() {
                 }}
                 disabled={isLoading}
               >
-                {buttons.changeEmail || "Ubah Alamat Email"}
+                {authMode === "email" ? (buttons.changeEmail || "Ubah Alamat Email") : (buttons.changePhone || "Ubah Nomor WhatsApp")}
               </button>
             </>
           )}

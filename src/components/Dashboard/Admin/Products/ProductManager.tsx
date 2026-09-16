@@ -1,5 +1,6 @@
 // @ts-nocheck
 "use client";
+import { getApiBaseUrl } from "@/lib/apiClient";
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import toast from "react-hot-toast";
@@ -79,7 +80,7 @@ export default function ProductManager() {
     // Go API default sorts by created_at desc
 
     try {
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + `/api/products?${params.toString()}`);
+      const res = await fetch(getApiBaseUrl() + `/api/products?${params.toString()}`);
       if (!res.ok) throw new Error(pmConfig.errors?.fetch || "Gagal mengambil data produk dari server");
       const result = await res.json();
       
@@ -148,7 +149,7 @@ export default function ProductManager() {
       const { data: { session } } = await supabase.auth.getSession();
       const authHeaders = session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {};
       if (productToDelete.image_public_id) {
-        await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/user/cloudinary", {
+        await fetch(getApiBaseUrl() + "/api/user/cloudinary", {
           method: "DELETE",
           headers: { "Content-Type": "application/json", ...authHeaders },
           body: JSON.stringify({ publicId: productToDelete.image_public_id }),
@@ -157,7 +158,7 @@ export default function ProductManager() {
       if (productToDelete.variants?.length) {
         for (const v of productToDelete.variants) {
           if (v.imagePublicId) {
-            await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/user/cloudinary", {
+            await fetch(getApiBaseUrl() + "/api/user/cloudinary", {
               method: "DELETE",
               headers: { "Content-Type": "application/json", ...authHeaders },
               body: JSON.stringify({ publicId: v.imagePublicId }),
@@ -166,7 +167,7 @@ export default function ProductManager() {
         }
       }
 
-      const deleteRes = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + `/api/products?id=${productToDelete.id}`, {
+      const deleteRes = await fetch(getApiBaseUrl() + `/api/products?id=${productToDelete.id}`, {
         method: "DELETE",
         headers: authHeaders,
       });

@@ -1,5 +1,6 @@
 // @ts-nocheck
 "use client";
+import { getApiBaseUrl } from "@/lib/apiClient";
 import { useEffect, useState, useCallback } from "react";
 import {
   BarChart,
@@ -181,8 +182,8 @@ export default function AdvancedAnalytics() {
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
         const [ordersRes, productsRes] = await Promise.all([
-          fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/admin/orders?limit=1000", { headers }),
-          fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/products?limit=1000", { headers }),
+          fetch(getApiBaseUrl() + "/api/admin/orders?limit=1000", { headers }),
+          fetch(getApiBaseUrl() + "/api/products?limit=1000", { headers }),
         ]);
 
         const ordersResult = (ordersRes.headers?.get("content-type")?.includes("application/json") ? await ordersRes.json() : {});

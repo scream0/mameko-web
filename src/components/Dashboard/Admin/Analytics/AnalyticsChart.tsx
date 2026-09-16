@@ -1,4 +1,5 @@
 // @ts-nocheck
+import { getApiBaseUrl } from "@/lib/apiClient";
 import { useEffect, useState, useCallback } from "react";
 import {
   AreaChart,
@@ -192,7 +193,7 @@ export default function AnalyticsChart() {
         const token = session?.access_token;
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-        const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/admin/orders?limit=1000", { headers });
+        const res = await fetch(getApiBaseUrl() + "/api/admin/orders?limit=1000", { headers });
         const result = (res.headers?.get("content-type")?.includes("application/json") ? await res.json() : {});
 
         let transactions = Array.isArray(result)

@@ -1,5 +1,6 @@
 // @ts-nocheck
 "use client";
+import { getApiBaseUrl } from "@/lib/apiClient";
 import { useState, useRef, useEffect, useCallback } from "react";
 import styles from "./BiteshipAreaSelect.module.css";
 import biteshipConfig from "@/data/ui/biteshipAreaConfig.json";
@@ -50,7 +51,7 @@ export function BiteshipAreaSelect({
 
     setLoading(true);
     try {
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + `/api/biteship/areas?q=${encodeURIComponent(trimmed)}`);
+      const res = await fetch(getApiBaseUrl() + `/api/biteship/areas?q=${encodeURIComponent(trimmed)}`);
       const data = await res.json();
       if (data.areas && Array.isArray(data.areas)) {
         setResults(data.areas);

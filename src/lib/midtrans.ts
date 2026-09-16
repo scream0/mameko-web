@@ -11,39 +11,56 @@ declare global {
 }
 
 let snapPromise: Promise<any> | null = null;
+let currentIsProduction: boolean | null = null;
 
 export function loadMidtransSnap(clientKey?: string, isProduction?: boolean): Promise<any> {
   if (typeof window === "undefined") {
     return Promise.resolve(null);
   }
 
-  // Jika snap sudah tersedia di window, langsung kembalikan
-  if (window.snap) {
+  const targetUrl = isProduction
+    ? "https://app.midtrans.com/snap/snap.js"
+    : "https://app.sandbox.midtrans.com/snap/snap.js";
+
+  // Periksa apakah ada script tag yang sudah terpasang di DOM
+  const existingScript = document.getElementById("midtrans-snap-script") as HTMLScriptElement | null;
+
+  // Jika environment berubah (misal dari default sandbox ke production), reload script yang benar
+  if (existingScript && currentIsProduction !== null && currentIsProduction !== Boolean(isProduction)) {
+    existingScript.remove();
+    if (window.snap) {
+      delete window.snap;
+    }
+    snapPromise = null;
+  }
+
+  // Jika snap sudah tersedia di window dan environment cocok, langsung kembalikan
+  if (window.snap && currentIsProduction === Boolean(isProduction)) {
     return Promise.resolve(window.snap);
   }
 
-  // Gunakan singleton promise agar tidak ada multiple script injection
-  if (snapPromise) {
+  // Gunakan singleton promise jika environment sama
+  if (snapPromise && currentIsProduction === Boolean(isProduction)) {
     return snapPromise;
   }
 
+  currentIsProduction = Boolean(isProduction);
+
   snapPromise = new Promise((resolve, reject) => {
-    const existingScript = document.getElementById("midtrans-snap-script") as HTMLScriptElement | null;
-    if (existingScript) {
+    const currentScript = document.getElementById("midtrans-snap-script") as HTMLScriptElement | null;
+    if (currentScript) {
       if (window.snap) {
         resolve(window.snap);
         return;
       }
-      existingScript.addEventListener("load", () => resolve(window.snap));
-      existingScript.addEventListener("error", (e) => reject(e));
+      currentScript.addEventListener("load", () => resolve(window.snap));
+      currentScript.addEventListener("error", (e) => reject(e));
       return;
     }
 
     const script = document.createElement("script");
     script.id = "midtrans-snap-script";
-    script.src = isProduction
-      ? "https://app.midtrans.com/snap/snap.js"
-      : "https://app.sandbox.midtrans.com/snap/snap.js";
+    script.src = targetUrl;
 
     const resolvedClientKey =
       clientKey ||

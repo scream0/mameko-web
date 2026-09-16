@@ -1,5 +1,6 @@
 // @ts-nocheck
 "use client";
+import { getApiBaseUrl } from "@/lib/apiClient";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
@@ -226,7 +227,7 @@ export default function AdminDashboard() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/admin/orders?status=pending,paid,processing,verifying&page=1&limit=1", {
+      const res = await fetch(getApiBaseUrl() + "/api/admin/orders?status=pending,paid,processing,verifying&page=1&limit=1", {
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       });
       const data = (res.headers?.get("content-type")?.includes("application/json") ? await res.json() : {});
@@ -324,7 +325,7 @@ export default function AdminDashboard() {
         const token = session?.access_token;
         if (!token) return;
 
-        const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/admin/chats", {
+        const res = await fetch(getApiBaseUrl() + "/api/admin/chats", {
           headers: { Authorization: `Bearer ${token}` }
         });
         const result = await res.json();
@@ -367,7 +368,7 @@ export default function AdminDashboard() {
         const token = session?.access_token;
         if (!token) return;
 
-        const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/admin/notifications?scope=system", {
+        const res = await fetch(getApiBaseUrl() + "/api/admin/notifications?scope=system", {
           headers: { Authorization: `Bearer ${token}` }
         });
         const result = res.headers?.get("content-type")?.includes("application/json") ? await res.json() : {};

@@ -1,5 +1,6 @@
 // @ts-nocheck
 "use client";
+import { getApiBaseUrl } from "@/lib/apiClient";
 import { useState, useEffect, useRef, useCallback } from "react";
 import toast from "react-hot-toast";
 import styles from "./SettingsView.module.css";
@@ -362,7 +363,7 @@ export default function SettingsView() {
         heroFormData.append("oldPublicId", settings.hero.imagePublicId || "");
         heroFormData.append("oldUrl", settings.hero.image || "");
 
-        const heroUploadRes = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/user/cloudinary", {
+        const heroUploadRes = await fetch(getApiBaseUrl() + "/api/user/cloudinary", {
           method: "POST",
           headers: {
             Authorization: `Bearer ${currentSession.access_token}`,
@@ -393,7 +394,7 @@ export default function SettingsView() {
         aboutFormData.append("oldPublicId", settings.about.imagePublicId || "");
         aboutFormData.append("oldUrl", settings.about.image || "");
 
-        const aboutUploadRes = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/user/cloudinary", {
+        const aboutUploadRes = await fetch(getApiBaseUrl() + "/api/user/cloudinary", {
           method: "POST",
           headers: {
             Authorization: `Bearer ${currentSession.access_token}`,
@@ -816,7 +817,7 @@ function StoreTab({ settings, handleInputChange, cfg }) {
     searchTimeoutRef.current = setTimeout(async () => {
       setIsSearching(true);
       try {
-        const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + `/api/biteship/areas?q=${encodeURIComponent(val)}`);
+        const res = await fetch(getApiBaseUrl() + `/api/biteship/areas?q=${encodeURIComponent(val)}`);
         const data = (res.headers?.get("content-type")?.includes("application/json") ? await res.json() : {});
         setAreaOptions(data.areas || []);
       } catch (err) {
@@ -2128,7 +2129,7 @@ function CouriersTab({ settings, updateCouriers, updateBiteshipMode, updateBites
       setLoadingCouriers(true);
       setFetchError("");
       try {
-        const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/biteship/couriers");
+        const res = await fetch(getApiBaseUrl() + "/api/biteship/couriers");
         const data = (res.headers?.get("content-type")?.includes("application/json") ? await res.json() : {});
         if (data.couriers && data.couriers.length > 0) {
           setCourierList(data.couriers);
@@ -2366,7 +2367,7 @@ function WhatsAppTab({ cfg }) {
   const fetchStatus = useCallback(async () => {
     try {
       const { data: { session } } = await auth.getSession();
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
+      const apiBase = getApiBaseUrl();
       const res = await fetch(`${apiBase}/api/admin/whatsapp/status`, {
         headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {},
         cache: "no-store",
@@ -2399,7 +2400,7 @@ function WhatsAppTab({ cfg }) {
     setQrCountdown(120);
     try {
       const { data: { session } } = await auth.getSession();
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
+      const apiBase = getApiBaseUrl();
       const res = await fetch(`${apiBase}/api/admin/whatsapp/qr`, {
         headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {},
         cache: "no-store",
@@ -2453,7 +2454,7 @@ function WhatsAppTab({ cfg }) {
     const toastId = toast.loading("Memutuskan sesi WhatsApp...");
     try {
       const { data: { session } } = await auth.getSession();
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
+      const apiBase = getApiBaseUrl();
       const res = await fetch(`${apiBase}/api/admin/whatsapp/logout`, {
         method: "POST",
         headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {},
@@ -2478,7 +2479,7 @@ function WhatsAppTab({ cfg }) {
     const toastId = toast.loading("Mengirim pesan uji coba...");
     try {
       const { data: { session } } = await auth.getSession();
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
+      const apiBase = getApiBaseUrl();
       const res = await fetch(`${apiBase}/api/admin/whatsapp/test`, {
         method: "POST",
         headers: {

@@ -1,5 +1,6 @@
 // @ts-nocheck
 "use client";
+import { getApiBaseUrl } from "@/lib/apiClient";
 import { useEffect, useState, useMemo, useRef } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import toast from "react-hot-toast";
@@ -46,7 +47,7 @@ export default function UserManagement() {
 
       if (!token) throw new Error("No active session found.");
 
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/admin/team", {
+      const res = await fetch(getApiBaseUrl() + "/api/admin/team", {
         headers: { Authorization: `Bearer ${token}`, "Cache-Control": "no-cache" },
         cache: "no-store"
       });
@@ -94,7 +95,7 @@ export default function UserManagement() {
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
 
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "") + "/api/admin/team", {
+      const res = await fetch(getApiBaseUrl() + "/api/admin/team", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
