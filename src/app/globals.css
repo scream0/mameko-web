@@ -6,116 +6,126 @@
   --font-serif: var(--font-tenor), "Tenor Sans", serif;
   --font-sans: var(--font-lato), "Lato", sans-serif;
 
-  /* Light Theme Palette */
-  --background: #f4f8f7;
-  --text-primary: #07191E;
-  --text-secondary: #4a6368;
+  /* Light Theme Palette (Warm Creamy Vanilla & Matcha Sage) */
+  --background: #F6F0E4;
+  --text-primary: #221B15;
+  --text-secondary: #7A6E5C;
   --surface-primary: #ffffff;
-  --surface-secondary: #e6f0ee;
-  --border-color: #cbdad7;
-  --primary-accent: #07191E;
-  --primary-accent-text: #fafafa;
-  --text-tertiary: #829a97;
-  --primary-accent-bg: rgba(7, 25, 30, 0.08);
+  --surface-secondary: #EDE5D8;
+  --border-color: #E3D9C8;
+  --primary-accent: #4F8B79;
+  --primary-accent-text: #ffffff;
+  --text-tertiary: #9E917F;
+  --primary-accent-bg: rgba(79, 139, 121, 0.12);
   --input-background: #ffffff;
 
+  /* Secondary / Aksen Manis — Light Theme */
+  --secondary: #A8702E;
+  --secondary-container: rgba(168, 112, 46, 0.12);
+  --on-secondary: #ffffff;
+
   /* Semantic Status Colors — Light Theme */
-  --success-color: #059669;
-  --success-bg: rgba(5, 150, 105, 0.12);
-  --success-border: rgba(5, 150, 105, 0.28);
-  --success-text: #059669;
+  --success-color: #3B7D68;
+  --success-bg: rgba(59, 125, 104, 0.12);
+  --success-border: rgba(59, 125, 104, 0.28);
+  --success-text: #3B7D68;
 
-  --warning-color: #d97706;
-  --warning-bg: rgba(217, 119, 6, 0.12);
-  --warning-border: rgba(217, 119, 6, 0.28);
-  --warning-text: #b45309;
+  --warning-color: #A8702E;
+  --warning-bg: rgba(168, 112, 46, 0.12);
+  --warning-border: rgba(168, 112, 46, 0.28);
+  --warning-text: #7A4E1B;
 
-  --danger-color: #dc2626;
-  --danger-bg: rgba(220, 38, 38, 0.12);
-  --danger-border: rgba(220, 38, 38, 0.28);
-  --danger-text: #dc2626;
+  --danger-color: #C24134;
+  --danger-bg: rgba(194, 65, 52, 0.12);
+  --danger-border: rgba(194, 65, 52, 0.28);
+  --danger-text: #C24134;
 
-  --info-color: #0284c7;
-  --info-bg: rgba(2, 132, 199, 0.12);
-  --info-border: rgba(2, 132, 199, 0.28);
-  --info-text: #0369a1;
+  --info-color: #4F8B79;
+  --info-bg: rgba(79, 139, 121, 0.12);
+  --info-border: rgba(79, 139, 121, 0.28);
+  --info-text: #4F8B79;
 
-  --neutral-bg: rgba(7, 25, 30, 0.05);
-  --neutral-border: rgba(7, 25, 30, 0.15);
-  --neutral-text: #4a6368;
+  --neutral-bg: rgba(34, 27, 21, 0.05);
+  --neutral-border: rgba(34, 27, 21, 0.15);
+  --neutral-text: #7A6E5C;
 
-  --shadow-sm: 0 1px 2px 0 rgba(7, 25, 30, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(7, 25, 30, 0.08), 0 2px 4px -2px rgba(7, 25, 30, 0.04);
+  --shadow-sm: 0 1px 2px 0 rgba(34, 27, 21, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(34, 27, 21, 0.08), 0 2px 4px -2px rgba(34, 27, 21, 0.04);
 
   /* RGB versions for rgba() — Light Theme */
   --surface-primary-rgb: 255, 255, 255;
-  --background-rgb: 244, 248, 247;
-  --text-secondary-rgb: 74, 99, 104;
-  --primary-accent-rgb: 7, 25, 30;
-  --danger-color-rgb: 220, 38, 38;
-  --success-color-rgb: 5, 150, 105;
+  --background-rgb: 246, 240, 228;
+  --text-secondary-rgb: 122, 110, 92;
+  --primary-accent-rgb: 79, 139, 121;
+  --danger-color-rgb: 194, 65, 52;
+  --success-color-rgb: 59, 125, 104;
 
   /* Skeleton loading colors (Light theme) */
-  --skeleton-base: rgba(7, 25, 30, 0.08);
+  --skeleton-base: rgba(34, 27, 21, 0.08);
   --skeleton-shine: rgba(255, 255, 255, 0.7);
 }
 
 [data-theme="dark"] {
-  /* Dark Theme Palette (Base #07191E & #fafafa Accent) */
-  --background: #07191E;
-  --text-primary: #fafafa;
-  --text-secondary: #94b8b3;
-  --surface-primary: #0b2026;
-  --surface-secondary: #112c33;
-  --border-color: #1c3e47;
+  /* Dark Theme Palette (Deep Espresso & Matcha Gold Studio) */
+  --background: #16130F;
+  --text-primary: #F2E9DC;
+  --text-secondary: #A99C89;
+  --surface-primary: #1F1A15;
+  --surface-secondary: #28221B;
+  --border-color: #2C251E;
 
-  /* Aksen utama #fafafa dengan teks gelap */
-  --primary-accent: #fafafa;
-  --primary-accent-text: #07191E;
-  --primary-accent-bg: rgba(250, 250, 250, 0.15);
+  /* Aksen segar */
+  --primary-accent: #8FBAA9;
+  --primary-accent-text: #16130F;
+  --primary-accent-bg: rgba(143, 186, 169, 0.15);
 
-  --text-tertiary: #658c85;
-  --input-background: #0b2026;
+  --text-tertiary: #7D705E;
+  --input-background: #1F1A15;
+
+  /* Secondary / Aksen Manis — Dark Theme */
+  --secondary: #C99A4A;
+  --secondary-container: rgba(201, 154, 74, 0.15);
+  --on-secondary: #16130F;
 
   /* Semantic Status Colors — Dark Theme */
-  --success-color: #02F5A1;
-  --success-bg: rgba(2, 245, 161, 0.12);
-  --success-border: rgba(2, 245, 161, 0.3);
-  --success-text: #02F5A1;
+  --success-color: #8FBAA9;
+  --success-bg: rgba(143, 186, 169, 0.12);
+  --success-border: rgba(143, 186, 169, 0.3);
+  --success-text: #8FBAA9;
 
-  --warning-color: #fbbf24;
-  --warning-bg: rgba(251, 191, 36, 0.12);
-  --warning-border: rgba(251, 191, 36, 0.25);
-  --warning-text: #fbbf24;
+  --warning-color: #C99A4A;
+  --warning-bg: rgba(201, 154, 74, 0.12);
+  --warning-border: rgba(201, 154, 74, 0.25);
+  --warning-text: #C99A4A;
 
   --danger-color: #f87171;
   --danger-bg: rgba(248, 113, 113, 0.12);
   --danger-border: rgba(248, 113, 113, 0.25);
   --danger-text: #f87171;
 
-  --info-color: #38bdf8;
-  --info-bg: rgba(56, 189, 248, 0.12);
-  --info-border: rgba(56, 189, 248, 0.25);
-  --info-text: #38bdf8;
+  --info-color: #8FBAA9;
+  --info-bg: rgba(143, 186, 169, 0.12);
+  --info-border: rgba(143, 186, 169, 0.25);
+  --info-text: #8FBAA9;
 
-  --neutral-bg: rgba(148, 184, 179, 0.08);
-  --neutral-border: rgba(148, 184, 179, 0.2);
-  --neutral-text: #94b8b3;
+  --neutral-bg: rgba(169, 156, 137, 0.08);
+  --neutral-border: rgba(169, 156, 137, 0.2);
+  --neutral-text: #A99C89;
 
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.6), 0 2px 4px -2px rgba(0, 0, 0, 0.5);
 
-  /* RGB versions for rgba() — Dark Theme (Matched to #07191E) */
-  --surface-primary-rgb: 11, 32, 38;
-  --background-rgb: 7, 25, 30;
-  --text-secondary-rgb: 148, 184, 179;
-  --primary-accent-rgb: 250, 250, 250;
+  /* RGB versions for rgba() — Dark Theme */
+  --surface-primary-rgb: 31, 26, 21;
+  --background-rgb: 22, 19, 15;
+  --text-secondary-rgb: 169, 156, 137;
+  --primary-accent-rgb: 143, 186, 169;
   --danger-color-rgb: 248, 113, 113;
-  --success-color-rgb: 2, 245, 161;
+  --success-color-rgb: 143, 186, 169;
 
   /* Skeleton loading colors (Dark theme) */
-  --skeleton-base: rgba(148, 184, 179, 0.12);
-  --skeleton-shine: rgba(250, 250, 250, 0.08);
+  --skeleton-base: rgba(169, 156, 137, 0.12);
+  --skeleton-shine: rgba(242, 233, 220, 0.08);
 }
 
 /* ====================================================
