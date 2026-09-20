@@ -6,20 +6,20 @@
   --font-serif: var(--font-tenor), "Tenor Sans", serif;
   --font-sans: var(--font-lato), "Lato", sans-serif;
 
-  /* Light Theme Palette (Frosted Quartz & Oceanic Cyan Obsidian) */
+  /* Light Theme Palette (Frosted Quartz & Midnight Slate with Volcanic Amber) */
   --background: #F8FAFC;
   --text-primary: #0F172A;
   --text-secondary: #475569;
   --surface-primary: #ffffff;
   --surface-secondary: #F1F5F9;
   --border-color: #E2E8F0;
-  --primary-accent: #0891B2;
+  --primary-accent: #0F172A;
   --primary-accent-text: #ffffff;
   --text-tertiary: #94A3B8;
-  --primary-accent-bg: rgba(8, 145, 178, 0.12);
+  --primary-accent-bg: rgba(15, 23, 42, 0.08);
   --input-background: #ffffff;
 
-  /* Secondary / Aksen Manis — Light Theme */
+  /* Secondary / Aksen Manis — Light Theme (Volcanic Amber Gold) */
   --secondary: #D97706;
   --secondary-container: rgba(217, 119, 6, 0.12);
   --on-secondary: #ffffff;
@@ -40,10 +40,10 @@
   --danger-border: rgba(220, 38, 38, 0.28);
   --danger-text: #DC2626;
 
-  --info-color: #0891B2;
-  --info-bg: rgba(8, 145, 178, 0.12);
-  --info-border: rgba(8, 145, 178, 0.28);
-  --info-text: #0891B2;
+  --info-color: #0284C7;
+  --info-bg: rgba(2, 132, 199, 0.12);
+  --info-border: rgba(2, 132, 199, 0.28);
+  --info-text: #0284C7;
 
   --neutral-bg: rgba(15, 23, 42, 0.05);
   --neutral-border: rgba(15, 23, 42, 0.15);
@@ -56,7 +56,8 @@
   --surface-primary-rgb: 255, 255, 255;
   --background-rgb: 248, 250, 252;
   --text-secondary-rgb: 71, 85, 105;
-  --primary-accent-rgb: 8, 145, 178;
+  --primary-accent-rgb: 15, 23, 42;
+  --secondary-rgb: 217, 119, 6;
   --danger-color-rgb: 220, 38, 38;
   --success-color-rgb: 5, 150, 105;
 
@@ -66,7 +67,7 @@
 }
 
 [data-theme="dark"] {
-  /* Dark Theme Palette (Deep Volcanic Obsidian & Aquamarine Cyan) */
+  /* Dark Theme Palette (Deep Volcanic Obsidian & Crisp Titanium with Volcanic Amber) */
   --background: #0D0F12;
   --text-primary: #F1F5F9;
   --text-secondary: #94A3B8;
@@ -74,15 +75,15 @@
   --surface-secondary: #1E222A;
   --border-color: #222732;
 
-  /* Aksen segar */
-  --primary-accent: #2DD4BF;
+  /* Primary: Crisp Titanium Slate */
+  --primary-accent: #F1F5F9;
   --primary-accent-text: #0D0F12;
-  --primary-accent-bg: rgba(45, 212, 191, 0.15);
+  --primary-accent-bg: rgba(241, 245, 249, 0.15);
 
   --text-tertiary: #64748B;
   --input-background: #15181E;
 
-  /* Secondary / Aksen Manis — Dark Theme */
+  /* Secondary: Glowing Volcanic Amber Gold */
   --secondary: #F59E0B;
   --secondary-container: rgba(245, 158, 11, 0.15);
   --on-secondary: #0D0F12;
@@ -103,10 +104,10 @@
   --danger-border: rgba(248, 113, 113, 0.25);
   --danger-text: #F87171;
 
-  --info-color: #2DD4BF;
-  --info-bg: rgba(45, 212, 191, 0.12);
-  --info-border: rgba(45, 212, 191, 0.25);
-  --info-text: #2DD4BF;
+  --info-color: #38BDF8;
+  --info-bg: rgba(56, 189, 248, 0.12);
+  --info-border: rgba(56, 189, 248, 0.25);
+  --info-text: #38BDF8;
 
   --neutral-bg: rgba(148, 163, 184, 0.08);
   --neutral-border: rgba(148, 163, 184, 0.2);
@@ -119,7 +120,8 @@
   --surface-primary-rgb: 21, 24, 30;
   --background-rgb: 13, 15, 18;
   --text-secondary-rgb: 148, 163, 184;
-  --primary-accent-rgb: 45, 212, 191;
+  --primary-accent-rgb: 241, 245, 249;
+  --secondary-rgb: 245, 158, 11;
   --danger-color-rgb: 248, 113, 113;
   --success-color-rgb: 16, 185, 129;
 
@@ -155,7 +157,7 @@
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--primary-accent);
+  background: var(--secondary);
 }
 
 html {
@@ -206,7 +208,6 @@ h4,
 }
 
 @media (max-width: 768px) {
-
   html,
   body {
     overscroll-behavior-y: auto;
@@ -227,7 +228,6 @@ h4,
     color: #000000 !important;
   }
 
-  /* Sembunyikan elemen dashboard saat nge-print dari OrdersManagement */
   aside[id="admin-sidebar-drawer"],
   div[class*="mobileTopBar"],
   header[class*="header"] {

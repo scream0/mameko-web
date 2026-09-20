@@ -1,31 +1,41 @@
 {
   "header": {
     "title": "Notifikasi",
-    "subtitle": "Update pesanan, promo khusus, dan pengingat pembayaran untuk Anda."
+    "subtitle": "Update pesanan, pembayaran, promo khusus, dan info sistem untuk Anda."
   },
   "searchPlaceholder": "Cari notifikasi...",
   "emptyTitle": "Belum ada notifikasi",
-  "emptyText": "Notifikasi tentang pesanan, promo, dan pengingat akan muncul di sini.",
+  "emptyText": "Notifikasi tentang pesanan, pembayaran, promo, dan info sistem akan muncul di sini.",
   "loadingText": "Memuat notifikasi...",
   "linkIndicator": "Lihat Detail →",
   "tabs": {
     "all": "Semua",
     "unread": "Belum Dibaca",
     "order": "Pesanan",
-    "promo": "Promo"
+    "payment": "Pembayaran",
+    "promo": "Promo",
+    "system": "Sistem"
   },
   "buttons": {
     "markAllRead": "Tandai Semua Dibaca",
     "markingAllRead": "Menandai...",
     "deleteAria": "Hapus notifikasi",
     "deleting": "...",
-    "refresh": "Muat Ulang"
+    "refresh": "Muat Ulang",
+    "deleteAll": "Hapus Semua",
+    "deletingAll": "Menghapus..."
   },
   "deleteModal": {
     "title": "Hapus Notifikasi",
     "message": "Apakah Anda yakin ingin menghapus notifikasi ini?"
   },
   "emptyUnread": "Tidak ada notifikasi yang belum dibaca.",
+  "emptyCategories": {
+    "order": "Belum ada notifikasi terkait pesanan atau pengiriman.",
+    "payment": "Belum ada notifikasi terkait pembayaran atau tagihan.",
+    "promo": "Belum ada promo atau voucher baru saat ini.",
+    "system": "Belum ada pemberitahuan sistem saat ini."
+  },
   "timeAgo": {
     "justNow": "Baru saja",
     "minutesAgo": "menit lalu",
@@ -43,6 +53,12 @@
     "deleteSuccess": "Notifikasi dihapus.",
     "fetchError": "Gagal memuat notifikasi.",
     "updateError": "Gagal memperbarui notifikasi.",
-    "deleteError": "Gagal menghapus notifikasi."
+    "deleteError": "Gagal menghapus notifikasi.",
+    "deleteAllSuccess": "Semua notifikasi berhasil dihapus.",
+    "deleteAllError": "Gagal menghapus semua notifikasi."
+  },
+  "deleteAllModal": {
+    "title": "Hapus Semua Notifikasi",
+    "message": "Apakah Anda yakin ingin menghapus semua notifikasi? Riwayat pemberitahuan Anda akan dihapus permanen."
   }
 }

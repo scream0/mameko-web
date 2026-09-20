@@ -1,14 +1,14 @@
 .workspaceInner {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.25rem;
 }
 
 .cardHeader {
   background: var(--surface-primary);
   border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 1.5rem;
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
   box-shadow: var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.05));
 }
 
@@ -16,28 +16,28 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 1rem;
+  gap: 1.25rem;
   flex-wrap: wrap;
 }
 
 .headerTitle {
-  font-size: 1.15rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: var(--text-primary);
-  margin-bottom: 0.35rem;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.6rem;
+  margin-bottom: 0.25rem;
 }
 
 .unreadBadge {
-  background: var(--primary-accent);
-  color: var(--primary-accent-text);
+  background: var(--secondary);
+  color: var(--on-secondary);
   font-size: 0.72rem;
   font-weight: 800;
   padding: 2px 8px;
-  border-radius: 10px;
-  box-shadow: 0 2px 6px rgba(var(--primary-accent-rgb), 0.25);
+  border-radius: 12px;
+  line-height: 1.2;
 }
 
 .headerSubtitle {
@@ -48,8 +48,8 @@
 
 .headerActions {
   display: flex;
-  gap: 0.5rem;
   align-items: center;
+  gap: 0.65rem;
   flex-wrap: wrap;
 }
 
@@ -59,24 +59,18 @@
   color: var(--text-primary);
   padding: 0.55rem 0.95rem;
   border-radius: 8px;
-  font-size: 0.85rem;
-  min-width: 190px;
+  font-size: 0.82rem;
+  min-width: 200px;
   transition: all 0.2s ease;
 }
 
 .searchInput:focus {
-  outline: none;
-  border-color: var(--primary-accent);
-  box-shadow: 0 0 0 2px rgba(var(--primary-accent-rgb), 0.15);
-}
-
-.searchInput::placeholder {
-  color: var(--text-secondary);
-  opacity: 0.75;
+  border-color: var(--secondary);
+  box-shadow: 0 0 0 2px rgba(var(--secondary-rgb), 0.15);
 }
 
 .markReadBtn {
-  background: rgba(var(--primary-accent-rgb), 0.08);
+  background: var(--surface-secondary, rgba(var(--surface-primary-rgb), 0.5));
   border: 1px solid var(--border-color);
   color: var(--text-primary);
   padding: 0.55rem 0.95rem;
@@ -97,6 +91,32 @@
 
 .markReadBtn:disabled {
   opacity: 0.6;
+  cursor: not-allowed;
+}
+.deleteAllBtn {
+  background: var(--surface-secondary, rgba(var(--surface-primary-rgb), 0.5));
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: var(--error-color, #ef4444);
+  padding: 0.55rem 0.95rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.deleteAllBtn:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: var(--error-color, #ef4444);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);
+}
+
+.deleteAllBtn:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
@@ -124,8 +144,8 @@
 }
 
 .filterBtn:hover {
-  background: rgba(var(--primary-accent-rgb), 0.14);
-  border-color: var(--primary-accent);
+  background: rgba(var(--secondary-rgb), 0.12);
+  border-color: var(--secondary);
   color: var(--text-primary);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   transform: translateY(-1px);
@@ -148,23 +168,13 @@
 }
 
 .filterCount {
-  background: rgba(var(--primary-accent-rgb), 0.15);
-  color: var(--text-primary);
+  background: var(--secondary);
+  color: var(--on-secondary);
   border-radius: 10px;
   padding: 1px 7px;
   font-size: 0.72rem;
-  font-weight: 700;
+  font-weight: 800;
   transition: all 0.2s;
-}
-
-.filterBtn:hover .filterCount {
-  background: rgba(var(--primary-accent-rgb), 0.25);
-  color: var(--text-primary);
-}
-
-.filterBtnActive .filterCount {
-  background: rgba(255, 255, 255, 0.25) !important;
-  color: var(--primary-accent-text) !important;
 }
 
 .notificationsList {
@@ -224,20 +234,20 @@
 }
 
 .notificationItem:hover {
-  border-color: var(--primary-accent);
+  border-color: var(--secondary);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   transform: translateY(-1px);
 }
 
 .notificationUnread {
-  background: rgba(var(--primary-accent-rgb), 0.08);
+  background: rgba(var(--secondary-rgb), 0.06);
   border-color: var(--border-color);
-  border-left: 4px solid var(--primary-accent);
+  border-left: 4px solid var(--secondary);
 }
 
 .notificationUnread:hover {
-  background: rgba(var(--primary-accent-rgb), 0.12);
-  border-color: var(--primary-accent);
+  background: rgba(var(--secondary-rgb), 0.1);
+  border-color: var(--secondary);
 }
 
 .notificationIcon {
@@ -298,16 +308,16 @@
 
 .type_system,
 .iconSystem {
-  background: rgba(139, 92, 246, 0.16);
-  border: 1px solid rgba(139, 92, 246, 0.35);
-  color: #7c3aed;
+  background: rgba(148, 163, 184, 0.16);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  color: var(--text-secondary);
 }
 
 [data-theme="dark"] .type_system,
 [data-theme="dark"] .iconSystem {
-  background: rgba(139, 92, 246, 0.22);
-  border: 1px solid rgba(139, 92, 246, 0.45);
-  color: #a78bfa;
+  background: rgba(148, 163, 184, 0.22);
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  color: #cbd5e1;
 }
 
 .notificationContent {
@@ -332,9 +342,9 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--primary-accent);
+  background: var(--secondary);
   flex-shrink: 0;
-  box-shadow: 0 0 6px rgba(var(--primary-accent-rgb), 0.5);
+  box-shadow: 0 0 6px rgba(var(--secondary-rgb), 0.6);
 }
 
 .notificationMessage {
@@ -375,12 +385,12 @@
 }
 
 .clickable:hover {
-  background: rgba(var(--primary-accent-rgb), 0.05);
+  background: rgba(var(--secondary-rgb), 0.04);
 }
 
 .linkIndicator {
   font-size: 0.78rem;
-  color: var(--primary-accent);
+  color: var(--secondary);
   font-weight: 700;
   margin-left: 0.35rem;
   transition: transform 0.2s;

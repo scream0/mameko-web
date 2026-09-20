@@ -33,6 +33,82 @@ const capitalize = (s: any) => {
   return s.charAt(0).toUpperCase() + s.slice(1);
 };
 
+// Smart heuristic matching sesuai standar InAppNotification Android
+function isOrderNotification(n: any): boolean {
+  const t = (n.type || "").toLowerCase();
+  const l = (n.link || "").toLowerCase();
+  const text = `${n.title || ""} ${n.message || ""}`.toLowerCase();
+  return (
+    t.startsWith("order") ||
+    t === "return" ||
+    t === "retur" ||
+    l.includes("order") ||
+    text.includes("pesanan") ||
+    text.includes("pengiriman") ||
+    text.includes("dikirim") ||
+    text.includes("sampai di tujuan") ||
+    text.includes("resi") ||
+    text.includes("retur")
+  );
+}
+
+function isPaymentNotification(n: any): boolean {
+  const t = (n.type || "").toLowerCase();
+  const text = `${n.title || ""} ${n.message || ""}`.toLowerCase();
+  return (
+    t.startsWith("payment") ||
+    t.includes("bayar") ||
+    t === "qris" ||
+    t === "midtrans" ||
+    text.includes("pembayaran") ||
+    text.includes("tagihan") ||
+    text.includes("transfer") ||
+    text.includes("menunggu pembayaran") ||
+    text.includes("lunas") ||
+    text.includes("rekening") ||
+    text.includes("virtual account")
+  );
+}
+
+function isPromoNotification(n: any): boolean {
+  const t = (n.type || "").toLowerCase();
+  const l = (n.link || "").toLowerCase();
+  const text = `${n.title || ""} ${n.message || ""}`.toLowerCase();
+  return (
+    t.startsWith("promo") ||
+    t.includes("voucher") ||
+    t.includes("diskon") ||
+    l.includes("voucher") ||
+    l.includes("promo") ||
+    text.includes("promo") ||
+    text.includes("voucher") ||
+    text.includes("diskon") ||
+    text.includes("cashback") ||
+    text.includes("potongan") ||
+    text.includes("flash sale") ||
+    text.includes("gratis ongkir")
+  );
+}
+
+function isSystemNotification(n: any): boolean {
+  const t = (n.type || "").toLowerCase();
+  return (
+    t.startsWith("system") ||
+    t.startsWith("info") ||
+    t.startsWith("chat") ||
+    t.startsWith("broadcast") ||
+    !t ||
+    (!isOrderNotification(n) && !isPromoNotification(n) && !isPaymentNotification(n))
+  );
+}
+
+function getNotificationCategory(n: any): "order" | "payment" | "promo" | "system" {
+  if (isOrderNotification(n)) return "order";
+  if (isPaymentNotification(n)) return "payment";
+  if (isPromoNotification(n)) return "promo";
+  return "system";
+}
+
 const TYPE_ICON: Record<string, JSX.Element> = {
   order: <AppIcon name="package" size={18} />,
   payment: <AppIcon name="creditcard" size={18} />,
@@ -49,6 +125,8 @@ export default function NotificationsSection({ onUnreadCountChange }: any) {
   const [submittingMarkAllRead, setSubmittingMarkAllRead] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
   const [notificationToDelete, setNotificationToDelete] = useState(null);
+  const [showDeleteAllModal, setShowDeleteAllModal] = useState(false);
+  const [submittingDeleteAll, setSubmittingDeleteAll] = useState(false);
   const [currentSession, setCurrentSession] = useState(null);
   const lastUserIdRef = useRef(null);
 
@@ -125,7 +203,6 @@ export default function NotificationsSection({ onUnreadCountChange }: any) {
     initAuth();
 
     // Real-time subscription for user notifications
-    // Dibuat secara sinkron (di luar async) agar bisa langsung dibersihkan saat unmount
     const realtimeChannel = supabase
       .channel("user_notifications_changes")
       .on(
@@ -227,8 +304,14 @@ export default function NotificationsSection({ onUnreadCountChange }: any) {
     );
   };
 
-  const resolveNotificationLink = (rawLink: string) => {
-    if (!rawLink) return "";
+  const resolveNotificationLink = (rawLink: string, n?: any) => {
+    if (!rawLink) {
+      if (n) {
+        if (isPromoNotification(n)) return "/dashboard?tab=vouchers";
+        if (isOrderNotification(n) || isPaymentNotification(n)) return "/dashboard?tab=orders";
+      }
+      return "";
+    }
     const link = rawLink.trim();
     if (link.startsWith("/admin/orders")) {
       const queryIdx = link.indexOf("?");
@@ -243,21 +326,48 @@ export default function NotificationsSection({ onUnreadCountChange }: any) {
     if (link === "/dashboard/wallet" || link === "/wallet") {
       return "/dashboard?tab=profile";
     }
+    if (link === "/dashboard/vouchers" || link === "/vouchers" || link.includes("voucher")) {
+      return "/dashboard?tab=vouchers";
+    }
     return link;
   };
 
   const handleNotificationClick = (notification: any) => {
     markRead(notification);
-    if (notification.link) {
-      const targetLink = resolveNotificationLink(notification.link);
-      if (targetLink) {
-        router.push(targetLink);
-      }
+    const targetLink = resolveNotificationLink(notification.link, notification);
+    if (targetLink) {
+      router.push(targetLink);
     }
   };
 
   const deleteNotification = (notification: any) => {
     setNotificationToDelete(notification);
+  };
+
+  const confirmDeleteAllNotifications = async () => {
+    setShowDeleteAllModal(false);
+    try {
+      setSubmittingDeleteAll(true);
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      const res = await fetch(getApiBaseUrl() + "/api/user/notifications?id=all", {
+        method: "DELETE",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || notificationsConfig.toasts.deleteAllError);
+      }
+      setNotifications([]);
+      toast.success(notificationsConfig.toasts.deleteAllSuccess);
+      if (onUnreadCountChange) onUnreadCountChange(0);
+    } catch (err: any) {
+      console.error("Gagal menghapus semua notifikasi:", err);
+      toast.error(err.message || notificationsConfig.toasts.deleteAllError);
+    } finally {
+      setSubmittingDeleteAll(false);
+    }
   };
 
   const confirmDeleteNotification = async () => {
@@ -290,13 +400,21 @@ export default function NotificationsSection({ onUnreadCountChange }: any) {
     }
   };
 
+  // Smart categorization mirroring Android InAppNotification
   const filteredNotifications = useMemo(() => {
     let result = notifications;
     if (filter === "unread") {
       result = result.filter((n) => !n.isRead);
-    } else if (filter !== "all") {
-      result = result.filter((n) => n.type === filter);
+    } else if (filter === "order") {
+      result = result.filter(isOrderNotification);
+    } else if (filter === "payment") {
+      result = result.filter(isPaymentNotification);
+    } else if (filter === "promo") {
+      result = result.filter(isPromoNotification);
+    } else if (filter === "system") {
+      result = result.filter(isSystemNotification);
     }
+
     if (searchQuery.trim() !== "") {
       const query = searchQuery.toLowerCase();
       result = result.filter(
@@ -315,6 +433,14 @@ export default function NotificationsSection({ onUnreadCountChange }: any) {
       onUnreadCountChange(unreadCount);
     }
   }, [onUnreadCountChange, unreadCount]);
+
+  const getEmptyStateMessage = () => {
+    if (filter === "unread") return notificationsConfig.emptyUnread;
+    if (notificationsConfig.emptyCategories?.[filter]) {
+      return notificationsConfig.emptyCategories[filter];
+    }
+    return notificationsConfig.emptyText;
+  };
 
   return (
     <div className={styles.workspaceInner}>
@@ -349,6 +475,19 @@ export default function NotificationsSection({ onUnreadCountChange }: any) {
                 ? notificationsConfig.buttons.markingAllRead
                 : notificationsConfig.buttons.markAllRead}
             </button>
+              <button
+                onClick={() => setShowDeleteAllModal(true)}
+                className={styles.deleteAllBtn}
+                disabled={submittingDeleteAll || notifications.length === 0}
+                title={notificationsConfig.buttons.deleteAll}
+              >
+                <AppIcon name="trash" size={15} />
+                <span>
+                  {submittingDeleteAll
+                    ? notificationsConfig.buttons.deletingAll
+                    : notificationsConfig.buttons.deleteAll}
+                </span>
+              </button>
           </div>
         </div>
 
@@ -378,17 +517,18 @@ export default function NotificationsSection({ onUnreadCountChange }: any) {
           <div className={`card ${styles.centerStateCard}`}>
             <div className={styles.emptyIcon}>🔔</div>
             <p className={styles.emptyTitle}>
-              {filter === "unread"
-                ? notificationsConfig.emptyUnread
-                : notificationsConfig.emptyTitle}
+              {notificationsConfig.emptyTitle}
             </p>
             <p className={styles.emptyText}>
-              {notificationsConfig.emptyText}
+              {getEmptyStateMessage()}
             </p>
           </div>
         ) : (
           filteredNotifications.map((notification) => {
             const isUnread = !notification.isRead;
+            const category = getNotificationCategory(notification);
+            const categoryLabel = notificationsConfig.typeLabels[category] || "Sistem";
+
             return (
               <div
                 key={notification.id}
@@ -399,11 +539,11 @@ export default function NotificationsSection({ onUnreadCountChange }: any) {
               >
                 <div
                   className={`${styles.notificationIcon} ${
-                    styles[`icon${capitalize(notification.type || "system")}`] ||
+                    styles[`icon${capitalize(category)}`] ||
                     styles.iconSystem
                   }`}
                 >
-                  {TYPE_ICON[notification.type || "system"] || <AppIcon name="bell" size={18} />}
+                  {TYPE_ICON[category] || <AppIcon name="bell" size={18} />}
                 </div>
                 <div className={styles.notificationContent}>
                   <div className={styles.notificationTitleRow}>
@@ -416,10 +556,8 @@ export default function NotificationsSection({ onUnreadCountChange }: any) {
                     {notification.message}
                   </p>
                   <div className={styles.notificationMeta}>
-                    <span className={styles.typeBadge}>
-                      {notificationsConfig.typeLabels[notification.type] ||
-                        notification.type ||
-                        "Sistem"}
+                    <span className={`${styles.typeBadge} ${styles[`badge_${category}`]}`}>
+                      {categoryLabel}
                     </span>
                     <span className={styles.timeAgo}>
                       {timeAgo(notification.createdAt)}
@@ -431,36 +569,49 @@ export default function NotificationsSection({ onUnreadCountChange }: any) {
                     )}
                   </div>
                 </div>
-                {notification.user_id !== null && (
-                  <button
-                    className={styles.deleteBtn}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      deleteNotification(notification);
-                    }}
-                    aria-label={notificationsConfig.buttons.deleteAria}
-                    disabled={deletingId === notification.id}
-                  >
-                    {deletingId === notification.id ? (
-                      notificationsConfig.buttons.deleting
-                    ) : (
-                      <AppIcon name="x" size={14} />
-                    )}
-                  </button>
-                )}
+
+                <button
+                  className={styles.deleteBtn}
+                  aria-label={notificationsConfig.buttons.deleteAria}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteNotification(notification);
+                  }}
+                  disabled={deletingId === notification.id}
+                >
+                  {deletingId === notification.id ? (
+                    <span className={styles.btnSpinner} />
+                  ) : (
+                    <AppIcon name="trash" size={16} />
+                  )}
+                </button>
               </div>
             );
           })
         )}
       </div>
 
-      <ConfirmationModal
-        isOpen={!!notificationToDelete}
-        onClose={() => setNotificationToDelete(null)}
-        onConfirm={confirmDeleteNotification}
-        title={notificationsConfig.deleteModal.title}
-        message={notificationsConfig.deleteModal.message}
-      />
+      {/* Confirmation Modal */}
+      {notificationToDelete && (
+        <ConfirmationModal
+          isOpen={!!notificationToDelete}
+          title={notificationsConfig.deleteModal.title}
+          message={notificationsConfig.deleteModal.message}
+          onConfirm={confirmDeleteNotification}
+          onCancel={() => setNotificationToDelete(null)}
+        />
+      )}
+
+      {/* Confirmation Modal for Delete All */}
+      {showDeleteAllModal && (
+        <ConfirmationModal
+          isOpen={showDeleteAllModal}
+          title={notificationsConfig.deleteAllModal.title}
+          message={notificationsConfig.deleteAllModal.message}
+          onConfirm={confirmDeleteAllNotifications}
+          onCancel={() => setShowDeleteAllModal(false)}
+        />
+      )}
     </div>
   );
 }
