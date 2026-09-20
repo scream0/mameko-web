@@ -6,17 +6,17 @@
   --font-serif: var(--font-tenor), "Tenor Sans", serif;
   --font-sans: var(--font-lato), "Lato", sans-serif;
 
-  /* Light Theme Palette (Warm Creamy Vanilla & Matcha Sage) */
+  /* Light Theme Palette (Warm Creamy Vanilla & Vibrant Jade Teal) */
   --background: #F6F0E4;
   --text-primary: #221B15;
   --text-secondary: #7A6E5C;
   --surface-primary: #ffffff;
-  --surface-secondary: #EDE5D8;
+  --surface-secondary: #EDE2D0;
   --border-color: #E3D9C8;
-  --primary-accent: #4F8B79;
+  --primary-accent: #248F7D;
   --primary-accent-text: #ffffff;
   --text-tertiary: #9E917F;
-  --primary-accent-bg: rgba(79, 139, 121, 0.12);
+  --primary-accent-bg: rgba(36, 143, 125, 0.12);
   --input-background: #ffffff;
 
   /* Secondary / Aksen Manis — Light Theme */
@@ -24,26 +24,26 @@
   --secondary-container: rgba(168, 112, 46, 0.12);
   --on-secondary: #ffffff;
 
-  /* Semantic Status Colors — Light Theme */
-  --success-color: #3B7D68;
-  --success-bg: rgba(59, 125, 104, 0.12);
-  --success-border: rgba(59, 125, 104, 0.28);
-  --success-text: #3B7D68;
+  /* Semantic Status Colors — Light Theme (Saturated & High Contrast) */
+  --success-color: #059669;
+  --success-bg: rgba(5, 150, 105, 0.12);
+  --success-border: rgba(5, 150, 105, 0.28);
+  --success-text: #059669;
 
-  --warning-color: #A8702E;
-  --warning-bg: rgba(168, 112, 46, 0.12);
-  --warning-border: rgba(168, 112, 46, 0.28);
+  --warning-color: #D97706;
+  --warning-bg: rgba(217, 119, 6, 0.12);
+  --warning-border: rgba(217, 119, 6, 0.28);
   --warning-text: #7A4E1B;
 
-  --danger-color: #C24134;
-  --danger-bg: rgba(194, 65, 52, 0.12);
-  --danger-border: rgba(194, 65, 52, 0.28);
-  --danger-text: #C24134;
+  --danger-color: #DC2626;
+  --danger-bg: rgba(220, 38, 38, 0.12);
+  --danger-border: rgba(220, 38, 38, 0.28);
+  --danger-text: #DC2626;
 
-  --info-color: #4F8B79;
-  --info-bg: rgba(79, 139, 121, 0.12);
-  --info-border: rgba(79, 139, 121, 0.28);
-  --info-text: #4F8B79;
+  --info-color: #248F7D;
+  --info-bg: rgba(36, 143, 125, 0.12);
+  --info-border: rgba(36, 143, 125, 0.28);
+  --info-text: #248F7D;
 
   --neutral-bg: rgba(34, 27, 21, 0.05);
   --neutral-border: rgba(34, 27, 21, 0.15);
@@ -56,9 +56,9 @@
   --surface-primary-rgb: 255, 255, 255;
   --background-rgb: 246, 240, 228;
   --text-secondary-rgb: 122, 110, 92;
-  --primary-accent-rgb: 79, 139, 121;
-  --danger-color-rgb: 194, 65, 52;
-  --success-color-rgb: 59, 125, 104;
+  --primary-accent-rgb: 36, 143, 125;
+  --danger-color-rgb: 220, 38, 38;
+  --success-color-rgb: 5, 150, 105;
 
   /* Skeleton loading colors (Light theme) */
   --skeleton-base: rgba(34, 27, 21, 0.08);
@@ -66,18 +66,18 @@
 }
 
 [data-theme="dark"] {
-  /* Dark Theme Palette (Deep Espresso & Matcha Gold Studio) */
+  /* Dark Theme Palette (Deep Espresso & Luminous Mint Gold) */
   --background: #16130F;
   --text-primary: #F2E9DC;
   --text-secondary: #A99C89;
   --surface-primary: #1F1A15;
-  --surface-secondary: #28221B;
+  --surface-secondary: #29221C;
   --border-color: #2C251E;
 
   /* Aksen segar */
-  --primary-accent: #8FBAA9;
+  --primary-accent: #4DCBB6;
   --primary-accent-text: #16130F;
-  --primary-accent-bg: rgba(143, 186, 169, 0.15);
+  --primary-accent-bg: rgba(77, 203, 182, 0.15);
 
   --text-tertiary: #7D705E;
   --input-background: #1F1A15;
@@ -87,26 +87,26 @@
   --secondary-container: rgba(201, 154, 74, 0.15);
   --on-secondary: #16130F;
 
-  /* Semantic Status Colors — Dark Theme */
-  --success-color: #8FBAA9;
-  --success-bg: rgba(143, 186, 169, 0.12);
-  --success-border: rgba(143, 186, 169, 0.3);
-  --success-text: #8FBAA9;
+  /* Semantic Status Colors — Dark Theme (Saturated & Glowing) */
+  --success-color: #10B981;
+  --success-bg: rgba(16, 185, 129, 0.12);
+  --success-border: rgba(16, 185, 129, 0.3);
+  --success-text: #10B981;
 
-  --warning-color: #C99A4A;
-  --warning-bg: rgba(201, 154, 74, 0.12);
-  --warning-border: rgba(201, 154, 74, 0.25);
-  --warning-text: #C99A4A;
+  --warning-color: #F59E0B;
+  --warning-bg: rgba(245, 158, 11, 0.12);
+  --warning-border: rgba(245, 158, 11, 0.25);
+  --warning-text: #F59E0B;
 
-  --danger-color: #f87171;
+  --danger-color: #F87171;
   --danger-bg: rgba(248, 113, 113, 0.12);
   --danger-border: rgba(248, 113, 113, 0.25);
-  --danger-text: #f87171;
+  --danger-text: #F87171;
 
-  --info-color: #8FBAA9;
-  --info-bg: rgba(143, 186, 169, 0.12);
-  --info-border: rgba(143, 186, 169, 0.25);
-  --info-text: #8FBAA9;
+  --info-color: #4DCBB6;
+  --info-bg: rgba(77, 203, 182, 0.12);
+  --info-border: rgba(77, 203, 182, 0.25);
+  --info-text: #4DCBB6;
 
   --neutral-bg: rgba(169, 156, 137, 0.08);
   --neutral-border: rgba(169, 156, 137, 0.2);
@@ -119,9 +119,9 @@
   --surface-primary-rgb: 31, 26, 21;
   --background-rgb: 22, 19, 15;
   --text-secondary-rgb: 169, 156, 137;
-  --primary-accent-rgb: 143, 186, 169;
+  --primary-accent-rgb: 77, 203, 182;
   --danger-color-rgb: 248, 113, 113;
-  --success-color-rgb: 143, 186, 169;
+  --success-color-rgb: 16, 185, 129;
 
   /* Skeleton loading colors (Dark theme) */
   --skeleton-base: rgba(169, 156, 137, 0.12);
