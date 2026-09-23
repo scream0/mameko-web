@@ -10,6 +10,7 @@ import { SearchForm } from "./SearchForm";
 import styles from "./Navbar.module.css";
 import config from "@/data/ui/navbarConfig.json";
 import { Logo } from "@/components/UI/Logo/logo";
+import { PromoBannerBar } from "@/components/UI/PromoBannerBar/PromoBannerBar";
 import { AppIcon } from "@/components/UI/Icon/AppIcon";
 import { useScrollLock } from "@/hooks/useScrollLock";
 import { optimizeCloudinaryUrl, IMAGE_PRESETS } from "@/utils/imageOptimizer";
@@ -206,6 +207,7 @@ export function Navbar() {
 
   return (
     <>
+      <PromoBannerBar />
       <nav className={`${styles.navbar} ${isScrolled ? styles.scrolled : ""}`}>
         <Link href={config.logo.href} className={styles.logo}>
           <Logo className={styles.logoSvg} />

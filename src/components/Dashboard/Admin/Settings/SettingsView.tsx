@@ -128,7 +128,11 @@ export default function SettingsView() {
         currency: data?.currency || raw?.currency || "IDR",
         adminLocale: data?.adminLocale || raw?.adminLocale || "id",
         lowStockThreshold: Number(data?.lowStockThreshold ?? raw?.lowStockThreshold ?? 10),
-        storeCityId: pick(data?.storeCityId, raw?.storeCityId),
+        storeCityId:
+          (pick(data?.storeCityId, raw?.storeCityId) === "12430" || !pick(data?.storeCityId, raw?.storeCityId)) &&
+          (data?.storeCityName || raw?.storeCityName || "").includes("55584")
+            ? "IDNP5IDNC412IDND5051IDZ55584"
+            : pick(data?.storeCityId, raw?.storeCityId),
         storeCityName: pick(data?.storeCityName, raw?.storeCityName),
         enableMidtrans: data?.enableMidtrans ?? raw?.enableMidtrans ?? true,
         enableManualTransfer: data?.enableManualTransfer ?? raw?.enableManualTransfer ?? false,
@@ -245,23 +249,28 @@ export default function SettingsView() {
               : [{ href: "", icon: "", label: "" }],
         },
         navigation: {
-          title: pick(data?.footer?.navigation?.title, raw?.footer?.navigation?.title),
+          title: pick(data?.footer?.navigation?.title, raw?.footer?.navigation?.title) || "Penjelajahan",
           links:
-            Array.isArray(data?.footer?.navigation?.links) && data.footer.navigation.links.length > 0
+            Array.isArray(data?.footer?.navigation?.links) && data.footer.navigation.links.length > 0 && data.footer.navigation.links.some((l: any) => l.label?.trim() || l.href?.trim())
               ? data.footer.navigation.links
-              : Array.isArray(raw?.footer?.navigation?.links) && raw.footer.navigation.links.length > 0
+              : Array.isArray(raw?.footer?.navigation?.links) && raw.footer.navigation.links.length > 0 && raw.footer.navigation.links.some((l: any) => l.label?.trim() || l.href?.trim())
               ? raw.footer.navigation.links
-              : [{ label: "", href: "" }],
+              : [
+                  { label: "Home", href: "#home" },
+                  { label: "Tentang Kami", href: "#about" },
+                  { label: "Produk", href: "#product" },
+                  { label: "Kontak", href: "#contact" },
+                ],
         },
         payment: {
-          title: pick(data?.footer?.payment?.title, raw?.footer?.payment?.title),
-          subtitle: pick(data?.footer?.payment?.subtitle, raw?.footer?.payment?.subtitle),
+          title: pick(data?.footer?.payment?.title, raw?.footer?.payment?.title) || "Pembayaran",
+          subtitle: pick(data?.footer?.payment?.subtitle, raw?.footer?.payment?.subtitle) || "Didukung secara aman oleh:",
           methods:
-            Array.isArray(data?.footer?.payment?.methods) && data.footer.payment.methods.length > 0
+            Array.isArray(data?.footer?.payment?.methods) && data.footer.payment.methods.length > 0 && data.footer.payment.methods.some((m: any) => m?.trim())
               ? data.footer.payment.methods
-              : Array.isArray(raw?.footer?.payment?.methods) && raw.footer.payment.methods.length > 0
+              : Array.isArray(raw?.footer?.payment?.methods) && raw.footer.payment.methods.length > 0 && raw.footer.payment.methods.some((m: any) => m?.trim())
               ? raw.footer.payment.methods
-              : [""],
+              : ["Midtrans", "QRIS"],
         },
         copyright: { text: pick(data?.footer?.copyright?.text, raw?.footer?.copyright?.text) },
       },
@@ -463,7 +472,10 @@ export default function SettingsView() {
       currency: s.store.currency || r.currency || "IDR",
       adminLocale: (s.store.adminLocale || r.adminLocale) === "en" ? "en" : "id",
       lowStockThreshold: Number(s.store.lowStockThreshold || r.lowStockThreshold) || 10,
-      storeCityId: strictValue(s.store.storeCityId, r.storeCityId, rawVal.storeCityId),
+      storeCityId:
+        (s.store.storeCityId === "12430" || !s.store.storeCityId) && (s.store.storeCityName || "").includes("55584")
+          ? "IDNP5IDNC412IDND5051IDZ55584"
+          : strictValue(s.store.storeCityId, r.storeCityId, rawVal.storeCityId),
       storeCityName: strictValue(s.store.storeCityName, r.storeCityName, rawVal.storeCityName),
       enableMidtrans: Boolean(s.store.enableMidtrans ?? r.enableMidtrans),
       enableManualTransfer: Boolean(s.store.enableManualTransfer ?? r.enableManualTransfer),
@@ -570,21 +582,26 @@ export default function SettingsView() {
               : r.footer?.branding?.socials || rawVal.footer?.branding?.socials || [],
         },
         navigation: {
-          title: strictValue(s.footer.navigation?.title, r.footer?.navigation?.title, rawVal.footer?.navigation?.title),
+          title: strictValue(s.footer.navigation?.title, r.footer?.navigation?.title, rawVal.footer?.navigation?.title) || "Penjelajahan",
           links:
             Array.isArray(s.footer.navigation?.links) && s.footer.navigation.links.length > 0 && s.footer.navigation.links.some((l: any) => l.label?.trim() || l.href?.trim())
-              ? s.footer.navigation.links
-              : r.footer?.navigation?.links || rawVal.footer?.navigation?.links || [],
+              ? s.footer.navigation.links.filter((l: any) => l.label?.trim() || l.href?.trim())
+              : r.footer?.navigation?.links || rawVal.footer?.navigation?.links || [
+                  { label: "Home", href: "#home" },
+                  { label: "Tentang Kami", href: "#about" },
+                  { label: "Produk", href: "#product" },
+                  { label: "Kontak", href: "#contact" },
+                ],
         },
         payment: {
-          title: strictValue(s.footer.payment?.title, r.footer?.payment?.title, rawVal.footer?.payment?.title),
-          subtitle: strictValue(s.footer.payment?.subtitle, r.footer?.payment?.subtitle, rawVal.footer?.payment?.subtitle),
+          title: strictValue(s.footer.payment?.title, r.footer?.payment?.title, rawVal.footer?.payment?.title) || "Pembayaran",
+          subtitle: strictValue(s.footer.payment?.subtitle, r.footer?.payment?.subtitle, rawVal.footer?.payment?.subtitle) || "Didukung secara aman oleh:",
           methods:
             Array.isArray(s.footer.payment?.methods) && s.footer.payment.methods.length > 0 && s.footer.payment.methods.some((m: any) => m?.trim())
-              ? s.footer.payment.methods
-              : r.footer?.payment?.methods || rawVal.footer?.payment?.methods || [],
+              ? s.footer.payment.methods.filter((m: any) => m?.trim())
+              : r.footer?.payment?.methods || rawVal.footer?.payment?.methods || ["Midtrans", "QRIS"],
         },
-        copyright: { text: strictValue(s.footer.copyright?.text, r.footer?.copyright?.text, rawVal.footer?.copyright?.text) },
+        copyright: { text: strictValue(s.footer.copyright?.text, r.footer?.copyright?.text, rawVal.footer?.copyright?.text) || "Make Me Kool. All rights reserved." },
       },
       ...(rawSettings?.promoBannerEnabled !== undefined
         ? {
