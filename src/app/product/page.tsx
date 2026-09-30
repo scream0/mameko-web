@@ -11,6 +11,8 @@ import { getDiscountedPrice } from "@/utils/promo";
 import toast from "react-hot-toast";
 import { optimizeCloudinaryUrl, IMAGE_PRESETS } from "@/utils/imageOptimizer";
 import { getApiBaseUrl } from "@/lib/apiClient";
+import { auth } from "@/lib/supabaseClient";
+import ProductReviewsSection from "@/components/Review/ProductReviewsSection";
 
 interface Variant {
   size: string;
@@ -80,6 +82,24 @@ function ProductDetailContent() {
         setLoading(false);
       });
   }, [id]);
+
+  // Record recently viewed to Backend DB
+  useEffect(() => {
+    if (product?.id) {
+      auth.getSession().then(({ data: { session } }) => {
+        if (session?.access_token) {
+          fetch(`${getApiBaseUrl()}/api/user/recently-viewed`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${session.access_token}`,
+            },
+            body: JSON.stringify({ product_id: product.id }),
+          }).catch(() => {});
+        }
+      });
+    }
+  }, [product?.id]);
 
   useEffect(() => {
     if (!product) return;
@@ -342,6 +362,9 @@ function ProductDetailContent() {
             </div>
           </div>
         </div>
+
+        {/* Seksi Ulasan & Rating Pelanggan */}
+        <ProductReviewsSection productId={product.id} />
       </div>
     </div>
   );

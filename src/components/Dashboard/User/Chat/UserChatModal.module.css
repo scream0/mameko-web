@@ -469,3 +469,136 @@
     padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
   }
 }
+
+/* Quoted reply inside message bubble */
+.quotedMessageSnippet {
+  background: rgba(0, 0, 0, 0.12);
+  border-left: 3px solid currentColor;
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin-bottom: 6px;
+  font-size: 0.78rem;
+  cursor: pointer;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:global([data-theme="dark"]) .quotedMessageSnippet,
+:global(.dark) .quotedMessageSnippet {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.quotedSender {
+  font-weight: 600;
+  font-size: 0.72rem;
+  margin-bottom: 2px;
+  opacity: 0.9;
+}
+
+.quotedText {
+  opacity: 0.85;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Reply trigger button next to bubble */
+.bubbleWrapperWithAction {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+}
+
+.messageRow.user .bubbleWrapperWithAction {
+  flex-direction: row-reverse;
+}
+
+.replyTriggerBtn {
+  opacity: 0;
+  background: var(--surface-primary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.15s ease;
+  flex-shrink: 0;
+}
+
+.bubbleWrapperWithAction:hover .replyTriggerBtn {
+  opacity: 0.85;
+}
+
+.replyTriggerBtn:hover {
+  opacity: 1 !important;
+  transform: scale(1.1);
+  color: var(--primary-accent);
+}
+
+/* Reply preview bar above text input */
+.replyBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--surface-secondary, rgba(0,0,0,0.03));
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+  animation: slideDownReply 0.2s ease-out;
+}
+
+@keyframes slideDownReply {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.replyBarContent {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.8rem;
+  overflow: hidden;
+  max-width: calc(100% - 28px);
+}
+
+.replyBarSender {
+  font-weight: 600;
+  color: var(--primary-accent);
+  font-size: 0.75rem;
+}
+
+.replyBarSnippet {
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cancelReplyBtn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.cancelReplyBtn:hover {
+  color: var(--danger, #ef4444);
+}

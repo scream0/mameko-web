@@ -22,5 +22,13 @@
     "emptyMessage": "Pesan atau gambar tidak boleh kosong.",
     "uploadFailed": "Gagal mengunggah gambar. Silakan coba lagi.",
     "sendFailed": "Gagal mengirim pesan."
+  },
+  "reply": {
+    "replyingTo": "Membalas",
+    "you": "Anda",
+    "admin": "Admin",
+    "replyAction": "Balas",
+    "cancelReply": "Batal Balas",
+    "imageAttachment": "[Gambar]"
   }
 }

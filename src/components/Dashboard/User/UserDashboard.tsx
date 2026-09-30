@@ -46,13 +46,17 @@ const UserChatModal = dynamic(
   () => import("@/components/Dashboard/User/Chat/UserChatModal"),
   { ssr: false }
 );
+const FeedView = dynamic(
+  () => import("@/components/Feed/FeedView"),
+  { ssr: false }
+);
 import { AppIcon } from "@/components/UI/Icon/AppIcon";
 import { Logo } from "@/components/UI/Logo/logo";
 import { UserDashboardSkeleton } from "@/components/UI/Skeleton/SkeletonLayouts";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 const DEFAULT_TAB = "shop";
-const ALLOWED_TABS = ["shop", "overview", "orders", "notifications", "profile"];
+const ALLOWED_TABS = ["shop", "feed", "overview", "orders", "notifications", "profile"];
 const filteredNav = userConfig.nav.filter((item) => ALLOWED_TABS.includes(item.id));
 const VALID_TABS = filteredNav.map((item) => item.id);
 
@@ -341,6 +345,7 @@ export default function UserDashboard({ user }) {
         {/* Hapus key={activeTab} agar konten tidak ter-unmount ulang yang menyebabkan kedipan/refresh */}
         <div className={`${styles.viewWrapper} ${styles.viewWrapperAnimated}`}>
           {activeTab === "shop" && <ShopPage searchQuery={searchQuery} onBukaDetail={handleBukaDetail} />}
+          {activeTab === "feed" && <FeedView />}
           {activeTab === "overview" && (
             <OverviewSection setActiveTab={handleTabChange} />
           )}

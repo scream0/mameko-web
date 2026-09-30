@@ -11,6 +11,11 @@
       "icon": "shopping-bag"
     },
     {
+      "id": "feed",
+      "label": "Komunitas",
+      "icon": "sparkles"
+    },
+    {
       "id": "overview",
       "label": "Ringkasan",
       "icon": "layout-dashboard"

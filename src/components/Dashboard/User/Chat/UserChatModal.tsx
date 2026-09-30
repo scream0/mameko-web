@@ -14,6 +14,7 @@ export default function UserChatModal({ isOpen, onClose, user }: any) {
   useScrollLock(Boolean(isOpen));
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState("");
+  const [replyingToMessage, setReplyingToMessage] = useState<any | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -328,7 +329,11 @@ export default function UserChatModal({ isOpen, onClose, user }: any) {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ message: msgText, image_url: imageUrl }),
+          body: JSON.stringify({
+            message: msgText,
+            image_url: imageUrl,
+            reply_to_id: replyingToMessage ? String(replyingToMessage.id) : null,
+          }),
         }
       );
       const result = res.headers
@@ -404,42 +409,75 @@ export default function UserChatModal({ isOpen, onClose, user }: any) {
           ) : (
             messages.map((m) => {
               const isUser = m.sender_role === "user";
+              const replyTarget = m.reply_to_id ? messages.find((item) => String(item.id) === String(m.reply_to_id)) : null;
+
               return (
                 <div
                   key={m.id}
+                  id={`msg-${m.id}`}
                   className={`${styles.messageRow} ${
                     isUser ? styles.user : styles.admin
                   }`}
                 >
-                  <div className={styles.messageBubble}>
-                    {m.image_url && (
-                      /* eslint-disable-next-line @next/next/no-img-element */
-                      <img
-                        src={m.image_url}
-                        alt={
-                          chatConfig?.messages?.attachmentAlt || "Lampiran Gambar"
-                        }
-                        className={styles.messageAttachment}
-                        onClick={() => setZoomedImage(m.image_url)}
-                        onLoad={scrollToBottom}
-                      />
-                    )}
-                    {m.message && <div>{m.message}</div>}
-                    <div className={styles.metaRow}>
-                      <span>
-                        {new Date(m.created_at).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </span>
-                      {isUser && (
-                        <AppIcon
-                          name={m.is_read ? "check-check" : "check"}
-                          size={14}
-                          color={m.is_read ? "#38bdf8" : "currentColor"}
+                  <div className={styles.bubbleWrapperWithAction}>
+                    <div className={styles.messageBubble}>
+                      {replyTarget && (
+                        <div
+                          className={styles.quotedMessageSnippet}
+                          onClick={() => {
+                            const el = document.getElementById(`msg-${replyTarget.id}`);
+                            if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+                          }}
+                          title={replyTarget.message || (replyTarget.image_url ? chatConfig?.reply?.imageAttachment || "[Gambar]" : "")}
+                        >
+                          <div className={styles.quotedSender}>
+                            {replyTarget.sender_role === "admin" ? chatConfig?.reply?.admin || "Admin" : chatConfig?.reply?.you || "Anda"}
+                          </div>
+                          <div className={styles.quotedText}>
+                            {replyTarget.message || (replyTarget.image_url ? chatConfig?.reply?.imageAttachment || "[Gambar]" : "")}
+                          </div>
+                        </div>
+                      )}
+
+                      {m.image_url && (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img
+                          src={m.image_url}
+                          alt={
+                            chatConfig?.messages?.attachmentAlt || "Lampiran Gambar"
+                          }
+                          className={styles.messageAttachment}
+                          onClick={() => setZoomedImage(m.image_url)}
+                          onLoad={scrollToBottom}
                         />
                       )}
+                      {m.message && <div>{m.message}</div>}
+                      <div className={styles.metaRow}>
+                        <span>
+                          {new Date(m.created_at).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </span>
+                        {isUser && (
+                          <AppIcon
+                            name={m.is_read ? "check-check" : "check"}
+                            size={14}
+                            color={m.is_read ? "#38bdf8" : "currentColor"}
+                          />
+                        )}
+                      </div>
                     </div>
+
+                    <button
+                      type="button"
+                      className={styles.replyTriggerBtn}
+                      onClick={() => setReplyingToMessage(m)}
+                      title={chatConfig?.reply?.replyAction || "Balas"}
+                      aria-label={chatConfig?.reply?.replyAction || "Balas"}
+                    >
+                      <AppIcon name="corner-down-left" size={13} />
+                    </button>
                   </div>
                 </div>
               );
@@ -461,6 +499,27 @@ export default function UserChatModal({ isOpen, onClose, user }: any) {
 
         {/* Input Footer */}
         <footer className={styles.inputContainer}>
+          {replyingToMessage && (
+            <div className={styles.replyBar}>
+              <div className={styles.replyBarContent}>
+                <span className={styles.replyBarSender}>
+                  {chatConfig?.reply?.replyingTo || "Membalas"} {replyingToMessage.sender_role === "admin" ? chatConfig?.reply?.admin || "Admin" : chatConfig?.reply?.you || "Anda"}
+                </span>
+                <span className={styles.replyBarSnippet}>
+                  {replyingToMessage.message || (replyingToMessage.image_url ? chatConfig?.reply?.imageAttachment || "[Gambar]" : "")}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setReplyingToMessage(null)}
+                className={styles.cancelReplyBtn}
+                aria-label={chatConfig?.reply?.cancelReply || "Batal Balas"}
+              >
+                <AppIcon name="x" size={14} />
+              </button>
+            </div>
+          )}
+
           {previewUrl && (
             <div className={styles.filePreviewCard}>
               {/* eslint-disable-next-line @next/next/no-img-element */}

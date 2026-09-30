@@ -1,0 +1,274 @@
+﻿.feedCard {
+  background: var(--surface-primary, #ffffff);
+  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.08));
+  border-radius: 18px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.feedCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+}
+
+/* Author Header */
+.authorRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.authorMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--primary-accent, #2563eb);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.05rem;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 2px solid var(--border-color, rgba(0, 0, 0, 0.08));
+}
+
+.avatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.authorDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.authorName {
+  font-weight: 700;
+  font-size: 0.98rem;
+  color: var(--text-primary, #111827);
+}
+
+.roleBadge {
+  font-size: 0.68rem;
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.roleOfficial {
+  background: rgba(37, 99, 235, 0.12);
+  color: #2563eb;
+}
+
+.roleCollector {
+  background: rgba(245, 158, 11, 0.14);
+  color: #d97706;
+}
+
+.postTime {
+  font-size: 0.78rem;
+  color: var(--text-secondary, #6b7280);
+}
+
+.categoryTag {
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  background: var(--surface-secondary, rgba(0, 0, 0, 0.04));
+  border-radius: 8px;
+  color: var(--text-secondary, #6b7280);
+  font-weight: 600;
+}
+
+/* Post Content */
+.postTitle {
+  font-family: var(--font-serif, serif);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text-primary, #111827);
+  margin: 0;
+  line-height: 1.3;
+}
+
+.postBody {
+  font-size: 0.95rem;
+  color: var(--text-primary, #374151);
+  line-height: 1.6;
+  white-space: pre-line;
+  margin: 0;
+}
+
+/* Scent Notes Badge */
+.notesRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 0.25rem;
+}
+
+.notePill {
+  font-size: 0.74rem;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+  font-weight: 500;
+}
+
+/* Image Carousel / Gallery */
+.galleryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.galleryItem {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.galleryItem:hover {
+  transform: scale(1.02);
+}
+
+/* Linked Product Card */
+.linkedProductCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--surface-secondary, rgba(0, 0, 0, 0.02));
+  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.08));
+  border-radius: 14px;
+  gap: 12px;
+  text-decoration: none;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.linkedProductCard:hover {
+  border-color: var(--primary-accent, #2563eb);
+  background: rgba(37, 99, 235, 0.02);
+}
+
+.productThumbInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.productThumb {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.productText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+}
+
+.productName {
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--text-primary, #111827);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.productPrice {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--primary-accent, #2563eb);
+}
+
+.viewProductBtn {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--primary-accent, #2563eb);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+/* Action Bar */
+.actionBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-color, rgba(0, 0, 0, 0.06));
+}
+
+.actionGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.actionBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.08));
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  color: var(--text-secondary, #6b7280);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.actionBtn:hover {
+  border-color: var(--primary-accent, #2563eb);
+  color: var(--primary-accent, #2563eb);
+  transform: translateY(-1px);
+}
+
+.likedActive {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: #ef4444;
+  color: #ef4444 !important;
+  font-weight: 600;
+}
+
+.bookmarkedActive {
+  background: rgba(37, 99, 235, 0.08);
+  border-color: var(--primary-accent, #2563eb);
+  color: var(--primary-accent, #2563eb) !important;
+  font-weight: 600;
+}

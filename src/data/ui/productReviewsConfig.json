@@ -1,0 +1,22 @@
+﻿{
+  "header": {
+    "title": "Ulasan Pelanggan",
+    "basedOn": "berdasarkan",
+    "reviewsCount": "ulasan",
+    "allRatings": "Semua Penilaian"
+  },
+  "stats": {
+    "outOf": "dari 5.0",
+    "satisfaction": "Kepuasan Pelanggan"
+  },
+  "helpful": {
+    "buttonLabel": "Membantu",
+    "loginRequired": "Silakan masuk untuk menyukai ulasan ini.",
+    "votedSuccess": "Terima kasih atas tanggapan Anda.",
+    "unvotedSuccess": "Tanggapan dibatalkan."
+  },
+  "emptyState": {
+    "title": "Belum Ada Ulasan",
+    "description": "Jadilah yang pertama memberikan ulasan untuk produk ini setelah pesanan Anda selesai!"
+  }
+}

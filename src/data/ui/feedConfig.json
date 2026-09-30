@@ -1,0 +1,39 @@
+﻿{
+  "header": {
+    "title": "Komunitas Mameko",
+    "subtitle": "Temukan inspirasi koleksi, cerita kurasi produk, dan kabar terbaru seputar Mameko.",
+    "tagline": "Discovery & Community Hub"
+  },
+  "nav": {
+    "allPosts": "Semua Cerita",
+    "savedPosts": "Tersimpan"
+  },
+  "search": {
+    "placeholder": "Cari cerita, inspirasi, atau produk terkait...",
+    "clearAria": "Hapus pencarian"
+  },
+  "card": {
+    "authorOfficial": "Official Mameko",
+    "authorCollector": "Collector",
+    "linkedProductTitle": "Produk Terkait",
+    "viewProductBtn": "Lihat Produk",
+    "likeAria": "Suka",
+    "bookmarkAria": "Simpan ke Koleksi",
+    "shareAria": "Bagikan Cerita"
+  },
+  "toasts": {
+    "requireLogin": "Silakan masuk terlebih dahulu untuk menyukai atau menyimpan postingan.",
+    "liked": "Menyukai cerita ini",
+    "unliked": "Batal menyukai",
+    "saved": "Cerita berhasil disimpan ke koleksi Anda!",
+    "unsaved": "Cerita dihapus dari koleksi tersimpan.",
+    "shareCopied": "Tautan cerita berhasil disalin ke clipboard!",
+    "shareFailed": "Gagal membagikan cerita."
+  },
+  "emptyState": {
+    "allTitle": "Belum Ada Cerita Komunitas",
+    "allDesc": "Nantikan kurasi cerita dan rilis produk eksklusif berikutnya di sini!",
+    "savedTitle": "Belum Ada Cerita Tersimpan",
+    "savedDesc": "Klik ikon simpan pada postingan yang Anda sukai untuk membacanya kembali nanti."
+  }
+}

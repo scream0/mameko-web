@@ -58,6 +58,8 @@ import {
   ArrowRight,
   Image,
   Loader,
+  Sparkles,
+  Share2,
 } from "lucide-react";
 
 const iconMap: Record<string, React.ElementType> = {
@@ -136,6 +138,9 @@ const iconMap: Record<string, React.ElementType> = {
   "arrow-right": ArrowRight,
   "image": Image,
   "loader": Loader,
+  "sparkles": Sparkles,
+  "feed": Sparkles,
+  "share-2": Share2,
 };
 
 const InstagramLogo = ({ className, size = 24, ...props }: any) => (

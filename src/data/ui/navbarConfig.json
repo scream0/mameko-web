@@ -6,10 +6,26 @@
     "icon": "logoXar"
   },
   "menuItems": [
-    { "label": "Home", "href": "#home" },
-    { "label": "Tentang Kami", "href": "#about" },
-    { "label": "Produk", "href": "#product" },
-    { "label": "Kontak", "href": "#contact" }
+    {
+      "label": "Home",
+      "href": "#home"
+    },
+    {
+      "label": "Komunitas",
+      "href": "/feed"
+    },
+    {
+      "label": "Tentang Kami",
+      "href": "#about"
+    },
+    {
+      "label": "Produk",
+      "href": "#product"
+    },
+    {
+      "label": "Kontak",
+      "href": "#contact"
+    }
   ],
   "features": {
     "search": {
@@ -38,11 +54,23 @@
     },
     "auth": {
       "authenticated": [
-        { "type": "link", "label": "Dashboard", "href": "/dashboard" },
-        { "type": "button", "label": "Logout", "action": "logout" }
+        {
+          "type": "link",
+          "label": "Dashboard",
+          "href": "/dashboard"
+        },
+        {
+          "type": "button",
+          "label": "Logout",
+          "action": "logout"
+        }
       ],
       "unauthenticated": [
-        { "type": "link", "label": "Login", "href": "/login" }
+        {
+          "type": "link",
+          "label": "Login",
+          "href": "/login"
+        }
       ]
     }
   }

@@ -11,18 +11,10 @@ import { AppIcon } from "@/components/UI/Icon/AppIcon";
 import ConfirmationModal from "@/components/UI/Modal/ConfirmationModal";
 import { WishlistSkeleton } from "@/components/UI/Skeleton/SkeletonLayouts";
 import { optimizeCloudinaryUrl, IMAGE_PRESETS } from "@/utils/imageOptimizer";
+import { getLocalWishlist, syncWishlistWithBackend, toggleWishlistItem, saveLocalWishlist, notifyWishlistUpdated } from "@/utils/wishlistClient";
 
 function readWishlist() {
-  if (typeof window === "undefined") {
-    return [];
-  }
-
-  try {
-    const saved = localStorage.getItem("shop_wishlist");
-    return saved ? JSON.parse(saved) : [];
-  } catch {
-    return [];
-  }
+  return getLocalWishlist();
 }
 
 export default function WishlistSection() {
@@ -40,6 +32,10 @@ export default function WishlistSection() {
   };
 
   useEffect(() => {
+    syncWishlistWithBackend().then((items) => {
+      if (items) setWishlist(items);
+    });
+
     const handleWishlistUpdated = (event: any) => {
       const nextItems = event.detail?.items;
       if (Array.isArray(nextItems)) {
@@ -118,30 +114,25 @@ export default function WishlistSection() {
     );
   };
 
-  const handleRemove = (productId: any, e: any) => {
+  const handleRemove = async (productId: any, e: any) => {
     e.stopPropagation();
+    await toggleWishlistItem(String(productId));
     const nextWishlist = wishlist.filter(
       (id: any) => String(id) !== String(productId),
     );
-
     setWishlist(nextWishlist);
-    window.dispatchEvent(
-      new CustomEvent("wishlist-updated", {
-        detail: { count: nextWishlist.length, items: nextWishlist },
-      }),
-    );
-    toast.success(wishlistConfig.toasts.removeSuccess || "Dihapus dari wishlist.");
+    toast.success(wishlistConfig.toasts?.removeSuccess || "Dihapus dari wishlist.");
   };
 
-  const confirmClearAll = () => {
+  const confirmClearAll = async () => {
     setShowClearConfirm(false);
+    for (const id of wishlist) {
+      await toggleWishlistItem(String(id));
+    }
     setWishlist([]);
-    window.dispatchEvent(
-      new CustomEvent("wishlist-updated", {
-        detail: { count: 0, items: [] },
-      }),
-    );
-    toast.success(wishlistConfig.toasts.clearSuccess || "Wishlist berhasil dikosongkan.");
+    saveLocalWishlist([]);
+    notifyWishlistUpdated([]);
+    toast.success(wishlistConfig.toasts?.clearSuccess || "Wishlist berhasil dikosongkan.");
   };
 
   const handleClearAll = () => {

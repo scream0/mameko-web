@@ -12,6 +12,7 @@ import { ShopSkeleton } from "@/components/UI/Skeleton/ShopSkeleton";
 import shopConfig from "@/data/ui/shopConfig.json";
 import { optimizeCloudinaryUrl, IMAGE_PRESETS } from "@/utils/imageOptimizer";
 import { getApiBaseUrl } from "@/lib/apiClient";
+import { getLocalWishlist, syncWishlistWithBackend, toggleWishlistItem } from "@/utils/wishlistClient";
 
 const PRODUCTS_PER_PAGE = 12;
 
@@ -101,40 +102,26 @@ export default function Shop({ searchQuery = "", onBukaDetail, initialData }) {
     return () => observer.disconnect();
   }, []);
 
-  // Populate wishlist from localStorage (client-side only to prevent hydration mismatch)
+  // Populate wishlist from local storage & sync with Golang Backend DB
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem("shop_wishlist");
-      if (saved) {
-        setWishlist(JSON.parse(saved));
-      }
-    } catch {
-      // Ignore parsing error
-    }
+    setWishlist(getLocalWishlist());
+    syncWishlistWithBackend().then((items) => {
+      if (items && items.length > 0) setWishlist(items);
+    });
   }, []);
 
-  const toggleWishlist = (productId: string, e: any) => {
+  const toggleWishlist = async (productId: string, e: any) => {
     e.stopPropagation();
-    const isExist = wishlist.includes(productId);
-    const updated = isExist
-      ? wishlist.filter((id) => id !== productId)
-      : [...wishlist, productId];
+    const isNowAdded = await toggleWishlistItem(productId);
+    const updated = isNowAdded
+      ? Array.from(new Set([...wishlist, productId]))
+      : wishlist.filter((id) => id !== productId);
 
     setWishlist(updated);
 
-    try {
-      localStorage.setItem("shop_wishlist", JSON.stringify(updated));
-    } catch {}
-
-    window.dispatchEvent(
-      new CustomEvent("wishlist-updated", {
-        detail: { count: updated.length, items: updated },
-      })
-    );
-
     import("react-hot-toast").then((toast) => {
       toast.default.success(
-        isExist
+        !isNowAdded
           ? shopConfig.toasts?.wishlistRemove || "Dihapus dari wishlist."
           : shopConfig.toasts?.wishlistAdd || "Berhasil ditambahkan ke wishlist!"
       );
