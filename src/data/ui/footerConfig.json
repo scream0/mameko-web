@@ -22,10 +22,18 @@
   "navigation": {
     "title": "Penjelajahan",
     "links": [
-      { "label": "Home", "href": "#home" },
-      { "label": "Tentang Kami", "href": "#about" },
-      { "label": "Produk", "href": "#product" },
-      { "label": "Kontak", "href": "#contact" }
+      { "label": "Home", "href": "/#home" },
+      { "label": "Tentang Kami", "href": "/#about" },
+      { "label": "Produk", "href": "/#product" },
+      { "label": "Kontak", "href": "/#contact" }
+    ]
+  },
+  "legal": {
+    "title": "Legalitas",
+    "links": [
+      { "label": "Kebijakan Privasi", "href": "/privacy" },
+      { "label": "Syarat & Ketentuan", "href": "/terms" },
+      { "label": "Hapus Akun & Data", "href": "/delete-account" }
     ]
   },
   "payment": {

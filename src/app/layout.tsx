@@ -20,6 +20,8 @@ const lato = Lato({
   display: "swap",
 });
 
+import { CookieConsent } from "@/components/CookieConsent/CookieConsent";
+
 export const metadata = {
   title: "mameko",
   description: "Artisanal Craftsmanship",
@@ -38,6 +40,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <ThemeProvider>
           <StoreProvider>
             {children}
+            <CookieConsent />
             <Toaster
               position="bottom-left"
               toastOptions={{

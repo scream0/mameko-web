@@ -1,6 +1,7 @@
 // @ts-nocheck
 "use client";
 import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import { getPublicSettings } from "@/services/settingsService";
 import { useTheme } from "@/context/ThemeContext";
 import styles from "./Footer.module.css";
@@ -68,6 +69,13 @@ export function Footer() {
               Array.isArray(f?.navigation?.links) && f.navigation.links.length > 0 && f.navigation.links.some((l: any) => l?.label || l?.href)
                 ? f.navigation.links
                 : footerData?.navigation?.links || [],
+          },
+          legal: {
+            title: f?.legal?.title?.trim() ? f.legal.title : footerData?.legal?.title || "Legalitas",
+            links:
+              Array.isArray(f?.legal?.links) && f.legal.links.length > 0 && f.legal.links.some((l: any) => l?.label || l?.href)
+                ? f.legal.links
+                : footerData?.legal?.links || [],
           },
           payment: {
             title: f?.payment?.title?.trim() ? f.payment.title : footerData.payment.title,
@@ -160,6 +168,31 @@ export function Footer() {
           <p>
             &copy; {currentYear} {footerInfo?.copyright?.text}
           </p>
+          <div className={styles.footerLegalLinks}>
+            <Link href="/privacy" className={styles.legalLink}>
+              Kebijakan Privasi
+            </Link>
+            <span className={styles.legalDivider}>•</span>
+            <Link href="/terms" className={styles.legalLink}>
+              Syarat &amp; Ketentuan
+            </Link>
+            <span className={styles.legalDivider}>•</span>
+            <Link href="/delete-account" className={styles.legalLink}>
+              Hapus Akun &amp; Data
+            </Link>
+            <span className={styles.legalDivider}>•</span>
+            <button
+              type="button"
+              className={styles.cookieSettingsBtn}
+              onClick={() => {
+                if (typeof window !== "undefined") {
+                  window.dispatchEvent(new CustomEvent("open-cookie-settings"));
+                }
+              }}
+            >
+              Pengaturan Cookie
+            </button>
+          </div>
           <div className={styles.themeSwitcher}>
             <button
               className={`${styles.themeBtn} ${isThemeReady && theme === 'light' ? styles.active : ''}`}
