@@ -11,6 +11,7 @@
     "payment": "Pembayaran",
     "couriers": "Pengiriman",
     "whatsapp": "WhatsApp Gateway",
+    "legal": "Legalitas (TOS & Privasi)",
     "account": "Akun Pengguna"
   },
   "whatsapp": {
@@ -193,6 +194,40 @@
     "activeCountPrefix": "Kurir aktif: ",
     "noneActive": "Tidak ada",
     "fetchError": "Gagal memuat daftar kurir dari Biteship."
+  },
+  "legal": {
+    "title": "Dokumen Legalitas & Kebijakan",
+    "desc": "Kelola teks resmi Kebijakan Privasi dan Syarat & Ketentuan platform yang ditampilkan ke pelanggan.",
+    "subtabs": {
+      "privacy": "Kebijakan Privasi",
+      "terms": "Syarat & Ketentuan"
+    },
+    "privacy": {
+      "titleLabel": "Judul Halaman",
+      "titlePlaceholder": "Kebijakan Privasi",
+      "subtitleLabel": "Subjudul / Tagline",
+      "subtitlePlaceholder": "Komitmen Make Me Kool dalam menjaga transparansi...",
+      "lastUpdatedLabel": "Tanggal Terakhir Diperbarui",
+      "lastUpdatedPlaceholder": "Contoh: 7 Oktober 2026",
+      "summaryLabel": "Ringkasan Cepat (Summary Callout)",
+      "summaryPlaceholder": "Make Me Kool (Mameko) hanya mengumpulkan data yang esensial...",
+      "contentLabel": "Konten Kustom Tambahan / Catatan Khusus",
+      "contentPlaceholder": "Tuliskan klausul, pembaruan operasional, atau ketentuan khusus privasi di sini..."
+    },
+    "terms": {
+      "titleLabel": "Judul Halaman",
+      "titlePlaceholder": "Syarat & Ketentuan",
+      "subtitleLabel": "Subjudul / Tagline",
+      "subtitlePlaceholder": "Panduan dan perjanjian hukum yang mengikat...",
+      "lastUpdatedLabel": "Tanggal Terakhir Diperbarui",
+      "lastUpdatedPlaceholder": "Contoh: 7 Oktober 2026",
+      "summaryLabel": "Ringkasan Cepat (Summary Callout)",
+      "summaryPlaceholder": "Dengan melakukan pemesanan atau menggunakan platform...",
+      "contentLabel": "Konten Kustom Tambahan / Ketentuan Pembelian",
+      "contentPlaceholder": "Tuliskan aturan retur, garansi produk, atau ketentuan komersial di sini..."
+    },
+    "resetBtn": "Pulihkan Teks Standar",
+    "resetNotice": "Teks dikembalikan ke draf default UU PDP."
   },
   "account": {
     "title": "Manajemen Akun",

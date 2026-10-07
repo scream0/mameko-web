@@ -8,6 +8,7 @@ import styles from "./UserManagement.module.css";
 import { shouldSkipAuthEvent } from "@/utils/authHelpers";
 import config from "@/data/ui/userManagementConfig.json";
 import { TableSkeleton } from "@/components/UI/Skeleton/SkeletonLayouts";
+import { AppIcon } from "@/components/UI/Icon/AppIcon";
 
 function formatDate(value: any) {
   if (!value) return "-";
@@ -35,6 +36,8 @@ export default function UserManagement() {
   const [roleFilter, setRoleFilter] = useState("all");
   const [updatingId, setUpdatingId] = useState(null);
   const [confirmTarget, setConfirmTarget] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
   const [page, setPage] = useState(1);
   const rowsPerPage = 10;
   const lastUserIdRef = useRef(null);
@@ -149,6 +152,70 @@ export default function UserManagement() {
     if (success) setConfirmTarget(null);
   };
 
+  const handleDeleteUser = (user: any) => {
+    setDeleteTarget(user);
+  };
+
+  const confirmDeleteUser = async () => {
+    if (!deleteTarget) return;
+    const targetUserId = deleteTarget.id;
+    try {
+      setDeletingId(targetUserId);
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      let deletionSucceeded = false;
+
+      // 1. Coba hapus via Golang backend API
+      try {
+        const res = await fetch(getApiBaseUrl() + "/api/admin/team", {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ userId: targetUserId }),
+        });
+        if (res.ok) {
+          deletionSucceeded = true;
+        }
+      } catch (apiErr) {
+        console.warn("API DELETE /api/admin/team failed, trying Supabase fallback:", apiErr);
+      }
+
+      // 2. Fallback via Supabase RPC jika endpoint backend belum aktif
+      if (!deletionSucceeded) {
+        const { error: rpcError } = await supabase.rpc("delete_user_by_admin", {
+          target_user_id: targetUserId,
+        });
+        if (!rpcError) {
+          deletionSucceeded = true;
+        } else {
+          // Fallback direct delete from public.profiles
+          const { error: profileDelError } = await supabase
+            .from("profiles")
+            .delete()
+            .eq("id", targetUserId);
+          if (!profileDelError) {
+            deletionSucceeded = true;
+          } else {
+            throw new Error(rpcError?.message || profileDelError?.message || "Gagal menghapus pengguna.");
+          }
+        }
+      }
+
+      // Update state lokal
+      setUsers((prev) => prev.filter((u) => u.id !== targetUserId));
+      toast.success(config.toasts.deleteSuccess);
+      setDeleteTarget(null);
+    } catch (err: any) {
+      console.error("Gagal hapus user:", err);
+      toast.error(err.message || config.toasts.deleteError);
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   const filteredUsers = useMemo(() => {
     let result = users;
     if (statusFilter !== "all") {
@@ -229,6 +296,58 @@ export default function UserManagement() {
                 {updatingId === confirmTarget.user.id
                   ? config.actions.saving
                   : config.confirm.confirm}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete User Confirmation Modal */}
+      {deleteTarget && (
+        <div
+          className={styles.modalOverlay}
+          onClick={() => !deletingId && setDeleteTarget(null)}
+        >
+          <div
+            className={styles.modalContent}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className={styles.modalHeader}>
+              <h3 className={styles.modalTitle} style={{ color: "var(--danger-color)" }}>
+                {config.confirm.deleteTitle}
+              </h3>
+              <button
+                type="button"
+                onClick={() => !deletingId && setDeleteTarget(null)}
+                className={styles.modalCloseBtn}
+              >
+                ✕
+              </button>
+            </div>
+            <p className={styles.modalMessage}>
+              {config.confirm.deleteMessage.replace(
+                "{name}",
+                deleteTarget.name || deleteTarget.email || "Pengguna Ini"
+              )}
+            </p>
+            <div className={styles.modalFooter}>
+              <button
+                type="button"
+                onClick={() => setDeleteTarget(null)}
+                disabled={deletingId === deleteTarget.id}
+                className={styles.cancelBtn}
+              >
+                {config.confirm.cancel}
+              </button>
+              <button
+                type="button"
+                onClick={confirmDeleteUser}
+                disabled={deletingId === deleteTarget.id}
+                className={styles.dangerBtn}
+              >
+                {deletingId === deleteTarget.id
+                  ? config.actions.deleting
+                  : config.confirm.confirmDelete}
               </button>
             </div>
           </div>
@@ -398,6 +517,20 @@ export default function UserManagement() {
                             {config.actions.block}
                           </button>
                         )}
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteUser(user)}
+                          disabled={
+                            updatingId === user.id ||
+                            deletingId === user.id ||
+                            user.id === lastUserIdRef.current
+                          }
+                          className={styles.deleteBtn}
+                          title="Hapus Akun Pengguna"
+                        >
+                          <AppIcon name="trash-2" size={13} />
+                          <span>{config.actions.delete}</span>
+                        </button>
                       </div>
                     </td>
                   </tr>

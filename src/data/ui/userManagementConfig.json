@@ -37,6 +37,8 @@
   "actions": {
     "block": "Blokir",
     "activate": "Aktifkan",
+    "delete": "Hapus",
+    "deleting": "Menghapus...",
     "saving": "Menyimpan..."
   },
   "toasts": {
@@ -44,15 +46,20 @@
     "updateSuccess": "Perubahan berhasil disimpan.",
     "updateError": "Gagal menyimpan perubahan.",
     "blockSuccess": "Akun berhasil diblokir.",
-    "activateSuccess": "Akun berhasil diaktifkan."
+    "activateSuccess": "Akun berhasil diaktifkan.",
+    "deleteSuccess": "Akun pengguna berhasil dihapus permanen.",
+    "deleteError": "Gagal menghapus akun pengguna."
   },
   "confirm": {
     "blockTitle": "Blokir Pengguna",
     "blockMessage": "Blokir akun {name}? Pengguna tidak akan bisa login lagi.",
     "activateTitle": "Aktifkan Pengguna",
     "activateMessage": "Aktifkan kembali akun {name}?",
+    "deleteTitle": "Hapus Akun Pengguna",
+    "deleteMessage": "Hapus permanen akun {name}? Semua data profil, autentikasi login, dan alamat akan dihapus. Riwayat pesanan akan dianonimkan untuk kepatuhan hukum.",
     "cancel": "Batal",
-    "confirm": "Ya, Lanjutkan"
+    "confirm": "Ya, Lanjutkan",
+    "confirmDelete": "Ya, Hapus Akun"
   },
   "summary": {
     "total": "Total Pengguna",

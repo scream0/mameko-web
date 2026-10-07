@@ -75,6 +75,22 @@ const EMPTY = {
     payment: { title: "", subtitle: "", methods: [""] },
     copyright: { text: "" },
   },
+  legal: {
+    privacy: {
+      title: "Kebijakan Privasi",
+      subtitle: "Komitmen Make Me Kool dalam menjaga transparansi, privasi, dan keamanan data pribadi Anda di setiap interaksi.",
+      lastUpdated: "7 Oktober 2026",
+      summary: "Make Me Kool (Mameko) hanya mengumpulkan data yang esensial untuk memproses pesanan, memfasilitasi pengiriman, dan memberikan pengalaman berbelanja yang nyaman. Kami tidak memperjualbelikan data pribadi Anda ke pihak manapun dan selalu mematuhi Undang-Undang Pelindungan Data Pribadi (UU PDP No. 27 Tahun 2022).",
+      content: "",
+    },
+    terms: {
+      title: "Syarat & Ketentuan",
+      subtitle: "Panduan dan perjanjian hukum yang mengikat dalam setiap transaksi dan penggunaan platform Make Me Kool.",
+      lastUpdated: "7 Oktober 2026",
+      summary: "Dengan melakukan pemesanan atau menggunakan platform Make Me Kool (Mameko), Anda menyetujui seluruh ketentuan pemesanan, verifikasi pembayaran Midtrans, pengiriman logistik, serta kewajiban menyertakan video unboxing utuh untuk setiap klaim garansi produk.",
+      content: "",
+    },
+  },
 };
 
 const TAB_KEYS = [
@@ -87,6 +103,7 @@ const TAB_KEYS = [
   "payment",
   "couriers",
   "whatsapp",
+  "legal",
   "account",
 ];
 
@@ -273,6 +290,22 @@ export default function SettingsView() {
               : ["Midtrans", "QRIS"],
         },
         copyright: { text: pick(data?.footer?.copyright?.text, raw?.footer?.copyright?.text) },
+      },
+      legal: {
+        privacy: {
+          title: pick(data?.legal?.privacy?.title, raw?.legal?.privacy?.title) || "Kebijakan Privasi",
+          subtitle: pick(data?.legal?.privacy?.subtitle, raw?.legal?.privacy?.subtitle) || "Komitmen Make Me Kool dalam menjaga transparansi, privasi, dan keamanan data pribadi Anda di setiap interaksi.",
+          lastUpdated: pick(data?.legal?.privacy?.lastUpdated, raw?.legal?.privacy?.lastUpdated) || "7 Oktober 2026",
+          summary: pick(data?.legal?.privacy?.summary, raw?.legal?.privacy?.summary) || "Make Me Kool (Mameko) hanya mengumpulkan data yang esensial untuk memproses pesanan, memfasilitasi pengiriman, dan memberikan pengalaman berbelanja yang nyaman. Kami tidak memperjualbelikan data pribadi Anda ke pihak manapun dan selalu mematuhi Undang-Undang Pelindungan Data Pribadi (UU PDP No. 27 Tahun 2022).",
+          content: pick(data?.legal?.privacy?.content, raw?.legal?.privacy?.content) || "",
+        },
+        terms: {
+          title: pick(data?.legal?.terms?.title, raw?.legal?.terms?.title) || "Syarat & Ketentuan",
+          subtitle: pick(data?.legal?.terms?.subtitle, raw?.legal?.terms?.subtitle) || "Panduan dan perjanjian hukum yang mengikat dalam setiap transaksi dan penggunaan platform Make Me Kool.",
+          lastUpdated: pick(data?.legal?.terms?.lastUpdated, raw?.legal?.terms?.lastUpdated) || "7 Oktober 2026",
+          summary: pick(data?.legal?.terms?.summary, raw?.legal?.terms?.summary) || "Dengan melakukan pemesanan atau menggunakan platform Make Me Kool (Mameko), Anda menyetujui seluruh ketentuan pemesanan, verifikasi pembayaran Midtrans, pengiriman logistik, serta kewajiban menyertakan video unboxing utuh untuk setiap klaim garansi produk.",
+          content: pick(data?.legal?.terms?.content, raw?.legal?.terms?.content) || "",
+        },
       },
     };
   };
@@ -603,6 +636,22 @@ export default function SettingsView() {
         },
         copyright: { text: strictValue(s.footer.copyright?.text, r.footer?.copyright?.text, rawVal.footer?.copyright?.text) || "Make Me Kool. All rights reserved." },
       },
+      legal: {
+        privacy: {
+          title: strictValue(s.legal?.privacy?.title, r.legal?.privacy?.title, rawVal.legal?.privacy?.title) || "Kebijakan Privasi",
+          subtitle: strictValue(s.legal?.privacy?.subtitle, r.legal?.privacy?.subtitle, rawVal.legal?.privacy?.subtitle) || "",
+          lastUpdated: strictValue(s.legal?.privacy?.lastUpdated, r.legal?.privacy?.lastUpdated, rawVal.legal?.privacy?.lastUpdated) || "7 Oktober 2026",
+          summary: strictValue(s.legal?.privacy?.summary, r.legal?.privacy?.summary, rawVal.legal?.privacy?.summary) || "",
+          content: strictValue(s.legal?.privacy?.content, r.legal?.privacy?.content, rawVal.legal?.privacy?.content) || "",
+        },
+        terms: {
+          title: strictValue(s.legal?.terms?.title, r.legal?.terms?.title, rawVal.legal?.terms?.title) || "Syarat & Ketentuan",
+          subtitle: strictValue(s.legal?.terms?.subtitle, r.legal?.terms?.subtitle, rawVal.legal?.terms?.subtitle) || "",
+          lastUpdated: strictValue(s.legal?.terms?.lastUpdated, r.legal?.terms?.lastUpdated, rawVal.legal?.terms?.lastUpdated) || "7 Oktober 2026",
+          summary: strictValue(s.legal?.terms?.summary, r.legal?.terms?.summary, rawVal.legal?.terms?.summary) || "",
+          content: strictValue(s.legal?.terms?.content, r.legal?.terms?.content, rawVal.legal?.terms?.content) || "",
+        },
+      },
       ...(rawSettings?.promoBannerEnabled !== undefined
         ? {
             promoBannerEnabled: Boolean(rawSettings.promoBannerEnabled),
@@ -776,6 +825,14 @@ export default function SettingsView() {
 
         {activeTab === "whatsapp" && (
           <WhatsAppTab cfg={cfg} />
+        )}
+
+        {activeTab === "legal" && (
+          <LegalTab
+            settings={settings.legal}
+            updateTab={updateTab}
+            cfg={cfg?.legal}
+          />
         )}
 
         {activeTab === "account" && (
@@ -2683,6 +2740,227 @@ function WhatsAppTab({ cfg }) {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+/* ============================================================
+   TAB: LEGALITAS & KEBIJAKAN (TOS & PRIVACY POLICY)
+   ============================================================ */
+function LegalTab({ settings, updateTab, cfg }: any) {
+  const [subTab, setSubTab] = useState<"privacy" | "terms">("privacy");
+  const s = settings || {};
+  const set = (patch: any) => updateTab("legal", { ...s, ...patch });
+
+  const defaultPrivacy = {
+    title: "Kebijakan Privasi",
+    subtitle: "Komitmen Make Me Kool dalam menjaga transparansi, privasi, dan keamanan data pribadi Anda di setiap interaksi.",
+    lastUpdated: "7 Oktober 2026",
+    summary: "Make Me Kool (Mameko) hanya mengumpulkan data yang esensial untuk memproses pesanan, memfasilitasi pengiriman, dan memberikan pengalaman berbelanja yang nyaman. Kami tidak memperjualbelikan data pribadi Anda ke pihak manapun dan selalu mematuhi Undang-Undang Pelindungan Data Pribadi (UU PDP No. 27 Tahun 2022).",
+    content: "",
+  };
+
+  const defaultTerms = {
+    title: "Syarat & Ketentuan",
+    subtitle: "Panduan dan perjanjian hukum yang mengikat dalam setiap transaksi dan penggunaan platform Make Me Kool.",
+    lastUpdated: "7 Oktober 2026",
+    summary: "Dengan melakukan pemesanan atau menggunakan platform Make Me Kool (Mameko), Anda menyetujui seluruh ketentuan pemesanan, verifikasi pembayaran Midtrans, pengiriman logistik, serta kewajiban menyertakan video unboxing utuh untuk setiap klaim garansi produk.",
+    content: "",
+  };
+
+  const currentPrivacy = s.privacy || defaultPrivacy;
+  const currentTerms = s.terms || defaultTerms;
+
+  const handleReset = () => {
+    if (subTab === "privacy") {
+      set({ privacy: defaultPrivacy });
+      toast.success(cfg?.resetNotice || "Draf Kebijakan Privasi dikembalikan ke default.");
+    } else {
+      set({ terms: defaultTerms });
+      toast.success(cfg?.resetNotice || "Draf Syarat & Ketentuan dikembalikan ke default.");
+    }
+  };
+
+  return (
+    <div className={styles.tabContent}>
+      <div className={styles.formSection}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem", marginBottom: "1.25rem" }}>
+          <div>
+            <h4 className={styles.sectionTitle} style={{ margin: 0 }}>
+              {cfg?.title || "Dokumen Legalitas & Kebijakan"}
+            </h4>
+            <p className={styles.couriersDesc} style={{ margin: "0.25rem 0 0" }}>
+              {cfg?.desc || "Kelola teks resmi Kebijakan Privasi dan Syarat & Ketentuan platform yang ditampilkan ke pelanggan."}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleReset}
+            className={styles.removeBtn}
+            style={{ fontSize: "0.75rem", padding: "0.4rem 0.8rem" }}
+          >
+            {cfg?.resetBtn || "Pulihkan Teks Standar"}
+          </button>
+        </div>
+
+        {/* Sub-tab Navigation */}
+        <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1.5rem", borderBottom: "1px solid var(--border-color)", paddingBottom: "0.5rem" }}>
+          <button
+            type="button"
+            className={`${styles.tabBtn} ${subTab === "privacy" ? styles.activeTabBtn : ""}`}
+            onClick={() => setSubTab("privacy")}
+            style={{ padding: "0.45rem 1rem", fontSize: "0.82rem", borderRadius: "8px" }}
+          >
+            🛡️ {cfg?.subtabs?.privacy || "Kebijakan Privasi"}
+          </button>
+          <button
+            type="button"
+            className={`${styles.tabBtn} ${subTab === "terms" ? styles.activeTabBtn : ""}`}
+            onClick={() => setSubTab("terms")}
+            style={{ padding: "0.45rem 1rem", fontSize: "0.82rem", borderRadius: "8px" }}
+          >
+            📜 {cfg?.subtabs?.terms || "Syarat & Ketentuan"}
+          </button>
+        </div>
+
+        {subTab === "privacy" ? (
+          <div>
+            <div className={styles.row2}>
+              <div className={styles.inputGroup}>
+                <label className={styles.fieldLabel}>{cfg?.privacy?.titleLabel || "Judul Halaman"}</label>
+                <input
+                  className={styles.inputField}
+                  value={currentPrivacy.title || ""}
+                  onChange={(e) =>
+                    set({ privacy: { ...currentPrivacy, title: e.target.value } })
+                  }
+                  placeholder={cfg?.privacy?.titlePlaceholder || "Kebijakan Privasi"}
+                />
+              </div>
+              <div className={styles.inputGroup}>
+                <label className={styles.fieldLabel}>{cfg?.privacy?.lastUpdatedLabel || "Tanggal Terakhir Diperbarui"}</label>
+                <input
+                  className={styles.inputField}
+                  value={currentPrivacy.lastUpdated || ""}
+                  onChange={(e) =>
+                    set({ privacy: { ...currentPrivacy, lastUpdated: e.target.value } })
+                  }
+                  placeholder={cfg?.privacy?.lastUpdatedPlaceholder || "Contoh: 7 Oktober 2026"}
+                />
+              </div>
+            </div>
+
+            <div className={styles.inputGroup}>
+              <label className={styles.fieldLabel}>{cfg?.privacy?.subtitleLabel || "Subjudul / Tagline"}</label>
+              <input
+                className={styles.inputField}
+                value={currentPrivacy.subtitle || ""}
+                onChange={(e) =>
+                  set({ privacy: { ...currentPrivacy, subtitle: e.target.value } })
+                }
+                placeholder={cfg?.privacy?.subtitlePlaceholder || "Komitmen Make Me Kool dalam menjaga privasi..."}
+              />
+            </div>
+
+            <div className={styles.inputGroup}>
+              <label className={styles.fieldLabel}>{cfg?.privacy?.summaryLabel || "Ringkasan Cepat (Summary Callout)"}</label>
+              <textarea
+                className={styles.inputField}
+                rows={3}
+                value={currentPrivacy.summary || ""}
+                onChange={(e) =>
+                  set({ privacy: { ...currentPrivacy, summary: e.target.value } })
+                }
+                placeholder={cfg?.privacy?.summaryPlaceholder || "Ringkasan kebijakan privasi..."}
+              />
+            </div>
+
+            <div className={styles.inputGroup}>
+              <label className={styles.fieldLabel}>{cfg?.privacy?.contentLabel || "Konten Kustom Tambahan / Catatan Khusus"}</label>
+              <textarea
+                className={styles.inputField}
+                rows={6}
+                value={currentPrivacy.content || ""}
+                onChange={(e) =>
+                  set({ privacy: { ...currentPrivacy, content: e.target.value } })
+                }
+                placeholder={cfg?.privacy?.contentPlaceholder || "Tuliskan klausul atau ketentuan tambahan di sini..."}
+              />
+              <small className={styles.fieldDesc}>
+                * Teks kustom ini akan ditampilkan di halaman /privacy sebagai klausul resmi dari admin toko.
+              </small>
+            </div>
+          </div>
+        ) : (
+          <div>
+            <div className={styles.row2}>
+              <div className={styles.inputGroup}>
+                <label className={styles.fieldLabel}>{cfg?.terms?.titleLabel || "Judul Halaman"}</label>
+                <input
+                  className={styles.inputField}
+                  value={currentTerms.title || ""}
+                  onChange={(e) =>
+                    set({ terms: { ...currentTerms, title: e.target.value } })
+                  }
+                  placeholder={cfg?.terms?.titlePlaceholder || "Syarat & Ketentuan"}
+                />
+              </div>
+              <div className={styles.inputGroup}>
+                <label className={styles.fieldLabel}>{cfg?.terms?.lastUpdatedLabel || "Tanggal Terakhir Diperbarui"}</label>
+                <input
+                  className={styles.inputField}
+                  value={currentTerms.lastUpdated || ""}
+                  onChange={(e) =>
+                    set({ terms: { ...currentTerms, lastUpdated: e.target.value } })
+                  }
+                  placeholder={cfg?.terms?.lastUpdatedPlaceholder || "Contoh: 7 Oktober 2026"}
+                />
+              </div>
+            </div>
+
+            <div className={styles.inputGroup}>
+              <label className={styles.fieldLabel}>{cfg?.terms?.subtitleLabel || "Subjudul / Tagline"}</label>
+              <input
+                className={styles.inputField}
+                value={currentTerms.subtitle || ""}
+                onChange={(e) =>
+                  set({ terms: { ...currentTerms, subtitle: e.target.value } })
+                }
+                placeholder={cfg?.terms?.subtitlePlaceholder || "Panduan dan perjanjian hukum..."}
+              />
+            </div>
+
+            <div className={styles.inputGroup}>
+              <label className={styles.fieldLabel}>{cfg?.terms?.summaryLabel || "Ringkasan Cepat (Summary Callout)"}</label>
+              <textarea
+                className={styles.inputField}
+                rows={3}
+                value={currentTerms.summary || ""}
+                onChange={(e) =>
+                  set({ terms: { ...currentTerms, summary: e.target.value } })
+                }
+                placeholder={cfg?.terms?.summaryPlaceholder || "Ringkasan syarat dan ketentuan..."}
+              />
+            </div>
+
+            <div className={styles.inputGroup}>
+              <label className={styles.fieldLabel}>{cfg?.terms?.contentLabel || "Konten Kustom Tambahan / Ketentuan Pembelian"}</label>
+              <textarea
+                className={styles.inputField}
+                rows={6}
+                value={currentTerms.content || ""}
+                onChange={(e) =>
+                  set({ terms: { ...currentTerms, content: e.target.value } })
+                }
+                placeholder={cfg?.terms?.contentPlaceholder || "Tuliskan aturan retur, batas komplain, atau ketentuan khusus di sini..."}
+              />
+              <small className={styles.fieldDesc}>
+                * Teks kustom ini akan ditampilkan di halaman /terms sebagai klausul resmi dari admin toko.
+              </small>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

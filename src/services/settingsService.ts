@@ -30,6 +30,7 @@ export interface StoreSettings {
   product?: any;
   contact?: any;
   footer?: any;
+  legal?: any;
   promoBannerEnabled?: boolean;
   promoBannerText?: string;
   promoDiscountType?: string;

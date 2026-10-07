@@ -358,6 +358,35 @@
   color: #fff;
 }
 
+.deleteBtn {
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0.45rem 0.75rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid rgba(var(--danger-color-rgb, 239, 68, 68), 0.3);
+  background: transparent;
+  color: var(--danger-color);
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.deleteBtn:hover:not(:disabled) {
+  background: var(--danger-color);
+  color: #fff;
+}
+
+.deleteBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 .blockBtn:disabled,
 .activateBtn:disabled {
   opacity: 0.5;
