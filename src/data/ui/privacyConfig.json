@@ -1,0 +1,156 @@
+{
+  "metadata": {
+    "title": "Kebijakan Privasi | Mameko",
+    "description": "Kebijakan Privasi dan Perlindungan Data Pribadi Make Me Kool (Mameko). Pelajari bagaimana kami menjaga dan memproses data Anda sesuai regulasi UU PDP."
+  },
+  "badge": "Perlindungan Data",
+  "defaults": {
+    "title": "Kebijakan Privasi",
+    "subtitle": "Komitmen Make Me Kool dalam menjaga transparansi, privasi, dan keamanan data pribadi Anda di setiap interaksi.",
+    "lastUpdated": "7 Oktober 2026",
+    "summary": "Make Me Kool (Mameko) hanya mengumpulkan data yang esensial untuk memproses pesanan, memfasilitasi pengiriman, dan memberikan pengalaman berbelanja yang nyaman. Kami tidak memperjualbelikan data pribadi Anda ke pihak manapun dan selalu mematuhi Undang-Undang Pelindungan Data Pribadi (UU PDP No. 27 Tahun 2022)."
+  },
+  "toc": {
+    "intro": "1. Pendahuluan",
+    "dataCollected": "2. Data yang Kami Kumpulkan",
+    "purposes": "3. Tujuan Pemrosesan Data",
+    "thirdParties": "4. Pihak Ketiga & Integrasi",
+    "security": "5. Keamanan & Retensi Data",
+    "userRights": "6. Hak Pemilik Data Pribadi",
+    "cookies": "7. Cookie & Teknologi Pelacak",
+    "adminClause": "8. Ketentuan Tambahan Toko",
+    "contact": "9. Kontak & Pengaduan",
+    "contactFallback": "8. Kontak & Pengaduan"
+  },
+  "sections": {
+    "intro": {
+      "title": "Pendahuluan",
+      "p1": "Selamat datang di platform digital Make Me Kool (\"Mameko\", \"kami\"). Kebijakan Privasi ini menerangkan cara kami mengumpulkan, menggunakan, menyimpan, mengungkapkan, dan melindungi Data Pribadi pengguna (\"Anda\") saat mengunjungi situs web, membuat akun, bertransaksi, atau berinteraksi dengan layanan kami.",
+      "p2": "Dengan mengakses atau menggunakan layanan Mameko, Anda mengakui bahwa Anda telah membaca, memahami, dan menyetujui seluruh ketentuan yang tercantum dalam Kebijakan Privasi ini. Kebijakan ini disusun dengan mematuhi peraturan perundang-undangan Republik Indonesia, khususnya Undang-Undang No. 27 Tahun 2022 tentang Pelindungan Data Pribadi (UU PDP)."
+    },
+    "dataCollected": {
+      "title": "Data yang Kami Kumpulkan",
+      "intro": "Untuk memberikan pengalaman berbelanja yang optimal, kami mengumpulkan kategori data berikut:",
+      "cards": [
+        {
+          "icon": "user",
+          "title": "Identitas & Akun",
+          "desc": "Nama lengkap, alamat email, nomor telepon/WhatsApp, dan kredensial autentikasi yang dienkripsi secara aman melalui Supabase Auth."
+        },
+        {
+          "icon": "map-pin",
+          "title": "Pengiriman & Alamat",
+          "desc": "Nama penerima, nomor kontak penerima, alamat tujuan lengkap, kode pos, dan titik koordinat/area Biteship untuk kalkulasi kurir."
+        },
+        {
+          "icon": "credit-card",
+          "title": "Transaksi & Pembayaran",
+          "desc": "Nomor pesanan, rincian barang, total pembayaran, status transaksi Midtrans. Kami tidak pernah menyimpan nomor kartu kredit atau PIN Anda."
+        },
+        {
+          "icon": "settings",
+          "title": "Teknis & Perangkat",
+          "desc": "Alamat IP, tipe peramban (browser), sistem operasi, preferensi tema (Light/Dark), serta log diagnostik performa aplikasi."
+        }
+      ]
+    },
+    "purposes": {
+      "title": "Tujuan Pemrosesan Data",
+      "intro": "Data pribadi Anda dikumpulkan dan diproses secara sah berdasarkan persetujuan dan dasar hukum yang berlaku untuk keperluan:",
+      "items": [
+        {
+          "label": "Penyelesaian Transaksi:",
+          "desc": "Memproses pembelian, mengonfirmasi pembayaran otomatis, dan menerbitkan struk atau bukti transaksi."
+        },
+        {
+          "label": "Operasional Logistik:",
+          "desc": "Meneruskan data pengiriman kepada mitra kurir logistik (melalui sistem integrasi Biteship) agar pesanan tiba dengan akurat."
+        },
+        {
+          "label": "Layanan Pelanggan:",
+          "desc": "Merespons pertanyaan, kendala pemesanan, atau memfasilitasi klaim garansi produk dan penukaran."
+        },
+        {
+          "label": "Peningkatan Kualitas Layanan:",
+          "desc": "Menganalisis preferensi pengguna untuk menghadirkan rekomendasi produk artisanal yang relevan dan meningkatkan kecepatan antarmuka web."
+        },
+        {
+          "label": "Kepatuhan Hukum:",
+          "desc": "Memenuhi kewajiban perpajakan, audit pencatatan komersial, dan peraturan perundang-undangan yang sah di Indonesia."
+        }
+      ]
+    },
+    "thirdParties": {
+      "title": "Pihak Ketiga & Integrasi Layanan",
+      "intro": "Dalam menjalankan operasional toko, kami bekerja sama dengan penyedia layanan teknologi terpercaya sebagai sub-prosesor data:",
+      "items": [
+        {
+          "label": "Supabase Inc:",
+          "desc": "Menyediakan infrastruktur database PostgreSQL berstandar enterprise dengan Row-Level Security (RLS) dan manajemen sesi otentikasi JWT."
+        },
+        {
+          "label": "PT Midtrans:",
+          "desc": "Gerbang pembayaran resmi berizin Bank Indonesia yang memfasilitasi transaksi QRIS, Transfer Bank (Virtual Account), dan kartu secara terenkripsi (PCI-DSS Level 1 compliant)."
+        },
+        {
+          "label": "Biteship & Mitra Ekspedisi (JNE, J&T, SiCepat, dll.):",
+          "desc": "Menerima data nama penerima, kontak, dan alamat untuk keperluan pengantaran paket pesanan."
+        },
+        {
+          "label": "Cloudinary:",
+          "desc": "Jaringan distribusi konten (CDN) untuk penyimpanan dan optimalisasi pengiriman gambar produk serta ulasan pelanggan."
+        }
+      ],
+      "footer": "Kami mewajibkan setiap mitra pihak ketiga mematuhi standar perlindungan data yang ketat dan tidak diperbolehkan menggunakan data Anda selain untuk tujuan yang kami tentukan."
+    },
+    "security": {
+      "title": "Keamanan & Retensi Data",
+      "intro": "Kami menerapkan langkah-langkah teknis dan organisasional untuk melindungi integritas dan kerahasiaan data Anda:",
+      "items": [
+        "Enkripsi data transit menggunakan protokol Transport Layer Security (TLS 1.3 / SSL).",
+        "Infrastruktur API terlindungi di balik jaringan privat Cloudflare Tunnel dengan pembatasan IP dan otentikasi JWT ganda.",
+        "Pemberlakuan hak akses terbatas (Principle of Least Privilege) pada database administratif."
+      ],
+      "retentionLabel": "Periode Retensi:",
+      "retentionDesc": "Kami menyimpan data transaksi selama minimal 5 (lima) tahun sesuai dengan regulasi pembukuan dan perpajakan di Indonesia. Data akun non-transaksional dapat disimpan selama akun Anda berstatus aktif atau hingga Anda mengajukan permintaan penghapusan akun."
+    },
+    "userRights": {
+      "title": "Hak Pemilik Data Pribadi (UU PDP)",
+      "intro": "Sesuai dengan Undang-Undang No. 27 Tahun 2022 tentang Pelindungan Data Pribadi, Anda memiliki hak-hak fundamental berikut:",
+      "items": [
+        { "label": "Hak Akses:", "desc": "Meminta konfirmasi dan salinan data pribadi Anda yang kami proses." },
+        { "label": "Hak Koreksi:", "desc": "Memperbarui atau membetulkan data pribadi yang tidak akurat melalui halaman profil akun atau bantuan admin." },
+        { "label": "Hak Penghapusan (Erasure):", "desc": "Meminta penghapusan akun dan data pribadi Anda sepanjang tidak bertentangan dengan kewajiban retensi hukum atau transaksi berjalan." },
+        { "label": "Hak Menarik Persetujuan:", "desc": "Menarik kembali persetujuan pemrosesan data untuk kepentingan pemasaran kapan saja." }
+      ],
+      "deletionCallout": {
+        "title": "Pengajuan Permintaan Penghapusan Akun & Data",
+        "description": "Anda dapat menghapus akun secara mandiri (jika sedang masuk) atau mengajukan permohonan verifikasi penghapusan data secara tertulis melalui portal resmi kami:",
+        "buttonText": "Buka Portal Permintaan Penghapusan Akun & Data →",
+        "href": "/delete-account"
+      }
+    },
+    "cookies": {
+      "title": "Cookie & Teknologi Pelacak",
+      "intro": "Platform kami memanfaatkan cookie dan media penyimpanan lokal (localStorage) untuk:",
+      "items": [
+        "Menjaga sesi masuk Anda tetap aman (Strictly Necessary).",
+        "Menyimpan produk yang ada di keranjang belanja Anda saat berpindah halaman (Strictly Necessary).",
+        "Mengingat preferensi tampilan seperti mode tema Gelap atau Terang (Preferences).",
+        "Mengumpulkan statistik agregat anonim mengenai performa situs web (Analytics)."
+      ],
+      "footer": "Anda dapat mengatur preferensi cookie opsional kapan saja melalui banner Cookie Consent atau melalui tautan \"Pengaturan Cookie\" di bagian footer situs web ini."
+    },
+    "adminClause": {
+      "title": "Ketentuan Tambahan Toko"
+    },
+    "contact": {
+      "title": "Kontak & Pengaduan",
+      "intro": "Apabila Anda memiliki pertanyaan, keberatan, atau ingin menggunakan hak-hak pelindungan data Anda, silakan hubungi tim kami melalui:",
+      "bannerTitle": "Make Me Kool (Mameko) Customer Care & Data Protection",
+      "email": "Email: privacy@mameko.my.id atau support@mameko.my.id",
+      "instagram": "Instagram: @xar.project",
+      "hours": "Jam Operasional: Setiap Hari, 18.00 – 21.00 WIB"
+    }
+  }
+}

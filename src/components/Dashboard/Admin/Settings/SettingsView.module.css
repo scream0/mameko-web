@@ -1088,3 +1088,39 @@
   font-weight: 700;
   color: var(--primary-accent);
 }
+
+.legalHeaderRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.legalSectionTitle {
+  margin: 0;
+}
+
+.legalSectionDesc {
+  margin: 0.25rem 0 0;
+}
+
+.legalResetBtn {
+  font-size: 0.75rem;
+  padding: 0.4rem 0.8rem;
+}
+
+.legalSubnav {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.5rem;
+}
+
+.legalSubtabBtn {
+  padding: 0.45rem 1rem;
+  font-size: 0.82rem;
+  border-radius: 8px;
+}

@@ -324,3 +324,27 @@
     padding: 1.75rem 1.25rem;
   }
 }
+
+.summaryCalloutWithMargin {
+  margin-top: 1.5rem;
+}
+
+.calloutDesc {
+  margin-bottom: 0.85rem;
+}
+
+.summaryLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 700;
+  color: var(--secondary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-size: 0.9rem;
+}
+
+.adminClauseText {
+  white-space: pre-wrap;
+  line-height: 1.7;
+}

@@ -170,15 +170,15 @@ export function Footer() {
           </p>
           <div className={styles.footerLegalLinks}>
             <Link href="/privacy" className={styles.legalLink}>
-              Kebijakan Privasi
+              {footerInfo?.legal?.privacy || footerData.legal.privacy}
             </Link>
             <span className={styles.legalDivider}>•</span>
             <Link href="/terms" className={styles.legalLink}>
-              Syarat &amp; Ketentuan
+              {footerInfo?.legal?.terms || footerData.legal.terms}
             </Link>
             <span className={styles.legalDivider}>•</span>
             <Link href="/delete-account" className={styles.legalLink}>
-              Hapus Akun &amp; Data
+              {footerInfo?.legal?.deleteAccount || footerData.legal.deleteAccount}
             </Link>
             <span className={styles.legalDivider}>•</span>
             <button
@@ -190,21 +190,21 @@ export function Footer() {
                 }
               }}
             >
-              Pengaturan Cookie
+              {footerInfo?.legal?.cookieSettings || footerData.legal.cookieSettings}
             </button>
           </div>
           <div className={styles.themeSwitcher}>
             <button
               className={`${styles.themeBtn} ${isThemeReady && theme === 'light' ? styles.active : ''}`}
               onClick={() => setTheme('light')}
-              aria-label="Tema Terang"
+              aria-label={footerInfo?.legal?.themeLight || footerData.legal.themeLight}
             >
               <AppIcon name="sun" />
             </button>
             <button
               className={`${styles.themeBtn} ${!isThemeReady || theme === 'dark' ? styles.active : ''}`}
               onClick={() => setTheme('dark')}
-              aria-label="Tema Gelap"
+              aria-label={footerInfo?.legal?.themeDark || footerData.legal.themeDark}
             >
               <AppIcon name="moon" />
             </button>

@@ -212,7 +212,8 @@
       "summaryLabel": "Ringkasan Cepat (Summary Callout)",
       "summaryPlaceholder": "Make Me Kool (Mameko) hanya mengumpulkan data yang esensial...",
       "contentLabel": "Konten Kustom Tambahan / Catatan Khusus",
-      "contentPlaceholder": "Tuliskan klausul, pembaruan operasional, atau ketentuan khusus privasi di sini..."
+      "contentPlaceholder": "Tuliskan klausul, pembaruan operasional, atau ketentuan khusus privasi di sini...",
+      "contentDesc": "* Teks kustom ini akan ditampilkan di halaman /privacy sebagai klausul resmi dari admin toko."
     },
     "terms": {
       "titleLabel": "Judul Halaman",
@@ -224,7 +225,8 @@
       "summaryLabel": "Ringkasan Cepat (Summary Callout)",
       "summaryPlaceholder": "Dengan melakukan pemesanan atau menggunakan platform...",
       "contentLabel": "Konten Kustom Tambahan / Ketentuan Pembelian",
-      "contentPlaceholder": "Tuliskan aturan retur, garansi produk, atau ketentuan komersial di sini..."
+      "contentPlaceholder": "Tuliskan aturan retur, garansi produk, atau ketentuan komersial di sini...",
+      "contentDesc": "* Teks kustom ini akan ditampilkan di halaman /terms sebagai klausul resmi dari admin toko."
     },
     "resetBtn": "Pulihkan Teks Standar",
     "resetNotice": "Teks dikembalikan ke draf default UU PDP."

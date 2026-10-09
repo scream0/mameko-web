@@ -1,0 +1,144 @@
+{
+  "metadata": {
+    "title": "Syarat & Ketentuan | Mameko",
+    "description": "Syarat dan Ketentuan Transaksi serta Penggunaan Layanan Make Me Kool (Mameko). Pelajari aturan pemesanan, pembayaran, pengiriman, dan kebijakan retur kami."
+  },
+  "badge": "Perjanjian Layanan",
+  "defaults": {
+    "title": "Syarat & Ketentuan",
+    "subtitle": "Panduan dan perjanjian hukum yang mengikat dalam setiap transaksi dan penggunaan platform Make Me Kool.",
+    "lastUpdated": "7 Oktober 2026",
+    "summary": "Dengan melakukan pemesanan atau menggunakan platform Make Me Kool (Mameko), Anda menyetujui seluruh ketentuan pemesanan, verifikasi pembayaran Midtrans, pengiriman logistik, serta kewajiban menyertakan video unboxing utuh untuk setiap klaim garansi produk."
+  },
+  "toc": {
+    "general": "1. Ketentuan Umum & Akun",
+    "artisanal": "2. Karakteristik Produk Artisanal",
+    "orders": "3. Pemesanan & Harga",
+    "payment": "4. Pembayaran & Batas Waktu",
+    "shipping": "5. Pengiriman & Logistik",
+    "returns": "6. Kebijakan Retur & Komplain",
+    "ip": "7. Hak Kekayaan Intelektual",
+    "adminClause": "8. Ketentuan Khusus Toko",
+    "liability": "9. Batasan Tanggung Jawab & Hukum",
+    "liabilityFallback": "8. Batasan Tanggung Jawab & Hukum"
+  },
+  "sections": {
+    "general": {
+      "title": "Ketentuan Umum & Akun",
+      "p1": "Syarat dan Ketentuan ini (\"Ketentuan\") mengatur hak dan kewajiban antara pembeli (\"Pengguna\", \"Anda\") dan Make Me Kool (\"Mameko\", \"kami\") dalam penggunaan platform web dan pembelian barang.",
+      "items": [
+        {
+          "label": "Kelayakan Usia:",
+          "desc": "Anda menyatakan telah berusia minimal 18 tahun atau memiliki kecakapan hukum untuk melakukan perikatan jual-beli yang sah berdasarkan hukum Republik Indonesia."
+        },
+        {
+          "label": "Keamanan Akun:",
+          "desc": "Anda bertanggung jawab penuh untuk menjaga kerahasiaan kata sandi akun, kode OTP, dan aktivitas yang terjadi di bawah akun Anda."
+        },
+        {
+          "label": "Ketepatan Data:",
+          "desc": "Anda wajib memberikan informasi alamat, email, dan nomor telepon yang akurat untuk kelancaran verifikasi dan pengantaran paket."
+        }
+      ]
+    },
+    "artisanal": {
+      "title": "Karakteristik Produk Artisanal",
+      "intro": "Produk yang ditawarkan oleh Mameko merupakan karya artisanal (handcrafted/small-batch):",
+      "cards": [
+        {
+          "icon": "package",
+          "title": "Variasi Alami",
+          "desc": "Karena diracik dan dibuat secara cermat dalam kelompok kecil (small batch), sedikit perbedaan warna tekstur atau kemasan minor merupakan ciri otentik produk kerajinan tangan."
+        },
+        {
+          "icon": "image",
+          "title": "Akurasi Foto & Layar",
+          "desc": "Kami berupaya semaksimal mungkin menampilkan warna yang akurat. Namun, perbedaan kalibrasi layar monitor atau ponsel Anda dapat menimbulkan sedikit perbedaan persepsi visual."
+        }
+      ]
+    },
+    "orders": {
+      "title": "Pemesanan & Harga",
+      "intro": "Ketentuan mengenai pemesanan produk dan penetapan harga:",
+      "items": [
+        "Seluruh harga produk yang ditampilkan tercantum dalam mata uang Rupiah Indonesia (IDR) dan belum termasuk biaya ongkos kirim kecuali dinyatakan secara eksplisit melalui promo/voucher.",
+        "Mameko berhak mengubah harga sewaktu-waktu tanpa pemberitahuan sebelumnya, namun perubahan tersebut tidak akan memengaruhi pesanan yang telah dibayar lunas.",
+        "Kami berhak membatalkan pesanan secara sepihak jika terjadi kesalahan sistem penentuan harga (pricing glitch) atau kendala stok mendadak, dengan komitmen pengembalian dana 100% kepada pembeli."
+      ]
+    },
+    "payment": {
+      "title": "Pembayaran & Batas Waktu Transaksi",
+      "intro": "Pembayaran dilakukan melalui portal gerbang pembayaran resmi Midtrans Snap:",
+      "items": [
+        {
+          "label": "Metode Pembayaran:",
+          "desc": "Kami mendukung QRIS (GoPay, OVO, Dana, ShopeePay, BCA Mobile, dll.), Virtual Account Bank (BCA, Mandiri, BNI, BRI, Permata), dan kartu debit/kredit yang didukung."
+        },
+        {
+          "label": "Batas Waktu Pembayaran (Expiry):",
+          "desc": "Setiap nomor transaksi atau QRIS memiliki batas kedaluwarsa waktu. Apabila pembayaran tidak diselesaikan sebelum batas waktu berakhir, pesanan akan secara otomatis dibatalkan oleh sistem."
+        },
+        {
+          "label": "Konfirmasi Otomatis:",
+          "desc": "Pesanan akan segera masuk ke tahap proses pengemasan setelah sistem kami menerima notifikasi status settlement sukses dari Midtrans."
+        }
+      ]
+    },
+    "shipping": {
+      "title": "Pengiriman & Logistik",
+      "intro": "Ketentuan terkait pengantaran pesanan fisik:",
+      "items": [
+        {
+          "label": "Ekspedisi Terpercaya:",
+          "desc": "Pengiriman difasilitasi oleh agregator kurir Biteship dengan mitra ekspedisi terpercaya (JNE, J&T, SiCepat, AnterAja, dan lainnya)."
+        },
+        {
+          "label": "Waktu Proses:",
+          "desc": "Pesanan yang masuk akan diproses dan dikemas dalam waktu 1–2 hari kerja (tidak termasuk hari Minggu dan hari libur nasional)."
+        },
+        {
+          "label": "Estimasi Sampai:",
+          "desc": "Estimasi lama pengiriman yang tercantum di halaman checkout merupakan perkiraan dari pihak ekspedisi dan dapat dipengaruhi oleh kondisi cuaca atau kendala operasional lapangan."
+        },
+        {
+          "label": "Nomor Resi:",
+          "desc": "Pelacakan resi akan diperbarui secara otomatis di halaman akun dan rincian pesanan Anda segera setelah paket diserahkan ke kurir."
+        }
+      ]
+    },
+    "returns": {
+      "title": "Kebijakan Retur, Komplain, & Refund",
+      "intro": "Kepuasan Anda adalah prioritas kami. Jika Anda menerima barang yang salah, kurang, atau rusak selama pengiriman:",
+      "unboxingCallout": {
+        "title": "Syarat Mutlak: Video Unboxing Utuh",
+        "desc": "Komplain kerusakan atau kekurangan barang hanya dapat diproses apabila disertai rekaman video unboxing utuh tanpa jeda (tanpa cut/edit), mulai dari resi fisik masih utuh tertempel hingga produk dikeluarkan dari kemasan pembungkus."
+      },
+      "items": [
+        {
+          "label": "Batas Waktu Pengajuan:",
+          "desc": "Komplain wajib diajukan maksimal 2x24 jam sejak status resi dinyatakan \"Delivered\" oleh pihak kurir."
+        },
+        {
+          "label": "Kondisi Barang:",
+          "desc": "Barang yang diretur wajib berada dalam kondisi belum terpakai, belum dicuci, dan segel/label produk masih utuh."
+        },
+        {
+          "label": "Solusi Komplain:",
+          "desc": "Mameko akan memberikan solusi berupa pengiriman produk pengganti (dengan ongkir ditanggung pihak kami) atau pengembalian dana (refund) sesuai kesepakatan bersama."
+        }
+      ]
+    },
+    "ip": {
+      "title": "Hak Kekayaan Intelektual",
+      "content": "Seluruh konten yang terdapat di platform Mameko, termasuk namun tidak terbatas pada teks, logo merek \"Make Me Kool\" / \"Mameko\", desain grafis, foto produk, tata letak antarmuka, dan kode sumber adalah milik eksklusif Make Me Kool yang dilindungi oleh undang-undang hak cipta dan merek dagang Republik Indonesia. Penggandaan, distribusi, atau modifikasi tanpa izin tertulis dari kami dilarang keras."
+    },
+    "adminClause": {
+      "title": "Ketentuan Khusus Toko"
+    },
+    "liability": {
+      "title": "Batasan Tanggung Jawab & Hukum yang Berlaku",
+      "p1": "Mameko tidak bertanggung jawab atas kerugian tidak langsung atau keterlambatan pengiriman yang disebabkan oleh keadaan kahar (Force Majeure), termasuk namun tidak terbatas pada bencana alam, huru-hara, kebijakan lockdown pemerintah, atau gangguan massal jaringan telekomunikasi.",
+      "p2": "Ketentuan ini diatur dan ditafsirkan sesuai dengan hukum Negara Republik Indonesia. Segala perselisihan yang timbul akan diselesaikan terlebih dahulu melalui musyawarah untuk mufakat dalam jangka waktu 30 hari sebelum dibawa ke jalur hukum di pengadilan negeri yurisdiksi domisili kami."
+    }
+  }
+}

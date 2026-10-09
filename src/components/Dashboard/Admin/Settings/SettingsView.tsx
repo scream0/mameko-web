@@ -14,6 +14,8 @@ import {
 } from "@/services/settingsService";
 import { convertToWebP } from "@/utils/imageConverter";
 import UserManagement from "./UserManagement";
+import privacyConfig from "@/data/ui/privacyConfig.json";
+import termsConfig from "@/data/ui/termsConfig.json";
 
 const EMPTY = {
   store: {
@@ -2753,18 +2755,18 @@ function LegalTab({ settings, updateTab, cfg }: any) {
   const set = (patch: any) => updateTab("legal", { ...s, ...patch });
 
   const defaultPrivacy = {
-    title: "Kebijakan Privasi",
-    subtitle: "Komitmen Make Me Kool dalam menjaga transparansi, privasi, dan keamanan data pribadi Anda di setiap interaksi.",
-    lastUpdated: "7 Oktober 2026",
-    summary: "Make Me Kool (Mameko) hanya mengumpulkan data yang esensial untuk memproses pesanan, memfasilitasi pengiriman, dan memberikan pengalaman berbelanja yang nyaman. Kami tidak memperjualbelikan data pribadi Anda ke pihak manapun dan selalu mematuhi Undang-Undang Pelindungan Data Pribadi (UU PDP No. 27 Tahun 2022).",
+    title: privacyConfig.defaults.title,
+    subtitle: privacyConfig.defaults.subtitle,
+    lastUpdated: privacyConfig.defaults.lastUpdated,
+    summary: privacyConfig.defaults.summary,
     content: "",
   };
 
   const defaultTerms = {
-    title: "Syarat & Ketentuan",
-    subtitle: "Panduan dan perjanjian hukum yang mengikat dalam setiap transaksi dan penggunaan platform Make Me Kool.",
-    lastUpdated: "7 Oktober 2026",
-    summary: "Dengan melakukan pemesanan atau menggunakan platform Make Me Kool (Mameko), Anda menyetujui seluruh ketentuan pemesanan, verifikasi pembayaran Midtrans, pengiriman logistik, serta kewajiban menyertakan video unboxing utuh untuk setiap klaim garansi produk.",
+    title: termsConfig.defaults.title,
+    subtitle: termsConfig.defaults.subtitle,
+    lastUpdated: termsConfig.defaults.lastUpdated,
+    summary: termsConfig.defaults.summary,
     content: "",
   };
 
@@ -2774,52 +2776,49 @@ function LegalTab({ settings, updateTab, cfg }: any) {
   const handleReset = () => {
     if (subTab === "privacy") {
       set({ privacy: defaultPrivacy });
-      toast.success(cfg?.resetNotice || "Draf Kebijakan Privasi dikembalikan ke default.");
+      toast.success(cfg?.resetNotice || "");
     } else {
       set({ terms: defaultTerms });
-      toast.success(cfg?.resetNotice || "Draf Syarat & Ketentuan dikembalikan ke default.");
+      toast.success(cfg?.resetNotice || "");
     }
   };
 
   return (
     <div className={styles.tabContent}>
       <div className={styles.formSection}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem", marginBottom: "1.25rem" }}>
+        <div className={styles.legalHeaderRow}>
           <div>
-            <h4 className={styles.sectionTitle} style={{ margin: 0 }}>
-              {cfg?.title || "Dokumen Legalitas & Kebijakan"}
+            <h4 className={`${styles.sectionTitle} ${styles.legalSectionTitle}`}>
+              {cfg?.title}
             </h4>
-            <p className={styles.couriersDesc} style={{ margin: "0.25rem 0 0" }}>
-              {cfg?.desc || "Kelola teks resmi Kebijakan Privasi dan Syarat & Ketentuan platform yang ditampilkan ke pelanggan."}
+            <p className={`${styles.couriersDesc} ${styles.legalSectionDesc}`}>
+              {cfg?.desc}
             </p>
           </div>
           <button
             type="button"
             onClick={handleReset}
-            className={styles.removeBtn}
-            style={{ fontSize: "0.75rem", padding: "0.4rem 0.8rem" }}
+            className={`${styles.removeBtn} ${styles.legalResetBtn}`}
           >
-            {cfg?.resetBtn || "Pulihkan Teks Standar"}
+            {cfg?.resetBtn}
           </button>
         </div>
 
         {/* Sub-tab Navigation */}
-        <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1.5rem", borderBottom: "1px solid var(--border-color)", paddingBottom: "0.5rem" }}>
+        <div className={styles.legalSubnav}>
           <button
             type="button"
-            className={`${styles.tabBtn} ${subTab === "privacy" ? styles.activeTabBtn : ""}`}
+            className={`${styles.tabBtn} ${styles.legalSubtabBtn} ${subTab === "privacy" ? styles.tabBtnActive : ""}`}
             onClick={() => setSubTab("privacy")}
-            style={{ padding: "0.45rem 1rem", fontSize: "0.82rem", borderRadius: "8px" }}
           >
-            🛡️ {cfg?.subtabs?.privacy || "Kebijakan Privasi"}
+            🛡️ {cfg?.subtabs?.privacy}
           </button>
           <button
             type="button"
-            className={`${styles.tabBtn} ${subTab === "terms" ? styles.activeTabBtn : ""}`}
+            className={`${styles.tabBtn} ${styles.legalSubtabBtn} ${subTab === "terms" ? styles.tabBtnActive : ""}`}
             onClick={() => setSubTab("terms")}
-            style={{ padding: "0.45rem 1rem", fontSize: "0.82rem", borderRadius: "8px" }}
           >
-            📜 {cfg?.subtabs?.terms || "Syarat & Ketentuan"}
+            📜 {cfg?.subtabs?.terms}
           </button>
         </div>
 
@@ -2827,43 +2826,43 @@ function LegalTab({ settings, updateTab, cfg }: any) {
           <div>
             <div className={styles.row2}>
               <div className={styles.inputGroup}>
-                <label className={styles.fieldLabel}>{cfg?.privacy?.titleLabel || "Judul Halaman"}</label>
+                <label className={styles.fieldLabel}>{cfg?.privacy?.titleLabel}</label>
                 <input
                   className={styles.inputField}
                   value={currentPrivacy.title || ""}
                   onChange={(e) =>
                     set({ privacy: { ...currentPrivacy, title: e.target.value } })
                   }
-                  placeholder={cfg?.privacy?.titlePlaceholder || "Kebijakan Privasi"}
+                  placeholder={cfg?.privacy?.titlePlaceholder}
                 />
               </div>
               <div className={styles.inputGroup}>
-                <label className={styles.fieldLabel}>{cfg?.privacy?.lastUpdatedLabel || "Tanggal Terakhir Diperbarui"}</label>
+                <label className={styles.fieldLabel}>{cfg?.privacy?.lastUpdatedLabel}</label>
                 <input
                   className={styles.inputField}
                   value={currentPrivacy.lastUpdated || ""}
                   onChange={(e) =>
                     set({ privacy: { ...currentPrivacy, lastUpdated: e.target.value } })
                   }
-                  placeholder={cfg?.privacy?.lastUpdatedPlaceholder || "Contoh: 7 Oktober 2026"}
+                  placeholder={cfg?.privacy?.lastUpdatedPlaceholder}
                 />
               </div>
             </div>
 
             <div className={styles.inputGroup}>
-              <label className={styles.fieldLabel}>{cfg?.privacy?.subtitleLabel || "Subjudul / Tagline"}</label>
+              <label className={styles.fieldLabel}>{cfg?.privacy?.subtitleLabel}</label>
               <input
                 className={styles.inputField}
                 value={currentPrivacy.subtitle || ""}
                 onChange={(e) =>
                   set({ privacy: { ...currentPrivacy, subtitle: e.target.value } })
                 }
-                placeholder={cfg?.privacy?.subtitlePlaceholder || "Komitmen Make Me Kool dalam menjaga privasi..."}
+                placeholder={cfg?.privacy?.subtitlePlaceholder}
               />
             </div>
 
             <div className={styles.inputGroup}>
-              <label className={styles.fieldLabel}>{cfg?.privacy?.summaryLabel || "Ringkasan Cepat (Summary Callout)"}</label>
+              <label className={styles.fieldLabel}>{cfg?.privacy?.summaryLabel}</label>
               <textarea
                 className={styles.inputField}
                 rows={3}
@@ -2871,12 +2870,12 @@ function LegalTab({ settings, updateTab, cfg }: any) {
                 onChange={(e) =>
                   set({ privacy: { ...currentPrivacy, summary: e.target.value } })
                 }
-                placeholder={cfg?.privacy?.summaryPlaceholder || "Ringkasan kebijakan privasi..."}
+                placeholder={cfg?.privacy?.summaryPlaceholder}
               />
             </div>
 
             <div className={styles.inputGroup}>
-              <label className={styles.fieldLabel}>{cfg?.privacy?.contentLabel || "Konten Kustom Tambahan / Catatan Khusus"}</label>
+              <label className={styles.fieldLabel}>{cfg?.privacy?.contentLabel}</label>
               <textarea
                 className={styles.inputField}
                 rows={6}
@@ -2884,10 +2883,10 @@ function LegalTab({ settings, updateTab, cfg }: any) {
                 onChange={(e) =>
                   set({ privacy: { ...currentPrivacy, content: e.target.value } })
                 }
-                placeholder={cfg?.privacy?.contentPlaceholder || "Tuliskan klausul atau ketentuan tambahan di sini..."}
+                placeholder={cfg?.privacy?.contentPlaceholder}
               />
               <small className={styles.fieldDesc}>
-                * Teks kustom ini akan ditampilkan di halaman /privacy sebagai klausul resmi dari admin toko.
+                {cfg?.privacy?.contentDesc}
               </small>
             </div>
           </div>
@@ -2895,43 +2894,43 @@ function LegalTab({ settings, updateTab, cfg }: any) {
           <div>
             <div className={styles.row2}>
               <div className={styles.inputGroup}>
-                <label className={styles.fieldLabel}>{cfg?.terms?.titleLabel || "Judul Halaman"}</label>
+                <label className={styles.fieldLabel}>{cfg?.terms?.titleLabel}</label>
                 <input
                   className={styles.inputField}
                   value={currentTerms.title || ""}
                   onChange={(e) =>
                     set({ terms: { ...currentTerms, title: e.target.value } })
                   }
-                  placeholder={cfg?.terms?.titlePlaceholder || "Syarat & Ketentuan"}
+                  placeholder={cfg?.terms?.titlePlaceholder}
                 />
               </div>
               <div className={styles.inputGroup}>
-                <label className={styles.fieldLabel}>{cfg?.terms?.lastUpdatedLabel || "Tanggal Terakhir Diperbarui"}</label>
+                <label className={styles.fieldLabel}>{cfg?.terms?.lastUpdatedLabel}</label>
                 <input
                   className={styles.inputField}
                   value={currentTerms.lastUpdated || ""}
                   onChange={(e) =>
                     set({ terms: { ...currentTerms, lastUpdated: e.target.value } })
                   }
-                  placeholder={cfg?.terms?.lastUpdatedPlaceholder || "Contoh: 7 Oktober 2026"}
+                  placeholder={cfg?.terms?.lastUpdatedPlaceholder}
                 />
               </div>
             </div>
 
             <div className={styles.inputGroup}>
-              <label className={styles.fieldLabel}>{cfg?.terms?.subtitleLabel || "Subjudul / Tagline"}</label>
+              <label className={styles.fieldLabel}>{cfg?.terms?.subtitleLabel}</label>
               <input
                 className={styles.inputField}
                 value={currentTerms.subtitle || ""}
                 onChange={(e) =>
                   set({ terms: { ...currentTerms, subtitle: e.target.value } })
                 }
-                placeholder={cfg?.terms?.subtitlePlaceholder || "Panduan dan perjanjian hukum..."}
+                placeholder={cfg?.terms?.subtitlePlaceholder}
               />
             </div>
 
             <div className={styles.inputGroup}>
-              <label className={styles.fieldLabel}>{cfg?.terms?.summaryLabel || "Ringkasan Cepat (Summary Callout)"}</label>
+              <label className={styles.fieldLabel}>{cfg?.terms?.summaryLabel}</label>
               <textarea
                 className={styles.inputField}
                 rows={3}
@@ -2939,12 +2938,12 @@ function LegalTab({ settings, updateTab, cfg }: any) {
                 onChange={(e) =>
                   set({ terms: { ...currentTerms, summary: e.target.value } })
                 }
-                placeholder={cfg?.terms?.summaryPlaceholder || "Ringkasan syarat dan ketentuan..."}
+                placeholder={cfg?.terms?.summaryPlaceholder}
               />
             </div>
 
             <div className={styles.inputGroup}>
-              <label className={styles.fieldLabel}>{cfg?.terms?.contentLabel || "Konten Kustom Tambahan / Ketentuan Pembelian"}</label>
+              <label className={styles.fieldLabel}>{cfg?.terms?.contentLabel}</label>
               <textarea
                 className={styles.inputField}
                 rows={6}
@@ -2952,10 +2951,10 @@ function LegalTab({ settings, updateTab, cfg }: any) {
                 onChange={(e) =>
                   set({ terms: { ...currentTerms, content: e.target.value } })
                 }
-                placeholder={cfg?.terms?.contentPlaceholder || "Tuliskan aturan retur, batas komplain, atau ketentuan khusus di sini..."}
+                placeholder={cfg?.terms?.contentPlaceholder}
               />
               <small className={styles.fieldDesc}>
-                * Teks kustom ini akan ditampilkan di halaman /terms sebagai klausul resmi dari admin toko.
+                {cfg?.terms?.contentDesc}
               </small>
             </div>
           </div>

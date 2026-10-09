@@ -38,6 +38,7 @@
     "block": "Blokir",
     "activate": "Aktifkan",
     "delete": "Hapus",
+    "deleteTitle": "Hapus Akun Pengguna",
     "deleting": "Menghapus...",
     "saving": "Menyimpan..."
   },
@@ -57,6 +58,7 @@
     "activateMessage": "Aktifkan kembali akun {name}?",
     "deleteTitle": "Hapus Akun Pengguna",
     "deleteMessage": "Hapus permanen akun {name}? Semua data profil, autentikasi login, dan alamat akan dihapus. Riwayat pesanan akan dianonimkan untuk kepatuhan hukum.",
+    "defaultTargetName": "Pengguna Ini",
     "cancel": "Batal",
     "confirm": "Ya, Lanjutkan",
     "confirmDelete": "Ya, Hapus Akun"

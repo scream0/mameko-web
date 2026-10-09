@@ -222,6 +222,10 @@
   gap: 0.75rem;
 }
 
+.modalHeaderIcon {
+  color: var(--secondary);
+}
+
 .modalTitle {
   font-family: var(--font-serif);
   font-size: 1.25rem;

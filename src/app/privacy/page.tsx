@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { PrivacyClient } from "./PrivacyClient";
+import privacyConfig from "@/data/ui/privacyConfig.json";
 
 export const metadata: Metadata = {
-  title: "Kebijakan Privasi | Mameko",
-  description:
-    "Kebijakan Privasi dan Perlindungan Data Pribadi Make Me Kool (Mameko). Pelajari bagaimana kami menjaga dan memproses data Anda sesuai regulasi UU PDP.",
+  title: privacyConfig.metadata.title,
+  description: privacyConfig.metadata.description,
 };
 
 export default function PrivacyPage() {

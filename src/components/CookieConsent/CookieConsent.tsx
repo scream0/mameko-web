@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { AppIcon } from "@/components/UI/Icon/AppIcon";
+import cookieConfig from "@/data/ui/cookieConsentConfig.json";
 import styles from "./CookieConsent.module.css";
 
 const STORAGE_KEY = "mameko_cookie_consent";
@@ -102,7 +103,7 @@ export function CookieConsent() {
       {showBanner && !showModal && (
         <aside
           className={styles.bannerOverlay}
-          aria-label="Pemberitahuan Persetujuan Cookie"
+          aria-label={cookieConfig.banner.ariaLabel}
           role="region"
         >
           <div className={styles.bannerCard}>
@@ -111,11 +112,11 @@ export function CookieConsent() {
                 <AppIcon name="shield-check" size={22} />
               </div>
               <div className={styles.bannerText}>
-                <h3 className={styles.bannerTitle}>Privasi &amp; Penggunaan Cookie</h3>
+                <h3 className={styles.bannerTitle}>{cookieConfig.banner.title}</h3>
                 <p className={styles.bannerDescription}>
-                  Kami menggunakan cookie untuk memastikan keamanan transaksi, mengingat preferensi tema, dan mengoptimalkan performa platform Mameko. Baca selengkapnya di{" "}
+                  {cookieConfig.banner.description}
                   <Link href="/privacy" className={styles.privacyLink}>
-                    Kebijakan Privasi
+                    {cookieConfig.banner.privacyLinkText}
                   </Link>
                   .
                 </p>
@@ -128,21 +129,21 @@ export function CookieConsent() {
                 className={styles.btnOutline}
                 onClick={() => setShowModal(true)}
               >
-                Atur Preferensi
+                {cookieConfig.banner.buttons.preferences}
               </button>
               <button
                 type="button"
                 className={styles.btnSecondary}
                 onClick={handleAcceptNecessary}
               >
-                Hanya Wajib
+                {cookieConfig.banner.buttons.necessaryOnly}
               </button>
               <button
                 type="button"
                 className={styles.btnPrimary}
                 onClick={handleAcceptAll}
               >
-                Terima Semua
+                {cookieConfig.banner.buttons.acceptAll}
               </button>
             </div>
           </div>
@@ -164,16 +165,16 @@ export function CookieConsent() {
           >
             <div className={styles.modalHeader}>
               <div className={styles.modalHeaderLeft}>
-                <AppIcon name="shield-check" size={20} className="text-amber-500" />
+                <AppIcon name="shield-check" size={20} className={styles.modalHeaderIcon} />
                 <h2 id="cookie-modal-title" className={styles.modalTitle}>
-                  Preferensi Cookie
+                  {cookieConfig.modal.title}
                 </h2>
               </div>
               <button
                 type="button"
                 className={styles.closeButton}
                 onClick={() => setShowModal(false)}
-                aria-label="Tutup Pengaturan"
+                aria-label={cookieConfig.modal.closeAriaLabel}
               >
                 <AppIcon name="x" size={20} />
               </button>
@@ -181,7 +182,7 @@ export function CookieConsent() {
 
             <div className={styles.modalBody}>
               <p className={styles.modalIntro}>
-                Anda dapat memilih jenis cookie yang diizinkan untuk aktif saat menjelajahi platform Make Me Kool. Cookie wajib tidak dapat dimatikan karena diperlukan demi kelancaran fungsi dasar transaksi.
+                {cookieConfig.modal.intro}
               </p>
 
               {/* 1. Necessary */}
@@ -189,12 +190,16 @@ export function CookieConsent() {
                 <div className={styles.categoryHeader}>
                   <div className={styles.categoryTitleGroup}>
                     <AppIcon name="shield-check" size={16} />
-                    <h3 className={styles.categoryTitle}>Cookie Wajib (Esensial)</h3>
+                    <h3 className={styles.categoryTitle}>
+                      {cookieConfig.modal.categories.necessary.title}
+                    </h3>
                   </div>
-                  <span className={styles.alwaysActiveBadge}>Selalu Aktif</span>
+                  <span className={styles.alwaysActiveBadge}>
+                    {cookieConfig.modal.categories.necessary.badge}
+                  </span>
                 </div>
                 <p className={styles.categoryDesc}>
-                  Dibutuhkan untuk keamanan autentikasi akun Supabase, integritas keranjang belanja, dan kelancaran pembayaran Midtrans.
+                  {cookieConfig.modal.categories.necessary.description}
                 </p>
               </div>
 
@@ -203,7 +208,9 @@ export function CookieConsent() {
                 <div className={styles.categoryHeader}>
                   <div className={styles.categoryTitleGroup}>
                     <AppIcon name="settings" size={16} />
-                    <h3 className={styles.categoryTitle}>Preferensi &amp; Fungsi</h3>
+                    <h3 className={styles.categoryTitle}>
+                      {cookieConfig.modal.categories.preferences.title}
+                    </h3>
                   </div>
                   <label className={styles.switchLabel}>
                     <input
@@ -221,7 +228,7 @@ export function CookieConsent() {
                   </label>
                 </div>
                 <p className={styles.categoryDesc}>
-                  Memungkinkan situs mengingat preferensi antarmuka Anda seperti mode tema Gelap/Terang dan status tampilan navigasi.
+                  {cookieConfig.modal.categories.preferences.description}
                 </p>
               </div>
 
@@ -230,7 +237,9 @@ export function CookieConsent() {
                 <div className={styles.categoryHeader}>
                   <div className={styles.categoryTitleGroup}>
                     <AppIcon name="trending-up" size={16} />
-                    <h3 className={styles.categoryTitle}>Analisis Performa</h3>
+                    <h3 className={styles.categoryTitle}>
+                      {cookieConfig.modal.categories.analytics.title}
+                    </h3>
                   </div>
                   <label className={styles.switchLabel}>
                     <input
@@ -248,7 +257,7 @@ export function CookieConsent() {
                   </label>
                 </div>
                 <p className={styles.categoryDesc}>
-                  Membantu kami memahami interaksi pengunjung secara anonim untuk mempercepat pemuatan halaman dan meningkatkan kegunaan produk.
+                  {cookieConfig.modal.categories.analytics.description}
                 </p>
               </div>
             </div>
@@ -259,14 +268,14 @@ export function CookieConsent() {
                 className={styles.btnSecondary}
                 onClick={handleSaveCustom}
               >
-                Simpan Pilihan
+                {cookieConfig.modal.buttons.saveCustom}
               </button>
               <button
                 type="button"
                 className={styles.btnPrimary}
                 onClick={handleAcceptAll}
               >
-                Terima Semua
+                {cookieConfig.modal.buttons.acceptAll}
               </button>
             </div>
           </div>

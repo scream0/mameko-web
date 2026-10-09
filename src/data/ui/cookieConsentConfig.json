@@ -1,0 +1,37 @@
+{
+  "banner": {
+    "ariaLabel": "Pemberitahuan Persetujuan Cookie",
+    "title": "Privasi & Penggunaan Cookie",
+    "description": "Kami menggunakan cookie untuk memastikan keamanan transaksi, mengingat preferensi tema, dan mengoptimalkan performa platform Mameko. Baca selengkapnya di ",
+    "privacyLinkText": "Kebijakan Privasi",
+    "buttons": {
+      "preferences": "Atur Preferensi",
+      "necessaryOnly": "Hanya Wajib",
+      "acceptAll": "Terima Semua"
+    }
+  },
+  "modal": {
+    "title": "Preferensi Cookie",
+    "closeAriaLabel": "Tutup Pengaturan",
+    "intro": "Anda dapat memilih jenis cookie yang diizinkan untuk aktif saat menjelajahi platform Make Me Kool. Cookie wajib tidak dapat dimatikan karena diperlukan demi kelancaran fungsi dasar transaksi.",
+    "categories": {
+      "necessary": {
+        "title": "Cookie Wajib (Esensial)",
+        "badge": "Selalu Aktif",
+        "description": "Dibutuhkan untuk keamanan autentikasi akun Supabase, integritas keranjang belanja, dan kelancaran pembayaran Midtrans."
+      },
+      "preferences": {
+        "title": "Preferensi & Fungsi",
+        "description": "Memungkinkan situs mengingat preferensi antarmuka Anda seperti mode tema Gelap/Terang dan status tampilan navigasi."
+      },
+      "analytics": {
+        "title": "Analisis Performa",
+        "description": "Membantu kami memahami interaksi pengunjung secara anonim untuk mempercepat pemuatan halaman dan meningkatkan kegunaan produk."
+      }
+    },
+    "buttons": {
+      "saveCustom": "Simpan Pilihan",
+      "acceptAll": "Terima Semua"
+    }
+  }
+}

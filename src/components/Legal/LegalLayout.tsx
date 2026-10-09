@@ -6,6 +6,7 @@ import { AppIcon } from "@/components/UI/Icon/AppIcon";
 import styles from "./LegalLayout.module.css";
 import { Navbar } from "@/components/Navbar/Navbar";
 import { Footer } from "@/components/Footer/Footer";
+import legalConfig from "@/data/ui/legalLayoutConfig.json";
 
 export interface TOCSection {
   id: string;
@@ -67,7 +68,7 @@ export function LegalLayout({
         <div className={styles.headerContainer}>
           <Link href="/" className={styles.backLink}>
             <AppIcon name="arrow-left" size={16} />
-            <span>Kembali ke Beranda</span>
+            <span>{legalConfig.backToHome}</span>
           </Link>
 
           <div>
@@ -81,11 +82,11 @@ export function LegalLayout({
             <div className={styles.metaInfo}>
               <span className={styles.metaItem}>
                 <AppIcon name="clock" size={14} />
-                Terakhir Diperbarui: {lastUpdated}
+                {legalConfig.lastUpdatedPrefix}{lastUpdated}
               </span>
               <span className={styles.metaItem}>
                 <AppIcon name="file-text" size={14} />
-                Dokumen Resmi Make Me Kool
+                {legalConfig.officialDocLabel}
               </span>
             </div>
           </div>
@@ -95,8 +96,8 @@ export function LegalLayout({
       <main className={styles.mainContent}>
         <div className={styles.contentContainer}>
           {/* Sticky Table of Contents */}
-          <aside className={styles.sidebar} aria-label="Daftar Isi">
-            <div className={styles.tocTitle}>Daftar Isi</div>
+          <aside className={styles.sidebar} aria-label={legalConfig.tocAriaLabel}>
+            <div className={styles.tocTitle}>{legalConfig.tocTitle}</div>
             <nav>
               <ul className={styles.tocList}>
                 {sections.map(({ id, title }) => (
@@ -129,7 +130,7 @@ export function LegalLayout({
               <div className={styles.summaryCallout}>
                 <h3>
                   <AppIcon name="shield-check" size={18} />
-                  Ringkasan Cepat
+                  {legalConfig.quickSummaryTitle}
                 </h3>
                 <p>{summary}</p>
               </div>

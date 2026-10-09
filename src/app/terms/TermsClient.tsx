@@ -5,25 +5,26 @@ import { LegalLayout, TOCSection } from "@/components/Legal/LegalLayout";
 import styles from "@/components/Legal/LegalLayout.module.css";
 import { AppIcon } from "@/components/UI/Icon/AppIcon";
 import { getPublicSettings } from "@/services/settingsService";
+import termsConfig from "@/data/ui/termsConfig.json";
 
 const baseSections: TOCSection[] = [
-  { id: "ketentuan-umum", title: "1. Ketentuan Umum & Akun" },
-  { id: "produk-artisanal", title: "2. Karakteristik Produk Artisanal" },
-  { id: "pemesanan-harga", title: "3. Pemesanan & Harga" },
-  { id: "pembayaran", title: "4. Pembayaran & Batas Waktu" },
-  { id: "pengiriman", title: "5. Pengiriman & Logistik" },
-  { id: "kebijakan-retur", title: "6. Kebijakan Retur & Komplain" },
-  { id: "hak-cipta", title: "7. Hak Kekayaan Intelektual" },
-  { id: "klausul-admin", title: "8. Ketentuan Khusus Toko" },
-  { id: "hukum-berlaku", title: "9. Batasan Tanggung Jawab & Hukum" },
+  { id: "ketentuan-umum", title: termsConfig.toc.general },
+  { id: "produk-artisanal", title: termsConfig.toc.artisanal },
+  { id: "pemesanan-harga", title: termsConfig.toc.orders },
+  { id: "pembayaran", title: termsConfig.toc.payment },
+  { id: "pengiriman", title: termsConfig.toc.shipping },
+  { id: "kebijakan-retur", title: termsConfig.toc.returns },
+  { id: "hak-cipta", title: termsConfig.toc.ip },
+  { id: "klausul-admin", title: termsConfig.toc.adminClause },
+  { id: "hukum-berlaku", title: termsConfig.toc.liability },
 ];
 
 export function TermsClient() {
   const [legalData, setLegalData] = useState<any>({
-    title: "Syarat & Ketentuan",
-    subtitle: "Panduan dan perjanjian hukum yang mengikat dalam setiap transaksi dan penggunaan platform Make Me Kool.",
-    lastUpdated: "7 Oktober 2026",
-    summary: "Dengan melakukan pemesanan atau menggunakan platform Make Me Kool (Mameko), Anda menyetujui seluruh ketentuan pemesanan, verifikasi pembayaran Midtrans, pengiriman logistik, serta kewajiban menyertakan video unboxing utuh untuk setiap klaim garansi produk.",
+    title: termsConfig.defaults.title,
+    subtitle: termsConfig.defaults.subtitle,
+    lastUpdated: termsConfig.defaults.lastUpdated,
+    summary: termsConfig.defaults.summary,
     content: "",
   });
 
@@ -63,7 +64,7 @@ export function TermsClient() {
 
   return (
     <LegalLayout
-      badge="Perjanjian Layanan"
+      badge={termsConfig.badge}
       title={legalData.title}
       subtitle={legalData.subtitle}
       lastUpdated={legalData.lastUpdated}
@@ -74,21 +75,17 @@ export function TermsClient() {
       <section id="ketentuan-umum" className={styles.section}>
         <h2 className={styles.sectionTitle}>
           <span className={styles.sectionNumber}>1</span>
-          Ketentuan Umum &amp; Akun
+          {termsConfig.sections.general.title}
         </h2>
         <p className={styles.paragraph}>
-          Syarat dan Ketentuan ini (&ldquo;Ketentuan&rdquo;) mengatur hak dan kewajiban antara pembeli (&ldquo;Pengguna&rdquo;, &ldquo;Anda&rdquo;) dan <strong>Make Me Kool (&ldquo;Mameko&rdquo;, &ldquo;kami&rdquo;)</strong> dalam penggunaan platform web dan pembelian barang.
+          {termsConfig.sections.general.p1}
         </p>
         <ul className={styles.list}>
-          <li>
-            <strong>Kelayakan Usia:</strong> Anda menyatakan telah berusia minimal 18 tahun atau memiliki kecakapan hukum untuk melakukan perikatan jual-beli yang sah berdasarkan hukum Republik Indonesia.
-          </li>
-          <li>
-            <strong>Keamanan Akun:</strong> Anda bertanggung jawab penuh untuk menjaga kerahasiaan kata sandi akun, kode OTP, dan aktivitas yang terjadi di bawah akun Anda.
-          </li>
-          <li>
-            <strong>Ketepatan Data:</strong> Anda wajib memberikan informasi alamat, email, dan nomor telepon yang akurat untuk kelancaran verifikasi dan pengantaran paket.
-          </li>
+          {termsConfig.sections.general.items.map((item, idx) => (
+            <li key={idx}>
+              <strong>{item.label}</strong> {item.desc}
+            </li>
+          ))}
         </ul>
       </section>
 
@@ -96,31 +93,23 @@ export function TermsClient() {
       <section id="produk-artisanal" className={styles.section}>
         <h2 className={styles.sectionTitle}>
           <span className={styles.sectionNumber}>2</span>
-          Karakteristik Produk Artisanal
+          {termsConfig.sections.artisanal.title}
         </h2>
         <p className={styles.paragraph}>
-          Produk yang ditawarkan oleh Mameko merupakan karya artisanal (*handcrafted/small-batch*):
+          {termsConfig.sections.artisanal.intro}
         </p>
         <div className={styles.cardGrid}>
-          <div className={styles.subCard}>
-            <div className={styles.subCardTitle}>
-              <AppIcon name="package" size={16} />
-              Variasi Alami
+          {termsConfig.sections.artisanal.cards.map((card, idx) => (
+            <div key={idx} className={styles.subCard}>
+              <div className={styles.subCardTitle}>
+                <AppIcon name={card.icon} size={16} />
+                {card.title}
+              </div>
+              <p className={styles.subCardText}>
+                {card.desc}
+              </p>
             </div>
-            <p className={styles.subCardText}>
-              Karena diracik dan dibuat secara cermat dalam kelompok kecil (*small batch*), sedikit perbedaan warna tekstur atau kemasan minor merupakan ciri otentik produk kerajinan tangan.
-            </p>
-          </div>
-
-          <div className={styles.subCard}>
-            <div className={styles.subCardTitle}>
-              <AppIcon name="image" size={16} />
-              Akurasi Foto &amp; Layar
-            </div>
-            <p className={styles.subCardText}>
-              Kami berupaya semaksimal mungkin menampilkan warna yang akurat. Namun, perbedaan kalibrasi layar monitor atau ponsel Anda dapat menimbulkan sedikit perbedaan persepsi visual.
-            </p>
-          </div>
+          ))}
         </div>
       </section>
 
@@ -128,21 +117,15 @@ export function TermsClient() {
       <section id="pemesanan-harga" className={styles.section}>
         <h2 className={styles.sectionTitle}>
           <span className={styles.sectionNumber}>3</span>
-          Pemesanan &amp; Harga
+          {termsConfig.sections.orders.title}
         </h2>
         <p className={styles.paragraph}>
-          Ketentuan mengenai pemesanan produk dan penetapan harga:
+          {termsConfig.sections.orders.intro}
         </p>
         <ul className={styles.list}>
-          <li>
-            Seluruh harga produk yang ditampilkan tercantum dalam mata uang <strong>Rupiah Indonesia (IDR)</strong> dan belum termasuk biaya ongkos kirim kecuali dinyatakan secara eksplisit melalui promo/voucher.
-          </li>
-          <li>
-            Mameko berhak mengubah harga sewaktu-waktu tanpa pemberitahuan sebelumnya, namun perubahan tersebut tidak akan memengaruhi pesanan yang telah dibayar lunas.
-          </li>
-          <li>
-            Kami berhak membatalkan pesanan secara sepihak jika terjadi kesalahan sistem penentuan harga (*pricing glitch*) atau kendala stok mendadak, dengan komitmen pengembalian dana 100% kepada pembeli.
-          </li>
+          {termsConfig.sections.orders.items.map((item, idx) => (
+            <li key={idx}>{item}</li>
+          ))}
         </ul>
       </section>
 
@@ -150,21 +133,17 @@ export function TermsClient() {
       <section id="pembayaran" className={styles.section}>
         <h2 className={styles.sectionTitle}>
           <span className={styles.sectionNumber}>4</span>
-          Pembayaran &amp; Batas Waktu Transaksi
+          {termsConfig.sections.payment.title}
         </h2>
         <p className={styles.paragraph}>
-          Pembayaran dilakukan melalui portal gerbang pembayaran resmi <strong>Midtrans Snap</strong>:
+          {termsConfig.sections.payment.intro}
         </p>
         <ul className={styles.list}>
-          <li>
-            <strong>Metode Pembayaran:</strong> Kami mendukung QRIS (GoPay, OVO, Dana, ShopeePay, BCA Mobile, dll.), Virtual Account Bank (BCA, Mandiri, BNI, BRI, Permata), dan kartu debit/kredit yang didukung.
-          </li>
-          <li>
-            <strong>Batas Waktu Pembayaran (Expiry):</strong> Setiap nomor transaksi atau QRIS memiliki batas kedaluwarsa waktu. Apabila pembayaran tidak diselesaikan sebelum batas waktu berakhir, pesanan akan secara otomatis dibatalkan oleh sistem.
-          </li>
-          <li>
-            <strong>Konfirmasi Otomatis:</strong> Pesanan akan segera masuk ke tahap proses pengemasan setelah sistem kami menerima notifikasi status <em>settlement</em> sukses dari Midtrans.
-          </li>
+          {termsConfig.sections.payment.items.map((item, idx) => (
+            <li key={idx}>
+              <strong>{item.label}</strong> {item.desc}
+            </li>
+          ))}
         </ul>
       </section>
 
@@ -172,24 +151,17 @@ export function TermsClient() {
       <section id="pengiriman" className={styles.section}>
         <h2 className={styles.sectionTitle}>
           <span className={styles.sectionNumber}>5</span>
-          Pengiriman &amp; Logistik
+          {termsConfig.sections.shipping.title}
         </h2>
         <p className={styles.paragraph}>
-          Ketentuan terkait pengantaran pesanan fisik:
+          {termsConfig.sections.shipping.intro}
         </p>
         <ul className={styles.list}>
-          <li>
-            Pengiriman difasilitasi oleh agregator kurir <strong>Biteship</strong> dengan mitra ekspedisi terpercaya (JNE, J&amp;T, SiCepat, AnterAja, dan lainnya).
-          </li>
-          <li>
-            <strong>Waktu Proses:</strong> Pesanan yang masuk akan diproses dan dikemas dalam waktu 1&ndash;2 hari kerja (tidak termasuk hari Minggu dan hari libur nasional).
-          </li>
-          <li>
-            <strong>Estimasi Sampai:</strong> Estimasi lama pengiriman yang tercantum di halaman checkout merupakan perkiraan dari pihak ekspedisi dan dapat dipengaruhi oleh kondisi cuaca atau kendala operasional lapangan.
-          </li>
-          <li>
-            <strong>Nomor Resi:</strong> Pelacakan resi akan diperbarui secara otomatis di halaman akun dan rincian pesanan Anda segera setelah paket diserahkan ke kurir.
-          </li>
+          {termsConfig.sections.shipping.items.map((item, idx) => (
+            <li key={idx}>
+              <strong>{item.label}</strong> {item.desc}
+            </li>
+          ))}
         </ul>
       </section>
 
@@ -197,32 +169,28 @@ export function TermsClient() {
       <section id="kebijakan-retur" className={styles.section}>
         <h2 className={styles.sectionTitle}>
           <span className={styles.sectionNumber}>6</span>
-          Kebijakan Retur, Komplain, &amp; Refund
+          {termsConfig.sections.returns.title}
         </h2>
         <p className={styles.paragraph}>
-          Kepuasan Anda adalah prioritas kami. Jika Anda menerima barang yang salah, kurang, atau rusak selama pengiriman:
+          {termsConfig.sections.returns.intro}
         </p>
 
         <div className={styles.summaryCallout}>
           <h3>
             <AppIcon name="alert-triangle" size={18} />
-            Syarat Mutlak: Video Unboxing Utuh
+            {termsConfig.sections.returns.unboxingCallout.title}
           </h3>
           <p>
-            Komplain kerusakan atau kekurangan barang hanya dapat diproses apabila disertai rekaman video unboxing utuh tanpa jeda (tanpa cut/edit), mulai dari resi fisik masih utuh tertempel hingga produk dikeluarkan dari kemasan pembungkus.
+            {termsConfig.sections.returns.unboxingCallout.desc}
           </p>
         </div>
 
         <ul className={styles.list}>
-          <li>
-            <strong>Batas Waktu Pengajuan:</strong> Komplain wajib diajukan maksimal <strong>2x24 jam</strong> sejak status resi dinyatakan &ldquo;Delivered&rdquo; oleh pihak kurir.
-          </li>
-          <li>
-            <strong>Kondisi Barang:</strong> Barang yang diretur wajib berada dalam kondisi belum terpakai, belum dicuci, dan segel/label produk masih utuh.
-          </li>
-          <li>
-            <strong>Solusi Komplain:</strong> Mameko akan memberikan solusi berupa pengiriman produk pengganti (dengan ongkir ditanggung pihak kami) atau pengembalian dana (*refund*) sesuai kesepakatan bersama.
-          </li>
+          {termsConfig.sections.returns.items.map((item, idx) => (
+            <li key={idx}>
+              <strong>{item.label}</strong> {item.desc}
+            </li>
+          ))}
         </ul>
       </section>
 
@@ -230,10 +198,10 @@ export function TermsClient() {
       <section id="hak-cipta" className={styles.section}>
         <h2 className={styles.sectionTitle}>
           <span className={styles.sectionNumber}>7</span>
-          Hak Kekayaan Intelektual
+          {termsConfig.sections.ip.title}
         </h2>
         <p className={styles.paragraph}>
-          Seluruh konten yang terdapat di platform Mameko, termasuk namun tidak terbatas pada teks, logo merek &ldquo;Make Me Kool&rdquo; / &ldquo;Mameko&rdquo;, desain grafis, foto produk, tata letak antarmuka, dan kode sumber adalah milik eksklusif Make Me Kool yang dilindungi oleh undang-undang hak cipta dan merek dagang Republik Indonesia. Penggandaan, distribusi, atau modifikasi tanpa izin tertulis dari kami dilarang keras.
+          {termsConfig.sections.ip.content}
         </p>
       </section>
 
@@ -242,9 +210,9 @@ export function TermsClient() {
         <section id="klausul-admin" className={styles.section}>
           <h2 className={styles.sectionTitle}>
             <span className={styles.sectionNumber}>8</span>
-            Ketentuan Khusus Toko
+            {termsConfig.sections.adminClause.title}
           </h2>
-          <div className={styles.summaryCallout} style={{ whiteSpace: "pre-wrap", lineHeight: 1.7 }}>
+          <div className={`${styles.summaryCallout} ${styles.adminClauseText}`}>
             {legalData.content}
           </div>
         </section>
@@ -254,13 +222,13 @@ export function TermsClient() {
       <section id="hukum-berlaku" className={styles.section}>
         <h2 className={styles.sectionTitle}>
           <span className={styles.sectionNumber}>{legalData.content ? "9" : "8"}</span>
-          Batasan Tanggung Jawab &amp; Hukum yang Berlaku
+          {termsConfig.sections.liability.title}
         </h2>
         <p className={styles.paragraph}>
-          Mameko tidak bertanggung jawab atas kerugian tidak langsung atau keterlambatan pengiriman yang disebabkan oleh keadaan kahar (*Force Majeure*), termasuk namun tidak terbatas pada bencana alam, huru-hara, kebijakan lockdown pemerintah, atau gangguan massal jaringan telekomunikasi.
+          {termsConfig.sections.liability.p1}
         </p>
         <p className={styles.paragraph}>
-          Ketentuan ini diatur dan ditafsirkan sesuai dengan hukum Negara Republik Indonesia. Segala perselisihan yang timbul akan diselesaikan terlebih dahulu melalui musyawarah untuk mufakat dalam jangka waktu 30 hari sebelum dibawa ke jalur hukum di pengadilan negeri yurisdiksi domisili kami.
+          {termsConfig.sections.liability.p2}
         </p>
       </section>
     </LegalLayout>

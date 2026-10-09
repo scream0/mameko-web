@@ -1,0 +1,92 @@
+{
+  "metadata": {
+    "title": "Permintaan Penghapusan Akun & Data | Mameko",
+    "description": "Formulir resmi permintaan penghapusan akun dan data pribadi pengguna platform Make Me Kool (Mameko) sesuai standar UU Pelindungan Data Pribadi (UU PDP No. 27 Tahun 2022)."
+  },
+  "header": {
+    "backLink": "Kembali ke Beranda",
+    "badge": "Kepatuhan Privasi & UU PDP",
+    "title": "Penghapusan Akun & Data Pribadi",
+    "subtitle": "Kami menghargai hak privasi Anda. Halaman ini disediakan bagi pengguna Make Me Kool untuk mengelola atau mengajukan penghapusan akun beserta data terkait secara mandiri."
+  },
+  "transparency": {
+    "title": "Transparansi Perlindungan Data (UU PDP)",
+    "description": "Sesuai dengan Undang-Undang No. 27 Tahun 2022 tentang Pelindungan Data Pribadi dan kebijakan platform global, Anda memiliki hak penuh untuk meminta penghapusan akun serta seluruh data pribadi yang tersimpan pada sistem Make Me Kool.",
+    "deleted": {
+      "title": "Dihapus Permanen",
+      "items": [
+        "Informasi profil & avatar Cloudinary",
+        "Alamat pengiriman yang tersimpan",
+        "Kredensial login & sesi autentikasi Supabase",
+        "Keranjang belanja & voucher yang tersisa"
+      ]
+    },
+    "anonymized": {
+      "title": "Dianonimkan (Kepatuhan Hukum)",
+      "items": [
+        "Riwayat faktur pembayaran (data pribadi dihapus / diputus)",
+        "Dipertahankan selama 5 tahun sesuai regulasi perpajakan",
+        "Data audit keuangan yang tidak dapat ditautkan ke Anda"
+      ]
+    }
+  },
+  "sessionAction": {
+    "loggedInTitle": "Hapus Akun Aktif Anda",
+    "guestTitle": "Formulir Permintaan Penghapusan Data",
+    "checkingSession": "Memeriksa sesi pengguna...",
+    "defaultUser": "Pengguna Terdaftar",
+    "activeSessionBadge": "Sesi Aktif",
+    "phonePrefix": "No. HP: ",
+    "warningNotice": "Peringatan: Tindakan ini bersifat permanen dan tidak dapat dibatalkan. Semua hak akses ke riwayat pesanan serta poin dan voucher akan segera hangus.",
+    "deleteBtn": "Hapus Akun & Data Saya Sekarang",
+    "deletingBtn": "Menghapus Akun..."
+  },
+  "guestForm": {
+    "intro": "Jika Anda tidak dapat masuk ke akun atau ingin mengajukan penghapusan data secara manual, silakan isi formulir di bawah ini. Tim kami akan segera menindaklanjuti.",
+    "emailLabel": "Alamat Email Terdaftar",
+    "emailPlaceholder": "nama@email.com",
+    "emailHint": "Email yang digunakan saat membuat akun di Mameko.",
+    "phoneLabel": "Nomor WhatsApp / Kontak (Opsional)",
+    "phonePlaceholder": "0812xxxxxxxx",
+    "reasonLabel": "Alasan Penghapusan (Opsional)",
+    "reasonPlaceholder": "Contoh: Tidak lagi menggunakan layanan, ingin menghapus data pribadi...",
+    "submitBtn": "Ajukan Permohonan Penghapusan via WhatsApp Admin",
+    "loginPromptPrefix": "Punya akses masuk ke akun Anda? ",
+    "loginLinkText": "Masuk ke Akun",
+    "loginPromptSuffix": " untuk menghapus akun secara instan tanpa menunggu verifikasi manual.",
+    "success": {
+      "title": "Permintaan Sedang Diproses",
+      "description": "Tim kami akan memverifikasi kepemilikan akun Anda dan menyelesaikan penghapusan data dalam waktu maksimal 3x24 jam kerja sesuai ketentuan UU PDP.",
+      "newRequestBtn": "Kirim Pengajuan Baru"
+    }
+  },
+  "support": {
+    "title": "Saluran Bantuan Resmi & Pengaduan",
+    "textPrefix": "Anda juga dapat mengirimkan surat permohonan tertulis langsung ke alamat email resmi kami di ",
+    "email": "support@mameko.my.id",
+    "textSubjectPrefix": " dengan subjek ",
+    "subject": "Permohonan Penghapusan Akun & Data - [Nama Anda]"
+  },
+  "confirmModal": {
+    "title": "Konfirmasi Hapus Akun",
+    "messageTemplate": "Apakah Anda yakin ingin menghapus akun {email}? Tindakan ini tidak dapat dibatalkan dan seluruh profil serta preferensi Anda akan dihapus secara permanen.",
+    "cancelBtn": "Batal",
+    "confirmBtn": "Ya, Hapus Akun",
+    "deletingBtn": "Menghapus..."
+  },
+  "toasts": {
+    "processing": "Memproses penghapusan akun...",
+    "success": "Akun dan data pribadi berhasil dihapus.",
+    "failed": "Gagal menghapus akun.",
+    "generalError": "Terjadi kesalahan saat menghapus akun.",
+    "emailRequired": "Mohon masukkan email yang terdaftar.",
+    "waPrepared": "Permintaan telah disiapkan. Silakan kirimkan pesan ke WhatsApp Admin."
+  },
+  "waMessage": {
+    "greeting": "Halo Admin Make Me Kool (Mameko),\n\nSaya ingin mengajukan permohonan resmi *Penghapusan Akun & Data Pribadi* sesuai UU PDP:\n- Email Akun: ",
+    "phonePrefix": "\n- Nomor Kontak: ",
+    "reasonPrefix": "\n- Alasan: ",
+    "closing": "\n\nMohon bantuannya untuk memverifikasi dan memproses permintaan ini. Terima kasih.",
+    "defaultReason": "Permintaan Pengguna"
+  }
+}

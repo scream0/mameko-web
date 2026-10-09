@@ -438,6 +438,10 @@
   margin: 0;
 }
 
+.modalDangerTitle {
+  color: var(--danger-color);
+}
+
 .modalCloseBtn {
   background: transparent;
   border: none;

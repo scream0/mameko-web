@@ -30,6 +30,12 @@
   },
   "legal": {
     "title": "Legalitas",
+    "privacy": "Kebijakan Privasi",
+    "terms": "Syarat & Ketentuan",
+    "deleteAccount": "Hapus Akun & Data",
+    "cookieSettings": "Pengaturan Cookie",
+    "themeLight": "Tema Terang",
+    "themeDark": "Tema Gelap",
     "links": [
       { "label": "Kebijakan Privasi", "href": "/privacy" },
       { "label": "Syarat & Ketentuan", "href": "/terms" },

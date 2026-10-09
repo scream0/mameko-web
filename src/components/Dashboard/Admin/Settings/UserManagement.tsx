@@ -313,7 +313,7 @@ export default function UserManagement() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className={styles.modalHeader}>
-              <h3 className={styles.modalTitle} style={{ color: "var(--danger-color)" }}>
+              <h3 className={`${styles.modalTitle} ${styles.modalDangerTitle}`}>
                 {config.confirm.deleteTitle}
               </h3>
               <button
@@ -327,7 +327,7 @@ export default function UserManagement() {
             <p className={styles.modalMessage}>
               {config.confirm.deleteMessage.replace(
                 "{name}",
-                deleteTarget.name || deleteTarget.email || "Pengguna Ini"
+                deleteTarget.name || deleteTarget.email || config.confirm.defaultTargetName
               )}
             </p>
             <div className={styles.modalFooter}>
@@ -526,7 +526,7 @@ export default function UserManagement() {
                             user.id === lastUserIdRef.current
                           }
                           className={styles.deleteBtn}
-                          title="Hapus Akun Pengguna"
+                          title={config.actions.deleteTitle || config.actions.delete}
                         >
                           <AppIcon name="trash-2" size={13} />
                           <span>{config.actions.delete}</span>

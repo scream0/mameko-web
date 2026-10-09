@@ -8,6 +8,7 @@ import { getApiBaseUrl } from "@/lib/apiClient";
 import toast from "react-hot-toast";
 import styles from "./DeleteAccount.module.css";
 import contactConfig from "@/data/ui/contactConfig.json";
+import deleteConfig from "@/data/ui/deleteAccountConfig.json";
 
 export function DeleteAccountClient() {
   const [session, setSession] = useState<any>(null);
@@ -52,7 +53,7 @@ export function DeleteAccountClient() {
     if (!session?.access_token) return;
 
     setDeleting(true);
-    const toastId = toast.loading("Memproses penghapusan akun...");
+    const toastId = toast.loading(deleteConfig.toasts.processing);
 
     try {
       const res = await fetch(`${getApiBaseUrl()}/api/user/profile`, {
@@ -65,14 +66,14 @@ export function DeleteAccountClient() {
       const result = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        throw new Error(result.error || "Gagal menghapus akun.");
+        throw new Error(result.error || deleteConfig.toasts.failed);
       }
 
-      toast.success("Akun dan data pribadi berhasil dihapus.", { id: toastId });
+      toast.success(deleteConfig.toasts.success, { id: toastId });
       await supabase.auth.signOut();
       window.location.href = "/";
     } catch (err: any) {
-      toast.error(err.message || "Terjadi kesalahan saat menghapus akun.", { id: toastId });
+      toast.error(err.message || deleteConfig.toasts.generalError, { id: toastId });
     } finally {
       setDeleting(false);
       setShowConfirmModal(false);
@@ -82,21 +83,23 @@ export function DeleteAccountClient() {
   const handleGuestSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!guestEmail.trim()) {
-      toast.error("Mohon masukkan email yang terdaftar.");
+      toast.error(deleteConfig.toasts.emailRequired);
       return;
     }
 
     // Format WhatsApp prefilled message
     const waNumber = contactConfig.whatsappNumber || "6285171723607";
+    const reasonText = guestReason.trim() || deleteConfig.waMessage.defaultReason;
+    const phoneText = guestPhone.trim() || "-";
     const textMsg = encodeURIComponent(
-      `Halo Admin Make Me Kool (Mameko),\n\nSaya ingin mengajukan permohonan resmi *Penghapusan Akun & Data Pribadi* sesuai UU PDP:\n- Email Akun: ${guestEmail.trim()}\n- Nomor Kontak: ${guestPhone.trim() || "-"}\n- Alasan: ${guestReason.trim() || "Permintaan Pengguna"}\n\nMohon bantuannya untuk memverifikasi dan memproses permintaan ini. Terima kasih.`
+      `${deleteConfig.waMessage.greeting}${guestEmail.trim()}${deleteConfig.waMessage.phonePrefix}${phoneText}${deleteConfig.waMessage.reasonPrefix}${reasonText}${deleteConfig.waMessage.closing}`
     );
 
     const waUrl = `https://wa.me/${waNumber}?text=${textMsg}`;
     window.open(waUrl, "_blank", "noopener,noreferrer");
 
     setRequestSent(true);
-    toast.success("Permintaan telah disiapkan. Silakan kirimkan pesan ke WhatsApp Admin.");
+    toast.success(deleteConfig.toasts.waPrepared);
   };
 
   return (
@@ -104,36 +107,35 @@ export function DeleteAccountClient() {
       {/* 1. Transparansi Hak Penghapusan Data */}
       <div className={styles.card}>
         <div className={styles.cardHeader}>
-          <AppIcon name="shield-check" size={20} className="text-amber-500" />
-          <h2 className={styles.cardTitle}>Transparansi Perlindungan Data (UU PDP)</h2>
+          <AppIcon name="shield-check" size={20} className={styles.requiredStar} />
+          <h2 className={styles.cardTitle}>{deleteConfig.transparency.title}</h2>
         </div>
-        <p className={styles.pageSubtitle} style={{ fontSize: "0.92rem", margin: 0, textAlign: "left" }}>
-          Sesuai dengan <strong>Undang-Undang No. 27 Tahun 2022 tentang Pelindungan Data Pribadi</strong> dan kebijakan platform global, Anda memiliki hak penuh untuk meminta penghapusan akun serta seluruh data pribadi yang tersimpan pada sistem Make Me Kool.
+        <p className={styles.cardSubtitle}>
+          {deleteConfig.transparency.description}
         </p>
 
         <div className={styles.transparencyGrid}>
           <div className={`${styles.transparencyBox} ${styles.boxDeleted}`}>
             <span className={styles.boxTitle}>
               <AppIcon name="trash-2" size={16} />
-              Dihapus Permanen
+              {deleteConfig.transparency.deleted.title}
             </span>
             <ul className={styles.boxList}>
-              <li>Informasi profil &amp; avatar Cloudinary</li>
-              <li>Alamat pengiriman yang tersimpan</li>
-              <li>Kredensial login &amp; sesi autentikasi Supabase</li>
-              <li>Keranjang belanja &amp; voucher yang tersisa</li>
+              {deleteConfig.transparency.deleted.items.map((item, idx) => (
+                <li key={idx}>{item}</li>
+              ))}
             </ul>
           </div>
 
           <div className={`${styles.transparencyBox} ${styles.boxAnonymized}`}>
             <span className={styles.boxTitle}>
               <AppIcon name="receipt" size={16} />
-              Dianonimkan (Kepatuhan Hukum)
+              {deleteConfig.transparency.anonymized.title}
             </span>
             <ul className={styles.boxList}>
-              <li>Riwayat faktur pembayaran (data pribadi dihapus / diputus)</li>
-              <li>Dipertahankan selama 5 tahun sesuai regulasi perpajakan</li>
-              <li>Data audit keuangan yang tidak dapat ditautkan ke Anda</li>
+              {deleteConfig.transparency.anonymized.items.map((item, idx) => (
+                <li key={idx}>{item}</li>
+              ))}
             </ul>
           </div>
         </div>
@@ -144,33 +146,35 @@ export function DeleteAccountClient() {
         <div className={styles.cardHeader}>
           <AppIcon name="user" size={20} />
           <h2 className={styles.cardTitle}>
-            {user ? "Hapus Akun Aktif Anda" : "Formulir Permintaan Penghapusan Data"}
+            {user ? deleteConfig.sessionAction.loggedInTitle : deleteConfig.sessionAction.guestTitle}
           </h2>
         </div>
 
         {loading ? (
-          <p style={{ color: "var(--text-secondary)", fontSize: "0.875rem" }}>
-            Memeriksa sesi pengguna...
+          <p className={styles.sessionLoading}>
+            {deleteConfig.sessionAction.checkingSession}
           </p>
         ) : user ? (
           <div>
             <div className={styles.userBadgeBox}>
               <div className={styles.userInfo}>
                 <span className={styles.userName}>
-                  {profile?.full_name || user?.user_metadata?.full_name || "Pengguna Terdaftar"}
+                  {profile?.full_name || user?.user_metadata?.full_name || deleteConfig.sessionAction.defaultUser}
                 </span>
                 <span className={styles.userEmail}>{user?.email}</span>
                 {profile?.phone && (
-                  <span className={styles.userEmail}>No. HP: {profile.phone}</span>
+                  <span className={styles.userEmail}>
+                    {deleteConfig.sessionAction.phonePrefix}{profile.phone}
+                  </span>
                 )}
               </div>
-              <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-500 font-semibold border border-emerald-500/20">
-                Sesi Aktif
+              <span className={styles.activeBadge}>
+                {deleteConfig.sessionAction.activeSessionBadge}
               </span>
             </div>
 
-            <p style={{ fontSize: "0.875rem", color: "var(--text-secondary)", marginBottom: "1.5rem", lineHeight: 1.6 }}>
-              Peringatan: Tindakan ini bersifat <strong>permanen dan tidak dapat dibatalkan</strong>. Semua hak akses ke riwayat pesanan serta poin dan voucher akan segera hangus.
+            <p className={styles.warningNotice}>
+              {deleteConfig.sessionAction.warningNotice}
             </p>
 
             <button
@@ -180,61 +184,67 @@ export function DeleteAccountClient() {
               disabled={deleting}
             >
               <AppIcon name="trash-2" size={18} />
-              <span>{deleting ? "Menghapus Akun..." : "Hapus Akun & Data Saya Sekarang"}</span>
+              <span>
+                {deleting
+                  ? deleteConfig.sessionAction.deletingBtn
+                  : deleteConfig.sessionAction.deleteBtn}
+              </span>
             </button>
           </div>
         ) : (
           <div>
             {requestSent ? (
-              <div style={{ textAlign: "center", padding: "1.5rem 0" }}>
-                <div style={{ width: 48, height: 48, borderRadius: "50%", background: "rgba(16, 185, 129, 0.12)", color: "#10B981", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1rem" }}>
+              <div className={styles.requestSentContainer}>
+                <div className={styles.successIconWrapper}>
                   <AppIcon name="check-circle" size={24} />
                 </div>
-                <h3 style={{ fontSize: "1.1rem", fontWeight: 700, marginBottom: "0.5rem" }}>
-                  Permintaan Sedang Diproses
+                <h3 className={styles.successTitle}>
+                  {deleteConfig.guestForm.success.title}
                 </h3>
-                <p style={{ fontSize: "0.875rem", color: "var(--text-secondary)", maxWidth: "420px", margin: "0 auto 1.5rem", lineHeight: 1.6 }}>
-                  Tim kami akan memverifikasi kepemilikan akun Anda dan menyelesaikan penghapusan data dalam waktu maksimal 3x24 jam kerja sesuai ketentuan UU PDP.
+                <p className={styles.successDesc}>
+                  {deleteConfig.guestForm.success.description}
                 </p>
                 <button
                   type="button"
                   onClick={() => setRequestSent(false)}
-                  className={styles.btnSubmitRequest}
-                  style={{ width: "auto", padding: "0.6rem 1.25rem", margin: "0 auto" }}
+                  className={`${styles.btnSubmitRequest} ${styles.btnNewRequest}`}
                 >
-                  Kirim Pengajuan Baru
+                  {deleteConfig.guestForm.success.newRequestBtn}
                 </button>
               </div>
             ) : (
               <form onSubmit={handleGuestSubmit}>
-                <p style={{ fontSize: "0.875rem", color: "var(--text-secondary)", marginBottom: "1.25rem", lineHeight: 1.55 }}>
-                  Jika Anda tidak dapat masuk ke akun atau ingin mengajukan penghapusan data secara manual, silakan isi formulir di bawah ini. Tim kami akan segera menindaklanjuti.
+                <p className={styles.guestIntro}>
+                  {deleteConfig.guestForm.intro}
                 </p>
 
                 <div className={styles.formGroup}>
                   <label htmlFor="guestEmail" className={styles.formLabel}>
-                    Alamat Email Terdaftar <span style={{ color: "var(--danger-color)" }}>*</span>
+                    {deleteConfig.guestForm.emailLabel}{" "}
+                    <span className={styles.requiredStar}>*</span>
                   </label>
                   <input
                     id="guestEmail"
                     type="email"
                     required
-                    placeholder="nama@email.com"
+                    placeholder={deleteConfig.guestForm.emailPlaceholder}
                     value={guestEmail}
                     onChange={(e) => setGuestEmail(e.target.value)}
                     className={styles.formInput}
                   />
-                  <span className={styles.formHint}>Email yang digunakan saat membuat akun di Mameko.</span>
+                  <span className={styles.formHint}>
+                    {deleteConfig.guestForm.emailHint}
+                  </span>
                 </div>
 
                 <div className={styles.formGroup}>
                   <label htmlFor="guestPhone" className={styles.formLabel}>
-                    Nomor WhatsApp / Kontak (Opsional)
+                    {deleteConfig.guestForm.phoneLabel}
                   </label>
                   <input
                     id="guestPhone"
                     type="tel"
-                    placeholder="0812xxxxxxxx"
+                    placeholder={deleteConfig.guestForm.phonePlaceholder}
                     value={guestPhone}
                     onChange={(e) => setGuestPhone(e.target.value)}
                     className={styles.formInput}
@@ -243,12 +253,12 @@ export function DeleteAccountClient() {
 
                 <div className={styles.formGroup}>
                   <label htmlFor="guestReason" className={styles.formLabel}>
-                    Alasan Penghapusan (Opsional)
+                    {deleteConfig.guestForm.reasonLabel}
                   </label>
                   <textarea
                     id="guestReason"
                     rows={3}
-                    placeholder="Contoh: Tidak lagi menggunakan layanan, ingin menghapus data pribadi..."
+                    placeholder={deleteConfig.guestForm.reasonPlaceholder}
                     value={guestReason}
                     onChange={(e) => setGuestReason(e.target.value)}
                     className={styles.formTextarea}
@@ -257,15 +267,15 @@ export function DeleteAccountClient() {
 
                 <button type="submit" className={styles.btnSubmitRequest}>
                   <AppIcon name="send" size={16} />
-                  <span>Ajukan Permohonan Penghapusan via WhatsApp Admin</span>
+                  <span>{deleteConfig.guestForm.submitBtn}</span>
                 </button>
 
                 <div className={styles.loginPrompt}>
-                  Punya akses masuk ke akun Anda?{" "}
+                  {deleteConfig.guestForm.loginPromptPrefix}
                   <Link href="/login" className={styles.loginLink}>
-                    Masuk ke Akun
-                  </Link>{" "}
-                  untuk menghapus akun secara instan tanpa menunggu verifikasi manual.
+                    {deleteConfig.guestForm.loginLinkText}
+                  </Link>
+                  {deleteConfig.guestForm.loginPromptSuffix}
                 </div>
               </form>
             )}
@@ -274,16 +284,20 @@ export function DeleteAccountClient() {
       </div>
 
       {/* 3. Saluran Pengaduan Lainnya */}
-      <div className={styles.card} style={{ background: "var(--surface-secondary)" }}>
-        <h3 style={{ fontSize: "1rem", fontWeight: 700, marginBottom: "0.5rem" }}>
-          Saluran Bantuan Resmi &amp; Pengaduan
+      <div className={`${styles.card} ${styles.supportCard}`}>
+        <h3 className={styles.supportTitle}>
+          {deleteConfig.support.title}
         </h3>
-        <p style={{ fontSize: "0.85rem", color: "var(--text-secondary)", margin: 0, lineHeight: 1.6 }}>
-          Anda juga dapat mengirimkan surat permohonan tertulis langsung ke alamat email resmi kami di{" "}
-          <a href="mailto:support@mameko.my.id" style={{ color: "var(--secondary)", fontWeight: 600 }}>
-            support@mameko.my.id
-          </a>{" "}
-          dengan subjek <code>Permohonan Penghapusan Akun &amp; Data - [Nama Anda]</code>.
+        <p className={styles.supportDesc}>
+          {deleteConfig.support.textPrefix}
+          <a
+            href={`mailto:${deleteConfig.support.email}`}
+            className={styles.supportEmailLink}
+          >
+            {deleteConfig.support.email}
+          </a>
+          {deleteConfig.support.textSubjectPrefix}
+          <code>{deleteConfig.support.subject}</code>.
         </p>
       </div>
 
@@ -294,9 +308,9 @@ export function DeleteAccountClient() {
             <div className={styles.modalIconWrapper}>
               <AppIcon name="alert-triangle" size={28} />
             </div>
-            <h3 className={styles.modalTitle}>Konfirmasi Hapus Akun</h3>
+            <h3 className={styles.modalTitle}>{deleteConfig.confirmModal.title}</h3>
             <p className={styles.modalMessage}>
-              Apakah Anda yakin ingin menghapus akun <strong>{user?.email}</strong>? Tindakan ini tidak dapat dibatalkan dan seluruh profil serta preferensi Anda akan dihapus secara permanen.
+              {deleteConfig.confirmModal.messageTemplate.replace("{email}", user?.email || "")}
             </p>
             <div className={styles.modalActions}>
               <button
@@ -305,7 +319,7 @@ export function DeleteAccountClient() {
                 onClick={() => setShowConfirmModal(false)}
                 disabled={deleting}
               >
-                Batal
+                {deleteConfig.confirmModal.cancelBtn}
               </button>
               <button
                 type="button"
@@ -313,7 +327,9 @@ export function DeleteAccountClient() {
                 onClick={handleDeleteSelf}
                 disabled={deleting}
               >
-                {deleting ? "Menghapus..." : "Ya, Hapus Akun"}
+                {deleting
+                  ? deleteConfig.confirmModal.deletingBtn
+                  : deleteConfig.confirmModal.confirmBtn}
               </button>
             </div>
           </div>
