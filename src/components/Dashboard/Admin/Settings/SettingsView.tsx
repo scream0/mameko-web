@@ -84,6 +84,7 @@ const EMPTY = {
       lastUpdated: "7 Oktober 2026",
       summary: "Make Me Kool (Mameko) hanya mengumpulkan data yang esensial untuk memproses pesanan, memfasilitasi pengiriman, dan memberikan pengalaman berbelanja yang nyaman. Kami tidak memperjualbelikan data pribadi Anda ke pihak manapun dan selalu mematuhi Undang-Undang Pelindungan Data Pribadi (UU PDP No. 27 Tahun 2022).",
       content: "",
+      sections: [],
     },
     terms: {
       title: "Syarat & Ketentuan",
@@ -91,6 +92,7 @@ const EMPTY = {
       lastUpdated: "7 Oktober 2026",
       summary: "Dengan melakukan pemesanan atau menggunakan platform Make Me Kool (Mameko), Anda menyetujui seluruh ketentuan pemesanan, verifikasi pembayaran Midtrans, pengiriman logistik, serta kewajiban menyertakan video unboxing utuh untuk setiap klaim garansi produk.",
       content: "",
+      sections: [],
     },
   },
 };
@@ -300,6 +302,11 @@ export default function SettingsView() {
           lastUpdated: pick(data?.legal?.privacy?.lastUpdated, raw?.legal?.privacy?.lastUpdated) || "7 Oktober 2026",
           summary: pick(data?.legal?.privacy?.summary, raw?.legal?.privacy?.summary) || "Make Me Kool (Mameko) hanya mengumpulkan data yang esensial untuk memproses pesanan, memfasilitasi pengiriman, dan memberikan pengalaman berbelanja yang nyaman. Kami tidak memperjualbelikan data pribadi Anda ke pihak manapun dan selalu mematuhi Undang-Undang Pelindungan Data Pribadi (UU PDP No. 27 Tahun 2022).",
           content: pick(data?.legal?.privacy?.content, raw?.legal?.privacy?.content) || "",
+          sections: Array.isArray(data?.legal?.privacy?.sections)
+            ? data.legal.privacy.sections
+            : Array.isArray(raw?.legal?.privacy?.sections)
+            ? raw.legal.privacy.sections
+            : [],
         },
         terms: {
           title: pick(data?.legal?.terms?.title, raw?.legal?.terms?.title) || "Syarat & Ketentuan",
@@ -307,6 +314,11 @@ export default function SettingsView() {
           lastUpdated: pick(data?.legal?.terms?.lastUpdated, raw?.legal?.terms?.lastUpdated) || "7 Oktober 2026",
           summary: pick(data?.legal?.terms?.summary, raw?.legal?.terms?.summary) || "Dengan melakukan pemesanan atau menggunakan platform Make Me Kool (Mameko), Anda menyetujui seluruh ketentuan pemesanan, verifikasi pembayaran Midtrans, pengiriman logistik, serta kewajiban menyertakan video unboxing utuh untuk setiap klaim garansi produk.",
           content: pick(data?.legal?.terms?.content, raw?.legal?.terms?.content) || "",
+          sections: Array.isArray(data?.legal?.terms?.sections)
+            ? data.legal.terms.sections
+            : Array.isArray(raw?.legal?.terms?.sections)
+            ? raw.legal.terms.sections
+            : [],
         },
       },
     };
@@ -645,6 +657,11 @@ export default function SettingsView() {
           lastUpdated: strictValue(s.legal?.privacy?.lastUpdated, r.legal?.privacy?.lastUpdated, rawVal.legal?.privacy?.lastUpdated) || "7 Oktober 2026",
           summary: strictValue(s.legal?.privacy?.summary, r.legal?.privacy?.summary, rawVal.legal?.privacy?.summary) || "",
           content: strictValue(s.legal?.privacy?.content, r.legal?.privacy?.content, rawVal.legal?.privacy?.content) || "",
+          sections: Array.isArray(s.legal?.privacy?.sections)
+            ? s.legal.privacy.sections
+            : Array.isArray(r.legal?.privacy?.sections)
+            ? r.legal.privacy.sections
+            : [],
         },
         terms: {
           title: strictValue(s.legal?.terms?.title, r.legal?.terms?.title, rawVal.legal?.terms?.title) || "Syarat & Ketentuan",
@@ -652,6 +669,11 @@ export default function SettingsView() {
           lastUpdated: strictValue(s.legal?.terms?.lastUpdated, r.legal?.terms?.lastUpdated, rawVal.legal?.terms?.lastUpdated) || "7 Oktober 2026",
           summary: strictValue(s.legal?.terms?.summary, r.legal?.terms?.summary, rawVal.legal?.terms?.summary) || "",
           content: strictValue(s.legal?.terms?.content, r.legal?.terms?.content, rawVal.legal?.terms?.content) || "",
+          sections: Array.isArray(s.legal?.terms?.sections)
+            ? s.legal.terms.sections
+            : Array.isArray(r.legal?.terms?.sections)
+            ? r.legal.terms.sections
+            : [],
         },
       },
       ...(rawSettings?.promoBannerEnabled !== undefined
@@ -2760,6 +2782,7 @@ function LegalTab({ settings, updateTab, cfg }: any) {
     lastUpdated: privacyConfig.defaults.lastUpdated,
     summary: privacyConfig.defaults.summary,
     content: "",
+    sections: [],
   };
 
   const defaultTerms = {
@@ -2768,10 +2791,15 @@ function LegalTab({ settings, updateTab, cfg }: any) {
     lastUpdated: termsConfig.defaults.lastUpdated,
     summary: termsConfig.defaults.summary,
     content: "",
+    sections: [],
   };
 
   const currentPrivacy = s.privacy || defaultPrivacy;
   const currentTerms = s.terms || defaultTerms;
+
+  const currentSections = subTab === "privacy"
+    ? (Array.isArray(currentPrivacy.sections) ? currentPrivacy.sections : [])
+    : (Array.isArray(currentTerms.sections) ? currentTerms.sections : []);
 
   const handleReset = () => {
     if (subTab === "privacy") {
@@ -2780,6 +2808,72 @@ function LegalTab({ settings, updateTab, cfg }: any) {
     } else {
       set({ terms: defaultTerms });
       toast.success(cfg?.resetNotice || "");
+    }
+  };
+
+  const handlePopulateDefaultSections = () => {
+    if (subTab === "privacy") {
+      const defaults = Array.isArray(privacyConfig.defaultArticles) ? privacyConfig.defaultArticles : [];
+      set({
+        privacy: {
+          ...currentPrivacy,
+          sections: JSON.parse(JSON.stringify(defaults)),
+        },
+      });
+      toast.success(cfg?.resetNotice || "");
+    } else {
+      const defaults = Array.isArray(termsConfig.defaultArticles) ? termsConfig.defaultArticles : [];
+      set({
+        terms: {
+          ...currentTerms,
+          sections: JSON.parse(JSON.stringify(defaults)),
+        },
+      });
+      toast.success(cfg?.resetNotice || "");
+    }
+  };
+
+  const handleAddSection = () => {
+    const newSec = {
+      id: `pasal-${Date.now()}`,
+      title: `${currentSections.length + 1}. `,
+      content: "",
+    };
+    if (subTab === "privacy") {
+      set({
+        privacy: {
+          ...currentPrivacy,
+          sections: [...currentSections, newSec],
+        },
+      });
+    } else {
+      set({
+        terms: {
+          ...currentTerms,
+          sections: [...currentSections, newSec],
+        },
+      });
+    }
+  };
+
+  const handleUpdateSection = (index: number, field: "title" | "content", value: string) => {
+    const updated = currentSections.map((sec: any, i: number) => {
+      if (i !== index) return sec;
+      return { ...sec, [field]: value };
+    });
+    if (subTab === "privacy") {
+      set({ privacy: { ...currentPrivacy, sections: updated } });
+    } else {
+      set({ terms: { ...currentTerms, sections: updated } });
+    }
+  };
+
+  const handleRemoveSection = (index: number) => {
+    const updated = currentSections.filter((_: any, i: number) => i !== index);
+    if (subTab === "privacy") {
+      set({ privacy: { ...currentPrivacy, sections: updated } });
+    } else {
+      set({ terms: { ...currentTerms, sections: updated } });
     }
   };
 
@@ -2878,7 +2972,7 @@ function LegalTab({ settings, updateTab, cfg }: any) {
               <label className={styles.fieldLabel}>{cfg?.privacy?.contentLabel}</label>
               <textarea
                 className={styles.inputField}
-                rows={6}
+                rows={5}
                 value={currentPrivacy.content || ""}
                 onChange={(e) =>
                   set({ privacy: { ...currentPrivacy, content: e.target.value } })
@@ -2946,7 +3040,7 @@ function LegalTab({ settings, updateTab, cfg }: any) {
               <label className={styles.fieldLabel}>{cfg?.terms?.contentLabel}</label>
               <textarea
                 className={styles.inputField}
-                rows={6}
+                rows={5}
                 value={currentTerms.content || ""}
                 onChange={(e) =>
                   set({ terms: { ...currentTerms, content: e.target.value } })
@@ -2959,6 +3053,85 @@ function LegalTab({ settings, updateTab, cfg }: any) {
             </div>
           </div>
         )}
+
+        {/* Section / Pasal Editor */}
+        <div className={styles.sectionsContainer}>
+          <div className={styles.sectionsHeaderRow}>
+            <div>
+              <h4 className={`${styles.sectionTitle} ${styles.legalSectionTitle}`}>
+                {cfg?.sectionsTitle}
+              </h4>
+              <p className={`${styles.couriersDesc} ${styles.legalSectionDesc}`}>
+                {cfg?.sectionsDesc}
+              </p>
+            </div>
+            <div className={styles.addSectionBtnRow}>
+              <button
+                type="button"
+                onClick={handlePopulateDefaultSections}
+                className={`${styles.removeBtn} ${styles.legalResetBtn}`}
+              >
+                {cfg?.populateDefaultBtn}
+              </button>
+              <button
+                type="button"
+                onClick={handleAddSection}
+                className={styles.addRowBtn}
+              >
+                {cfg?.addSectionBtn}
+              </button>
+            </div>
+          </div>
+
+          {currentSections.length === 0 ? (
+            <div className={styles.emptySectionsNotice}>
+              {cfg?.emptySectionsNotice}
+            </div>
+          ) : (
+            <div>
+              {currentSections.map((sec: any, idx: number) => (
+                <div key={sec.id || idx} className={styles.sectionCard}>
+                  <div className={styles.sectionCardHeader}>
+                    <span className={styles.sectionNumBadge}>
+                      #{idx + 1}
+                    </span>
+                    <div className={styles.sectionActionsRow}>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveSection(idx)}
+                        className={styles.removeSectionBtn}
+                        title={cfg?.removeSectionBtn}
+                      >
+                        {cfg?.removeSectionBtn}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className={styles.inputGroup}>
+                    <label className={styles.fieldLabel}>{cfg?.sectionTitleLabel}</label>
+                    <input
+                      className={styles.inputField}
+                      value={sec.title || ""}
+                      onChange={(e) => handleUpdateSection(idx, "title", e.target.value)}
+                      placeholder={cfg?.sectionTitlePlaceholder}
+                    />
+                  </div>
+
+                  <div className={styles.inputGroup}>
+                    <label className={styles.fieldLabel}>{cfg?.sectionContentLabel}</label>
+                    <textarea
+                      className={styles.inputField}
+                      rows={4}
+                      value={sec.content || ""}
+                      onChange={(e) => handleUpdateSection(idx, "content", e.target.value)}
+                      placeholder={cfg?.sectionContentPlaceholder}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

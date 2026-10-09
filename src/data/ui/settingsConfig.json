@@ -229,7 +229,18 @@
       "contentDesc": "* Teks kustom ini akan ditampilkan di halaman /terms sebagai klausul resmi dari admin toko."
     },
     "resetBtn": "Pulihkan Teks Standar",
-    "resetNotice": "Teks dikembalikan ke draf default UU PDP."
+    "resetNotice": "Teks dikembalikan ke draf default UU PDP.",
+    "sectionsTitle": "Daftar Pasal & Klausul Kebijakan",
+    "sectionsDesc": "Sesuaikan judul dan isi pasal secara rinci atau tambahkan klausul baru. Perubahan akan langsung disinkronkan ke daftar isi dan tampilan halaman publik.",
+    "addSectionBtn": "+ Tambah Pasal Baru",
+    "removeSectionBtn": "Hapus",
+    "populateDefaultBtn": "Muat Ulang Pasal Standar",
+    "sectionTitleLabel": "Judul Pasal",
+    "sectionTitlePlaceholder": "Contoh: 1. Pendahuluan",
+    "sectionContentLabel": "Isi Pasal & Rincian Klausul",
+    "sectionContentPlaceholder": "Tuliskan isi pasal lengkap atau rincian kebijakan di sini...",
+    "emptySectionsNotice": "Belum ada pasal kustom yang tersimpan. Klik 'Muat Ulang Pasal Standar' untuk memuat pasal default atau '+ Tambah Pasal Baru'.",
+    "confirmResetSections": "Apakah Anda yakin ingin memuat ulang pasal ke draf standar?"
   },
   "account": {
     "title": "Manajemen Akun",

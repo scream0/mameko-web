@@ -1124,3 +1124,91 @@
   font-size: 0.82rem;
   border-radius: 8px;
 }
+
+.sectionsContainer {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px dashed var(--border-color);
+}
+
+.sectionsHeaderRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.sectionCard {
+  background: var(--surface-secondary, rgba(255, 255, 255, 0.03));
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sectionCard:hover {
+  border-color: var(--secondary, var(--primary-accent));
+}
+
+.sectionCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.sectionNumBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--secondary-container, rgba(var(--primary-accent-rgb), 0.15));
+  color: var(--secondary, var(--primary-accent));
+  font-weight: 700;
+  font-size: 0.8rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  letter-spacing: 0.5px;
+}
+
+.sectionActionsRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.removeSectionBtn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-tertiary);
+  font-size: 0.75rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.removeSectionBtn:hover {
+  border-color: #ef4444;
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.emptySectionsNotice {
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  border: 1px dashed var(--border-color);
+  border-radius: 12px;
+  margin-bottom: 1.25rem;
+}
+
+.addSectionBtnRow {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  align-items: center;
+}

@@ -152,5 +152,47 @@
       "instagram": "Instagram: @xar.project",
       "hours": "Jam Operasional: Setiap Hari, 18.00 – 21.00 WIB"
     }
-  }
+  },
+  "defaultArticles": [
+    {
+      "id": "pendahuluan",
+      "title": "1. Pendahuluan",
+      "content": "Selamat datang di platform digital Make Me Kool (\"Mameko\", \"kami\"). Kebijakan Privasi ini menerangkan cara kami mengumpulkan, menggunakan, menyimpan, mengungkapkan, dan melindungi Data Pribadi pengguna (\"Anda\") saat mengunjungi situs web, membuat akun, bertransaksi, atau berinteraksi dengan layanan kami.\n\nDengan mengakses atau menggunakan layanan Mameko, Anda mengakui bahwa Anda telah membaca, memahami, dan menyetujui seluruh ketentuan yang tercantum dalam Kebijakan Privasi ini sesuai UU PDP No. 27 Tahun 2022."
+    },
+    {
+      "id": "data-dikumpulkan",
+      "title": "2. Data yang Kami Kumpulkan",
+      "content": "Untuk memberikan pengalaman berbelanja yang optimal, kami mengumpulkan kategori data berikut:\n- Identitas & Akun: Nama lengkap, alamat email, nomor telepon/WhatsApp, dan kredensial autentikasi terenkripsi via Supabase Auth.\n- Pengiriman & Alamat: Nama penerima, kontak, alamat tujuan lengkap, kode pos, dan titik area Biteship.\n- Transaksi & Pembayaran: Nomor pesanan, rincian barang, total pembayaran, status transaksi Midtrans (tanpa menyimpan nomor kartu/PIN).\n- Teknis & Perangkat: Alamat IP, peramban, preferensi tema, dan diagnostik performa."
+    },
+    {
+      "id": "tujuan-pemrosesan",
+      "title": "3. Tujuan Pemrosesan Data",
+      "content": "Data pribadi Anda dikumpulkan dan diproses secara sah berdasarkan persetujuan dan dasar hukum yang berlaku untuk keperluan:\n- Penyelesaian Transaksi: Memproses pembelian dan menerbitkan struk/bukti transaksi resmi.\n- Operasional Logistik: Meneruskan data pengiriman kepada mitra kurir logistik (sistem integrasi Biteship).\n- Layanan Pelanggan: Merespons pertanyaan, kendala pemesanan, atau klaim garansi produk.\n- Peningkatan Kualitas Layanan: Menganalisis preferensi pengguna untuk menghadirkan rekomendasi produk artisanal yang relevan.\n- Kepatuhan Hukum: Memenuhi kewajiban perpajakan dan peraturan perundang-undangan di Indonesia."
+    },
+    {
+      "id": "pihak-ketiga",
+      "title": "4. Pihak Ketiga & Integrasi",
+      "content": "Dalam menjalankan operasional toko, kami bekerja sama dengan penyedia layanan teknologi terpercaya:\n- Supabase Inc: Infrastruktur database PostgreSQL berstandar enterprise dengan Row-Level Security (RLS) dan manajemen sesi otentikasi JWT.\n- PT Midtrans: Gerbang pembayaran resmi berizin Bank Indonesia (PCI-DSS Level 1 compliant).\n- Biteship & Mitra Ekspedisi: Logistik pengantaran paket pesanan fisik.\n- Cloudinary: Jaringan distribusi konten (CDN) untuk penyimpanan dan optimalisasi pengiriman gambar produk."
+    },
+    {
+      "id": "keamanan-retensi",
+      "title": "5. Keamanan & Retensi Data",
+      "content": "Kami menerapkan langkah-langkah teknis dan organisasional untuk melindungi integritas data:\n- Enkripsi data transit menggunakan protokol Transport Layer Security (TLS 1.3 / SSL).\n- Infrastruktur API terlindungi di balik jaringan privat Cloudflare Tunnel dengan pembatasan IP dan otentikasi JWT ganda.\n- Pemberlakuan hak akses terbatas (Principle of Least Privilege) pada database administratif.\n\nPeriode Retensi: Data transaksi disimpan selama minimal 5 tahun sesuai regulasi pembukuan perpajakan di Indonesia. Data akun non-transaksional disimpan selama akun berstatus aktif atau hingga diajukan permohonan penghapusan."
+    },
+    {
+      "id": "hak-pengguna",
+      "title": "6. Hak Pemilik Data Pribadi",
+      "content": "Sesuai dengan Undang-Undang No. 27 Tahun 2022 tentang Pelindungan Data Pribadi, Anda memiliki hak:\n- Hak Akses: Meminta konfirmasi dan salinan data pribadi Anda yang kami proses.\n- Hak Koreksi: Memperbarui atau membetulkan data pribadi yang tidak akurat melalui halaman profil akun.\n- Hak Penghapusan (Erasure): Meminta penghapusan akun dan data pribadi Anda via portal resmi /delete-account sepanjang tidak bertentangan dengan kewajiban retensi hukum.\n- Hak Menarik Persetujuan: Menarik kembali persetujuan pemrosesan data untuk kepentingan pemasaran kapan saja."
+    },
+    {
+      "id": "cookie-pelacak",
+      "title": "7. Cookie & Teknologi Pelacak",
+      "content": "Platform kami memanfaatkan cookie dan media penyimpanan lokal (localStorage) untuk:\n- Menjaga sesi masuk Anda tetap aman (Strictly Necessary).\n- Menyimpan produk di keranjang belanja saat berpindah halaman (Strictly Necessary).\n- Mengingat preferensi antarmuka seperti mode tema Gelap atau Terang (Preferences).\n- Mengumpulkan statistik agregat anonim mengenai performa situs web (Analytics).\nAnda dapat mengatur preferensi cookie kapan saja melalui banner Cookie Consent atau tautan 'Pengaturan Cookie' di footer."
+    },
+    {
+      "id": "kontak",
+      "title": "8. Kontak & Pengaduan",
+      "content": "Apabila Anda memiliki pertanyaan, keberatan, atau ingin menggunakan hak-hak pelindungan data Anda, silakan hubungi tim kami melalui:\n- Email: privacy@mameko.my.id atau support@mameko.my.id\n- Instagram: @xar.project\n- Jam Operasional: Setiap Hari, 18.00 – 21.00 WIB"
+    }
+  ]
 }

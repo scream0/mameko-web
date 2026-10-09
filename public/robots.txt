@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+Allow: /delete-account
+Allow: /privacy
+Allow: /terms
+Allow: /product
+Allow: /feed
+
+# Explicitly allow Google Play Console and Verification Bots
+User-agent: Google-InspectionTool
+Allow: /
+
+User-agent: Googlebot
+Allow: /

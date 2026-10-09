@@ -26,6 +26,7 @@ export function TermsClient() {
     lastUpdated: termsConfig.defaults.lastUpdated,
     summary: termsConfig.defaults.summary,
     content: "",
+    sections: [],
   });
 
   useEffect(() => {
@@ -41,6 +42,7 @@ export function TermsClient() {
             lastUpdated: t.lastUpdated?.trim() ? t.lastUpdated : prev.lastUpdated,
             summary: t.summary?.trim() ? t.summary : prev.summary,
             content: t.content?.trim() ? t.content : "",
+            sections: Array.isArray(t.sections) && t.sections.length > 0 ? t.sections : [],
           }));
         }
       } catch (err) {
@@ -58,7 +60,19 @@ export function TermsClient() {
     };
   }, []);
 
-  const sections = legalData.content
+  const hasCustomSections = Array.isArray(legalData.sections) && legalData.sections.length > 0;
+
+  const sections: TOCSection[] = hasCustomSections
+    ? [
+        ...legalData.sections.map((sec: any, idx: number) => ({
+          id: sec.id || `pasal-${idx + 1}`,
+          title: sec.title || `Pasal ${idx + 1}`,
+        })),
+        ...(legalData.content
+          ? [{ id: "klausul-admin", title: termsConfig.toc.adminClause }]
+          : []),
+      ]
+    : legalData.content
     ? baseSections
     : baseSections.filter((s) => s.id !== "klausul-admin");
 
@@ -71,7 +85,39 @@ export function TermsClient() {
       sections={sections}
       summary={legalData.summary}
     >
-      {/* 1. Ketentuan Umum & Akun */}
+      {hasCustomSections ? (
+        <>
+          {legalData.sections.map((sec: any, idx: number) => {
+            const secId = sec.id || `pasal-${idx + 1}`;
+
+            return (
+              <section key={secId} id={secId} className={styles.section}>
+                <h2 className={styles.sectionTitle}>
+                  <span className={styles.sectionNumber}>{idx + 1}</span>
+                  {sec.title}
+                </h2>
+                <div className={`${styles.paragraph} ${styles.adminClauseText}`}>
+                  {sec.content}
+                </div>
+              </section>
+            );
+          })}
+
+          {legalData.content && (
+            <section id="klausul-admin" className={styles.section}>
+              <h2 className={styles.sectionTitle}>
+                <span className={styles.sectionNumber}>{legalData.sections.length + 1}</span>
+                {termsConfig.sections.adminClause.title}
+              </h2>
+              <div className={`${styles.summaryCallout} ${styles.adminClauseText}`}>
+                {legalData.content}
+              </div>
+            </section>
+          )}
+        </>
+      ) : (
+        <>
+          {/* 1. Ketentuan Umum & Akun */}
       <section id="ketentuan-umum" className={styles.section}>
         <h2 className={styles.sectionTitle}>
           <span className={styles.sectionNumber}>1</span>
@@ -231,6 +277,8 @@ export function TermsClient() {
           {termsConfig.sections.liability.p2}
         </p>
       </section>
+        </>
+      )}
     </LegalLayout>
   );
 }

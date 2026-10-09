@@ -140,5 +140,47 @@
       "p1": "Mameko tidak bertanggung jawab atas kerugian tidak langsung atau keterlambatan pengiriman yang disebabkan oleh keadaan kahar (Force Majeure), termasuk namun tidak terbatas pada bencana alam, huru-hara, kebijakan lockdown pemerintah, atau gangguan massal jaringan telekomunikasi.",
       "p2": "Ketentuan ini diatur dan ditafsirkan sesuai dengan hukum Negara Republik Indonesia. Segala perselisihan yang timbul akan diselesaikan terlebih dahulu melalui musyawarah untuk mufakat dalam jangka waktu 30 hari sebelum dibawa ke jalur hukum di pengadilan negeri yurisdiksi domisili kami."
     }
-  }
+  },
+  "defaultArticles": [
+    {
+      "id": "ketentuan-umum",
+      "title": "1. Ketentuan Umum & Akun",
+      "content": "Syarat dan Ketentuan ini (\"Ketentuan\") mengatur hak dan kewajiban antara pembeli (\"Pengguna\", \"Anda\") dan Make Me Kool (\"Mameko\", \"kami\") dalam penggunaan platform web dan pembelian barang.\n- Kelayakan Usia: Anda menyatakan telah berusia minimal 18 tahun atau memiliki kecakapan hukum untuk melakukan perikatan jual-beli yang sah berdasarkan hukum Republik Indonesia.\n- Keamanan Akun: Anda bertanggung jawab penuh untuk menjaga kerahasiaan kata sandi akun, kode OTP, dan aktivitas yang terjadi di bawah akun Anda.\n- Ketepatan Data: Anda wajib memberikan informasi alamat, email, dan nomor telepon yang akurat untuk kelancaran verifikasi dan pengantaran paket."
+    },
+    {
+      "id": "produk-artisanal",
+      "title": "2. Karakteristik Produk Artisanal",
+      "content": "Produk yang ditawarkan oleh Mameko merupakan karya artisanal (handcrafted/small-batch):\n- Variasi Alami: Karena diracik dan dibuat secara cermat dalam kelompok kecil (small batch), sedikit perbedaan warna tekstur atau kemasan minor merupakan ciri otentik produk kerajinan tangan.\n- Akurasi Foto & Layar: Kami berupaya semaksimal mungkin menampilkan warna yang akurat. Namun, perbedaan kalibrasi layar monitor atau ponsel Anda dapat menimbulkan sedikit perbedaan persepsi visual."
+    },
+    {
+      "id": "pemesanan-harga",
+      "title": "3. Pemesanan & Harga",
+      "content": "- Seluruh harga produk yang ditampilkan tercantum dalam mata uang Rupiah Indonesia (IDR) dan belum termasuk biaya ongkos kirim kecuali dinyatakan secara eksplisit melalui promo/voucher.\n- Mameko berhak mengubah harga sewaktu-waktu tanpa pemberitahuan sebelumnya, namun perubahan tersebut tidak akan memengaruhi pesanan yang telah dibayar lunas.\n- Kami berhak membatalkan pesanan secara sepihak jika terjadi kesalahan sistem penentuan harga (pricing glitch) atau kendala stok mendadak, dengan komitmen pengembalian dana 100% kepada pembeli."
+    },
+    {
+      "id": "pembayaran",
+      "title": "4. Pembayaran & Batas Waktu Transaksi",
+      "content": "Pembayaran dilakukan melalui portal gerbang pembayaran resmi Midtrans Snap:\n- Metode Pembayaran: Kami mendukung QRIS (GoPay, OVO, Dana, ShopeePay, BCA Mobile, dll.), Virtual Account Bank (BCA, Mandiri, BNI, BRI, Permata), dan kartu debit/kredit yang didukung.\n- Batas Waktu Pembayaran (Expiry): Setiap nomor transaksi atau QRIS memiliki batas kedaluwarsa waktu. Apabila pembayaran tidak diselesaikan sebelum batas waktu berakhir, pesanan akan secara otomatis dibatalkan oleh sistem.\n- Konfirmasi Otomatis: Pesanan akan segera masuk ke tahap proses pengemasan setelah sistem kami menerima notifikasi status settlement sukses dari Midtrans."
+    },
+    {
+      "id": "pengiriman",
+      "title": "5. Pengiriman & Logistik",
+      "content": "Ketentuan terkait pengantaran pesanan fisik:\n- Ekspedisi Terpercaya: Pengiriman difasilitasi oleh agregator kurir Biteship dengan mitra ekspedisi terpercaya (JNE, J&T, SiCepat, AnterAja, dan lainnya).\n- Waktu Proses: Pesanan yang masuk akan diproses dan dikemas dalam waktu 1–2 hari kerja (tidak termasuk hari Minggu dan hari libur nasional).\n- Estimasi Sampai: Estimasi lama pengiriman yang tercantum di halaman checkout merupakan perkiraan dari pihak ekspedisi dan dapat dipengaruhi oleh kondisi cuaca atau kendala operasional lapangan.\n- Nomor Resi: Pelacakan resi akan diperbarui secara otomatis di halaman akun dan rincian pesanan Anda segera setelah paket diserahkan ke kurir."
+    },
+    {
+      "id": "kebijakan-retur",
+      "title": "6. Kebijakan Retur, Komplain, & Refund",
+      "content": "Kepuasan Anda adalah prioritas kami. Jika Anda menerima barang yang salah, kurang, atau rusak selama pengiriman:\n- Syarat Mutlak: Video Unboxing Utuh tanpa jeda (tanpa cut/edit), mulai dari resi fisik masih utuh tertempel hingga produk dikeluarkan dari kemasan pembungkus.\n- Batas Waktu Pengajuan: Komplain wajib diajukan maksimal 2x24 jam sejak status resi dinyatakan \"Delivered\" oleh pihak kurir.\n- Kondisi Barang: Barang yang diretur wajib berada dalam kondisi belum terpakai, belum dicuci, dan segel/label produk masih utuh.\n- Solusi Komplain: Mameko akan memberikan solusi berupa pengiriman produk pengganti (dengan ongkir ditanggung pihak kami) atau pengembalian dana (refund) sesuai kesepakatan bersama."
+    },
+    {
+      "id": "hak-cipta",
+      "title": "7. Hak Kekayaan Intelektual",
+      "content": "Seluruh konten yang terdapat di platform Mameko, termasuk namun tidak terbatas pada teks, logo merek \"Make Me Kool\" / \"Mameko\", desain grafis, foto produk, tata letak antarmuka, dan kode sumber adalah milik eksklusif Make Me Kool yang dilindungi oleh undang-undang hak cipta dan merek dagang Republik Indonesia. Penggandaan, distribusi, atau modifikasi tanpa izin tertulis dari kami dilarang keras."
+    },
+    {
+      "id": "hukum-berlaku",
+      "title": "8. Batasan Tanggung Jawab & Hukum yang Berlaku",
+      "content": "- Mameko tidak bertanggung jawab atas kerugian tidak langsung atau keterlambatan pengiriman yang disebabkan oleh keadaan kahar (Force Majeure), termasuk namun tidak terbatas pada bencana alam, huru-hara, kebijakan lockdown pemerintah, atau gangguan massal jaringan telekomunikasi.\n- Ketentuan ini diatur dan ditafsirkan sesuai dengan hukum Negara Republik Indonesia. Segala perselisihan yang timbul akan diselesaikan terlebih dahulu melalui musyawarah untuk mufakat dalam jangka waktu 30 hari sebelum dibawa ke jalur hukum di pengadilan negeri yurisdiksi domisili kami."
+    }
+  ]
 }

@@ -27,6 +27,7 @@ export function PrivacyClient() {
     lastUpdated: privacyConfig.defaults.lastUpdated,
     summary: privacyConfig.defaults.summary,
     content: "",
+    sections: [],
   });
 
   useEffect(() => {
@@ -42,6 +43,7 @@ export function PrivacyClient() {
             lastUpdated: p.lastUpdated?.trim() ? p.lastUpdated : prev.lastUpdated,
             summary: p.summary?.trim() ? p.summary : prev.summary,
             content: p.content?.trim() ? p.content : "",
+            sections: Array.isArray(p.sections) && p.sections.length > 0 ? p.sections : [],
           }));
         }
       } catch (err) {
@@ -59,7 +61,19 @@ export function PrivacyClient() {
     };
   }, []);
 
-  const sections = legalData.content
+  const hasCustomSections = Array.isArray(legalData.sections) && legalData.sections.length > 0;
+
+  const sections: TOCSection[] = hasCustomSections
+    ? [
+        ...legalData.sections.map((sec: any, idx: number) => ({
+          id: sec.id || `pasal-${idx + 1}`,
+          title: sec.title || `Pasal ${idx + 1}`,
+        })),
+        ...(legalData.content
+          ? [{ id: "klausul-admin", title: privacyConfig.toc.adminClause }]
+          : []),
+      ]
+    : legalData.content
     ? baseSections
     : baseSections.filter((s) => s.id !== "klausul-admin");
 
@@ -72,185 +86,243 @@ export function PrivacyClient() {
       sections={sections}
       summary={legalData.summary}
     >
-      {/* 1. Pendahuluan */}
-      <section id="pendahuluan" className={styles.section}>
-        <h2 className={styles.sectionTitle}>
-          <span className={styles.sectionNumber}>1</span>
-          {privacyConfig.sections.intro.title}
-        </h2>
-        <p className={styles.paragraph}>
-          {privacyConfig.sections.intro.p1}
-        </p>
-        <p className={styles.paragraph}>
-          {privacyConfig.sections.intro.p2}
-        </p>
-      </section>
+      {hasCustomSections ? (
+        <>
+          {legalData.sections.map((sec: any, idx: number) => {
+            const secId = sec.id || `pasal-${idx + 1}`;
+            const isUserRights =
+              secId === "hak-pengguna" ||
+              (typeof sec.title === "string" && (
+                sec.title.toLowerCase().includes("hak") ||
+                sec.title.toLowerCase().includes("penghapusan")
+              ));
 
-      {/* 2. Data yang Dikumpulkan */}
-      <section id="data-dikumpulkan" className={styles.section}>
-        <h2 className={styles.sectionTitle}>
-          <span className={styles.sectionNumber}>2</span>
-          {privacyConfig.sections.dataCollected.title}
-        </h2>
-        <p className={styles.paragraph}>
-          {privacyConfig.sections.dataCollected.intro}
-        </p>
+            return (
+              <section key={secId} id={secId} className={styles.section}>
+                <h2 className={styles.sectionTitle}>
+                  <span className={styles.sectionNumber}>{idx + 1}</span>
+                  {sec.title}
+                </h2>
+                <div className={`${styles.paragraph} ${styles.adminClauseText}`}>
+                  {sec.content}
+                </div>
 
-        <div className={styles.cardGrid}>
-          {privacyConfig.sections.dataCollected.cards.map((card, idx) => (
-            <div key={idx} className={styles.subCard}>
-              <div className={styles.subCardTitle}>
-                <AppIcon name={card.icon} size={16} />
-                {card.title}
+                {isUserRights && (
+                  <div className={`${styles.summaryCallout} ${styles.summaryCalloutWithMargin}`}>
+                    <h3>
+                      <AppIcon name="trash-2" size={18} />
+                      {privacyConfig.sections.userRights.deletionCallout.title}
+                    </h3>
+                    <p className={styles.calloutDesc}>
+                      {privacyConfig.sections.userRights.deletionCallout.description}
+                    </p>
+                    <Link
+                      href={privacyConfig.sections.userRights.deletionCallout.href}
+                      className={styles.summaryLink}
+                    >
+                      {privacyConfig.sections.userRights.deletionCallout.buttonText}
+                    </Link>
+                  </div>
+                )}
+              </section>
+            );
+          })}
+
+          {legalData.content && (
+            <section id="klausul-admin" className={styles.section}>
+              <h2 className={styles.sectionTitle}>
+                <span className={styles.sectionNumber}>{legalData.sections.length + 1}</span>
+                {privacyConfig.sections.adminClause.title}
+              </h2>
+              <div className={`${styles.summaryCallout} ${styles.adminClauseText}`}>
+                {legalData.content}
               </div>
-              <p className={styles.subCardText}>
-                {card.desc}
-              </p>
+            </section>
+          )}
+        </>
+      ) : (
+        <>
+          {/* 1. Pendahuluan */}
+          <section id="pendahuluan" className={styles.section}>
+            <h2 className={styles.sectionTitle}>
+              <span className={styles.sectionNumber}>1</span>
+              {privacyConfig.sections.intro.title}
+            </h2>
+            <p className={styles.paragraph}>
+              {privacyConfig.sections.intro.p1}
+            </p>
+            <p className={styles.paragraph}>
+              {privacyConfig.sections.intro.p2}
+            </p>
+          </section>
+
+          {/* 2. Data yang Dikumpulkan */}
+          <section id="data-dikumpulkan" className={styles.section}>
+            <h2 className={styles.sectionTitle}>
+              <span className={styles.sectionNumber}>2</span>
+              {privacyConfig.sections.dataCollected.title}
+            </h2>
+            <p className={styles.paragraph}>
+              {privacyConfig.sections.dataCollected.intro}
+            </p>
+
+            <div className={styles.cardGrid}>
+              {privacyConfig.sections.dataCollected.cards.map((card, idx) => (
+                <div key={idx} className={styles.subCard}>
+                  <div className={styles.subCardTitle}>
+                    <AppIcon name={card.icon} size={16} />
+                    {card.title}
+                  </div>
+                  <p className={styles.subCardText}>
+                    {card.desc}
+                  </p>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </section>
+          </section>
 
-      {/* 3. Tujuan Pemrosesan Data */}
-      <section id="tujuan-pemrosesan" className={styles.section}>
-        <h2 className={styles.sectionTitle}>
-          <span className={styles.sectionNumber}>3</span>
-          {privacyConfig.sections.purposes.title}
-        </h2>
-        <p className={styles.paragraph}>
-          {privacyConfig.sections.purposes.intro}
-        </p>
-        <ul className={styles.list}>
-          {privacyConfig.sections.purposes.items.map((item, idx) => (
-            <li key={idx}>
-              <strong>{item.label}</strong> {item.desc}
-            </li>
-          ))}
-        </ul>
-      </section>
+          {/* 3. Tujuan Pemrosesan Data */}
+          <section id="tujuan-pemrosesan" className={styles.section}>
+            <h2 className={styles.sectionTitle}>
+              <span className={styles.sectionNumber}>3</span>
+              {privacyConfig.sections.purposes.title}
+            </h2>
+            <p className={styles.paragraph}>
+              {privacyConfig.sections.purposes.intro}
+            </p>
+            <ul className={styles.list}>
+              {privacyConfig.sections.purposes.items.map((item, idx) => (
+                <li key={idx}>
+                  <strong>{item.label}</strong> {item.desc}
+                </li>
+              ))}
+            </ul>
+          </section>
 
-      {/* 4. Pihak Ketiga & Integrasi */}
-      <section id="pihak-ketiga" className={styles.section}>
-        <h2 className={styles.sectionTitle}>
-          <span className={styles.sectionNumber}>4</span>
-          {privacyConfig.sections.thirdParties.title}
-        </h2>
-        <p className={styles.paragraph}>
-          {privacyConfig.sections.thirdParties.intro}
-        </p>
-        <ul className={styles.list}>
-          {privacyConfig.sections.thirdParties.items.map((item, idx) => (
-            <li key={idx}>
-              <strong>{item.label}</strong> {item.desc}
-            </li>
-          ))}
-        </ul>
-        <p className={styles.paragraph}>
-          {privacyConfig.sections.thirdParties.footer}
-        </p>
-      </section>
+          {/* 4. Pihak Ketiga & Integrasi */}
+          <section id="pihak-ketiga" className={styles.section}>
+            <h2 className={styles.sectionTitle}>
+              <span className={styles.sectionNumber}>4</span>
+              {privacyConfig.sections.thirdParties.title}
+            </h2>
+            <p className={styles.paragraph}>
+              {privacyConfig.sections.thirdParties.intro}
+            </p>
+            <ul className={styles.list}>
+              {privacyConfig.sections.thirdParties.items.map((item, idx) => (
+                <li key={idx}>
+                  <strong>{item.label}</strong> {item.desc}
+                </li>
+              ))}
+            </ul>
+            <p className={styles.paragraph}>
+              {privacyConfig.sections.thirdParties.footer}
+            </p>
+          </section>
 
-      {/* 5. Keamanan & Retensi */}
-      <section id="keamanan-retensi" className={styles.section}>
-        <h2 className={styles.sectionTitle}>
-          <span className={styles.sectionNumber}>5</span>
-          {privacyConfig.sections.security.title}
-        </h2>
-        <p className={styles.paragraph}>
-          {privacyConfig.sections.security.intro}
-        </p>
-        <ul className={styles.list}>
-          {privacyConfig.sections.security.items.map((item, idx) => (
-            <li key={idx}>{item}</li>
-          ))}
-        </ul>
-        <p className={styles.paragraph}>
-          <strong>{privacyConfig.sections.security.retentionLabel}</strong> {privacyConfig.sections.security.retentionDesc}
-        </p>
-      </section>
+          {/* 5. Keamanan & Retensi */}
+          <section id="keamanan-retensi" className={styles.section}>
+            <h2 className={styles.sectionTitle}>
+              <span className={styles.sectionNumber}>5</span>
+              {privacyConfig.sections.security.title}
+            </h2>
+            <p className={styles.paragraph}>
+              {privacyConfig.sections.security.intro}
+            </p>
+            <ul className={styles.list}>
+              {privacyConfig.sections.security.items.map((item, idx) => (
+                <li key={idx}>{item}</li>
+              ))}
+            </ul>
+            <p className={styles.paragraph}>
+              <strong>{privacyConfig.sections.security.retentionLabel}</strong> {privacyConfig.sections.security.retentionDesc}
+            </p>
+          </section>
 
-      {/* 6. Hak Pemilik Data Pribadi */}
-      <section id="hak-pengguna" className={styles.section}>
-        <h2 className={styles.sectionTitle}>
-          <span className={styles.sectionNumber}>6</span>
-          {privacyConfig.sections.userRights.title}
-        </h2>
-        <p className={styles.paragraph}>
-          {privacyConfig.sections.userRights.intro}
-        </p>
-        <ul className={styles.list}>
-          {privacyConfig.sections.userRights.items.map((item, idx) => (
-            <li key={idx}>
-              <strong>{item.label}</strong> {item.desc}
-            </li>
-          ))}
-        </ul>
+          {/* 6. Hak Pemilik Data Pribadi */}
+          <section id="hak-pengguna" className={styles.section}>
+            <h2 className={styles.sectionTitle}>
+              <span className={styles.sectionNumber}>6</span>
+              {privacyConfig.sections.userRights.title}
+            </h2>
+            <p className={styles.paragraph}>
+              {privacyConfig.sections.userRights.intro}
+            </p>
+            <ul className={styles.list}>
+              {privacyConfig.sections.userRights.items.map((item, idx) => (
+                <li key={idx}>
+                  <strong>{item.label}</strong> {item.desc}
+                </li>
+              ))}
+            </ul>
 
-        <div className={`${styles.summaryCallout} ${styles.summaryCalloutWithMargin}`}>
-          <h3>
-            <AppIcon name="trash-2" size={18} />
-            {privacyConfig.sections.userRights.deletionCallout.title}
-          </h3>
-          <p className={styles.calloutDesc}>
-            {privacyConfig.sections.userRights.deletionCallout.description}
-          </p>
-          <Link
-            href={privacyConfig.sections.userRights.deletionCallout.href}
-            className={styles.summaryLink}
-          >
-            {privacyConfig.sections.userRights.deletionCallout.buttonText}
-          </Link>
-        </div>
-      </section>
+            <div className={`${styles.summaryCallout} ${styles.summaryCalloutWithMargin}`}>
+              <h3>
+                <AppIcon name="trash-2" size={18} />
+                {privacyConfig.sections.userRights.deletionCallout.title}
+              </h3>
+              <p className={styles.calloutDesc}>
+                {privacyConfig.sections.userRights.deletionCallout.description}
+              </p>
+              <Link
+                href={privacyConfig.sections.userRights.deletionCallout.href}
+                className={styles.summaryLink}
+              >
+                {privacyConfig.sections.userRights.deletionCallout.buttonText}
+              </Link>
+            </div>
+          </section>
 
-      {/* 7. Cookie & Teknologi Pelacak */}
-      <section id="cookie-pelacak" className={styles.section}>
-        <h2 className={styles.sectionTitle}>
-          <span className={styles.sectionNumber}>7</span>
-          {privacyConfig.sections.cookies.title}
-        </h2>
-        <p className={styles.paragraph}>
-          {privacyConfig.sections.cookies.intro}
-        </p>
-        <ul className={styles.list}>
-          {privacyConfig.sections.cookies.items.map((item, idx) => (
-            <li key={idx}>{item}</li>
-          ))}
-        </ul>
-        <p className={styles.paragraph}>
-          {privacyConfig.sections.cookies.footer}
-        </p>
-      </section>
+          {/* 7. Cookie & Teknologi Pelacak */}
+          <section id="cookie-pelacak" className={styles.section}>
+            <h2 className={styles.sectionTitle}>
+              <span className={styles.sectionNumber}>7</span>
+              {privacyConfig.sections.cookies.title}
+            </h2>
+            <p className={styles.paragraph}>
+              {privacyConfig.sections.cookies.intro}
+            </p>
+            <ul className={styles.list}>
+              {privacyConfig.sections.cookies.items.map((item, idx) => (
+                <li key={idx}>{item}</li>
+              ))}
+            </ul>
+            <p className={styles.paragraph}>
+              {privacyConfig.sections.cookies.footer}
+            </p>
+          </section>
 
-      {/* 8. Klausul Tambahan Toko (Jika dikustomisasi oleh Admin) */}
-      {legalData.content && (
-        <section id="klausul-admin" className={styles.section}>
-          <h2 className={styles.sectionTitle}>
-            <span className={styles.sectionNumber}>8</span>
-            {privacyConfig.sections.adminClause.title}
-          </h2>
-          <div className={`${styles.summaryCallout} ${styles.adminClauseText}`}>
-            {legalData.content}
-          </div>
-        </section>
+          {/* 8. Klausul Tambahan Toko (Jika dikustomisasi oleh Admin) */}
+          {legalData.content && (
+            <section id="klausul-admin" className={styles.section}>
+              <h2 className={styles.sectionTitle}>
+                <span className={styles.sectionNumber}>8</span>
+                {privacyConfig.sections.adminClause.title}
+              </h2>
+              <div className={`${styles.summaryCallout} ${styles.adminClauseText}`}>
+                {legalData.content}
+              </div>
+            </section>
+          )}
+
+          {/* 9. Kontak */}
+          <section id="kontak" className={styles.section}>
+            <h2 className={styles.sectionTitle}>
+              <span className={styles.sectionNumber}>{legalData.content ? "9" : "8"}</span>
+              {privacyConfig.sections.contact.title}
+            </h2>
+            <p className={styles.paragraph}>
+              {privacyConfig.sections.contact.intro}
+            </p>
+            <div className={styles.contactBanner}>
+              <h4>{privacyConfig.sections.contact.bannerTitle}</h4>
+              <p>{privacyConfig.sections.contact.email}</p>
+              <p>{privacyConfig.sections.contact.instagram}</p>
+              <p>{privacyConfig.sections.contact.hours}</p>
+            </div>
+          </section>
+        </>
       )}
-
-      {/* 9. Kontak */}
-      <section id="kontak" className={styles.section}>
-        <h2 className={styles.sectionTitle}>
-          <span className={styles.sectionNumber}>{legalData.content ? "9" : "8"}</span>
-          {privacyConfig.sections.contact.title}
-        </h2>
-        <p className={styles.paragraph}>
-          {privacyConfig.sections.contact.intro}
-        </p>
-        <div className={styles.contactBanner}>
-          <h4>{privacyConfig.sections.contact.bannerTitle}</h4>
-          <p>{privacyConfig.sections.contact.email}</p>
-          <p>{privacyConfig.sections.contact.instagram}</p>
-          <p>{privacyConfig.sections.contact.hours}</p>
-        </div>
-      </section>
     </LegalLayout>
   );
 }
