@@ -14,11 +14,14 @@ export function Hero() {
   const [resolvedHero, setResolvedHero] = useState(heroData);
   const [isDimmed, setIsDimmed] = useState(false);
   const [isRevealed, setIsRevealed] = useState(true);
+  const [showScroll, setShowScroll] = useState(true);
+  const [statsVisible, setStatsVisible] = useState(false);
 
   // Refs untuk visual transform & spotlight tanpa trigger re-render React
   const visualRef = useRef(null);
   const contentRef = useRef(null);
   const spotlightRef = useRef(null);
+  const statsRef = useRef(null);
 
   // Parallax scroll effect yang efisien (Direct DOM RAF update)
   useEffect(() => {
@@ -33,6 +36,8 @@ export function Hero() {
         if (contentRef.current) {
           contentRef.current.style.transform = `translateY(${sy * -0.15}px)`;
         }
+        // Sembunyikan scroll indicator setelah user scroll sedikit
+        setShowScroll(sy < 60);
         rafId = null;
       });
     };
@@ -80,6 +85,7 @@ export function Hero() {
             ...heroData,
             ...h,
             tagline: h.tagline?.trim() ? h.tagline : heroData.tagline,
+            badge: h.badge?.trim() ? h.badge : heroData.badge,
             image: h.image?.trim() ? h.image : "",
             imageAlt: h.imageAlt?.trim() ? h.imageAlt : (heroData.imageAlt || "Hero Visual"),
             title: {
@@ -101,6 +107,8 @@ export function Hero() {
                 href: h.buttons?.secondary?.href?.trim() ? h.buttons.secondary.href : heroData.buttons.secondary.href,
               },
             },
+            trustPills: Array.isArray(h.trustPills) && h.trustPills.length > 0 ? h.trustPills : heroData.trustPills,
+            stats: Array.isArray(h.stats) && h.stats.length > 0 ? h.stats : heroData.stats,
           });
 
           if (spotlightRef.current) {
@@ -159,6 +167,23 @@ export function Hero() {
     return () => observer.disconnect();
   }, []);
 
+  // 6. IntersectionObserver untuk animasi stats count-up
+  useEffect(() => {
+    const el = statsRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setStatsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.3 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   // Ambil URL gambar latar belakang dari resolvedHero (hanya jika ada data dari DB)
   const heroBackgroundImage =
     (resolvedHero?.image && resolvedHero.image.trim() !== "")
@@ -169,8 +194,15 @@ export function Hero() {
       ? resolvedHero.imageAlt
       : (heroData?.imageAlt || "Hero Visual");
 
+  const trustPills = resolvedHero?.trustPills || heroData.trustPills || [];
+  const stats = resolvedHero?.stats || heroData.stats || [];
+  const fallback = heroData.fallbackVisual;
+
   return (
     <section id="home" className={`${styles.hero} ${isDimmed ? styles.dimmed : ""}`}>
+      {/* Grain texture overlay untuk luxury feel */}
+      <div className={styles.heroGrain} aria-hidden="true" />
+
       {/* Aurora Background Mesh */}
       <div className={styles.auroraBg}></div>
 
@@ -191,6 +223,16 @@ export function Hero() {
           className={styles.content}
         >
           <div className={styles.contentGlow} aria-hidden="true" />
+
+          {/* Badge pill urgency */}
+          {resolvedHero?.badge && (
+            <div
+              className={`${styles.heroBadge} ${styles.reveal} ${styles.delay0} ${isRevealed ? styles.revealed : ""}`}
+            >
+              {resolvedHero.badge}
+            </div>
+          )}
+
           <p
             className={`${styles.heroTagline} ${styles.reveal} ${styles.delay0} ${isRevealed ? styles.revealed : ""}`}
           >
@@ -209,6 +251,22 @@ export function Hero() {
             <em>{resolvedHero?.description?.italic}</em>
             {resolvedHero?.description?.suffix}
           </p>
+
+          {/* Trust Pills */}
+          {trustPills.length > 0 && (
+            <div
+              className={`${styles.trustPills} ${styles.reveal} ${styles.delay2} ${isRevealed ? styles.revealed : ""}`}
+              aria-label="Keunggulan produk"
+            >
+              {trustPills.map((pill: any, i: number) => (
+                <span key={i} className={styles.trustPill}>
+                  <AppIcon name={pill.icon} size={12} className={styles.pillIcon} />
+                  {pill.label}
+                </span>
+              ))}
+            </div>
+          )}
+
           <div
             className={`${styles.heroButtons} ${styles.reveal} ${styles.delay3} ${isRevealed ? styles.revealed : ""}`}
           >
@@ -224,12 +282,29 @@ export function Hero() {
               className={styles.ctaSecondary}
             >
               {resolvedHero?.buttons?.secondary?.label}
+              <AppIcon name="arrow-right" size={14} className={styles.btnIconSecondary} />
             </a>
           </div>
+
+          {/* Stats Row */}
+          {stats.length > 0 && (
+            <div
+              ref={statsRef}
+              className={`${styles.statsRow} ${styles.reveal} ${styles.delay3} ${isRevealed ? styles.revealed : ""} ${statsVisible ? styles.statsVisible : ""}`}
+              aria-label="Statistik brand"
+            >
+              {stats.map((stat: any, i: number) => (
+                <div key={i} className={styles.statItem}>
+                  <span className={styles.statValue}>{stat.value}</span>
+                  <span className={styles.statLabel}>{stat.label}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </main>
 
-        {/* Right Side: Floating Visual */}
-        {heroBackgroundImage && (
+        {/* Right Side: Floating Visual atau Fallback Card */}
+        {heroBackgroundImage ? (
           <div className={styles.heroVisualWrapper}>
             <div
               ref={visualRef}
@@ -247,7 +322,36 @@ export function Hero() {
               />
             </div>
           </div>
+        ) : (
+          /* Fallback glassmorphism product card saat tidak ada gambar */
+          <div className={`${styles.heroVisualWrapper} ${styles.reveal} ${styles.delay1} ${isRevealed ? styles.revealed : ""}`} aria-hidden="true">
+            <div ref={visualRef} className={`${styles.heroVisual} ${styles.heroFallbackCard}`}>
+              <div className={styles.heroVisualGlow}></div>
+              <div className={styles.fallbackInner}>
+                <span className={styles.fallbackEyebrow}>{fallback?.eyebrow}</span>
+                <div className={styles.fallbackBottle}>
+                  <div className={styles.bottleShape} />
+                  <div className={styles.bottleReflect} />
+                  <div className={styles.bottleShimmer} />
+                </div>
+                <div className={styles.fallbackMeta}>
+                  <p className={styles.fallbackProductName}>{fallback?.productName}</p>
+                  <p className={styles.fallbackNote}>{fallback?.productNote}</p>
+                  <p className={styles.fallbackTagline}>{fallback?.tagline}</p>
+                </div>
+                <span className={styles.fallbackBadge}>{fallback?.badge}</span>
+              </div>
+            </div>
+          </div>
         )}
+      </div>
+
+      {/* Scroll Down Indicator */}
+      <div className={`${styles.scrollIndicator} ${showScroll ? styles.scrollVisible : ""}`} aria-hidden="true">
+        <div className={styles.scrollMouse}>
+          <div className={styles.scrollWheel} />
+        </div>
+        <span className={styles.scrollLabel}>{heroData.scrollIndicator?.label}</span>
       </div>
     </section>
   );
