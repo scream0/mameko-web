@@ -48,6 +48,35 @@ const CACHE_TTL = 5 * 60 * 1000; // 5 menit
 let publicCache: { data: StoreSettings | null; ts: number } = { data: null, ts: 0 };
 
 /**
+ * Backend (Go) kadang mengembalikan kolom JSONB sebagai string JSON yang ter-encode dua kali
+ * (double-encoded). Fungsi ini memastikan setiap field objek yang masih berupa string
+ * di-parse menjadi objek JavaScript sebelum dipakai komponen.
+ */
+const JSON_FIELDS: (keyof StoreSettings)[] = [
+  "legal",
+  "hero",
+  "about",
+  "product",
+  "contact",
+  "footer",
+];
+
+function normalizeSettings(data: any): StoreSettings {
+  if (!data || typeof data !== "object") return data;
+  const out = { ...data };
+  for (const field of JSON_FIELDS) {
+    if (typeof out[field] === "string") {
+      try {
+        out[field] = JSON.parse(out[field] as string);
+      } catch {
+        // biarkan sebagai string jika parse gagal
+      }
+    }
+  }
+  return out;
+}
+
+/**
  * GET public settings — aman untuk landing page publik.
  * Tidak mengirim token, server hanya mengembalikan data non-sensitif.
  */
@@ -68,8 +97,9 @@ export async function getPublicSettings({ force = false } = {}): Promise<StoreSe
     return null;
   }
 
-  publicCache = { data, ts: Date.now() };
-  return data;
+  const normalized = normalizeSettings(data);
+  publicCache = { data: normalized, ts: Date.now() };
+  return normalized;
 }
 
 /**
@@ -93,7 +123,7 @@ export async function getAdminSettings(tokenOrSession: any): Promise<StoreSettin
   // Invalidate public cache karena config berubah
   publicCache = { data: null, ts: 0 };
 
-  return data;
+  return normalizeSettings(data);
 }
 
 /**
