@@ -84,7 +84,7 @@ const EMPTY = {
       lastUpdated: "7 Oktober 2026",
       summary: "Make Me Kool (Mameko) hanya mengumpulkan data yang esensial untuk memproses pesanan, memfasilitasi pengiriman, dan memberikan pengalaman berbelanja yang nyaman. Kami tidak memperjualbelikan data pribadi Anda ke pihak manapun dan selalu mematuhi Undang-Undang Pelindungan Data Pribadi (UU PDP No. 27 Tahun 2022).",
       content: "",
-      sections: [],
+      sections: privacyConfig.defaultArticles || [],
     },
     terms: {
       title: "Syarat & Ketentuan",
@@ -92,7 +92,7 @@ const EMPTY = {
       lastUpdated: "7 Oktober 2026",
       summary: "Dengan melakukan pemesanan atau menggunakan platform Make Me Kool (Mameko), Anda menyetujui seluruh ketentuan pemesanan, verifikasi pembayaran Midtrans, pengiriman logistik, serta kewajiban menyertakan video unboxing utuh untuk setiap klaim garansi produk.",
       content: "",
-      sections: [],
+      sections: termsConfig.defaultArticles || [],
     },
   },
 };
@@ -302,11 +302,12 @@ export default function SettingsView() {
           lastUpdated: pick(data?.legal?.privacy?.lastUpdated, raw?.legal?.privacy?.lastUpdated) || "7 Oktober 2026",
           summary: pick(data?.legal?.privacy?.summary, raw?.legal?.privacy?.summary) || "Make Me Kool (Mameko) hanya mengumpulkan data yang esensial untuk memproses pesanan, memfasilitasi pengiriman, dan memberikan pengalaman berbelanja yang nyaman. Kami tidak memperjualbelikan data pribadi Anda ke pihak manapun dan selalu mematuhi Undang-Undang Pelindungan Data Pribadi (UU PDP No. 27 Tahun 2022).",
           content: pick(data?.legal?.privacy?.content, raw?.legal?.privacy?.content) || "",
-          sections: Array.isArray(data?.legal?.privacy?.sections)
-            ? data.legal.privacy.sections
-            : Array.isArray(raw?.legal?.privacy?.sections)
-            ? raw.legal.privacy.sections
-            : [],
+          sections:
+            Array.isArray(data?.legal?.privacy?.sections) && data.legal.privacy.sections.length > 0
+              ? data.legal.privacy.sections
+              : Array.isArray(raw?.legal?.privacy?.sections) && raw.legal.privacy.sections.length > 0
+              ? raw.legal.privacy.sections
+              : privacyConfig.defaultArticles || [],
         },
         terms: {
           title: pick(data?.legal?.terms?.title, raw?.legal?.terms?.title) || "Syarat & Ketentuan",
@@ -314,11 +315,12 @@ export default function SettingsView() {
           lastUpdated: pick(data?.legal?.terms?.lastUpdated, raw?.legal?.terms?.lastUpdated) || "7 Oktober 2026",
           summary: pick(data?.legal?.terms?.summary, raw?.legal?.terms?.summary) || "Dengan melakukan pemesanan atau menggunakan platform Make Me Kool (Mameko), Anda menyetujui seluruh ketentuan pemesanan, verifikasi pembayaran Midtrans, pengiriman logistik, serta kewajiban menyertakan video unboxing utuh untuk setiap klaim garansi produk.",
           content: pick(data?.legal?.terms?.content, raw?.legal?.terms?.content) || "",
-          sections: Array.isArray(data?.legal?.terms?.sections)
-            ? data.legal.terms.sections
-            : Array.isArray(raw?.legal?.terms?.sections)
-            ? raw.legal.terms.sections
-            : [],
+          sections:
+            Array.isArray(data?.legal?.terms?.sections) && data.legal.terms.sections.length > 0
+              ? data.legal.terms.sections
+              : Array.isArray(raw?.legal?.terms?.sections) && raw.legal.terms.sections.length > 0
+              ? raw.legal.terms.sections
+              : termsConfig.defaultArticles || [],
         },
       },
     };
