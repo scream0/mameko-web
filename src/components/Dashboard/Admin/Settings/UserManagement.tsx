@@ -166,7 +166,7 @@ export default function UserManagement() {
 
       let deletionSucceeded = false;
 
-      // 1. Coba hapus via Golang backend API
+      // 1. Coba hapus via Golang backend API (termasuk auth.users via service_role)
       try {
         const res = await fetch(getApiBaseUrl() + "/api/admin/team", {
           method: "DELETE",
@@ -176,41 +176,76 @@ export default function UserManagement() {
           },
           body: JSON.stringify({ userId: targetUserId }),
         });
-        if (res.ok) {
+        // Fix #2: validasi response body, jangan hanya cek res.ok
+        // Karena beberapa Go handler mengembalikan 200 tapi dengan error payload
+        let result: any = {};
+        try {
+          const ct = res.headers?.get("content-type") || "";
+          if (ct.includes("application/json")) result = await res.json();
+        } catch (_) { /* body kosong / non-JSON, abaikan */ }
+
+        if (res.ok && result?.success !== false && !result?.error) {
           deletionSucceeded = true;
+          console.info("[DeleteUser] Berhasil via Go API:", targetUserId);
+        } else {
+          console.warn(
+            "[DeleteUser] Go API OK tapi response menunjukkan gagal:",
+            res.status,
+            result,
+          );
         }
       } catch (apiErr) {
-        console.warn("API DELETE /api/admin/team failed, trying Supabase fallback:", apiErr);
+        console.warn("[DeleteUser] API DELETE /api/admin/team gagal, coba Supabase RPC:", apiErr);
       }
 
-      // 2. Fallback via Supabase RPC jika endpoint backend belum aktif
+      // 2. Fallback via Supabase RPC jika Go API gagal atau belum menghandle auth.users
       if (!deletionSucceeded) {
-        const { error: rpcError } = await supabase.rpc("delete_user_by_admin", {
+        console.info("[DeleteUser] Mencoba RPC delete_user_by_admin...");
+        const { data: rpcData, error: rpcError } = await supabase.rpc("delete_user_by_admin", {
           target_user_id: targetUserId,
         });
         if (!rpcError) {
           deletionSucceeded = true;
+          const deletedFromAuth = rpcData?.deleted_from_auth ?? rpcData;
+          if (!deletedFromAuth) {
+            console.warn(
+              "[DeleteUser] Berhasil via RPC tapi auth.users belum terhapus — Go backend perlu menggunakan Supabase Admin API.",
+            );
+          } else {
+            console.info("[DeleteUser] Berhasil sepenuhnya via Supabase RPC:", targetUserId);
+          }
         } else {
-          // Fallback direct delete from public.profiles
+          console.warn("[DeleteUser] RPC gagal:", rpcError.message, "— mencoba hapus profiles langsung...");
+          // Fallback: hapus dari public.profiles saja (auth.users tetap ada, tapi user tidak muncul di list)
           const { error: profileDelError } = await supabase
             .from("profiles")
             .delete()
             .eq("id", targetUserId);
           if (!profileDelError) {
             deletionSucceeded = true;
+            console.warn(
+              "[DeleteUser] Hanya profiles yang terhapus — auth.users masih ada. Hubungi admin server untuk hapus permanen.",
+            );
           } else {
-            throw new Error(rpcError?.message || profileDelError?.message || "Gagal menghapus pengguna.");
+            throw new Error(
+              rpcError?.message || profileDelError?.message || "Gagal menghapus pengguna.",
+            );
           }
         }
       }
 
-      // Update state lokal
+      // Fix #1: Update state lokal optimis LALU reload dari server untuk konfirmasi
       setUsers((prev) => prev.filter((u) => u.id !== targetUserId));
-      toast.success(config.toasts.deleteSuccess);
       setDeleteTarget(null);
+      toast.success(config.toasts.deleteSuccess);
+
+      // Reload data dari server untuk memastikan delete benar-benar berhasil di DB
+      await loadUsers();
     } catch (err: any) {
       console.error("Gagal hapus user:", err);
       toast.error(err.message || config.toasts.deleteError);
+      // Rollback: reload state dari server agar tidak menampilkan data yang salah
+      await loadUsers();
     } finally {
       setDeletingId(null);
     }
