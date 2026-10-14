@@ -39,12 +39,25 @@ const EMPTY = {
     imageAlt: "",
     imagePublicId: "",
     tagline: "",
+    badge: "",
     title: { main: "", highlight: "" },
     description: { prefix: "", italic: "", suffix: "" },
     buttons: {
       primary: { label: "", href: "" },
       secondary: { label: "", href: "" },
     },
+    trustPills: [
+      { icon: "shield-check", label: "Garansi Keaslian" },
+      { icon: "package", label: "Free Ongkir >500rb" },
+      { icon: "flask-conical", label: "Extrait de Parfum" },
+      { icon: "leaf", label: "Natural Ingredients" },
+    ],
+    stats: [
+      { value: "500+", label: "Pelanggan Puas" },
+      { value: "30+", label: "Varian Aroma" },
+      { value: "4.9★", label: "Rating Produk" },
+    ],
+    scrollIndicator: { label: "Gulir untuk Jelajahi" },
   },
   about: {
     image: "",
@@ -169,6 +182,7 @@ export default function SettingsView() {
         imageAlt: pick(data?.hero?.imageAlt, raw?.hero?.imageAlt),
         imagePublicId: pick(data?.hero?.imagePublicId, raw?.hero?.imagePublicId),
         tagline: pick(data?.hero?.tagline, raw?.hero?.tagline),
+        badge: pick(data?.hero?.badge, raw?.hero?.badge),
         title: {
           main: pick(data?.hero?.title?.main, raw?.hero?.title?.main),
           highlight: pick(data?.hero?.title?.highlight, raw?.hero?.title?.highlight),
@@ -187,6 +201,34 @@ export default function SettingsView() {
             label: pick(data?.hero?.buttons?.secondary?.label, raw?.hero?.buttons?.secondary?.label),
             href: pick(data?.hero?.buttons?.secondary?.href, raw?.hero?.buttons?.secondary?.href),
           },
+        },
+        trustPills:
+          Array.isArray(data?.hero?.trustPills) && data.hero.trustPills.length > 0
+            ? data.hero.trustPills
+            : Array.isArray(raw?.hero?.trustPills) && raw.hero.trustPills.length > 0
+            ? raw.hero.trustPills
+            : [
+                { icon: "shield-check", label: "Garansi Keaslian" },
+                { icon: "package", label: "Free Ongkir >500rb" },
+                { icon: "flask-conical", label: "Extrait de Parfum" },
+                { icon: "leaf", label: "Natural Ingredients" },
+              ],
+        stats:
+          Array.isArray(data?.hero?.stats) && data.hero.stats.length > 0
+            ? data.hero.stats
+            : Array.isArray(raw?.hero?.stats) && raw.hero.stats.length > 0
+            ? raw.hero.stats
+            : [
+                { value: "500+", label: "Pelanggan Puas" },
+                { value: "30+", label: "Varian Aroma" },
+                { value: "4.9★", label: "Rating Produk" },
+              ],
+        scrollIndicator: {
+          label: pick(
+            data?.hero?.scrollIndicator?.label,
+            raw?.hero?.scrollIndicator?.label,
+            "Gulir untuk Jelajahi",
+          ),
         },
       },
       about: {
@@ -540,6 +582,7 @@ export default function SettingsView() {
         imageAlt: strictValue(s.hero.imageAlt, r.hero?.imageAlt, rawVal.hero?.imageAlt),
         imagePublicId: strictValue(s.hero.imagePublicId, r.hero?.imagePublicId, rawVal.hero?.imagePublicId),
         tagline: strictValue(s.hero.tagline, r.hero?.tagline, rawVal.hero?.tagline),
+        badge: strictValue(s.hero.badge, r.hero?.badge, rawVal.hero?.badge),
         title: {
           main: strictValue(s.hero.title?.main, r.hero?.title?.main, rawVal.hero?.title?.main),
           highlight: strictValue(s.hero.title?.highlight, r.hero?.title?.highlight, rawVal.hero?.title?.highlight),
@@ -558,6 +601,25 @@ export default function SettingsView() {
             label: strictValue(s.hero.buttons?.secondary?.label, r.hero?.buttons?.secondary?.label, rawVal.hero?.buttons?.secondary?.label),
             href: strictValue(s.hero.buttons?.secondary?.href, r.hero?.buttons?.secondary?.href, rawVal.hero?.buttons?.secondary?.href),
           },
+        },
+        trustPills:
+          Array.isArray(s.hero.trustPills) && s.hero.trustPills.length > 0 && s.hero.trustPills.some((p: any) => p.label?.trim())
+            ? s.hero.trustPills
+            : Array.isArray(r.hero?.trustPills) && r.hero.trustPills.length > 0
+            ? r.hero.trustPills
+            : rawVal.hero?.trustPills || [],
+        stats:
+          Array.isArray(s.hero.stats) && s.hero.stats.length > 0 && s.hero.stats.some((st: any) => st.value?.trim())
+            ? s.hero.stats
+            : Array.isArray(r.hero?.stats) && r.hero.stats.length > 0
+            ? r.hero.stats
+            : rawVal.hero?.stats || [],
+        scrollIndicator: {
+          label: strictValue(
+            s.hero.scrollIndicator?.label,
+            r.hero?.scrollIndicator?.label,
+            rawVal.hero?.scrollIndicator?.label,
+          ),
         },
       },
       about: {
@@ -1271,6 +1333,163 @@ function HeroTab({ settings, updateTab, handleHeroImageSelect, heroImagePreviewU
             }
           />
         </div>
+      </div>
+
+      {/* ── Badge Urgency Pill ── */}
+      <div className={styles.inputGroup}>
+        <label className={styles.fieldLabel}>
+          {cfg.hero?.badgeLabel || "Badge Urgency (Pill Atas)"}
+        </label>
+        <input
+          className={styles.inputField}
+          value={s.badge || ""}
+          onChange={(e) => set({ badge: e.target.value })}
+          placeholder={cfg.hero?.badgePlaceholder || "✦ Limited Edition — Stok Terbatas"}
+        />
+        <small className={styles.fieldDesc}>
+          {cfg.hero?.badgeDesc || "Teks singkat pada pill di atas tagline. Kosongkan untuk menyembunyikan."}
+        </small>
+      </div>
+
+      {/* ── Trust Pills ── */}
+      <div className={styles.inputGroup}>
+        <label className={styles.fieldLabel}>
+          {cfg.hero?.trustPillsTitle || "Trust Pills (Keunggulan Produk)"}
+        </label>
+        <small className={styles.fieldDesc} style={{ display: "block", marginBottom: "0.75rem" }}>
+          {cfg.hero?.trustPillIconDesc || "Nama ikon Lucide (misal: shield-check, package, leaf, flask-conical)"}
+        </small>
+        {(s.trustPills || []).map((pill: any, i: number) => (
+          <div key={i} className={styles.row2} style={{ marginBottom: "0.5rem", alignItems: "flex-end" }}>
+            <div className={styles.inputGroup} style={{ margin: 0 }}>
+              <label className={styles.fieldLabel}>
+                {cfg.hero?.trustPillIconLabel || "Nama Ikon"}
+              </label>
+              <input
+                className={styles.inputField}
+                value={pill.icon || ""}
+                onChange={(e) => {
+                  const updated = [...(s.trustPills || [])];
+                  updated[i] = { ...updated[i], icon: e.target.value };
+                  set({ trustPills: updated });
+                }}
+                placeholder={cfg.hero?.trustPillIconPlaceholder || "shield-check"}
+              />
+            </div>
+            <div className={styles.inputGroup} style={{ margin: 0 }}>
+              <label className={styles.fieldLabel}>
+                {cfg.hero?.trustPillLabelLabel || "Label Teks"}
+              </label>
+              <input
+                className={styles.inputField}
+                value={pill.label || ""}
+                onChange={(e) => {
+                  const updated = [...(s.trustPills || [])];
+                  updated[i] = { ...updated[i], label: e.target.value };
+                  set({ trustPills: updated });
+                }}
+                placeholder={cfg.hero?.trustPillLabelPlaceholder || "Garansi Keaslian"}
+              />
+            </div>
+            <button
+              type="button"
+              className={styles.removeFeatureBtn}
+              onClick={() => {
+                const updated = (s.trustPills || []).filter((_: any, idx: number) => idx !== i);
+                set({ trustPills: updated });
+              }}
+            >
+              {cfg.hero?.removeTrustPillBtn || "Hapus"}
+            </button>
+          </div>
+        ))}
+        <button
+          type="button"
+          className={styles.addFeatureBtn}
+          onClick={() =>
+            set({ trustPills: [...(s.trustPills || []), { icon: "", label: "" }] })
+          }
+        >
+          {cfg.hero?.addTrustPillBtn || "+ Tambah Pill"}
+        </button>
+      </div>
+
+      {/* ── Stats Brand ── */}
+      <div className={styles.inputGroup}>
+        <label className={styles.fieldLabel}>
+          {cfg.hero?.statsTitle || "Statistik Brand"}
+        </label>
+        {(s.stats || []).map((stat: any, i: number) => (
+          <div key={i} className={styles.row2} style={{ marginBottom: "0.5rem", alignItems: "flex-end" }}>
+            <div className={styles.inputGroup} style={{ margin: 0 }}>
+              <label className={styles.fieldLabel}>
+                {cfg.hero?.statValueLabel || "Angka / Nilai"}
+              </label>
+              <input
+                className={styles.inputField}
+                value={stat.value || ""}
+                onChange={(e) => {
+                  const updated = [...(s.stats || [])];
+                  updated[i] = { ...updated[i], value: e.target.value };
+                  set({ stats: updated });
+                }}
+                placeholder={cfg.hero?.statValuePlaceholder || "500+"}
+              />
+            </div>
+            <div className={styles.inputGroup} style={{ margin: 0 }}>
+              <label className={styles.fieldLabel}>
+                {cfg.hero?.statLabelLabel || "Label Statistik"}
+              </label>
+              <input
+                className={styles.inputField}
+                value={stat.label || ""}
+                onChange={(e) => {
+                  const updated = [...(s.stats || [])];
+                  updated[i] = { ...updated[i], label: e.target.value };
+                  set({ stats: updated });
+                }}
+                placeholder={cfg.hero?.statLabelPlaceholder || "Pelanggan Puas"}
+              />
+            </div>
+            <button
+              type="button"
+              className={styles.removeFeatureBtn}
+              onClick={() => {
+                const updated = (s.stats || []).filter((_: any, idx: number) => idx !== i);
+                set({ stats: updated });
+              }}
+            >
+              {cfg.hero?.removeStatBtn || "Hapus"}
+            </button>
+          </div>
+        ))}
+        <button
+          type="button"
+          className={styles.addFeatureBtn}
+          onClick={() =>
+            set({ stats: [...(s.stats || []), { value: "", label: "" }] })
+          }
+        >
+          {cfg.hero?.addStatBtn || "+ Tambah Statistik"}
+        </button>
+      </div>
+
+      {/* ── Scroll Indicator Label ── */}
+      <div className={styles.inputGroup}>
+        <label className={styles.fieldLabel}>
+          {cfg.hero?.scrollIndicatorLabel || "Label Scroll Indicator"}
+        </label>
+        <input
+          className={styles.inputField}
+          value={s.scrollIndicator?.label || ""}
+          onChange={(e) =>
+            set({ scrollIndicator: { ...s.scrollIndicator, label: e.target.value } })
+          }
+          placeholder={cfg.hero?.scrollIndicatorPlaceholder || "Gulir untuk Jelajahi"}
+        />
+        <small className={styles.fieldDesc}>
+          {cfg.hero?.scrollIndicatorDesc || "Teks kecil di bawah panah scroll. Kosongkan untuk menggunakan default."}
+        </small>
       </div>
     </div>
   );
