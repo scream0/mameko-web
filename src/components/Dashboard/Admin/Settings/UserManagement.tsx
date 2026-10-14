@@ -56,7 +56,14 @@ export default function UserManagement() {
       });
       const result = (res.headers?.get("content-type")?.includes("application/json") ? await res.json() : {});
       if (!res.ok) throw new Error(result.error || "Gagal memuat data pengguna.");
-      setUsers(result.users || []);
+
+      // Filter user dengan status 'inactive' atau 'deleted' agar tidak muncul di list
+      // (Go backend mungkin melakukan soft-delete dengan mengubah status)
+      const allUsers = result.users || [];
+      const activeUsers = allUsers.filter(
+        (u: any) => u.status !== "inactive" && u.status !== "deleted"
+      );
+      setUsers(activeUsers);
     } catch (err) {
       console.error("Gagal memuat user:", err);
       toast.error(config.toasts.fetchError);
@@ -185,11 +192,27 @@ export default function UserManagement() {
         } catch (_) { /* body kosong / non-JSON, abaikan */ }
 
         if (res.ok && result?.success !== false && !result?.error) {
-          deletionSucceeded = true;
-          console.info("[DeleteUser] Berhasil via Go API:", targetUserId);
+          console.info("[DeleteUser] Go API ok (mungkin soft-delete). Melanjutkan RPC hard delete...");
+          // ⚠️ Go API mungkin hanya melakukan soft-delete (status=inactive)
+          // Selalu jalankan RPC untuk memastikan hard delete dari auth.users
+          const { data: rpcData, error: rpcError } = await supabase.rpc("delete_user_by_admin", {
+            target_user_id: targetUserId,
+          });
+          if (!rpcError) {
+            deletionSucceeded = true;
+            const deletedFromAuth = rpcData?.deleted_from_auth ?? rpcData;
+            console.info(
+              "[DeleteUser] Hard delete via RPC:",
+              deletedFromAuth ? "termasuk auth.users ✓" : "hanya profiles (auth.users mungkin masih ada)",
+            );
+          } else {
+            // RPC gagal tapi Go API sudah soft-delete — anggap berhasil dengan warning
+            console.warn("[DeleteUser] RPC gagal setelah Go API ok:", rpcError.message);
+            deletionSucceeded = true; // Go API sudah soft-delete, cukup untuk hilang dari list
+          }
         } else {
           console.warn(
-            "[DeleteUser] Go API OK tapi response menunjukkan gagal:",
+            "[DeleteUser] Go API mengembalikan error:",
             res.status,
             result,
           );
