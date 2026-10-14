@@ -2,36 +2,43 @@
 name: mameko-web-dev
 description: >-
   Standard and runbook for developing, auditing, and maintaining the Mameko Web application
-  (Next.js 15 App Router + React + TypeScript + CSS Modules + data/ui JSON pattern + Cloudflare Pages).
-  Covers architectural guidelines, UI text separation, StoreContext state management,
-  API client communication with Go Backend & Supabase, and production deployment.
+  (Next.js 15 App Router + React 19 + TypeScript + CSS Modules + data/ui JSON pattern + Cloudflare Pages).
+  Covers architectural guidelines, 100% Zero Hardcode standard, StoreContext state management,
+  API client communication with Go Backend & Supabase, settings persistence, and Cloudflare Pages deployment.
 ---
 
 # Mameko Web Development & Architecture Standard
 
-This skill defines the official architectural guidelines, coding conventions, styling rules, UI text management patterns, and deployment standards for the Mameko Web application (`mameko-web`).
+This skill defines the official architectural guidelines, coding conventions, styling rules, UI text management patterns, API dataflow, and deployment standards for the **Mameko Web** application (`mameko-web`).
 
 ---
 
 ## 1. Tech Stack & Directory Structure
 
-The web application is built with modern, zero-bloat web technologies:
-- **Framework**: Next.js 15 (App Router with static exports / Cloudflare Pages target)
+The web application is built with modern, zero-bloat web technologies designed for peak performance:
+- **Framework**: Next.js 15 (App Router with static exports for Cloudflare Pages)
 - **UI & Logic**: React 19, TypeScript
 - **Styling**: Strict CSS Modules (`*.module.css`) + CSS Custom Properties (`globals.css`)
 - **State Management**: `StoreContext.tsx` via custom `useStore()` hook
-- **Data Integration**: Go REST API via `src/lib/apiClient.ts` & Supabase via `src/lib/supabaseClient.ts`
+- **Data Integration**: Go Fiber REST API via `src/lib/apiClient.ts` & Supabase PostgreSQL via `src/lib/supabaseClient.ts`
+- **Hosting & Edge**: Cloudflare Pages with Cloudflare Tunnel connecting to self-hosted Go Backend
 
 ### Key Directory Layout (`mameko-web/src`):
 ```text
 src/
-├── app/                  # Next.js App Router pages (layout.tsx, page.tsx, dashboard/, checkout/, etc.)
-├── components/           # Component library grouped by domain (Dashboard/, UI/, Navbar/, Footer/)
-├── config/               # Business configuration (shipping, constants, checkout)
+├── app/                  # Next.js App Router pages (layout.tsx, page.tsx, dashboard/, checkout/, privacy/, terms/, etc.)
+├── components/           # Component library grouped by domain:
+│   ├── Dashboard/        # Admin & User dashboards, settings, user management, order views
+│   ├── UI/               # Reusable atomic UI (Button, Modal, AppIcon, ThemeToggle)
+│   ├── Legal/            # Shared legal document layouts (LegalLayout.tsx)
+│   ├── Navbar/ & Footer/ # Global navigation and branding
+│   └── CookieConsent/    # Privacy & cookie consent banners
+├── config/               # Business configuration (constants, couriers)
 ├── context/              # Global React Contexts (StoreContext, ThemeContext)
-├── data/ui/              # Centralized JSON UI configuration files (e.g. userProfilConfig.json)
+├── data/ui/              # Centralized JSON UI configuration files (100% Zero Hardcode!)
 ├── hooks/                # Custom React hooks (useCart, useOutsideClick, useProductFilter)
 ├── lib/                  # Shared clients (apiClient.ts, supabaseClient.ts, midtrans.ts)
+├── services/             # Frontend data-access services (settingsService.ts, productService.ts)
 ├── types/                # TypeScript interface definitions (data.ts, index.ts)
 └── utils/                # Helper utilities (authHelpers, rateLimit, imageConverter)
 ```
@@ -40,19 +47,20 @@ src/
 
 ## 2. Mandatory UI Text & Copy Pattern (`data/ui/*.json`)
 
-Similar to the Android `strings.xml` requirement in `mameko-values-and-database-integrity`, **all UI text, labels, button captions, modal headers, empty state descriptions, and toast messages in `mameko-web` MUST reside in `src/data/ui/*Config.json`**.
+### HUKUM MUTLAK: 100% Zero Hardcode
+**All user-facing text, button labels, placeholders, titles, empty states, and toast notifications MUST reside in `src/data/ui/*Config.json`**.
 
 ### Strict Rules:
-1. **Zero Hardcoded JSX Text**: Never write user-facing Indonesian or English copy directly in TSX components.
+1. **Zero Hardcoded JSX Text**: Never write Indonesian or English strings directly in TSX components.
 2. **Import UI Config**: Always import from `@/data/ui/<name>Config.json`:
    ```tsx
-   import profileConfig from "@/data/ui/userProfilConfig.json";
+   import settingsConfig from "@/data/ui/settingsConfig.json";
    
    // Good:
-   <button>{profileConfig.buttons.editProfile}</button>
+   <button>{settingsConfig.buttons.save}</button>
    
    // Forbidden (HARDCODED):
-   <button>Edit Profil</button>
+   <button>Simpan Perubahan</button>
    ```
 3. **Structured Hierarchy**: Organize JSON into logical blocks (`header`, `nav`, `labels`, `modals`, `toasts`, `prompts`, `states`).
 
@@ -60,31 +68,34 @@ Similar to the Android `strings.xml` requirement in `mameko-values-and-database-
 
 ## 3. Styling Standards: Strict Vanilla CSS Modules
 
-To ensure lightning-fast performance and clean separation of concerns:
 1. **No Utility Frameworks**: Do NOT use Tailwind CSS or CSS-in-JS libraries.
 2. **CSS Modules**: Every component requiring custom styles must have its own co-located `<ComponentName>.module.css`:
    ```tsx
-   import styles from "./UserProfil.module.css";
+   import styles from "./SettingsView.module.css";
    
-   <div className={styles.profileContainer}>
+   <div className={styles.sectionCard}>
    ```
-3. **Global Design Tokens**: Always reference CSS custom properties defined in `globals.css` (e.g. `var(--primary-color)`, `var(--bg-card)`, `var(--radius-md)`).
-4. **Responsive Layouts**: Use mobile-first flexbox and CSS grid with standard breakpoints (`@media (max-width: 768px)`).
+3. **No Inline Styles**: Dilarang keras menggunakan `style={{ ... }}` di JSX. Pindahkan seluruh properti visual ke file CSS module co-located.
+4. **Global Design Tokens**: Always reference CSS custom properties defined in `globals.css`:
+   - Canvas: `var(--background)`, `var(--surface-primary)`, `var(--surface-secondary)`, `var(--border-color)`
+   - Text: `var(--text-primary)`, `var(--text-secondary)`, `var(--text-tertiary)`
+   - Accent: `var(--primary-accent)`, `var(--primary-accent-bg)`, `var(--primary-accent-text)`, `var(--secondary)`, `var(--secondary-container)`
+5. **Container-Content Pairing**: Setiap wadah berlatar warna wajib menggunakan warna konten pasangannya untuk memastikan rasio kontras tinggi di Light & Dark Mode.
 
 ---
 
 ## 4. State Management & API Client Integration
 
 ### StoreContext & Shopping Cart
-For global shopping cart operations and currency formatting:
+For global shopping cart operations, currency formatting, and theme state:
 ```tsx
 import { useStore } from "@/context/StoreContext";
 
 const { cart, addToCart, removeFromCart, cartQuantity, rupiah } = useStore();
 ```
-- Use `rupiah(amount)` for consistent currency display across the entire web app.
+- Always use `rupiah(amount)` for consistent IDR currency formatting.
 
-### Backend API Client
+### Backend API Client (`apiClient.ts`)
 All requests to the Go backend must go through `getApiBaseUrl()` from `@/lib/apiClient`:
 ```tsx
 import { getApiBaseUrl } from "@/lib/apiClient";
@@ -97,46 +108,55 @@ const res = await fetch(`${getApiBaseUrl()}/api/user/orders`, {
 });
 ```
 
-### Supabase Authentication
-For session and auth events:
-```tsx
-import { auth } from "@/lib/supabaseClient";
-
-const session = await auth.getSession();
-```
+### Settings & Legal Persistence Flow
+1. **Public Reading**: `getPublicSettings()` in `settingsService.ts` calls `GET /api/settings?public=true` (cached for 5 minutes).
+2. **Admin Reading & Saving**: `getAdminSettings(session)` and `saveSettings(payload, session)` call `/api/settings` and `/api/admin/settings` with bearer token.
+3. **Database Layer**: Data disimpan di tabel `store_config` Supabase PostgreSQL. Kolom `legal jsonb` menyimpan seluruh pasal kustom (`privacy.sections` dan `terms.sections`).
 
 ---
 
-## 5. Verification & Deployment Standard
+## 5. Cloudflare Pages Deployment & Edge Optimization
+
+### File `public/_headers`
+- Mengatur Content Security Policy (CSP), HSTS, Cache-Control untuk aset statis (`/images/*`, `/assets/*`).
+- Mengatur header publik khusus untuk bot verifikasi:
+  ```http
+  /delete-account
+    Access-Control-Allow-Origin: *
+    Cache-Control: public, max-age=3600
+    X-Robots-Tag: index, follow
+  ```
+
+### File `public/robots.txt`
+- Secara eksplisit mengizinkan Google Play Inspection bot (`Google-InspectionTool`, `Googlebot`, `*`) merayapi rute `/delete-account`, `/privacy`, dan `/terms`.
+
+### Cloudflare WAF Skip Rule
+- Untuk mencegah 403 Forbidden pada robot verifikasi Google Play Console:
+  - Expression: `(http.request.uri.path in {"/delete-account" "/delete-account/"})`
+  - Action: `Skip` -> Centang `All remaining custom rules`, `WAF managed rules`, dan `Bot Fight Mode`.
+
+---
+
+## 6. Pre-Commit & Quality Verification Runbook
 
 Before committing or pushing any web changes:
 
 ### Step 1: Run Unit Tests
 ```powershell
-cd '..\mameko-web'
 npm test
 ```
-*Verify that all tests in `src/**/*.test.ts` pass.*
+*Verify that all tests in `src/**/*.test.ts` pass (7/7 tests passed).*
 
-### Step 2: Run Production Build & Typecheck
+### Step 2: Run Production Build
 ```powershell
 npm run build
 ```
-*Ensure Next.js compiles all static pages without type errors or broken imports.*
+*Ensure Next.js compiles all 18 static pages without type errors or broken imports.*
 
-### Step 3: Cloudflare Pages Deployment
-To deploy static output to Cloudflare Pages:
+### Step 3: Git Synchronization
 ```powershell
-npm run pages:deploy
-# Equivalent to: npm run pages:build && wrangler pages deploy out
+git status
+git add <files>
+git commit -m "feat/fix: descriptive message"
+git push origin main
 ```
-
----
-
-## 6. Pre-Commit Checklist
-
-- [ ] Zero hardcoded text in newly created/modified JSX files (all copy in `src/data/ui/*.json`).
-- [ ] No broken imports or leftover files after refactoring.
-- [ ] `npm test` passes with 0 failures.
-- [ ] `npm run build` succeeds with 0 typecheck warnings/errors.
-- [ ] Working tree clean and verified with `git status`.
