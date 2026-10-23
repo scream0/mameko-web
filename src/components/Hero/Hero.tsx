@@ -109,6 +109,7 @@ export function Hero() {
             },
             trustPills: Array.isArray(h.trustPills) && h.trustPills.length > 0 ? h.trustPills : heroData.trustPills,
             stats: Array.isArray(h.stats) && h.stats.length > 0 ? h.stats : heroData.stats,
+            tooltips: Array.isArray(h.tooltips) && h.tooltips.length > 0 ? h.tooltips : (heroData.tooltips || []),
           });
 
           if (spotlightRef.current) {
@@ -196,6 +197,7 @@ export function Hero() {
 
   const trustPills = resolvedHero?.trustPills || heroData.trustPills || [];
   const stats = resolvedHero?.stats || heroData.stats || [];
+  const tooltips = resolvedHero?.tooltips || heroData.tooltips || [];
   const fallback = heroData.fallbackVisual;
 
   return (
@@ -216,7 +218,7 @@ export function Hero() {
         <HeroParticles />
       </div>
 
-      <div className={`${styles.heroInner} ${!heroBackgroundImage ? styles.noVisual : ""}`}>
+      <div className={styles.heroInner}>
         {/* Left Side: Glassmorphism Content */}
         <main
           ref={contentRef}
@@ -303,14 +305,14 @@ export function Hero() {
           )}
         </main>
 
-        {/* Right Side: Floating Visual atau Fallback Card */}
-        {heroBackgroundImage ? (
-          <div className={styles.heroVisualWrapper}>
-            <div
-              ref={visualRef}
-              className={styles.heroVisual}
-            >
-              <div className={styles.heroVisualGlow}></div>
+        {/* Right Side: Floating Visual (Gambar atau Kotak Polos) dengan Floating Tooltips */}
+        <div className={`${styles.heroVisualWrapper} ${styles.reveal} ${styles.delay1} ${isRevealed ? styles.revealed : ""}`}>
+          <div
+            ref={visualRef}
+            className={styles.heroVisual}
+          >
+            <div className={styles.heroVisualGlow}></div>
+            {heroBackgroundImage ? (
               <Image
                 src={optimizeCloudinaryUrl(heroBackgroundImage, IMAGE_PRESETS.HERO)}
                 alt={heroImageAlt}
@@ -320,30 +322,33 @@ export function Hero() {
                 priority
                 sizes="(max-width: 768px) 100vw, 50vw"
               />
-            </div>
-          </div>
-        ) : (
-          /* Fallback glassmorphism product card saat tidak ada gambar */
-          <div className={`${styles.heroVisualWrapper} ${styles.reveal} ${styles.delay1} ${isRevealed ? styles.revealed : ""}`} aria-hidden="true">
-            <div ref={visualRef} className={`${styles.heroVisual} ${styles.heroFallbackCard}`}>
-              <div className={styles.heroVisualGlow}></div>
-              <div className={styles.fallbackInner}>
-                <span className={styles.fallbackEyebrow}>{fallback?.eyebrow}</span>
-                <div className={styles.fallbackBottle}>
-                  <div className={styles.bottleShape} />
-                  <div className={styles.bottleReflect} />
-                  <div className={styles.bottleShimmer} />
+            ) : (
+              <div
+                className={styles.heroFallbackBox}
+                aria-label={fallback?.label || "Hero Visual"}
+              />
+            )}
+
+            {/* Tooltip yang selalu muncul mengikuti efek gerakan gambar/visual */}
+            {tooltips.map((item: any) => {
+              const positionClass =
+                item.position === "topLeft"
+                  ? styles.tooltipTopLeft
+                  : styles.tooltipBottomRight;
+
+              return (
+                <div
+                  key={item.id}
+                  className={`${styles.heroTooltip} ${positionClass}`}
+                >
+                  <span className={styles.tooltipDot} aria-hidden="true" />
+                  <AppIcon name={item.icon} size={15} className={styles.tooltipIcon} />
+                  <span>{item.label}</span>
                 </div>
-                <div className={styles.fallbackMeta}>
-                  <p className={styles.fallbackProductName}>{fallback?.productName}</p>
-                  <p className={styles.fallbackNote}>{fallback?.productNote}</p>
-                  <p className={styles.fallbackTagline}>{fallback?.tagline}</p>
-                </div>
-                <span className={styles.fallbackBadge}>{fallback?.badge}</span>
-              </div>
-            </div>
+              );
+            })}
           </div>
-        )}
+        </div>
       </div>
 
       {/* Scroll Down Indicator */}

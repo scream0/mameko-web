@@ -21,14 +21,17 @@ export function optimizeCloudinaryUrl(
 ): string {
   if (!url || typeof url !== "string") return url || "";
 
+  // Pastikan protokol selalu HTTPS (In-Transit Encryption)
+  const secureUrl = url.replace(/^http:\/\//i, "https://");
+
   // Hanya proses URL Cloudinary yang valid
-  if (!url.includes("res.cloudinary.com") || !url.includes("/image/upload/")) {
-    return url;
+  if (!secureUrl.includes("res.cloudinary.com") || !secureUrl.includes("/image/upload/")) {
+    return secureUrl;
   }
 
   // Jika URL sudah memiliki transformasi f_auto atau q_auto, kembalikan apa adanya
-  if (url.includes("f_auto") || url.includes("q_auto")) {
-    return url;
+  if (secureUrl.includes("f_auto") || secureUrl.includes("q_auto")) {
+    return secureUrl;
   }
 
   const {
@@ -67,7 +70,7 @@ export function optimizeCloudinaryUrl(
 
   const transformString = transformations.join(",");
 
-  return url.replace("/image/upload/", `/image/upload/${transformString}/`);
+  return secureUrl.replace("/image/upload/", `/image/upload/${transformString}/`);
 }
 
 /**

@@ -60,6 +60,14 @@ import {
   Loader,
   Sparkles,
   Share2,
+  Leaf,
+  FlaskConical,
+  Camera,
+  Circle,
+  Eye,
+  EyeOff,
+  Info,
+  ThumbsUp,
 } from "lucide-react";
 
 const iconMap: Record<string, React.ElementType> = {
@@ -141,6 +149,20 @@ const iconMap: Record<string, React.ElementType> = {
   "sparkles": Sparkles,
   "feed": Sparkles,
   "share-2": Share2,
+  "leaf": Leaf,
+  "flask-conical": FlaskConical,
+  "camera": Camera,
+  "circle": Circle,
+  "credit-card": CreditCard,
+  "trending-up": TrendingUp,
+  "eye": Eye,
+  "eye-off": EyeOff,
+  "info": Info,
+  "thumbs-up": ThumbsUp,
+  "like": ThumbsUp,
+  "whatsapp": MessageCircle,
+  "return": RotateCcw,
+  "refund": RotateCcw,
 };
 
 const InstagramLogo = ({ className, size = 24, ...props }: any) => (

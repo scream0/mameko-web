@@ -34,12 +34,22 @@
   "scrollIndicator": {
     "label": "Gulir untuk Jelajahi"
   },
+  "tooltips": [
+    {
+      "id": "natural-ingredients",
+      "icon": "leaf",
+      "label": "Natural Ingredients",
+      "position": "topLeft"
+    },
+    {
+      "id": "produk-lokal",
+      "icon": "map-pin",
+      "label": "Produk Lokal",
+      "position": "bottomRight"
+    }
+  ],
   "fallbackVisual": {
-    "eyebrow": "New Arrival",
-    "productName": "Extrait de Parfum",
-    "productNote": "Limited Edition — Batch 01",
-    "tagline": "Diracik manual, eksklusif,\nhanya untuk Anda.",
-    "badge": "🔥 Stok Terbatas"
+    "label": "Mameko Craftsmanship Visual"
   },
   "effects": {
     "spotlightColor": "rgba(229, 228, 226, 0.1)"

@@ -10,8 +10,8 @@
   backdrop-filter: blur(24px) saturate(150%);
   -webkit-backdrop-filter: blur(24px) saturate(150%);
   background-color: rgba(var(--surface-primary-rgb), 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.08); 
-  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.1);
   display: flex;
   justify-content: space-between;
@@ -84,7 +84,7 @@
   transform: translateY(-50%);
   height: 36px;
   background: rgba(150, 150, 150, 0.1);
-  border-radius: 999px;
+  border-radius: 8px;
   transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
   pointer-events: none;
   z-index: 0;
@@ -134,7 +134,7 @@
   gap: 0.75rem;
 }
 
-.navbarExtra > button {
+.navbarExtra>button {
   background: transparent;
   border: 1px solid transparent;
   cursor: pointer;
@@ -149,7 +149,7 @@
   min-height: 38px;
 }
 
-.navbarExtra > button:hover {
+.navbarExtra>button:hover {
   background-color: var(--surface-secondary);
   border-color: var(--border-color);
 }
@@ -188,10 +188,11 @@
 }
 
 .themeIconWrapper.light {
-  transform: translateY(-18px); /* height of one icon */
+  transform: translateY(-18px);
+  /* height of one icon */
 }
 
-.themeIconWrapper > * {
+.themeIconWrapper>* {
   flex-shrink: 0;
   width: 18px;
   height: 18px;
@@ -223,8 +224,15 @@
 }
 
 @keyframes cartBounce {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.15); }
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.15);
+  }
 }
 
 /* Pulse ring yang mekar sekali dari badge tiap quantity berubah */
@@ -242,6 +250,7 @@
     transform: scale(1);
     opacity: 0.8;
   }
+
   100% {
     transform: scale(2.4);
     opacity: 0;
@@ -351,8 +360,15 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-6px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .dropdownHeader {
@@ -478,13 +494,13 @@
     border: none;
     border-radius: 0;
     z-index: 9999;
-    
+
     /* Animation base */
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
     transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-                visibility 0.35s;
+      visibility 0.35s;
   }
 
   .navbarNav.active {
@@ -494,7 +510,8 @@
   }
 
   .navHoverPill {
-    display: none; /* Nonaktif di mobile */
+    display: none;
+    /* Nonaktif di mobile */
   }
 
   /* --- Mobile Drawer Pane (Full 100vw Width, Edge-to-Edge) --- */
@@ -580,10 +597,10 @@
     color: var(--text-primary);
     cursor: pointer;
     transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
-                background 0.2s ease,
-                border-color 0.2s ease,
-                color 0.2s ease,
-                box-shadow 0.2s ease;
+      background 0.2s ease,
+      border-color 0.2s ease,
+      color 0.2s ease,
+      box-shadow 0.2s ease;
     flex-shrink: 0;
   }
 
@@ -663,10 +680,21 @@
     animation: slideInLink 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
-  .navbarNav.active .mobileNavList a.mobileNavLink:nth-child(1) { animation-delay: 0.08s; }
-  .navbarNav.active .mobileNavList a.mobileNavLink:nth-child(2) { animation-delay: 0.14s; }
-  .navbarNav.active .mobileNavList a.mobileNavLink:nth-child(3) { animation-delay: 0.20s; }
-  .navbarNav.active .mobileNavList a.mobileNavLink:nth-child(4) { animation-delay: 0.26s; }
+  .navbarNav.active .mobileNavList a.mobileNavLink:nth-child(1) {
+    animation-delay: 0.08s;
+  }
+
+  .navbarNav.active .mobileNavList a.mobileNavLink:nth-child(2) {
+    animation-delay: 0.14s;
+  }
+
+  .navbarNav.active .mobileNavList a.mobileNavLink:nth-child(3) {
+    animation-delay: 0.20s;
+  }
+
+  .navbarNav.active .mobileNavList a.mobileNavLink:nth-child(4) {
+    animation-delay: 0.26s;
+  }
 
   /* --- Arrow Icon & Hover Animation --- */
   .navLinkArrow {
@@ -696,6 +724,7 @@
       transform: rotate(-90deg) scale(0.6);
       opacity: 0;
     }
+
     100% {
       transform: rotate(0deg) scale(1);
       opacity: 1;
@@ -707,6 +736,7 @@
       opacity: 0;
       transform: translate3d(20px, 0, 0);
     }
+
     100% {
       opacity: 1;
       transform: translate3d(0, 0, 0);
@@ -717,7 +747,7 @@
     gap: 0.25rem;
   }
 
-  .navbarExtra > button {
+  .navbarExtra>button {
     min-width: 34px;
     min-height: 34px;
     padding: 6px;
@@ -874,6 +904,7 @@
 
 /* --- Hormati preferensi reduced motion di semua breakpoint --- */
 @media (prefers-reduced-motion: reduce) {
+
   .navbarNav,
   .navbarNav a,
   .pulseRing,

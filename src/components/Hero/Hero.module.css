@@ -53,7 +53,7 @@
 .auroraBg::after {
   content: "";
   position: absolute;
-  border-radius: 50%;
+  border-radius: 8%;
   filter: blur(80px);
   opacity: 0.6;
   animation: auroraAnimation 20s infinite alternate linear;
@@ -129,11 +129,9 @@
   z-index: 1;
   pointer-events: none;
   transition: background 0.1s ease-out;
-  background: radial-gradient(
-    600px circle at var(--spotlight-x, 50%) var(--spotlight-y, 50%),
-    var(--spotlight-color, rgba(229, 228, 226, 0.1)),
-    transparent 80%
-  );
+  background: radial-gradient(600px circle at var(--spotlight-x, 50%) var(--spotlight-y, 50%),
+      var(--spotlight-color, rgba(229, 228, 226, 0.1)),
+      transparent 80%);
 }
 
 .heroOverlay {
@@ -189,7 +187,7 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-top-color: rgba(255, 255, 255, 0.2);
   border-left-color: rgba(255, 255, 255, 0.16);
-  border-radius: 28px;
+  border-radius: 8px;
   padding: 3rem 3rem 2.5rem;
   box-shadow:
     0 30px 60px rgba(0, 0, 0, 0.35),
@@ -232,7 +230,7 @@
   right: -10%;
   width: 180px;
   height: 180px;
-  border-radius: 50%;
+  border-radius: 8%;
   background: radial-gradient(circle, rgba(var(--secondary-rgb), 0.1), transparent 72%);
   filter: blur(6px);
   pointer-events: none;
@@ -273,8 +271,15 @@
 }
 
 @keyframes pulseBadge {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(var(--secondary-rgb), 0.3); }
-  50% { box-shadow: 0 0 0 6px rgba(var(--secondary-rgb), 0); }
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(var(--secondary-rgb), 0.3);
+  }
+
+  50% {
+    box-shadow: 0 0 0 6px rgba(var(--secondary-rgb), 0);
+  }
 }
 
 /* ====================================================
@@ -359,9 +364,23 @@
   padding-left: 1.2rem;
 }
 
-.statsVisible .statItem:nth-child(1) { opacity: 1; transform: translateY(0); transition-delay: 0ms; }
-.statsVisible .statItem:nth-child(2) { opacity: 1; transform: translateY(0); transition-delay: 100ms; }
-.statsVisible .statItem:nth-child(3) { opacity: 1; transform: translateY(0); transition-delay: 200ms; }
+.statsVisible .statItem:nth-child(1) {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 0ms;
+}
+
+.statsVisible .statItem:nth-child(2) {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 100ms;
+}
+
+.statsVisible .statItem:nth-child(3) {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 200ms;
+}
 
 .statValue {
   font-family: var(--font-serif);
@@ -421,7 +440,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 32px;
+  border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 40px 80px rgba(0, 0, 0, 0.3), 0 0 40px rgba(var(--secondary-rgb), 0.15);
 }
@@ -454,161 +473,94 @@
 }
 
 /* ====================================================
-   FALLBACK CARD — saat tidak ada gambar produk dari admin
+   KOTAK POLOS (FALLBACK) & FLOATING TOOLTIPS
    ==================================================== */
-.heroFallbackCard {
-  background: rgba(var(--surface-primary-rgb), 0.2);
-  backdrop-filter: blur(24px) saturate(160%);
-  -webkit-backdrop-filter: blur(24px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-top-color: rgba(255, 255, 255, 0.22);
-  border-radius: 32px;
-  overflow: hidden;
-  box-shadow:
-    0 32px 72px rgba(0, 0, 0, 0.32),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-}
-
-.fallbackInner {
-  position: relative;
+.heroFallbackBox {
   width: 100%;
   height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  padding: 2.5rem 2rem;
-  text-align: center;
-}
-
-.fallbackEyebrow {
-  position: absolute;
-  top: 1.5rem;
-  left: 1.5rem;
-  font-family: var(--font-sans);
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--secondary);
-  background: rgba(var(--secondary-rgb), 0.12);
-  border: 1px solid rgba(var(--secondary-rgb), 0.3);
-  padding: 4px 10px;
-  border-radius: 999px;
-}
-
-/* Bottle shape abstract */
-.bottleShape {
-  width: 80px;
-  height: 140px;
-  background: linear-gradient(
-    145deg,
-    rgba(var(--secondary-rgb), 0.4) 0%,
-    rgba(var(--primary-accent-rgb), 0.15) 50%,
-    rgba(var(--secondary-rgb), 0.2) 100%
-  );
-  border-radius: 40px 40px 28px 28px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  position: relative;
+  border-radius: 8px;
+  background: rgba(var(--surface-primary-rgb), 0.12);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  border: 1px solid rgba(var(--border-color), 0.4);
+  border-top-color: rgba(255, 255, 255, 0.2);
   box-shadow:
-    0 20px 40px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
-  animation: floatImage 6s ease-in-out infinite;
-}
-
-.bottleShape::before {
-  content: "";
-  position: absolute;
-  top: -20px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 28px;
-  height: 22px;
-  background: rgba(var(--surface-primary-rgb), 0.5);
-  border-radius: 6px 6px 0 0;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-bottom: none;
-}
-
-.bottleReflect {
-  position: absolute;
-  top: 18px;
-  left: 14px;
-  width: 12px;
-  height: 60px;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.35), transparent);
-  border-radius: 6px;
-}
-
-.bottleShimmer {
-  position: absolute;
-  inset: 0;
-  border-radius: 40px 40px 28px 28px;
-  background: linear-gradient(
-    135deg,
-    transparent 30%,
-    rgba(255, 255, 255, 0.12) 50%,
-    transparent 70%
-  );
-  animation: shimmerSweep 3s ease-in-out infinite;
-}
-
-@keyframes shimmerSweep {
-  0%, 100% { opacity: 0; transform: translateX(-100%); }
-  50% { opacity: 1; transform: translateX(100%); }
-}
-
-.fallbackBottle {
+    0 30px 60px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
   position: relative;
-  margin: 0.5rem 0;
+  overflow: hidden;
 }
 
-.fallbackMeta {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-}
-
-.fallbackProductName {
-  font-family: var(--font-serif);
-  font-size: 1.3rem;
-  font-weight: 400;
-  color: var(--text-primary);
-  letter-spacing: 0.04em;
-}
-
-.fallbackNote {
-  font-family: var(--font-sans);
-  font-size: 0.7rem;
-  color: var(--text-tertiary);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.fallbackTagline {
-  font-family: var(--font-sans);
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  line-height: 1.55;
-  white-space: pre-line;
-  max-width: 220px;
-  margin: 0 auto;
-}
-
-.fallbackBadge {
+/* Floating Tooltips (Natural Ingredients & Produk Lokal) */
+.heroTooltip {
   position: absolute;
-  bottom: 1.5rem;
-  right: 1.5rem;
-  background: rgba(var(--danger-color-rgb), 0.12);
-  border: 1px solid rgba(var(--danger-color-rgb), 0.3);
-  color: var(--danger-text);
-  font-family: var(--font-sans);
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  padding: 4px 10px;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
   border-radius: 999px;
+  background: rgba(var(--surface-primary-rgb), 0.82);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow:
+    0 12px 28px rgba(0, 0, 0, 0.22),
+    0 2px 8px rgba(var(--secondary-rgb), 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  user-select: none;
+  pointer-events: auto;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+}
+
+.heroTooltip:hover {
+  transform: scale(1.05);
+  box-shadow:
+    0 16px 36px rgba(0, 0, 0, 0.28),
+    0 4px 12px rgba(var(--secondary-rgb), 0.25);
+}
+
+.tooltipTopLeft {
+  top: 10%;
+  left: -20px;
+}
+
+.tooltipBottomRight {
+  bottom: 12%;
+  right: -20px;
+}
+
+.tooltipDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--secondary);
+  box-shadow: 0 0 8px var(--secondary);
+  flex-shrink: 0;
+  animation: tooltipDotPulse 2s infinite ease-in-out;
+}
+
+@keyframes tooltipDotPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.85;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 1;
+    box-shadow: 0 0 12px var(--secondary);
+  }
+}
+
+.tooltipIcon {
+  color: var(--secondary);
+  flex-shrink: 0;
 }
 
 /* ====================================================
@@ -653,8 +605,17 @@
 }
 
 @keyframes scrollBounce {
-  0%, 100% { opacity: 1; transform: translateY(0); }
-  50% { opacity: 0.3; transform: translateY(8px); }
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  50% {
+    opacity: 0.3;
+    transform: translateY(8px);
+  }
 }
 
 .scrollLabel {
@@ -674,6 +635,7 @@
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -721,7 +683,9 @@
     opacity: 1;
   }
 
-  .scrollWheel, .bottleShape, .bottleShimmer, .heroVisual {
+  .scrollWheel,
+  .heroTooltip,
+  .heroVisual {
     animation: none;
   }
 }
@@ -834,12 +798,10 @@
   left: -75%;
   width: 50%;
   height: 200%;
-  background: linear-gradient(
-    to right,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.4) 50%,
-    rgba(255, 255, 255, 0) 100%
-  );
+  background: linear-gradient(to right,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.4) 50%,
+      rgba(255, 255, 255, 0) 100%);
   transform: skewX(-15deg);
   transition: left 0.6s ease;
 }
@@ -932,7 +894,7 @@
   .content {
     order: 2;
     padding: 2rem 1.5rem;
-    border-radius: 22px;
+    border-radius: 8px;
     width: 100%;
     margin: 0;
   }
@@ -1000,5 +962,21 @@
 
   .scrollIndicator {
     display: none;
+  }
+
+  .tooltipTopLeft {
+    top: 10px;
+    left: 10px;
+  }
+
+  .tooltipBottomRight {
+    bottom: 10px;
+    right: 10px;
+  }
+
+  .heroTooltip {
+    padding: 6px 12px;
+    font-size: 0.68rem;
+    gap: 6px;
   }
 }
