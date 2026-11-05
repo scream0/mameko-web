@@ -42,8 +42,8 @@ const ProductModal = dynamic(
   () => import("@/components/UI/Modal/ProductModal").then((mod) => mod.Modal),
   { ssr: false }
 );
-const UserChatModal = dynamic(
-  () => import("@/components/Dashboard/User/Chat/UserChatModal"),
+const UserChatView = dynamic(
+  () => import("@/components/Dashboard/User/Chat/UserChatView"),
   { ssr: false }
 );
 const FeedView = dynamic(
@@ -306,7 +306,7 @@ export default function UserDashboard({ user }) {
             <button
               type="button"
               className={styles.chatIconBtnNavbar}
-              onClick={() => setIsChatOpen(true)}
+              onClick={() => handleTabChange("chat")}
               aria-label={userConfig.navbar?.chatAria || "Chat"}
               title={userConfig.navbar?.chatAria || "Chat"}
             >
@@ -354,6 +354,7 @@ export default function UserDashboard({ user }) {
             <NotificationsSection onUnreadCountChange={setNotificationCount} />
           </div>
           {activeTab === "profile" && <ProfileSection />}
+          {activeTab === "chat" && <UserChatView user={user} />}
         </div>
       </main>
 
@@ -387,13 +388,6 @@ export default function UserDashboard({ user }) {
       </nav>
 
       {/* Modals & Overlays */}
-      {isChatOpen && (
-        <UserChatModal
-          isOpen={isChatOpen}
-          onClose={() => setIsChatOpen(false)}
-          user={user}
-        />
-      )}
       
       {isCartOpen && <CartSidebar isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />}
 

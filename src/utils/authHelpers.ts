@@ -5,16 +5,9 @@ import { getApiBaseUrl } from "@/lib/apiClient";
 // --- HELPER INTERNAL (PRIVATE) ---
 
 // 1. Helper untuk membuat Cookie Sesi di Server
-async function setSessionCookie(accessToken: string) {
-  const response = await fetch(getApiBaseUrl() + "/api/auth/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ token: accessToken }),
-  });
-
-  if (!response.ok) {
-    throw new Error("Gagal membuat sesi cookie di server.");
-  }
+async function setSessionCookie(_accessToken: string) {
+  // No-op: Go Backend /api/auth/login dan /api/auth/register sudah mengatur cookie sesi secara otomatis
+  return;
 }
 
 // ==========================================

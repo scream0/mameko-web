@@ -203,17 +203,24 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
       orderId &&
       (transactionStatus === "settlement" ||
         transactionStatus === "200" ||
-        transactionStatus === "success")
+        transactionStatus === "success" ||
+        transactionStatus === "capture")
     ) {
       toast.success(`Pembayaran untuk pesanan #${orderId} berhasil!`);
 
-      fetch(getApiBaseUrl() + `/api/user/orders/${orderId}/sync`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ transaction_status: transactionStatus === "200" ? "success" : transactionStatus }),
-      }).catch((err) =>
-        console.error("Gagal sinkronisasi status otomatis:", err),
-      );
+      auth.getSession().then(({ data: { session } }: any) => {
+        const token = session?.access_token;
+        const headers: Record<string, string> = { "Content-Type": "application/json" };
+        if (token) headers["Authorization"] = `Bearer ${token}`;
+
+        fetch(getApiBaseUrl() + `/api/orders/${orderId}/sync`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ transaction_status: transactionStatus === "200" ? "settlement" : transactionStatus }),
+        }).catch((err) =>
+          console.error("Gagal sinkronisasi status otomatis:", err),
+        );
+      });
 
       const cleanUrl = `/dashboard/order-detail?id=${orderId}`;
       window.history.replaceState({}, document.title, cleanUrl);
@@ -1012,6 +1019,16 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
         onSuccess: () => {
           toast.success("Pembayaran berhasil!");
           setOrder((prev: any) => ({ ...prev, status: "paid" }));
+          auth.getSession().then(({ data: { session } }: any) => {
+            const token = session?.access_token;
+            const headers: Record<string, string> = { "Content-Type": "application/json" };
+            if (token) headers["Authorization"] = `Bearer ${token}`;
+            fetch(getApiBaseUrl() + `/api/orders/${order.id}/sync`, {
+              method: "POST",
+              headers,
+              body: JSON.stringify({ transaction_status: "settlement" }),
+            }).catch((err) => console.error("Gagal sync status order:", err));
+          });
           if (typeof window !== "undefined") {
             window.dispatchEvent(new Event("product-stock-updated"));
             window.dispatchEvent(new Event("order-status-updated"));
