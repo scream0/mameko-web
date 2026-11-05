@@ -298,12 +298,62 @@ class NativeAuthClient {
     return { error: null };
   }
 
-  async signInWithOtp(params: any): Promise<{ data: any; error: any }> {
-    return { data: null, error: null };
+  async signInWithOtp(params: { email: string; options?: any }): Promise<{ data: any; error: any }> {
+    try {
+      const baseUrl = getApiBaseUrl();
+      const res = await fetch(`${baseUrl}/api/auth/send-email-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: params.email }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.success === false) {
+        return { data: null, error: { message: data.error || "Gagal mengirim OTP ke email", status: res.status } };
+      }
+      return { data: { email: params.email }, error: null };
+    } catch (err: any) {
+      return { data: null, error: { message: err?.message || "Gagal terhubung ke server", status: 500 } };
+    }
   }
 
-  async verifyOtp(params: any): Promise<{ data: any; error: any }> {
-    return { data: null, error: null };
+  async verifyOtp(params: { email: string; token: string; type?: string }): Promise<{ data: { user: any; session: any }; error: any }> {
+    try {
+      const baseUrl = getApiBaseUrl();
+      const res = await fetch(`${baseUrl}/api/auth/verify-email-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: params.email, otp: params.token }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.success === false) {
+        return {
+          data: { user: null, session: null },
+          error: { message: data.error || "Kode OTP salah atau telah kedaluwarsa", status: res.status },
+        };
+      }
+
+      const tokenData = data.data;
+      const session = {
+        access_token: tokenData.access_token,
+        refresh_token: tokenData.refresh_token,
+        token_type: tokenData.token_type,
+        expires_in: tokenData.expires_in,
+        user: tokenData.user,
+      };
+
+      this.saveSession(session);
+      this.notifyListeners("SIGNED_IN", session);
+
+      return {
+        data: { user: tokenData.user, session },
+        error: null,
+      };
+    } catch (err: any) {
+      return {
+        data: { user: null, session: null },
+        error: { message: err?.message || "Gagal memverifikasi OTP", status: 500 },
+      };
+    }
   }
 
   async exchangeCodeForSession(code: string): Promise<{ data: { session: any }; error: any }> {
