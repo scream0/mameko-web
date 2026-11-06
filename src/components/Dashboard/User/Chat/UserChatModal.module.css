@@ -472,12 +472,13 @@
 
 /* Quoted reply inside message bubble */
 .quotedMessageSnippet {
-  background: rgba(0, 0, 0, 0.12);
-  border-left: 3px solid currentColor;
-  padding: 4px 8px;
+  background: rgba(0, 0, 0, 0.22);
+  border-left: 3px solid rgba(255, 255, 255, 0.95);
+  color: #ffffff;
+  padding: 6px 10px;
   border-radius: 4px;
   margin-bottom: 6px;
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   cursor: pointer;
   max-width: 100%;
   overflow: hidden;
@@ -485,23 +486,38 @@
   white-space: nowrap;
 }
 
+.messageRow.admin .quotedMessageSnippet {
+  background: var(--surface-secondary, #f1f5f9);
+  border-left: 3px solid var(--primary-accent);
+  color: var(--text-primary);
+}
+
 :global([data-theme="dark"]) .quotedMessageSnippet,
 :global(.dark) .quotedMessageSnippet {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+:global([data-theme="dark"]) .messageRow.admin .quotedMessageSnippet,
+:global(.dark) .messageRow.admin .quotedMessageSnippet {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
 }
 
 .quotedSender {
-  font-weight: 600;
-  font-size: 0.72rem;
+  font-weight: 700;
+  font-size: 0.74rem;
   margin-bottom: 2px;
-  opacity: 0.9;
+  opacity: 0.95;
+  color: inherit;
 }
 
 .quotedText {
-  opacity: 0.85;
+  opacity: 0.9;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  color: inherit;
 }
 
 /* Reply trigger button next to bubble */

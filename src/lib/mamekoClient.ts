@@ -1,4 +1,4 @@
-﻿/**
+/**
  * src/lib/mamekoClient.ts
  *
  * MAMEKO NATIVE CLIENT (Adapter Pattern)
@@ -511,44 +511,54 @@ export class NativeAuthClient {
 }
 
 // ==========================================
-// NATIVE WEBSOCKET REALTIME CHANNEL
+// SHARED REALTIME WEBSOCKET CONNECTION
 // ==========================================
 
-export class NativeRealtimeChannel {
-  public topic: string;
+class SharedRealtimeSocket {
+  private static instance: SharedRealtimeSocket | null = null;
   private ws: WebSocket | null = null;
-  private listeners: Array<{
-    event: string;
-    callback: (payload: any) => void;
-  }> = [];
-  private isSubscribed = false;
+  private channels: Set<NativeRealtimeChannel> = new Set();
   private reconnectTimer: any = null;
+  private pingTimer: any = null;
+  private isConnecting = false;
 
-  constructor(topic: string) {
-    this.topic = topic;
-  }
-
-  on(
-    type: string,
-    filter: Record<string, any>,
-    callback: (payload: any) => void
-  ): NativeRealtimeChannel {
-    this.listeners.push({ event: type, callback });
-    return this;
-  }
-
-  subscribe(statusCallback?: (status: string) => void): NativeRealtimeChannel {
-    this.isSubscribed = true;
-    this.connect();
-    if (statusCallback) {
-      setTimeout(() => statusCallback("SUBSCRIBED"), 100);
+  public static getInstance(): SharedRealtimeSocket {
+    if (!SharedRealtimeSocket.instance) {
+      SharedRealtimeSocket.instance = new SharedRealtimeSocket();
     }
-    return this;
+    return SharedRealtimeSocket.instance;
   }
 
-  private connect() {
-    if (typeof window === "undefined" || !this.isSubscribed) return;
+  public register(ch: NativeRealtimeChannel) {
+    this.channels.add(ch);
+    this.ensureConnected();
+  }
 
+  public unregister(ch: NativeRealtimeChannel) {
+    this.channels.delete(ch);
+    if (this.channels.size === 0) {
+      this.disconnect();
+    }
+  }
+
+  public send(data: string) {
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      try {
+        this.ws.send(data);
+      } catch (err) {
+        console.warn("[SharedWS] Send error:", err);
+      }
+    }
+  }
+
+  private ensureConnected() {
+    if (typeof window === "undefined") return;
+    if (this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) {
+      return;
+    }
+    if (this.isConnecting) return;
+
+    this.isConnecting = true;
     try {
       const token =
         localStorage.getItem("mameko_access_token") ||
@@ -563,60 +573,175 @@ export class NativeRealtimeChannel {
       this.ws = new WebSocket(wsUrl);
 
       this.ws.onopen = () => {
+        this.isConnecting = false;
+        clearInterval(this.pingTimer);
+        this.pingTimer = setInterval(() => {
+          if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+            try {
+              this.ws.send("ping");
+            } catch (e) {}
+          }
+        }, 30000);
+
         try {
           this.ws?.send("ping");
         } catch (e) {}
+
+        this.channels.forEach((ch) => ch.notifySubscribed());
       };
 
       this.ws.onmessage = (event) => {
         try {
           const parsed = JSON.parse(event.data);
-          if (parsed.event === "new_message") {
-            const payload = {
-              eventType: "INSERT",
-              new: parsed.data,
-              old: null,
-              schema: "public",
-              table: "chats",
-            };
-            this.listeners.forEach((l) => l.callback(payload));
-          } else if (parsed.event === "messages_read") {
-            const payload = {
-              eventType: "UPDATE",
-              new: parsed.data,
-              old: null,
-              schema: "public",
-              table: "chats",
-            };
-            this.listeners.forEach((l) => l.callback(payload));
-          }
+          this.channels.forEach((ch) => ch.dispatchMessage(parsed));
         } catch (e) {
-          // ignore
+          // ignore non-json messages like pong
         }
       };
 
       this.ws.onclose = () => {
-        if (this.isSubscribed) {
+        this.isConnecting = false;
+        clearInterval(this.pingTimer);
+        if (this.channels.size > 0) {
           clearTimeout(this.reconnectTimer);
-          this.reconnectTimer = setTimeout(() => this.connect(), 3000);
+          this.reconnectTimer = setTimeout(() => this.ensureConnected(), 3000);
         }
       };
 
       this.ws.onerror = (err) => {
-        console.warn("[WS Channel] Error on topic", this.topic, err);
+        this.isConnecting = false;
+        console.warn("[SharedWS] Connection warning:", err);
       };
     } catch (err) {
-      console.warn("[WS Channel] Connection failed:", err);
+      this.isConnecting = false;
+      console.warn("[SharedWS] Connect exception:", err);
     }
+  }
+
+  private disconnect() {
+    clearInterval(this.pingTimer);
+    clearTimeout(this.reconnectTimer);
+    if (this.ws) {
+      try {
+        this.ws.close();
+      } catch (e) {}
+      this.ws = null;
+    }
+    this.isConnecting = false;
+  }
+}
+
+// ==========================================
+// REALTIME CHANNEL (Supabase Realtime Compatible)
+// ==========================================
+
+export class NativeRealtimeChannel {
+  public topic: string;
+  private listeners: Array<{
+    type: string;
+    filter: Record<string, any>;
+    callback: (payload: any) => void;
+  }> = [];
+  private presencePayload: any = {};
+  private isSubscribed = false;
+  private statusCallback?: (status: string) => void;
+
+  constructor(topic: string) {
+    this.topic = topic;
+  }
+
+  on(
+    type: string,
+    filterOrCallback: any,
+    optionalCallback?: (payload: any) => void
+  ): NativeRealtimeChannel {
+    let filter: Record<string, any> = {};
+    let callback: (payload: any) => void = () => {};
+
+    if (typeof filterOrCallback === "function") {
+      callback = filterOrCallback as (payload: any) => void;
+    } else {
+      filter = (filterOrCallback as Record<string, any>) || {};
+      callback = optionalCallback || (() => {});
+    }
+
+    this.listeners.push({ type, filter, callback });
+    return this;
+  }
+
+  subscribe(statusCallback?: (status: string) => void): NativeRealtimeChannel {
+    this.isSubscribed = true;
+    this.statusCallback = statusCallback;
+    SharedRealtimeSocket.getInstance().register(this);
+    if (statusCallback) {
+      setTimeout(() => statusCallback("SUBSCRIBED"), 50);
+    }
+    return this;
+  }
+
+  public notifySubscribed() {
+    if (this.statusCallback) {
+      this.statusCallback("SUBSCRIBED");
+    }
+  }
+
+  public dispatchMessage(parsed: any) {
+    if (!this.isSubscribed) return;
+
+    if (parsed.event === "new_message") {
+      const payload = {
+        eventType: "INSERT",
+        new: parsed.data,
+        old: null,
+        schema: "public",
+        table: "chats",
+      };
+
+      this.listeners.forEach((l) => {
+        if (l.type === "postgres_changes" || l.type === "*") {
+          l.callback(payload);
+        }
+      });
+    } else if (parsed.event === "messages_read") {
+      const payload = {
+        eventType: "UPDATE",
+        new: parsed.data,
+        old: null,
+        schema: "public",
+        table: "chats",
+      };
+
+      this.listeners.forEach((l) => {
+        if (l.type === "postgres_changes" || l.type === "*") {
+          l.callback(payload);
+        }
+      });
+    }
+  }
+
+  async track(payload: any): Promise<"ok"> {
+    this.presencePayload = payload;
+    return "ok";
+  }
+
+  presenceState(): Record<string, any[]> {
+    return {
+      [this.topic]: [this.presencePayload],
+    };
+  }
+
+  send(data: { type: string; event: string; payload: any }): Promise<"ok"> {
+    if (data?.type === "broadcast") {
+      SharedRealtimeSocket.getInstance().send(
+        JSON.stringify({ event: data.event, data: data.payload })
+      );
+    }
+    return Promise.resolve("ok");
   }
 
   unsubscribe() {
     this.isSubscribed = false;
-    clearTimeout(this.reconnectTimer);
-    if (this.ws) {
-      this.ws.close();
-      this.ws = null;
-    }
+    SharedRealtimeSocket.getInstance().unregister(this);
   }
 }
 

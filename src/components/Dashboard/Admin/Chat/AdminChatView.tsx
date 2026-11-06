@@ -1,4 +1,4 @@
-﻿// @ts-nocheck
+// @ts-nocheck
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabaseClient";
@@ -47,6 +47,7 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
   const [selectedUser, setSelectedUser] = useState(null);
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState("");
+  const [replyingToMessage, setReplyingToMessage] = useState<any | null>(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -399,10 +400,17 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ user_id: selectedUser.id, message: msgText, image_url: imageUrl })
+        body: JSON.stringify({
+          user_id: selectedUser.id,
+          message: msgText,
+          image_url: imageUrl,
+          reply_to_id: replyingToMessage ? replyingToMessage.id : null,
+        })
       });
       const result = res.headers?.get("content-type")?.includes("application/json") ? await res.json() : {};
       if (!res.ok || !result.success) throw new Error(result.error || `HTTP ${res.status} - Gagal mengirim pesan`);
+
+      setReplyingToMessage(null);
 
       // Optimistic update: tambahkan pesan ke state agar langsung muncul
       if (result.data) {
@@ -521,56 +529,88 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
               </div>
             </div>
             <div ref={chatContainerRef} className={styles.messagesList}>
-              {messages.map((m) => (
-                <div
-                  key={m.id}
-                  className={`${styles.messageBubble} ${m.sender_role === "admin" ? styles.admin : styles.user}`}
-                >
-                  {(m.product_metadata || m.product_id) && (
-                    <a
-                      href={`/product?id=${m.product_id || m.product_metadata?.id}`}
-                      className={styles.attachedProductCard}
-                      target="_blank"
-                      rel="noreferrer"
+              {messages.map((m) => {
+                const repliedMsg = m.reply_to_id
+                  ? messages.find((msg) => msg.id === m.reply_to_id)
+                  : (m.reply_to_message ? { message: m.reply_to_message, sender_role: m.reply_to_sender_role, image_url: m.reply_to_image_url } : null);
+
+                return (
+                  <div
+                    key={m.id}
+                    className={`${styles.bubbleRow} ${m.sender_role === "admin" ? styles.admin : styles.user}`}
+                  >
+                    <div
+                      className={`${styles.messageBubble} ${m.sender_role === "admin" ? styles.admin : styles.user}`}
                     >
-                      {m.product_metadata?.image_url && (
+                      {/* Quoted Message Preview */}
+                      {repliedMsg && (
+                        <div className={styles.quotedReply}>
+                          <span className={styles.quotedSender}>
+                            {repliedMsg.sender_role === "admin" ? "Admin" : (selectedUser?.name || "Pelanggan")}
+                          </span>
+                          <span className={styles.quotedSnippet}>
+                            {repliedMsg.message || (repliedMsg.image_url ? "[Gambar]" : "")}
+                          </span>
+                        </div>
+                      )}
+
+                      {(m.product_metadata || m.product_id) && (
+                        <a
+                          href={`/product?id=${m.product_id || m.product_metadata?.id}`}
+                          className={styles.attachedProductCard}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {m.product_metadata?.image_url && (
+                            <img
+                              src={m.product_metadata.image_url}
+                              alt=""
+                              className={styles.attachedProductImg}
+                            />
+                          )}
+                          <div className={styles.attachedProductInfo}>
+                            <span className={styles.attachedProductTitle}>
+                              {m.product_metadata?.title || m.product_metadata?.name || "Detail Produk"}
+                            </span>
+                            {m.product_metadata?.price && (
+                              <span className={styles.attachedProductPrice}>
+                                Rp {Number(m.product_metadata.price).toLocaleString("id-ID")}
+                              </span>
+                            )}
+                          </div>
+                        </a>
+                      )}
+
+                      {m.image_url && (
                         <img
-                          src={m.product_metadata.image_url}
-                          alt=""
-                          className={styles.attachedProductImg}
+                          src={m.image_url}
+                          alt="Attachment"
+                          className={`${styles.messageImage} ${m.message ? styles.messageImageWithText : ""}`}
+                          onClick={() => setZoomedImage(m.image_url)}
+                          onLoad={scrollToBottom}
                         />
                       )}
-                      <div className={styles.attachedProductInfo}>
-                        <span className={styles.attachedProductTitle}>
-                          {m.product_metadata?.title || m.product_metadata?.name || "Detail Produk"}
-                        </span>
-                        {m.product_metadata?.price && (
-                          <span className={styles.attachedProductPrice}>
-                            Rp {Number(m.product_metadata.price).toLocaleString("id-ID")}
-                          </span>
+                      {m.message && <div>{m.message}</div>}
+                      <span className={styles.messageTime}>
+                        {new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                        {m.sender_role === "admin" && (
+                          <AppIcon name={m.is_read ? "check-check" : "check"} size={14} color={m.is_read ? "#3b82f6" : "currentColor"} />
                         )}
-                      </div>
-                    </a>
-                  )}
+                      </span>
+                    </div>
 
-                  {m.image_url && (
-                    <img
-                      src={m.image_url}
-                      alt="Attachment"
-                      className={`${styles.messageImage} ${m.message ? styles.messageImageWithText : ""}`}
-                      onClick={() => setZoomedImage(m.image_url)}
-                      onLoad={scrollToBottom}
-                    />
-                  )}
-                  {m.message && <div>{m.message}</div>}
-                  <span className={styles.messageTime}>
-                    {new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                    {m.sender_role === "admin" && (
-                      <AppIcon name={m.is_read ? "check-check" : "check"} size={14} color={m.is_read ? "#3b82f6" : "currentColor"} />
-                    )}
-                  </span>
-                </div>
-              ))}
+                    {/* Reply Action Button */}
+                    <button
+                      type="button"
+                      onClick={() => setReplyingToMessage(m)}
+                      className={styles.replyActionBtn}
+                      title="Balas pesan ini"
+                    >
+                      <AppIcon name="corner-up-left" size={13} />
+                    </button>
+                  </div>
+                );
+              })}
               {isTyping && (
                 <div className={styles.typingIndicator}>
                   {adminChatConfig.typing || "Pengguna sedang mengetik..."}
@@ -583,6 +623,28 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
                 <img src={previewUrl} alt="Preview" className={styles.previewImg} />
                 <button type="button" onClick={removeFile} className={styles.previewRemoveBtn}>
                   <AppIcon name="x" size={12} />
+                </button>
+              </div>
+            )}
+
+            {/* Replying Bar */}
+            {replyingToMessage && (
+              <div className={styles.replyBar}>
+                <div className={styles.replyBarContent}>
+                  <span className={styles.replyBarSender}>
+                    Membalas {replyingToMessage.sender_role === "admin" ? "Admin" : (selectedUser?.name || "Pelanggan")}
+                  </span>
+                  <span className={styles.replyBarSnippet}>
+                    {replyingToMessage.message || (replyingToMessage.image_url ? "[Gambar]" : "")}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setReplyingToMessage(null)}
+                  className={styles.cancelReplyBtn}
+                  title="Batal balas"
+                >
+                  <AppIcon name="x" size={14} />
                 </button>
               </div>
             )}

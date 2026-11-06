@@ -1,4 +1,4 @@
-﻿/* ====================================================
+/* ====================================================
    USER CHAT VIEW CSS (Full-Page Dashboard Card)
    ==================================================== */
 
@@ -210,25 +210,36 @@
 
 /* Quoted Reply inside Bubble */
 .quotedReply {
-  border-left: 3px solid rgba(255, 255, 255, 0.6);
-  background: rgba(0, 0, 0, 0.08);
-  padding: 4px 8px;
+  border-left: 3px solid rgba(255, 255, 255, 0.95);
+  background: rgba(0, 0, 0, 0.22);
+  color: #ffffff;
+  padding: 6px 10px;
   border-radius: 4px;
   margin-bottom: 6px;
-  font-size: 0.78rem;
-  opacity: 0.9;
+  font-size: 0.8rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .messageRow.admin .quotedReply {
-  border-left-color: var(--primary-accent);
-  background: #f1f5f9;
+  border-left: 3px solid var(--primary-accent);
+  background: var(--surface-secondary, #f1f5f9);
+  color: var(--text-primary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+:global([data-theme="dark"]) .messageRow.admin .quotedReply,
+:global(.dark) .messageRow.admin .quotedReply {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
 }
 
 .quotedSender {
-  font-weight: 600;
+  font-weight: 700;
   display: block;
-  font-size: 0.72rem;
+  font-size: 0.74rem;
   margin-bottom: 2px;
+  color: inherit;
+  opacity: 0.95;
 }
 
 .quotedSnippet {
@@ -236,6 +247,8 @@
   overflow: hidden;
   text-overflow: ellipsis;
   display: block;
+  color: inherit;
+  opacity: 0.9;
 }
 
 /* Timestamp & Status */
