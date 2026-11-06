@@ -1,10 +1,10 @@
-"use client";
+﻿"use client";
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import loginConfig from "@/data/ui/loginConfig.json";
 import styles from "./LoginForm.module.css";
 import { useStore } from "@/context/StoreContext";
 import { useSearchParams } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient";
+import { mamekoClient, supabase } from "@/lib/mamekoClient";
 import { getSafeAuthRedirect } from "@/utils/authRedirect";
 import { sanitizeUserError } from "@/utils/errorSanitizer";
 import Script from "next/script";
@@ -120,23 +120,30 @@ export default function LoginForm() {
     setIsLoading(true);
 
     try {
-      const idToken = response.credential;
-      const { data, error: signInError } = await supabase.auth.signInWithIdToken({
+      const idToken = response?.credential;
+      if (!idToken) {
+        throw new Error(messages.googleAuthFailed || "Token Google tidak ditemukan.");
+      }
+
+      const { data, error: signInError } = await mamekoClient.auth.signInWithIdToken({
         provider: "google",
         token: idToken,
       });
 
       if (signInError) throw signInError;
 
-      setCustomer({
-        name: data.user?.user_metadata?.name || defaults.googleFallbackName || "User Google",
-        email: data.user?.email,
-        phone: data.user?.user_metadata?.phone || "",
-      });
+      if (data?.user) {
+        setCustomer({
+          name: data.user?.user_metadata?.name || data.user?.full_name || defaults.googleFallbackName || "User Google",
+          email: data.user?.email,
+          phone: data.user?.user_metadata?.phone || "",
+        });
 
-      await handlePostLoginRedirect(data.user.id);
+        await handlePostLoginRedirect(data.user.id);
+      }
     } catch (err) {
-      setError(err.message || messages.googleAuthFailed || "Gagal masuk menggunakan Google.");
+      const safeError = sanitizeUserError(err, messages.googleAuthFailed || "Gagal masuk menggunakan Google.");
+      setError(safeError);
       setIsLoading(false);
     }
   }, [handlePostLoginRedirect, setCustomer, defaults.googleFallbackName, messages.googleAuthFailed]);
