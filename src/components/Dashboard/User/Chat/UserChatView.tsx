@@ -1,6 +1,7 @@
 // @ts-nocheck
 "use client";
 import { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { AppIcon } from "@/components/UI/Icon/AppIcon";
 import toast from "react-hot-toast";
@@ -8,11 +9,16 @@ import styles from "./UserChatView.module.css";
 import chatConfig from "@/data/ui/userChatConfig.json";
 import { getApiBaseUrl } from "@/lib/apiClient";
 import { convertToWebP } from "@/utils/imageConverter";
+import { sanitizeUserError } from "@/utils/errorSanitizer";
 
 export default function UserChatView({ user }: { user: any }) {
+  const searchParams = useSearchParams();
+  const initialProductId = searchParams ? searchParams.get("productId") : null;
+
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [replyingToMessage, setReplyingToMessage] = useState<any | null>(null);
+  const [pendingProduct, setPendingProduct] = useState<any | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -28,6 +34,29 @@ export default function UserChatView({ user }: { user: any }) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const presenceChannelRef = useRef<any>(null);
   const typingTimeoutRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (initialProductId) {
+      fetch(`${getApiBaseUrl()}/api/products?id=${initialProductId}`)
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data?.data) {
+            const p = Array.isArray(data.data) ? data.data[0] : data.data;
+            if (p) {
+              const defaultVariant = Array.isArray(p.variants) && p.variants.length > 0 ? p.variants[0] : null;
+              setPendingProduct({
+                id: p.id,
+                title: p.name || p.title,
+                name: p.name || p.title,
+                price: defaultVariant?.price || p.price || 0,
+                image_url: p.image_url || p.imageUrl || defaultVariant?.image_url,
+              });
+            }
+          }
+        })
+        .catch(() => {});
+    }
+  }, [initialProductId]);
 
   const checkAdminStatus = async () => {
     try {
@@ -296,7 +325,7 @@ export default function UserChatView({ user }: { user: any }) {
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = newMessage.trim();
-    if (!trimmed && !selectedFile) return;
+    if (!trimmed && !selectedFile && !pendingProduct) return;
 
     const userId = user?.uid || user?.id;
     if (!userId) {
@@ -306,6 +335,7 @@ export default function UserChatView({ user }: { user: any }) {
 
     setIsUploading(true);
     let uploadedImageUrl: string | null = null;
+    const attachedProductId = pendingProduct?.id || null;
 
     try {
       const {
@@ -353,10 +383,15 @@ export default function UserChatView({ user }: { user: any }) {
         }
       }
 
+      const effectiveText = (!trimmed && pendingProduct)
+        ? `Halo Admin, saya tertarik dengan produk ${pendingProduct.name || pendingProduct.title}`
+        : trimmed;
+
       const payload: any = {
-        message: trimmed,
+        message: effectiveText,
         image_url: uploadedImageUrl,
         reply_to_id: replyingToMessage ? replyingToMessage.id : null,
+        product_id: attachedProductId,
       };
 
       // Kirim via Backend Go
@@ -389,9 +424,10 @@ export default function UserChatView({ user }: { user: any }) {
           .insert({
             user_id: userId,
             sender_role: "user",
-            message: trimmed,
+            message: effectiveText,
             image_url: uploadedImageUrl,
             reply_to_id: replyingToMessage ? replyingToMessage.id : null,
+            product_id: attachedProductId,
             is_read: false,
           })
           .select()
@@ -408,12 +444,20 @@ export default function UserChatView({ user }: { user: any }) {
 
       setNewMessage("");
       setReplyingToMessage(null);
+      setPendingProduct(null);
       removeFile();
     } catch (err: any) {
       console.error("Gagal mengirim pesan:", err);
-      toast.error(err.message || "Gagal mengirim pesan.");
+      toast.error(sanitizeUserError(err, "Gagal mengirim pesan."));
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      if (e.isComposing || (e as any).keyCode === 229) return;
+      handleSendMessage(e);
     }
   };
 
@@ -497,7 +541,7 @@ export default function UserChatView({ user }: { user: any }) {
                     {/* Attached Product Card if any */}
                     {msg.product_metadata && (
                       <a
-                        href={`/dashboard?tab=shop&productId=${msg.product_id}`}
+                        href={`/product?id=${msg.product_id || msg.product_metadata.id}`}
                         className={styles.attachedProductCard}
                         target="_blank"
                         rel="noreferrer"
@@ -512,7 +556,7 @@ export default function UserChatView({ user }: { user: any }) {
                         )}
                         <div className={styles.attachedProductInfo}>
                           <span className={styles.attachedProductTitle}>
-                            {msg.product_metadata.title || "Detail Produk"}
+                            {msg.product_metadata.title || msg.product_metadata.name || "Detail Produk"}
                           </span>
                           {msg.product_metadata.price && (
                             <span className={styles.attachedProductPrice}>
@@ -604,6 +648,38 @@ export default function UserChatView({ user }: { user: any }) {
             </div>
           )}
 
+          {pendingProduct && (
+            <div className={styles.productPreviewCard}>
+              {pendingProduct.image_url && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={pendingProduct.image_url}
+                  alt=""
+                  className={styles.productPreviewThumb}
+                />
+              )}
+              <div className={styles.productPreviewInfo}>
+                <span className={styles.productPreviewTitle}>
+                  {pendingProduct.name || pendingProduct.title}
+                </span>
+                {pendingProduct.price && (
+                  <span className={styles.productPreviewPrice}>
+                    Rp {Number(pendingProduct.price).toLocaleString("id-ID")}
+                  </span>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => setPendingProduct(null)}
+                className={styles.removeFileBtn}
+                title="Batal lampirkan produk"
+                aria-label="Batal lampirkan produk"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+
           {previewUrl && (
             <div className={styles.filePreviewCard}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -644,12 +720,13 @@ export default function UserChatView({ user }: { user: any }) {
               type="text"
               value={newMessage}
               onChange={handleTyping}
+              onKeyDown={handleKeyDown}
               placeholder="Ketik pesan untuk admin..."
               className={styles.textInput}
             />
             <button
               type="submit"
-              disabled={(!newMessage.trim() && !selectedFile) || isUploading}
+              disabled={(!newMessage.trim() && !selectedFile && !pendingProduct) || isUploading}
               className={styles.sendBtn}
               aria-label="Kirim Pesan"
             >

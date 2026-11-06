@@ -1,6 +1,7 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { useStore } from "@/context/StoreContext";
 import Shop from '@/components/Dashboard/User/Shop/Shop';
@@ -26,6 +27,7 @@ export function HomePageClient({ initialData }: { initialData: InitialDataType }
   const [selectedProduct, setSelectedProduct] = useState<ProductLike | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { addToCart, rupiah } = useStore();
+  const router = useRouter();
 
   // Supabase Realtime listener untuk store_config di landing page
   useEffect(() => {

@@ -1,4 +1,4 @@
-{
+﻿{
   "header": {
     "title": "Manajemen User",
     "subtitle": "Lihat pelanggan, status akun, kelola peran, dan blokir/aktifkan akun."
@@ -35,6 +35,7 @@
     "admin"
   ],
   "actions": {
+    "chat": "Chat Pengguna",
     "block": "Blokir",
     "activate": "Aktifkan",
     "delete": "Hapus",

@@ -2,148 +2,97 @@
 name: mameko-server-ops
 description: >-
   Standard and runbook for updating, rebuilding, deploying, managing, and health-checking
-  the Mameko backend server, PM2 processes (mameko-api, mameko-tunnel), Cloudflare tunnel,
-  database pool, zero-downtime restarts, and emergency rollback operations.
+  the self-hosted Mameko Full Docker Compose server stack (mameko-postgres, mameko-api,
+  mameko-tunnel), Cloudflare Zero Trust tunnel, Resend Email OTP env management,
+  zero-downtime container rollouts, and emergency image rollback operations.
 ---
 
-# Mameko Server Operations & Deployment Runbook
+# Mameko Server Operations & Deployment Runbook (Full Docker Stack)
 
-This skill provides mandatory operational standards, compilation instructions, PM2 process management rules, health audit procedures, and disaster recovery runbooks for the Mameko Golang backend server and Cloudflare tunnel services (`mameko-backend`).
-
----
-
-## 1. Architecture of Server Services
-
-The Mameko backend infrastructure runs on a Windows host using PM2 process manager configured in `ecosystem.config.js`:
-
-| PM2 ID | Name | Executable | Port / Routing | Responsibility |
-|---|---|---|---|---|
-| **0** | `mameko-api` | `./api.exe` | `8080` (HTTP) | Core Go Fiber REST API, Supabase connection pool, Midtrans & Biteship webhooks |
-| **1** | `mameko-tunnel` | `./cloudflared.exe` | Cloudflare Zero Trust | Ingress tunnel routing public HTTPS domain to local port 8080 |
-
-### Key Files in `mameko-backend`:
-- `cmd/api/main.go`: Application entrypoint with graceful shutdown listener.
-- `ecosystem.config.js`: PM2 ecosystem definition, environment variables, restart policies.
-- `start-services.bat`: Windows batch script to initialize PM2 processes on host boot.
-- `backend.log`: Merged stdout/stderr application log for `mameko-api`.
-- `tunnel.log`: Connectivity log for `cloudflared.exe`.
+This skill provides mandatory operational standards, container build & rollout instructions, log observability commands, and disaster recovery runbooks for the 100% containerized Mameko server infrastructure (PM2 has been retired).
 
 ---
 
-## 2. Standard Server Update Runbook (Step-by-Step)
+## 1. Full Docker Compose Stack Architecture
 
-Whenever changes are made to Go code, database queries, models, or routes, follow this exact sequence:
+The Mameko production infrastructure runs entirely inside Docker Compose (`d:\Xar Project\mameko-infra\docker-compose.yml`) across `d:\Xar Project\mameko-infra` and `d:\Xar Project\mameko-backend`:
 
-### Step 1: Pre-Build Code Audit & Static Analysis
-Always run vet and package build checks to catch syntax or type errors before touching the running server:
+| Layer | Container Name | Image / Base | Network / Binding | Responsibility |
+| :--- | :--- | :--- | :--- | :--- |
+| **Database** | `mameko-postgres` | `mameko-postgres:16-hardened` (Squashed Alpine + `su-exec`) | `mameko-net`, Host `127.0.0.1:5432` | Primary PostgreSQL 16 database (`auth` & `public` schemas) |
+| **Backend API** | `mameko-api` | `mameko-api:hardened` (`FROM scratch`, Non-Root `65532:65532`, Go 1.27) | `mameko-net`, Host `127.0.0.1:8080` | Go Fiber REST API, Native JWT Auth, Native WebSocket (`/ws/chats`), Resend Email OTP, Midtrans & Biteship webhooks |
+| **Edge Ingress** | `mameko-tunnel` | `cloudflare/cloudflared:latest` | `network_mode: "service:mameko-api"` (`https://api.mameko.my.id`) | Cloudflare Zero Trust tunnel sharing `mameko-api` loopback (`http://127.0.0.1:8080`) |
+
+> **CRITICAL SIDECAR RULE (`network_mode: "service:mameko-api"`)**: Because `mameko-tunnel` shares the Linux network namespace of `mameko-api` (matching Cloudflare Zero Trust remote ingress `http://127.0.0.1:8080`), **ALWAYS include `mameko-tunnel` whenever restarting or recreating `mameko-api`** (`docker compose up -d --build mameko-api mameko-tunnel` or `docker compose restart mameko-api mameko-tunnel`). Restarting `mameko-api` alone without reattaching `mameko-tunnel` will leave `mameko-tunnel` attached to the old network sandbox and cause HTTP 502 on `api.mameko.my.id`.
+
+### Key Files:
+- `d:\Xar Project\mameko-infra\docker-compose.yml`: Unified 3-container stack definition with `service_healthy` dependencies, `no-new-privileges:true`, and JSON log rotation (`10m` x `3`).
+- `d:\Xar Project\mameko-infra\Dockerfile` & `.env`: Hardened PostgreSQL 16 image definition and isolated DB credentials.
+- `d:\Xar Project\mameko-infra\cloudflared\config.yml`: Container tunnel fallback config (credentials mounted `:ro` from `C:\Users\karim\.cloudflared\...json`).
+- `d:\Xar Project\mameko-backend\Dockerfile` & `.dockerignore`: Multi-stage `golang:1.27-alpine` -> `FROM scratch` build with native `-healthcheck` flag.
+- `d:\Xar Project\mameko-backend\.env.local`: Backend runtime secrets (`JWT_SECRET`, `RESEND_API_KEY`, Midtrans, Biteship, Cloudinary). Note: `docker-compose.yml` overrides `DATABASE_URL` inside the container to `@mameko-db:5432` while keeping `.env.local` on host pointing to `@127.0.0.1:5432` for host tools (`MamekoServer.exe`).
+- `d:\Xar Project\mameko-backend\MamekoServer.exe` (`cmd/manager/main.go`) & `start-services.bat`: Windows desktop tray manager & startup launcher wrapping `docker compose`.
+
+---
+
+## 2. Standard Backend Update Runbook (Step-by-Step)
+
+Whenever changes are made to Go code, database queries, models, routes, or `.env.local`:
+
+### Step 1: Pre-Build Static Analysis
 ```powershell
-cd '..\mameko-backend'
+Set-Location "d:\Xar Project\mameko-backend"
 go vet ./...
-go build ./...
 ```
-*If any compile errors or vet warnings occur, STOP immediately and fix them before proceeding.*
+*If any compile errors or vet warnings occur, STOP immediately and fix them before touching running containers.*
 
-### Step 2: Safe Binary Compilation & Backup
-Create a fast rollback backup of the current binary, then compile the new binary into `api.exe`:
+### Step 2: Tag Rollback Image & Rebuild/Rollout via Docker Compose
 ```powershell
-# Optional: Backup previous binary for instant rollback
-if (Test-Path 'api.exe') { Copy-Item 'api.exe' 'api.exe.bak' -Force }
+Set-Location "d:\Xar Project\mameko-infra"
+# Save current working image for instant rollback
+docker image inspect mameko-api:hardened *> $null
+if ($LASTEXITCODE -eq 0) { docker tag mameko-api:hardened mameko-api:rollback }
 
-# Compile new binary
-go build -o api.exe ./cmd/api
+# Rebuild mameko-api and recreate both mameko-api + mameko-tunnel sidecar cleanly
+docker compose up -d --build mameko-api mameko-tunnel
 ```
 
-### Step 3: PM2 Process Restart
-Restart the API process with PM2. If environment variables or `.env.local` changed, append `--update-env`:
+### Step 3: Full-Stack Health Verification (Local + Public Tunnel)
 ```powershell
-# Standard restart (Go Fiber drains active requests gracefully within 10s)
-pm2 restart 0
-
-# If environment variables in ecosystem.config.js changed:
-pm2 restart 0 --update-env
+Set-Location "d:\Xar Project\mameko-infra"
+docker compose ps
+Invoke-RestMethod -Uri "http://127.0.0.1:8080/api/health"
+Invoke-RestMethod -Uri "https://api.mameko.my.id/api/health"
 ```
-
-### Step 4: Active Health & Pool Verification
-Verify that the new server is up, healthy, and accepting requests:
-```powershell
-# Query local health endpoint
-Invoke-RestMethod -Uri 'http://127.0.0.1:8080/api/health'
-```
-
-**Expected JSON Response:**
-```json
-{
-  "status": "success",
-  "message": "MAMEKO Backend is running",
-  "database": "healthy",
-  "latency_ms": 63,
-  "pool": {
-    "open_connections": 2,
-    "in_use": 0,
-    "idle": 2,
-    "max_open_connections": 25,
-    "wait_count": 0
-  }
-}
-```
-*Verify that `database` is `"healthy"` and `in_use` is within normal limits.*
+Verify all 3 containers are running (`mameko-postgres` `healthy`, `mameko-api` `healthy`, `mameko-tunnel` `Up`), and both local & public `/api/health` return `status: "success"` and `database: "healthy"`.
 
 ---
 
-## 3. Observability & Log Monitoring Standards
+## 3. Observability, Resource Footprint & Log Monitoring
 
-### Inspecting Runtime Logs
-To monitor live requests, database queries, and any unhandled errors:
-```powershell
-# PM2 realtime log stream (last 50 lines)
-pm2 logs mameko-api --lines 50
+- **Backend API Logs**: `docker logs --tail 50 mameko-api` (or follow live with `docker logs -f mameko-api`)
+- **Cloudflare Tunnel Logs**: `docker logs --tail 30 mameko-tunnel` (verify `Registered tunnel connection`)
+- **Database Logs**: `docker logs --tail 50 mameko-postgres`
+- **Live RAM & CPU Telemetry**: `docker stats --no-stream mameko-postgres mameko-api mameko-tunnel`
 
-# Or read directly from merged log file
-Get-Content -Tail 50 -Wait backend.log
-```
+---
 
-### Checking Cloudflare Tunnel Health
-Ensure `mameko-tunnel` is connected to Cloudflare Edge servers:
+## 4. Emergency Rollback Runbook
+
+If a newly built `mameko-api:hardened` container fails healthchecks or panics:
 ```powershell
-pm2 status
-pm2 logs mameko-tunnel --lines 30
-```
-Look for `Registered tunnel connection` in the tunnel logs. If the tunnel disconnected, run:
-```powershell
-pm2 restart 1
+Set-Location "d:\Xar Project\mameko-infra"
+docker tag mameko-api:rollback mameko-api:hardened
+docker compose up -d --no-build --force-recreate mameko-api mameko-tunnel
+Invoke-RestMethod -Uri "http://127.0.0.1:8080/api/health"
+Invoke-RestMethod -Uri "https://api.mameko.my.id/api/health"
 ```
 
 ---
 
-## 4. Emergency Rollback Runbook (Disaster Recovery)
-
-If the new binary causes panics, infinite restart loops, or breaks mobile client compatibility:
-
-1. **Check Crash Status**:
-   ```powershell
-   pm2 status
-   pm2 logs mameko-api --err --lines 50
-   ```
-2. **Instant Binary Revert**:
-   ```powershell
-   if (Test-Path 'api.exe.bak') {
-       pm2 stop 0
-       Copy-Item 'api.exe.bak' 'api.exe' -Force
-       pm2 start 0
-   }
-   ```
-3. **Verify Recovery**:
-   ```powershell
-   Invoke-RestMethod -Uri 'http://127.0.0.1:8080/api/health'
-   ```
-
----
-
-## 5. Pre-Deployment Checklist
-
-Before concluding any server update task, verify:
+## 5. Pre-Deployment Verification Checklist
 - [ ] `go vet ./...` exits with code 0.
-- [ ] `api.exe` binary size and timestamp updated.
-- [ ] `pm2 list` shows process 0 (`mameko-api`) status `online` with 0 continuous restart loops.
-- [ ] `GET /api/health` returns HTTP 200 with `database: healthy`.
-- [ ] Public domain ingress through Cloudflare tunnel is reachable from mobile and web clients.
+- [ ] `mameko-api:rollback` image tagged prior to rebuild.
+- [ ] Both `mameko-api` AND `mameko-tunnel` recreated together (`docker compose up -d --build mameko-api mameko-tunnel`).
+- [ ] `mameko-postgres` and `mameko-api` report `(healthy)`, bound strictly to `127.0.0.1:5432` and `127.0.0.1:8080`.
+- [ ] Both `http://127.0.0.1:8080/api/health` and `https://api.mameko.my.id/api/health` return HTTP 200 with `database: "healthy"`.

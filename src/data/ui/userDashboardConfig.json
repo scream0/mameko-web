@@ -1,4 +1,4 @@
-{
+﻿{
   "brand": {
     "name": "MAKE ME",
     "suffix": "KOOL",
@@ -29,6 +29,11 @@
       "id": "notifications",
       "label": "Notifikasi",
       "icon": "bell"
+    },
+    {
+      "id": "chat",
+      "label": "Chat Admin",
+      "icon": "message-circle"
     },
     {
       "id": "wishlist",

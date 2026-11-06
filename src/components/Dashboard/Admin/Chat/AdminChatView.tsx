@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabaseClient";
@@ -8,6 +8,8 @@ import styles from "./AdminChatView.module.css";
 import adminChatConfig from "@/data/ui/adminChatConfig.json";
 import { convertToWebP } from "@/utils/imageConverter";
 import { getApiBaseUrl } from "@/lib/apiClient";
+import { useSearchParams } from "next/navigation";
+import { sanitizeUserError } from "@/utils/errorSanitizer";
 
 const playNotificationSound = () => {
   try {
@@ -37,6 +39,10 @@ const QUICK_REPLIES = adminChatConfig.quickReplies || [
 ];
 
 export default function AdminChatView({ onUnreadCountChange }: any) {
+  const searchParams = useSearchParams();
+  const directUserId = searchParams ? searchParams.get("userId") : null;
+  const directUserName = searchParams ? searchParams.get("userName") : null;
+  const directUserEmail = searchParams ? searchParams.get("userEmail") : null;
   const [users, setUsers] = useState<any[]>([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [messages, setMessages] = useState<any[]>([]);
@@ -60,6 +66,31 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
     selectedUserRef.current = selectedUser;
     setIsTyping(false);
   }, [selectedUser]);
+
+  useEffect(() => {
+    if (directUserId) {
+      const existing = users.find((u) => u.id === directUserId);
+      if (existing) {
+        setSelectedUser(existing);
+      } else {
+        const virtualUser = {
+          id: directUserId,
+          name: directUserName || "Pengguna",
+          email: directUserEmail || "",
+          avatar: null,
+          lastMessage: "",
+          unreadCount: 0,
+          lastActivity: new Date().toISOString(),
+          isOnline: false,
+        };
+        setUsers((prev) => {
+          if (prev.some((u) => u.id === directUserId)) return prev;
+          return [virtualUser, ...prev];
+        });
+        setSelectedUser(virtualUser);
+      }
+    }
+  }, [directUserId, directUserName, directUserEmail, users.length]);
 
   useEffect(() => {
     fetchUsers();
@@ -495,6 +526,33 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
                   key={m.id}
                   className={`${styles.messageBubble} ${m.sender_role === "admin" ? styles.admin : styles.user}`}
                 >
+                  {(m.product_metadata || m.product_id) && (
+                    <a
+                      href={`/product?id=${m.product_id || m.product_metadata?.id}`}
+                      className={styles.attachedProductCard}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {m.product_metadata?.image_url && (
+                        <img
+                          src={m.product_metadata.image_url}
+                          alt=""
+                          className={styles.attachedProductImg}
+                        />
+                      )}
+                      <div className={styles.attachedProductInfo}>
+                        <span className={styles.attachedProductTitle}>
+                          {m.product_metadata?.title || m.product_metadata?.name || "Detail Produk"}
+                        </span>
+                        {m.product_metadata?.price && (
+                          <span className={styles.attachedProductPrice}>
+                            Rp {Number(m.product_metadata.price).toLocaleString("id-ID")}
+                          </span>
+                        )}
+                      </div>
+                    </a>
+                  )}
+
                   {m.image_url && (
                     <img
                       src={m.image_url}

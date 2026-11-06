@@ -1,5 +1,6 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 "use client";
+import { useRouter } from "next/navigation";
 import { getApiBaseUrl } from "@/lib/apiClient";
 import { useEffect, useState, useMemo, useRef } from "react";
 import { supabase } from "@/lib/supabaseClient";
@@ -29,6 +30,7 @@ const money = (value: any) =>
   }).format(Number(value) || 0);
 
 export default function UserManagement() {
+  const router = useRouter();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -96,7 +98,13 @@ export default function UserManagement() {
       }
     });
 
-    return () => subscription.unsubscribe();
+    const handleChatUser = (targetUser: any) => {
+    if (!targetUser?.id) return;
+    const nameParam = encodeURIComponent(targetUser.name || targetUser.email || "Pengguna");
+    const emailParam = encodeURIComponent(targetUser.email || "");
+    router.push(`/dashboard?tab=chat&userId=${targetUser.id}&userName=${nameParam}&userEmail=${emailParam}`);
+  };
+  return () => subscription.unsubscribe();
   }, []);
 
   const updateUser = async (userId, payload: any) => {
@@ -206,7 +214,7 @@ export default function UserManagement() {
               deletedFromAuth ? "termasuk auth.users ✓" : "hanya profiles (auth.users mungkin masih ada)",
             );
           } else {
-            // RPC gagal tapi Go API sudah soft-delete — anggap berhasil dengan warning
+            // RPC gagal tapi Go API sudah soft-delete - anggap berhasil dengan warning
             console.warn("[DeleteUser] RPC gagal setelah Go API ok:", rpcError.message);
             deletionSucceeded = true; // Go API sudah soft-delete, cukup untuk hilang dari list
           }
@@ -232,13 +240,13 @@ export default function UserManagement() {
           const deletedFromAuth = rpcData?.deleted_from_auth ?? rpcData;
           if (!deletedFromAuth) {
             console.warn(
-              "[DeleteUser] Berhasil via RPC tapi auth.users belum terhapus — Go backend perlu menggunakan Supabase Admin API.",
+              "[DeleteUser] Berhasil via RPC tapi auth.users belum terhapus - Go backend perlu menggunakan Supabase Admin API.",
             );
           } else {
             console.info("[DeleteUser] Berhasil sepenuhnya via Supabase RPC:", targetUserId);
           }
         } else {
-          console.warn("[DeleteUser] RPC gagal:", rpcError.message, "— mencoba hapus profiles langsung...");
+          console.warn("[DeleteUser] RPC gagal:", rpcError.message, "- mencoba hapus profiles langsung...");
           // Fallback: hapus dari public.profiles saja (auth.users tetap ada, tapi user tidak muncul di list)
           const { error: profileDelError } = await supabase
             .from("profiles")
@@ -247,7 +255,7 @@ export default function UserManagement() {
           if (!profileDelError) {
             deletionSucceeded = true;
             console.warn(
-              "[DeleteUser] Hanya profiles yang terhapus — auth.users masih ada. Hubungi admin server untuk hapus permanen.",
+              "[DeleteUser] Hanya profiles yang terhapus - auth.users masih ada. Hubungi admin server untuk hapus permanen.",
             );
           } else {
             throw new Error(
@@ -303,6 +311,12 @@ export default function UserManagement() {
     };
   }, [users]);
 
+  const handleChatUser = (targetUser: any) => {
+    if (!targetUser?.id) return;
+    const nameParam = encodeURIComponent(targetUser.name || targetUser.email || "Pengguna");
+    const emailParam = encodeURIComponent(targetUser.email || "");
+    router.push(`/dashboard?tab=chat&userId=${targetUser.id}&userName=${nameParam}&userEmail=${emailParam}`);
+  };
   return (
     <div className={styles.wrapper}>
       {/* Confirmation Modal */}
@@ -556,6 +570,16 @@ export default function UserManagement() {
                     </td>
                     <td>
                       <div className={styles.actionButtons}>
+                        <button
+                          type="button"
+                          onClick={() => handleChatUser(user)}
+                          className={styles.chatActionBtn}
+                          title={config.actions?.chat || "Chat Pengguna"}
+                          aria-label={config.actions?.chat || "Chat Pengguna"}
+                        >
+                          <AppIcon name="message-circle" size={13} />
+                          <span>{config.actions?.chat || "Chat"}</span>
+                        </button>
                         {(user.status || "active") === "blocked" ? (
                           <button
                             type="button"

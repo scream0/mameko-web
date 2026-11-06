@@ -56,7 +56,7 @@ import { UserDashboardSkeleton } from "@/components/UI/Skeleton/SkeletonLayouts"
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 const DEFAULT_TAB = "shop";
-const ALLOWED_TABS = ["shop", "feed", "overview", "orders", "notifications", "profile"];
+const ALLOWED_TABS = ["shop", "feed", "overview", "orders", "notifications", "profile", "chat"];
 const filteredNav = userConfig.nav.filter((item) => ALLOWED_TABS.includes(item.id));
 const VALID_TABS = filteredNav.map((item) => item.id);
 
@@ -401,6 +401,14 @@ export default function UserDashboard({ user }) {
             setSelectedProduct(null);
           }}
           onAddToCart={addToCart}
+          onTanyaProduk={(product: any) => {
+            setIsProductModalOpen(false);
+            setSelectedProduct(null);
+            const nextParams = new URLSearchParams(searchParams.toString());
+            nextParams.set("tab", "chat");
+            nextParams.set("productId", product.id || product._id);
+            router.push(`${pathname}?${nextParams.toString()}`);
+          }}
           rupiah={rupiah}
         />
       )}

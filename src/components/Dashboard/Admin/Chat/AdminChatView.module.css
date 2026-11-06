@@ -1,4 +1,4 @@
-.chatContainer {
+﻿.chatContainer {
   display: flex;
   height: calc(100vh - 100px);
   min-height: 500px;
@@ -519,4 +519,63 @@
   .chatInputArea {
     padding: 10px;
   }
+}
+
+
+/* --- Attached Product Card in Admin Chat Bubble --- */
+.attachedProductCard {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.5rem;
+  background: var(--surface-card, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+:global([data-theme="dark"]) .attachedProductCard {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+.attachedProductCard:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.attachedProductImg {
+  width: 44px;
+  height: 44px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.attachedProductInfo {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.attachedProductTitle {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-primary, #0f172a);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+:global([data-theme="dark"]) .attachedProductTitle {
+  color: #f8fafc;
+}
+
+.attachedProductPrice {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--primary, #059669);
 }

@@ -6,6 +6,7 @@ import { useStore } from "@/context/StoreContext";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { getSafeAuthRedirect } from "@/utils/authRedirect";
+import { sanitizeUserError } from "@/utils/errorSanitizer";
 import Script from "next/script";
 
 export default function LoginForm() {
@@ -49,6 +50,7 @@ export default function LoginForm() {
   const [otpSent, setOtpSent] = useState(false);
   const [otpArray, setOtpArray] = useState(Array(otpLength).fill(""));
   const inputRefs = useRef([]);
+  const isVerifyingRef = useRef(false);
 
   // Timer State
   const [resendTimer, setResendTimer] = useState(0);
@@ -175,12 +177,15 @@ export default function LoginForm() {
   // OTP BOX HANDLERS & AUTO-SUBMIT
   // ==========================================
   const handleVerifyOtp = useCallback(async (codeToVerify) => {
+    if (isVerifyingRef.current) return;
+
     const otpCode = codeToVerify || otpArray.join("");
     if (otpCode.length < otpLength) {
       setError(validation.otpLengthRequired || `Silakan masukkan kode OTP ${otpLength} digit.`);
       return;
     }
 
+    isVerifyingRef.current = true;
     setError("");
     setIsLoading(true);
 
@@ -193,13 +198,7 @@ export default function LoginForm() {
 
       if (verifyError) throw verifyError;
 
-      let userName = data.user?.user_metadata?.name;
-      if (!userName) {
-        userName = email.split("@")[0];
-        await supabase.auth.updateUser({
-          data: { name: userName, role: "customer" },
-        });
-      }
+      const userName = data.user?.user_metadata?.name || data.user?.full_name || email.split("@")[0] || "User";
 
       setCustomer({
         name: userName,
@@ -220,15 +219,12 @@ export default function LoginForm() {
       setSuccessMessage(messages.loginSuccess || "Berhasil masuk! Mengalihkan...");
       await handlePostLoginRedirect(data.user.id);
     } catch (err) {
-      const errMsg = err?.message || "";
-      if (errMsg.includes("expired") || errMsg.includes("invalid") || errMsg.includes("Token")) {
-        setError(messages.invalidOtp || "Kode OTP salah atau telah kedaluwarsa. Silakan minta kode baru.");
-      } else {
-        setError(errMsg || messages.otpFailed || "Kode OTP salah atau gagal diverifikasi.");
-      }
+      const safeError = sanitizeUserError(err, messages.otpFailed || "Kode OTP salah atau gagal diverifikasi.");
+      setError(safeError);
       setIsLoading(false);
+      isVerifyingRef.current = false;
     }
-  }, [email, otpArray, otpLength, rememberMe, setCustomer, handlePostLoginRedirect, validation.otpLengthRequired, messages.invalidOtp, messages.otpFailed, messages.loginSuccess]);
+  }, [email, otpArray, otpLength, rememberMe, setCustomer, handlePostLoginRedirect, validation.otpLengthRequired, messages.otpFailed, messages.loginSuccess]);
 
   const handleOtpChange = (index, value) => {
     const digit = value.replace(/\D/g, "").slice(-1);
@@ -301,12 +297,8 @@ export default function LoginForm() {
       setOtpSent(true);
       setResendTimer(cooldownSeconds);
     } catch (err) {
-      const errMsg = err?.message || "";
-      if (errMsg.includes("rate_limit") || err?.status === 429) {
-        setError(messages.tooManyRequests || "Terlalu banyak permintaan OTP. Mohon tunggu 1 menit sebelum mencoba lagi.");
-      } else {
-        setError(errMsg || messages.otpRequestFailed || "Gagal mengirim kode OTP. Pastikan email valid.");
-      }
+      const safeError = sanitizeUserError(err, messages.otpRequestFailed || "Gagal mengirim kode OTP. Pastikan email valid.");
+      setError(safeError);
     } finally {
       setIsLoading(false);
     }

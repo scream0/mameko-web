@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 "use client";
 import { useState, useEffect } from "react";
 import styles from "./ProductModal.module.css";
@@ -10,7 +10,16 @@ import { useScrollLock } from "@/hooks/useScrollLock";
 import { optimizeCloudinaryUrl, IMAGE_PRESETS } from "@/utils/imageOptimizer";
 import { getApiBaseUrl } from "@/lib/apiClient";
 
-export function Modal({ isOpen, item, onClose, onAddToCart, rupiah }) {
+export interface ModalProps {
+  isOpen: boolean;
+  item: any;
+  onClose: () => void;
+  onAddToCart?: (item: any, qty: number, variant: any) => void;
+  onTanyaProduk?: (item: any) => void;
+  rupiah?: (val: number) => string;
+}
+
+export function Modal({ isOpen, item, onClose, onAddToCart, onTanyaProduk, rupiah }: ModalProps) {
   useScrollLock(Boolean(isOpen && item));
   const { activePromo } = useStore();
   const [currentSize, setCurrentSize] = useState("");
@@ -263,6 +272,19 @@ export function Modal({ isOpen, item, onClose, onAddToCart, rupiah }) {
                   ? modalData?.labels?.addToCart || "Tambah ke Keranjang"
                   : (modalData?.labels?.outOfStock || "Stok Habis")}
               </button>
+
+              {onTanyaProduk && (
+                <button
+                  type="button"
+                  className={styles.modalChatBtn}
+                  onClick={() => onTanyaProduk(item)}
+                  title={modalData?.labels?.chatSeller || "Tanya Produk"}
+                  aria-label={modalData?.labels?.chatSeller || "Tanya Produk"}
+                >
+                  <AppIcon name="message-circle" size={16} />
+                  <span>{modalData?.labels?.chatSeller || "Tanya Produk"}</span>
+                </button>
+              )}
             </div>
 
             {/* --- REVIEWS SECTION --- */}

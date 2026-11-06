@@ -1,4 +1,4 @@
-{
+﻿{
   "accessibility": {
     "closeAriaLabel": "Close Modal"
   },
@@ -13,7 +13,8 @@
     "outOfStock": "Stok Habis",
     "stockPrefix": "Stok: ",
     "soldOut": "Habis",
-    "customer": "Pelanggan"
+    "customer": "Pelanggan",
+    "chatSeller": "Tanya Produk"
   },
   "reviews": {
     "title": "Ulasan Pembeli",

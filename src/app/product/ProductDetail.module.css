@@ -1,4 +1,4 @@
-/* ====================================================
+﻿/* ====================================================
    PRODUCT DETAIL PAGE CSS (Luxury High-End Theme)
    ==================================================== */
 
@@ -482,4 +482,39 @@
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+/* --- Chat Seller Button --- */
+.chatSellerBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0 1.25rem;
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid var(--primary-accent, #059669);
+  background: transparent;
+  color: var(--primary-accent, #059669);
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.chatSellerBtn:hover {
+  background: rgba(var(--primary-accent-rgb, 5, 150, 105), 0.08);
+  transform: translateY(-2px);
+}
+
+.chatSellerBtn:focus-visible {
+  outline: 2px solid var(--primary-accent, #059669);
+  outline-offset: 2px;
+}
+
+@media (max-width: 768px) {
+  .chatSellerBtn {
+    width: 100%;
+  }
 }

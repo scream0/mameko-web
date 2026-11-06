@@ -1,4 +1,4 @@
-/* ====================================================
+﻿/* ====================================================
    USER CHAT VIEW CSS (Full-Page Dashboard Card)
    ==================================================== */
 
@@ -476,3 +476,56 @@
   justify-content: center;
 }
 
+
+
+/* --- Attached Product Preview in Composer --- */
+.productPreviewCard {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--surface-card, #f8fafc);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+:global([data-theme="dark"]) .productPreviewCard {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+.productPreviewThumb {
+  width: 44px;
+  height: 44px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.productPreviewInfo {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.productPreviewTitle {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-primary, #0f172a);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+:global([data-theme="dark"]) .productPreviewTitle {
+  color: #f8fafc;
+}
+
+.productPreviewPrice {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--primary, #059669);
+}

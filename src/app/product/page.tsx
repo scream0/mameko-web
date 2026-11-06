@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, Suspense } from "react";
 import { notFound, useRouter, useSearchParams } from "next/navigation";
@@ -358,6 +358,17 @@ function ProductDetailContent() {
                   : !selectedVariant || isSelectedVariantOutOfStock
                   ? "Stok Habis"
                   : modalData?.labels?.addToCart || "Tambah ke Keranjang"}
+              </button>
+
+              <button
+                type="button"
+                className={styles.chatSellerBtn}
+                onClick={() => router.push(`/dashboard?tab=chat&productId=${product.id}`)}
+                title={modalData?.labels?.chatSeller || "Tanya Produk"}
+                aria-label={modalData?.labels?.chatSeller || "Tanya Produk"}
+              >
+                <AppIcon name="message-circle" size={16} />
+                <span>{modalData?.labels?.chatSeller || "Tanya Produk"}</span>
               </button>
             </div>
           </div>

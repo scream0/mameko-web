@@ -298,6 +298,37 @@ class NativeAuthClient {
     return { error: null };
   }
 
+  async updateUser(attributes: { data?: Record<string, any> }): Promise<{ data: { user: UserProfile | null }; error: any }> {
+    try {
+      const session = this.currentSession;
+      if (!session) {
+        return { data: { user: null }, error: { message: "Belum masuk akun", status: 401 } };
+      }
+      const updatedUser: UserProfile = {
+        ...session.user,
+        user_metadata: {
+          ...session.user.user_metadata,
+          ...attributes.data,
+        },
+      };
+      if (attributes.data?.name) {
+        updatedUser.full_name = attributes.data.name;
+      }
+      if (attributes.data?.role) {
+        updatedUser.role = attributes.data.role;
+      }
+      const updatedSession: Session = {
+        ...session,
+        user: updatedUser,
+      };
+      this.saveSession(updatedSession);
+      this.notifyListeners("USER_UPDATED", updatedSession);
+      return { data: { user: updatedUser }, error: null };
+    } catch (err: any) {
+      return { data: { user: null }, error: { message: err?.message || "Gagal memperbarui profil", status: 500 } };
+    }
+  }
+
   async signInWithOtp(params: { email: string; options?: any }): Promise<{ data: any; error: any }> {
     try {
       const baseUrl = getApiBaseUrl();
