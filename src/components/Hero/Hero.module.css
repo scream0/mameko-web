@@ -77,30 +77,6 @@
   max-width: 620px;
 }
 
-.overlineRow {
-  display: inline-flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1.75rem;
-}
-
-.overlineRule {
-  width: 32px;
-  height: 1px;
-  background-color: var(--secondary);
-  flex-shrink: 0;
-}
-
-.heroTagline {
-  font-family: var(--font-sans);
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.28em;
-  color: var(--text-secondary);
-  margin: 0;
-}
-
 .heroTitle {
   font-family: var(--font-serif);
   font-size: clamp(2.4rem, 4.2vw, 4.1rem);
@@ -114,7 +90,7 @@
 }
 
 .titleAccent {
-  color: var(--secondary);
+  color: inherit;
   font-weight: 400;
 }
 
@@ -132,7 +108,7 @@
 .heroDesc em {
   font-family: var(--font-serif);
   font-style: italic;
-  color: var(--text-primary);
+  color: inherit;
   letter-spacing: 0.03em;
 }
 
@@ -526,10 +502,6 @@
   .heroInner {
     gap: 2.25rem;
     padding: 0 1.25rem;
-  }
-
-  .overlineRow {
-    margin-bottom: 1.15rem;
   }
 
   .heroTitle {

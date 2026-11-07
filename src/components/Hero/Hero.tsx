@@ -162,15 +162,8 @@ export function Hero() {
       <div className={styles.heroInner}>
         {/* Left Column: Unboxed Architectural Editorial Typography */}
         <main ref={contentRef} className={styles.content}>
-          <div
-            className={`${styles.overlineRow} ${styles.reveal} ${styles.delay0} ${isRevealed ? styles.revealed : ""}`}
-          >
-            <span className={styles.overlineRule} aria-hidden="true" />
-            <p className={styles.heroTagline}>{resolvedHero?.tagline}</p>
-          </div>
-
           <h1
-            className={`${styles.heroTitle} ${styles.reveal} ${styles.delay1} ${isRevealed ? styles.revealed : ""}`}
+            className={`${styles.heroTitle} ${styles.reveal} ${styles.delay0} ${isRevealed ? styles.revealed : ""}`}
           >
             {resolvedHero?.title?.main}
             <br />
@@ -178,7 +171,7 @@ export function Hero() {
           </h1>
 
           <p
-            className={`${styles.heroDesc} ${styles.reveal} ${styles.delay2} ${isRevealed ? styles.revealed : ""}`}
+            className={`${styles.heroDesc} ${styles.reveal} ${styles.delay1} ${isRevealed ? styles.revealed : ""}`}
           >
             {resolvedHero?.description?.prefix}
             <em>{resolvedHero?.description?.italic}</em>
@@ -186,7 +179,7 @@ export function Hero() {
           </p>
 
           <div
-            className={`${styles.heroButtons} ${styles.reveal} ${styles.delay3} ${isRevealed ? styles.revealed : ""}`}
+            className={`${styles.heroButtons} ${styles.reveal} ${styles.delay2} ${isRevealed ? styles.revealed : ""}`}
           >
             <a
               href={resolvedHero?.buttons?.primary?.href}
