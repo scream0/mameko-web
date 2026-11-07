@@ -1,41 +1,32 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-import { HeroParticles } from "@/components/UI/HeroParticles/HeroParticles";
 import { getPublicSettings } from "@/services/settingsService";
 import { AppIcon } from "@/components/UI/Icon/AppIcon";
 import styles from "./Hero.module.css";
-import heroData from "@/data/ui/heroConfig.json"; // Fallback default JSON
+import heroData from "@/data/ui/heroConfig.json";
 import { optimizeCloudinaryUrl, IMAGE_PRESETS } from "@/utils/imageOptimizer";
 
 export function Hero() {
-  // 1. Definisikan state
   const [resolvedHero, setResolvedHero] = useState(heroData);
   const [isDimmed, setIsDimmed] = useState(false);
   const [isRevealed, setIsRevealed] = useState(true);
   const [showScroll, setShowScroll] = useState(true);
   const [statsVisible, setStatsVisible] = useState(false);
 
-  // Refs untuk visual transform & spotlight tanpa trigger re-render React
-  const visualRef = useRef<any>(null);
-  const contentRef = useRef<any>(null);
-  const spotlightRef = useRef<any>(null);
-  const statsRef = useRef<any>(null);
+  const visualRef = useRef<HTMLDivElement | null>(null);
+  const contentRef = useRef<HTMLElement | null>(null);
+  const statsRef = useRef<HTMLDivElement | null>(null);
 
-  // Parallax scroll effect yang efisien (Direct DOM RAF update)
   useEffect(() => {
-    let rafId = null;
+    let rafId: number | null = null;
     const handleScroll = () => {
       if (rafId) return;
       rafId = requestAnimationFrame(() => {
         const sy = window.scrollY;
         if (visualRef.current) {
-          visualRef.current.style.transform = `translateY(${sy * -0.05}px)`;
+          visualRef.current.style.transform = `translateY(${sy * -0.03}px)`;
         }
-        if (contentRef.current) {
-          contentRef.current.style.transform = `translateY(${sy * -0.15}px)`;
-        }
-        // Sembunyikan scroll indicator setelah user scroll sedikit
         setShowScroll(sy < 60);
         rafId = null;
       });
@@ -47,29 +38,6 @@ export function Hero() {
     };
   }, []);
 
-  // 2. Efek untuk melacak mouse (throttled via requestAnimationFrame, pakai CSS var)
-  useEffect(() => {
-    let rafId = null;
-
-    const handleMouseMove = (e: any) => {
-      if (rafId) return; // sudah ada frame pending, skip
-      rafId = requestAnimationFrame(() => {
-        if (spotlightRef.current) {
-          spotlightRef.current.style.setProperty("--spotlight-x", `${e.clientX}px`);
-          spotlightRef.current.style.setProperty("--spotlight-y", `${e.clientY}px`);
-        }
-        rafId = null;
-      });
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      if (rafId) cancelAnimationFrame(rafId);
-    };
-  }, []);
-
-  // 3. Muat settings publik (hero) via service layer
   useEffect(() => {
     let isMounted = true;
 
@@ -92,9 +60,9 @@ export function Hero() {
               highlight: h.title?.highlight?.trim() ? h.title.highlight : heroData.title.highlight,
             },
             description: {
-              prefix: (h.description?.prefix && h.description.prefix.trim() !== "") ? h.description.prefix : heroData.description.prefix,
-              italic: (h.description?.italic && h.description.italic.trim() !== "") ? h.description.italic : heroData.description.italic,
-              suffix: (h.description?.suffix && h.description.suffix.trim() !== "") ? h.description.suffix : heroData.description.suffix,
+              prefix: h.description?.prefix?.trim() ? h.description.prefix : heroData.description.prefix,
+              italic: h.description?.italic?.trim() ? h.description.italic : heroData.description.italic,
+              suffix: h.description?.suffix?.trim() ? h.description.suffix : heroData.description.suffix,
             },
             buttons: {
               primary: {
@@ -106,15 +74,8 @@ export function Hero() {
                 href: h.buttons?.secondary?.href?.trim() ? h.buttons.secondary.href : heroData.buttons.secondary.href,
               },
             },
-            trustPills: Array.isArray(h.trustPills) && h.trustPills.length > 0 ? h.trustPills : heroData.trustPills,
             stats: Array.isArray(h.stats) && h.stats.length > 0 ? h.stats : heroData.stats,
-            tooltips: Array.isArray(h.tooltips) && h.tooltips.length > 0 ? h.tooltips : (heroData.tooltips || []),
           });
-
-          if (spotlightRef.current) {
-            const sc = data.hero?.effects?.spotlightColor || heroData.effects?.spotlightColor || "rgba(229, 228, 226, 0.1)";
-            spotlightRef.current.style.setProperty("--spotlight-color", sc);
-          }
         }
       } catch (error) {
         console.error("Failed to load hero settings", error);
@@ -134,10 +95,9 @@ export function Hero() {
     };
   }, []);
 
-  // 4. Trigger reveal animation setelah mount
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
+      "(prefers-reduced-motion: reduce)"
     ).matches;
 
     if (prefersReducedMotion) {
@@ -151,7 +111,6 @@ export function Hero() {
     return () => cancelAnimationFrame(timer);
   }, []);
 
-  // 5. Observer buat dimming background pas section berikutnya keliatan
   useEffect(() => {
     const section = document.querySelector(".content-section");
     if (!section) return;
@@ -160,14 +119,13 @@ export function Hero() {
       (entries) => {
         setIsDimmed(entries[0].isIntersecting);
       },
-      { threshold: 0.1 },
+      { threshold: 0.1 }
     );
 
     observer.observe(section);
     return () => observer.disconnect();
   }, []);
 
-  // 6. IntersectionObserver untuk animasi stats count-up
   useEffect(() => {
     const el = statsRef.current;
     if (!el) return;
@@ -178,73 +136,47 @@ export function Hero() {
           observer.disconnect();
         }
       },
-      { threshold: 0.3 },
+      { threshold: 0.2 }
     );
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
 
-  // Ambil URL gambar latar belakang dari resolvedHero (hanya jika ada data dari DB)
   const heroBackgroundImage =
-    (resolvedHero?.image && resolvedHero.image.trim() !== "")
+    resolvedHero?.image && resolvedHero.image.trim() !== ""
       ? resolvedHero.image
       : "";
   const heroImageAlt =
-    (resolvedHero?.imageAlt && resolvedHero.imageAlt.trim() !== "")
+    resolvedHero?.imageAlt && resolvedHero.imageAlt.trim() !== ""
       ? resolvedHero.imageAlt
-      : (heroData?.imageAlt || "Hero Visual");
+      : heroData?.imageAlt;
 
-  const trustPills = resolvedHero?.trustPills || heroData.trustPills || [];
   const stats = resolvedHero?.stats || heroData.stats || [];
-  const tooltips = resolvedHero?.tooltips || heroData.tooltips || [];
   const fallback = heroData.fallbackVisual;
 
   return (
     <section id="home" className={`${styles.hero} ${isDimmed ? styles.dimmed : ""}`}>
-      {/* Grain texture overlay untuk luxury feel */}
       <div className={styles.heroGrain} aria-hidden="true" />
-
-      {/* Aurora Background Mesh */}
-      <div className={styles.auroraBg}></div>
-
-      <div
-        ref={spotlightRef}
-        className={styles.heroSpotlight}
-      ></div>
-
-      <div className={styles.heroOverlay}></div>
-      <div className={styles.heroParticlesContainer}>
-        <HeroParticles />
-      </div>
+      <div className={styles.ambientBackdrop} aria-hidden="true" />
 
       <div className={styles.heroInner}>
-        {/* Left Side: Glassmorphism Content */}
-        <main
-          ref={contentRef}
-          className={styles.content}
-        >
-          <div className={styles.contentGlow} aria-hidden="true" />
-
-          {/* Badge pill urgency */}
-          {resolvedHero?.badge && (
-            <div
-              className={`${styles.heroBadge} ${styles.reveal} ${styles.delay0} ${isRevealed ? styles.revealed : ""}`}
-            >
-              {resolvedHero.badge}
-            </div>
-          )}
-
-          <p
-            className={`${styles.heroTagline} ${styles.reveal} ${styles.delay0} ${isRevealed ? styles.revealed : ""}`}
+        {/* Left Column: Unboxed Architectural Editorial Typography */}
+        <main ref={contentRef} className={styles.content}>
+          <div
+            className={`${styles.overlineRow} ${styles.reveal} ${styles.delay0} ${isRevealed ? styles.revealed : ""}`}
           >
-            {resolvedHero?.tagline}
-          </p>
+            <span className={styles.overlineRule} aria-hidden="true" />
+            <p className={styles.heroTagline}>{resolvedHero?.tagline}</p>
+          </div>
+
           <h1
             className={`${styles.heroTitle} ${styles.reveal} ${styles.delay1} ${isRevealed ? styles.revealed : ""}`}
           >
-            {resolvedHero?.title?.main} <br />
-            <span>{resolvedHero?.title?.highlight}</span>
+            {resolvedHero?.title?.main}
+            <br />
+            <span className={styles.titleAccent}>{resolvedHero?.title?.highlight}</span>
           </h1>
+
           <p
             className={`${styles.heroDesc} ${styles.reveal} ${styles.delay2} ${isRevealed ? styles.revealed : ""}`}
           >
@@ -253,21 +185,6 @@ export function Hero() {
             {resolvedHero?.description?.suffix}
           </p>
 
-          {/* Trust Pills */}
-          {trustPills.length > 0 && (
-            <div
-              className={`${styles.trustPills} ${styles.reveal} ${styles.delay2} ${isRevealed ? styles.revealed : ""}`}
-              aria-label="Keunggulan produk"
-            >
-              {trustPills.map((pill: any, i: number) => (
-                <span key={i} className={styles.trustPill}>
-                  <AppIcon name={pill.icon} size={12} className={styles.pillIcon} />
-                  {pill.label}
-                </span>
-              ))}
-            </div>
-          )}
-
           <div
             className={`${styles.heroButtons} ${styles.reveal} ${styles.delay3} ${isRevealed ? styles.revealed : ""}`}
           >
@@ -275,24 +192,21 @@ export function Hero() {
               href={resolvedHero?.buttons?.primary?.href}
               className={styles.ctaPrimary}
             >
-              {resolvedHero?.buttons?.primary?.label}
-              <AppIcon name="shopping-bag" size={16} className={styles.btnIcon} />
+              <span>{resolvedHero?.buttons?.primary?.label}</span>
+              <AppIcon name="arrow-right" size={15} className={styles.btnIcon} />
             </a>
             <a
               href={resolvedHero?.buttons?.secondary?.href}
               className={styles.ctaSecondary}
             >
-              {resolvedHero?.buttons?.secondary?.label}
-              <AppIcon name="arrow-right" size={14} className={styles.btnIconSecondary} />
+              <span>{resolvedHero?.buttons?.secondary?.label}</span>
             </a>
           </div>
 
-          {/* Stats Row */}
           {stats.length > 0 && (
             <div
               ref={statsRef}
               className={`${styles.statsRow} ${styles.reveal} ${styles.delay3} ${isRevealed ? styles.revealed : ""} ${statsVisible ? styles.statsVisible : ""}`}
-              aria-label="Statistik brand"
             >
               {stats.map((stat: any, i: number) => (
                 <div key={i} className={styles.statItem}>
@@ -304,58 +218,56 @@ export function Hero() {
           )}
         </main>
 
-        {/* Right Side: Floating Visual (Gambar atau Kotak Polos) dengan Floating Tooltips */}
-        <div className={`${styles.heroVisualWrapper} ${styles.reveal} ${styles.delay1} ${isRevealed ? styles.revealed : ""}`}>
-          <div
-            ref={visualRef}
-            className={styles.heroVisual}
-          >
-            <div className={styles.heroVisualGlow}></div>
-            {heroBackgroundImage ? (
-              <Image
-                src={optimizeCloudinaryUrl(heroBackgroundImage, IMAGE_PRESETS.HERO)}
-                alt={heroImageAlt}
-                className={styles.heroVisualImg}
-                width={600}
-                height={700}
-                priority
-                sizes="(max-width: 768px) 100vw, 50vw"
-              />
-            ) : (
-              <div
-                className={styles.heroFallbackBox}
-                aria-label={fallback?.label || "Hero Visual"}
-              />
-            )}
-
-            {/* Tooltip yang selalu muncul mengikuti efek gerakan gambar/visual */}
-            {tooltips.map((item: any) => {
-              const positionClass =
-                item.position === "topLeft"
-                  ? styles.tooltipTopLeft
-                  : styles.tooltipBottomRight;
-
-              return (
+        {/* Right Column: Quiet Gallery Plate / Lookbook Frame */}
+        <div
+          className={`${styles.heroVisualWrapper} ${styles.reveal} ${styles.delay1} ${isRevealed ? styles.revealed : ""}`}
+        >
+          <div ref={visualRef} className={styles.heroVisualFrame}>
+            <div className={styles.galleryMat}>
+              {heroBackgroundImage ? (
+                <Image
+                  src={optimizeCloudinaryUrl(heroBackgroundImage, IMAGE_PRESETS.HERO)}
+                  alt={heroImageAlt}
+                  className={styles.heroVisualImg}
+                  width={640}
+                  height={800}
+                  priority
+                  sizes="(max-width: 960px) 100vw, 44vw"
+                />
+              ) : (
                 <div
-                  key={item.id}
-                  className={`${styles.heroTooltip} ${positionClass}`}
+                  className={styles.heroFallbackAtelier}
+                  aria-label={fallback?.label}
                 >
-                  <span className={styles.tooltipDot} aria-hidden="true" />
-                  <AppIcon name={item.icon} size={15} className={styles.tooltipIcon} />
-                  <span>{item.label}</span>
+                  <div className={styles.atelierArch} aria-hidden="true">
+                    <span className={styles.atelierMonogram}>
+                      {fallback?.monogram}
+                    </span>
+                  </div>
+                  <span className={styles.atelierCaption}>
+                    {resolvedHero?.tagline}
+                  </span>
                 </div>
-              );
-            })}
+              )}
+            </div>
+
+            <div className={styles.plateFooter}>
+              <span className={styles.plateCode}>{heroData.plateNumber}</span>
+              <span className={styles.plateNote}>{heroData.atelierNote}</span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Scroll Down Indicator */}
-      <div className={`${styles.scrollIndicator} ${showScroll ? styles.scrollVisible : ""}`} aria-hidden="true">
-        <div className={styles.scrollMouse}>
-          <div className={styles.scrollWheel} />
-        </div>
-        <span className={styles.scrollLabel}>{heroData.scrollIndicator?.label}</span>
+      {/* Whisper-quiet Editorial Hairline Scroll Cue */}
+      <div
+        className={`${styles.scrollIndicator} ${showScroll ? styles.scrollVisible : ""}`}
+        aria-hidden="true"
+      >
+        <span className={styles.scrollLabel}>
+          {heroData.scrollIndicator?.label}
+        </span>
+        <span className={styles.scrollLine} />
       </div>
     </section>
   );

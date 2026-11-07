@@ -1,367 +1,253 @@
 /* ====================================================
-   HERO CSS (Luxury High-End Theme - Pro Max Redesign)
+   HERO CSS — Quiet Editorial Artisanal Luxury
+   (Aesop / Byredo / Le Labo Inspired Architectural Layout)
    ==================================================== */
+
 .hero {
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   align-items: center;
   position: relative;
   overflow: hidden;
+  background-color: var(--background);
   color: var(--text-primary);
+  padding: 6.5rem 0 4rem;
 }
 
-/* Grain texture overlay untuk premium luxury feel */
+/* Subtle micro-grain texture for tactile paper/film depth */
 .heroGrain {
   position: absolute;
   inset: 0;
-  z-index: 6;
+  z-index: 2;
   pointer-events: none;
-  opacity: 0.035;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
   background-size: 180px 180px;
   mix-blend-mode: overlay;
 }
 
-/* Efek gradient halus di bagian bawah agar transisi ke section berikutnya seamless */
-.hero::after {
-  content: "";
+/* Soft ambient architectural lighting (no noisy moving blobs or purple gradients) */
+.ambientBackdrop {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 150px;
-  background: linear-gradient(to bottom,
-      transparent 0%,
-      rgba(var(--background-rgb), 0.7) 100%);
-  z-index: 5;
-  pointer-events: none;
-}
-
-/* --- Background Cinematic (Aurora) --- */
-.auroraBg {
-  position: absolute;
-  inset: -15px;
-  width: calc(100% + 30px);
-  height: calc(100vh + 30px);
-  background: var(--background);
-  z-index: -2;
-  overflow: hidden;
-  transition: opacity 0.5s ease;
-}
-
-.auroraBg::before,
-.auroraBg::after {
-  content: "";
-  position: absolute;
-  border-radius: 8%;
-  filter: blur(80px);
-  opacity: 0.6;
-  animation: auroraAnimation 20s infinite alternate linear;
-}
-
-.auroraBg::before {
-  width: 60vw;
-  height: 60vw;
-  background: radial-gradient(circle, rgba(var(--primary-accent-rgb), 0.25), transparent 70%);
-  top: -10vw;
-  left: -10vw;
-}
-
-.auroraBg::after {
-  width: 70vw;
-  height: 70vw;
-  background: radial-gradient(circle, rgba(var(--secondary-rgb), 0.16), transparent 70%);
-  bottom: -20vw;
-  right: -10vw;
-  animation-delay: -5s;
-}
-
-@keyframes auroraAnimation {
-  0% {
-    transform: translate(0, 0) scale(1);
-  }
-
-  33% {
-    transform: translate(10vw, -10vw) scale(1.1);
-  }
-
-  66% {
-    transform: translate(-10vw, 15vw) scale(0.9);
-  }
-
-  100% {
-    transform: translate(5vw, 5vw) scale(1.2);
-  }
-}
-
-/* Background image jika tidak memakai split screen atau sebagai tekstur tambahan */
-.heroBackground {
-  position: absolute;
-  inset: -15px;
-  width: calc(100% + 30px);
-  height: calc(100vh + 30px);
-  background-size: cover;
-  background-position: center;
-  z-index: -1;
-  filter: blur(10px) brightness(0.88) contrast(1.05);
-  transform: scale(1.02);
-  transition:
-    filter 1.2s cubic-bezier(0.16, 1, 0.3, 1),
-    opacity 0.5s ease,
-    background-color 0.4s ease;
-  opacity: 0.2;
-  /* Dibuat redup karena Aurora adalah main bg */
-}
-
-/* Dimming pas section berikutnya masuk viewport (dipicu isDimmed di komponen) */
-.hero.dimmed .auroraBg,
-.hero.dimmed .heroBackground {
-  opacity: 0.15;
-  filter: blur(15px);
-}
-
-.heroSpotlight {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   z-index: 1;
   pointer-events: none;
-  transition: background 0.1s ease-out;
-  background: radial-gradient(600px circle at var(--spotlight-x, 50%) var(--spotlight-y, 50%),
-      var(--spotlight-color, rgba(var(--secondary-rgb), 0.08)),
-      transparent 80%);
+  background:
+    radial-gradient(
+      55% 65% at 78% 45%,
+      rgba(var(--secondary-rgb), 0.07) 0%,
+      transparent 75%
+    ),
+    radial-gradient(
+      50% 60% at 15% 25%,
+      rgba(var(--primary-accent-rgb), 0.04) 0%,
+      transparent 70%
+    );
+  transition: opacity 0.6s ease;
 }
 
-.heroOverlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(to right,
-      rgba(var(--background-rgb), 0.94) 0%,
-      rgba(var(--background-rgb), 0.72) 55%,
-      rgba(var(--background-rgb), 0.4) 100%);
-  z-index: 2;
-}
-
-.heroParticlesContainer {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 3;
-  pointer-events: none;
+.hero.dimmed .ambientBackdrop {
+  opacity: 0.25;
 }
 
 /* ====================================================
-   LAYOUT SPLIT-SCREEN & KACA KRISTAL
+   EDITORIAL ASYMMETRIC SPLIT GRID
    ==================================================== */
 .heroInner {
   position: relative;
-  z-index: 4;
+  z-index: 3;
   width: 100%;
-  max-width: 1320px;
+  max-width: 1280px;
   margin: 0 auto;
+  padding: 0 3rem;
   display: grid;
   grid-template-columns: 1.15fr 0.85fr;
   align-items: center;
-  gap: 3.5rem;
-  min-height: 85vh;
-  padding: 0 2rem;
+  gap: 5rem;
 }
 
-.heroInner.noVisual {
-  grid-template-columns: 1fr 0.7fr;
-}
-
-/* Kaca Kristal (Content Box) - Glassmorphism Premium */
+/* ====================================================
+   LEFT COLUMN: UNBOXED ARCHITECTURAL TYPOGRAPHY
+   ==================================================== */
 .content {
   position: relative;
-  background: rgba(var(--surface-primary-rgb), 0.25);
-  backdrop-filter: blur(28px) saturate(180%);
-  -webkit-backdrop-filter: blur(28px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-top-color: rgba(255, 255, 255, 0.2);
-  border-left-color: rgba(255, 255, 255, 0.16);
-  border-radius: 8px;
-  padding: 3rem 3rem 2.5rem;
-  box-shadow:
-    0 30px 60px rgba(0, 0, 0, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.25),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.2);
-  overflow: hidden;
-  animation: heroPanelFadeIn 1s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-/* Garis pantulan cahaya kristal (specular highlight) di tepi atas kotak */
-.content::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg,
-      transparent 0%,
-      rgba(255, 255, 255, 0.6) 50%,
-      transparent 100%);
-  pointer-events: none;
-}
-
-/* Aksen garis vertikal aksen di sisi kiri kotak */
-.content::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 2.5px;
-  height: 100%;
-  background: linear-gradient(to bottom, var(--secondary), transparent);
-  pointer-events: none;
-}
-
-.contentGlow {
-  position: absolute;
-  top: -25%;
-  right: -10%;
-  width: 180px;
-  height: 180px;
-  border-radius: 8%;
-  background: radial-gradient(circle, rgba(var(--secondary-rgb), 0.1), transparent 72%);
-  filter: blur(6px);
-  pointer-events: none;
-}
-
-@keyframes heroPanelFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* ====================================================
-   BADGE URGENCY PILL
-   ==================================================== */
-.heroBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(var(--secondary-rgb), 0.15);
-  border: 1px solid rgba(var(--secondary-rgb), 0.35);
-  color: var(--secondary);
-  font-family: var(--font-sans);
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  padding: 5px 12px;
-  border-radius: 999px;
-  margin-bottom: 0.8rem;
-  width: fit-content;
-  animation: pulseBadge 2.5s ease-in-out infinite;
-}
-
-@keyframes pulseBadge {
-
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 rgba(var(--secondary-rgb), 0.3);
-  }
-
-  50% {
-    box-shadow: 0 0 0 6px rgba(var(--secondary-rgb), 0);
-  }
-}
-
-/* ====================================================
-   TRUST PILLS
-   ==================================================== */
-.trustPills {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 0.5rem;
-  margin-bottom: 1.5rem;
-  overflow-x: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  padding-bottom: 2px;
-}
-
-.trustPills::-webkit-scrollbar {
-  display: none;
-}
-
-.trustPill {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  flex-shrink: 0;
-  background: rgba(var(--surface-primary-rgb), 0.4);
-  border: 1px solid rgba(var(--border-color), 0.6);
-  backdrop-filter: blur(8px);
-  color: var(--text-secondary);
-  font-family: var(--font-sans);
-  font-size: 0.68rem;
-  font-weight: 500;
-  letter-spacing: 0.03em;
-  padding: 5px 10px;
-  border-radius: 999px;
-  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
-  white-space: nowrap;
-}
-
-.trustPill:hover {
-  background: rgba(var(--secondary-rgb), 0.1);
-  border-color: rgba(var(--secondary-rgb), 0.3);
-  color: var(--secondary);
-}
-
-.pillIcon {
-  opacity: 0.75;
-  flex-shrink: 0;
-}
-
-/* ====================================================
-   STATS ROW
-   ==================================================== */
-.statsRow {
-  display: flex;
-  gap: 0;
-  margin-top: 1.6rem;
-  padding-top: 1.4rem;
-  border-top: 1px solid rgba(var(--border-color), 0.5);
-}
-
-.statItem {
-  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding-right: 1.2rem;
-  border-right: 1px solid rgba(var(--border-color), 0.4);
+  max-width: 620px;
+}
+
+.overlineRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+}
+
+.overlineRule {
+  width: 32px;
+  height: 1px;
+  background-color: var(--secondary);
+  flex-shrink: 0;
+}
+
+.heroTagline {
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.28em;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.heroTitle {
+  font-family: var(--font-serif);
+  font-size: clamp(2.4rem, 4.2vw, 4.1rem);
+  line-height: 1.08;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  color: var(--text-primary);
+  margin: 0 0 1.75rem;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.titleAccent {
+  color: var(--secondary);
+  font-weight: 400;
+}
+
+.heroDesc {
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.85;
+  color: var(--text-secondary);
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  max-width: 48ch;
+  margin: 0 0 2.5rem;
+}
+
+.heroDesc em {
+  font-family: var(--font-serif);
+  font-style: italic;
+  color: var(--text-primary);
+  letter-spacing: 0.03em;
+}
+
+/* ====================================================
+   EDITORIAL ACTIONS (REFINED & TACTILE)
+   ==================================================== */
+.heroButtons {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.ctaPrimary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  min-height: 48px;
+  padding: 0.85rem 2rem;
+  background-color: var(--primary-accent);
+  color: var(--primary-accent-text);
+  border: 1px solid var(--primary-accent);
+  border-radius: 4px;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    color 0.25s ease,
+    transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ctaPrimary:hover {
+  background-color: var(--secondary);
+  border-color: var(--secondary);
+  color: var(--on-secondary);
+  transform: translateY(-1px);
+}
+
+.ctaPrimary:active {
+  transform: scale(0.98);
+}
+
+.btnIcon {
+  flex-shrink: 0;
+  transition: transform 0.25s ease;
+}
+
+.ctaPrimary:hover .btnIcon {
+  transform: translateX(4px);
+}
+
+.ctaSecondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0.85rem 1.5rem;
+  background-color: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    border-color 0.25s ease,
+    color 0.25s ease,
+    background-color 0.25s ease,
+    transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ctaSecondary:hover {
+  border-color: var(--text-primary);
+  background-color: rgba(var(--surface-primary-rgb), 0.6);
+}
+
+.ctaSecondary:active {
+  transform: scale(0.98);
+}
+
+/* ====================================================
+   QUIET ARCHITECTURAL LEDGER (STATS)
+   ==================================================== */
+.statsRow {
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
+  margin-top: 3.5rem;
+  padding-top: 1.75rem;
+  border-top: 1px solid var(--border-color);
+  width: 100%;
+  max-width: 480px;
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
   opacity: 0;
-  transform: translateY(10px);
+  transform: translateY(8px);
   transition: opacity 0.5s ease, transform 0.5s ease;
-}
-
-.statItem:last-child {
-  border-right: none;
-  padding-right: 0;
-  padding-left: 1.2rem;
-  align-items: flex-end;
-}
-
-.statItem:not(:first-child):not(:last-child) {
-  padding-left: 1.2rem;
 }
 
 .statsVisible .statItem:nth-child(1) {
@@ -373,269 +259,193 @@
 .statsVisible .statItem:nth-child(2) {
   opacity: 1;
   transform: translateY(0);
-  transition-delay: 100ms;
+  transition-delay: 90ms;
 }
 
 .statsVisible .statItem:nth-child(3) {
   opacity: 1;
   transform: translateY(0);
-  transition-delay: 200ms;
+  transition-delay: 180ms;
 }
 
 .statValue {
   font-family: var(--font-serif);
-  font-size: 1.5rem;
-  font-weight: 500;
+  font-size: 1.35rem;
+  font-weight: 400;
   color: var(--text-primary);
-  line-height: 1;
-  letter-spacing: -0.02em;
+  line-height: 1.1;
+  letter-spacing: 0.04em;
 }
 
 .statLabel {
   font-family: var(--font-sans);
   font-size: 0.65rem;
-  color: var(--text-tertiary);
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin-top: 4px;
-  font-weight: 500;
+  letter-spacing: 0.14em;
+  color: var(--text-tertiary);
   white-space: nowrap;
 }
 
 /* ====================================================
-   VISUAL: GAMBAR PRODUK DARI ADMIN
+   RIGHT COLUMN: EDITORIAL GALLERY PLATE (4:5 PORTRAIT)
    ==================================================== */
 .heroVisualWrapper {
   position: relative;
   width: 100%;
-  height: 560px;
-  animation: heroVisualFadeIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) 300ms;
-  animation-fill-mode: both;
+  display: flex;
+  justify-content: flex-end;
 }
 
-@keyframes heroVisualFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(24px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Visual Image di Kanan */
-.heroVisual {
+.heroVisualFrame {
   position: relative;
   width: 100%;
-  height: 560px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  animation: floatImage 8s ease-in-out infinite;
+  max-width: 460px;
+  background-color: var(--surface-primary);
+  border: 1px solid var(--border-color);
+  padding: 0.85rem 0.85rem 0.65rem;
+  box-shadow: var(--shadow-md);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.galleryMat {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  background-color: var(--surface-secondary);
+  border: 1px solid var(--border-color);
 }
 
 .heroVisualImg {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 40px 80px rgba(0, 0, 0, 0.3), 0 0 40px rgba(var(--secondary-rgb), 0.15);
+  display: block;
+  transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.heroVisualGlow {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 80%;
-  height: 80%;
-  background: radial-gradient(circle, rgba(var(--secondary-rgb), 0.25), transparent 70%);
-  filter: blur(35px);
-  z-index: -1;
-  pointer-events: none;
+.heroVisualFrame:hover .heroVisualImg {
+  transform: scale(1.025);
 }
 
-@keyframes floatImage {
-  0% {
-    transform: translateY(0px) rotate(0deg);
-  }
-
-  50% {
-    transform: translateY(-12px) rotate(0.4deg);
-  }
-
-  100% {
-    transform: translateY(0px) rotate(0deg);
-  }
-}
-
-/* ====================================================
-   KOTAK POLOS (FALLBACK) & FLOATING TOOLTIPS
-   ==================================================== */
-.heroFallbackBox {
+/* Minimalist Atelier Fallback when no image is uploaded in Admin */
+.heroFallbackAtelier {
   width: 100%;
   height: 100%;
-  border-radius: 8px;
-  background: rgba(var(--surface-primary-rgb), 0.12);
-  backdrop-filter: blur(20px) saturate(140%);
-  -webkit-backdrop-filter: blur(20px) saturate(140%);
-  border: 1px solid rgba(var(--border-color), 0.4);
-  border-top-color: rgba(255, 255, 255, 0.2);
-  box-shadow:
-    0 30px 60px rgba(0, 0, 0, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
-  position: relative;
-  overflow: hidden;
-}
-
-/* Floating Tooltips (Natural Ingredients & Produk Lokal) */
-.heroTooltip {
-  position: absolute;
-  z-index: 10;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  border-radius: 999px;
-  background: rgba(var(--surface-primary-rgb), 0.82);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  box-shadow:
-    0 12px 28px rgba(0, 0, 0, 0.22),
-    0 2px 8px rgba(var(--secondary-rgb), 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.4);
-  color: var(--text-primary);
-  font-family: var(--font-sans);
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  white-space: nowrap;
-  user-select: none;
-  pointer-events: auto;
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
-}
-
-.heroTooltip:hover {
-  transform: scale(1.05);
-  box-shadow:
-    0 16px 36px rgba(0, 0, 0, 0.28),
-    0 4px 12px rgba(var(--secondary-rgb), 0.25);
-}
-
-.tooltipTopLeft {
-  top: 10%;
-  left: -20px;
-}
-
-.tooltipBottomRight {
-  bottom: 12%;
-  right: -20px;
-}
-
-.tooltipDot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background-color: var(--secondary);
-  box-shadow: 0 0 8px var(--secondary);
-  flex-shrink: 0;
-  animation: tooltipDotPulse 2s infinite ease-in-out;
-}
-
-@keyframes tooltipDotPulse {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 0.85;
-  }
-  50% {
-    transform: scale(1.3);
-    opacity: 1;
-    box-shadow: 0 0 12px var(--secondary);
-  }
-}
-
-.tooltipIcon {
-  color: var(--secondary);
-  flex-shrink: 0;
-}
-
-/* ====================================================
-   SCROLL DOWN INDICATOR
-   ==================================================== */
-.scrollIndicator {
-  position: absolute;
-  bottom: 2rem;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 10;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  gap: 1.5rem;
+  padding: 2.5rem;
+  background:
+    radial-gradient(
+      circle at 50% 38%,
+      rgba(var(--secondary-rgb), 0.12) 0%,
+      transparent 68%
+    ),
+    var(--surface-secondary);
+}
+
+.atelierArch {
+  width: 140px;
+  height: 190px;
+  border: 1px solid var(--border-color);
+  border-radius: 999px 999px 4px 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(var(--surface-primary-rgb), 0.65);
+}
+
+.atelierMonogram {
+  font-family: var(--font-serif);
+  font-size: 3rem;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  color: var(--secondary);
+}
+
+.atelierCaption {
+  font-family: var(--font-sans);
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  color: var(--text-tertiary);
+  text-align: center;
+}
+
+.plateFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.65rem;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.plateCode {
+  font-variant-numeric: tabular-nums;
+}
+
+.plateNote {
+  color: var(--text-secondary);
+}
+
+/* ====================================================
+   WHISPER-QUIET HAIRLINE SCROLL CUE
+   ==================================================== */
+.scrollIndicator {
+  position: absolute;
+  bottom: 1.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
   opacity: 0;
-  transition: opacity 0.5s ease;
+  transition: opacity 0.4s ease;
   pointer-events: none;
 }
 
 .scrollVisible {
-  opacity: 1;
-}
-
-.scrollMouse {
-  width: 22px;
-  height: 34px;
-  border: 2px solid rgba(var(--text-secondary-rgb), 0.4);
-  border-radius: 999px;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding-top: 5px;
-}
-
-.scrollWheel {
-  width: 3px;
-  height: 7px;
-  background: var(--secondary);
-  border-radius: 999px;
-  animation: scrollBounce 1.8s ease-in-out infinite;
-}
-
-@keyframes scrollBounce {
-
-  0%,
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  50% {
-    opacity: 0.3;
-    transform: translateY(8px);
-  }
+  opacity: 0.75;
 }
 
 .scrollLabel {
   font-family: var(--font-sans);
-  font-size: 0.6rem;
+  font-size: 0.58rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.15em;
+  letter-spacing: 0.25em;
   color: var(--text-tertiary);
-  white-space: nowrap;
+}
+
+.scrollLine {
+  width: 1px;
+  height: 28px;
+  background: linear-gradient(
+    to bottom,
+    var(--secondary) 0%,
+    transparent 100%
+  );
 }
 
 /* ====================================================
-   TYPOGRAPHY & REVEAL ANIMATIONS (Pure CSS)
+   STAGGERED ENTRANCE REVEAL
    ==================================================== */
 @keyframes heroReveal {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(16px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
@@ -645,24 +455,23 @@
 .reveal {
   opacity: 1;
   transform: translateY(0);
-  animation: heroReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
-  will-change: opacity, transform;
+  animation: heroReveal 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .delay0 {
-  animation-delay: 30ms;
+  animation-delay: 40ms;
 }
 
 .delay1 {
-  animation-delay: 100ms;
+  animation-delay: 110ms;
 }
 
 .delay2 {
-  animation-delay: 180ms;
+  animation-delay: 190ms;
 }
 
 .delay3 {
-  animation-delay: 260ms;
+  animation-delay: 270ms;
 }
 
 .reveal.revealed {
@@ -670,313 +479,98 @@
   transform: translateY(0);
 }
 
-/* Respect user preference: matikan animasi kalau browser/OS minta reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  .content {
-    animation: none;
-    opacity: 1;
-  }
-
   .reveal {
+    animation: none;
     transition: none;
     transform: none;
     opacity: 1;
   }
-
-  .scrollWheel,
-  .heroTooltip,
-  .heroVisual {
-    animation: none;
-  }
-}
-
-.heroTagline {
-  position: relative;
-  z-index: 1;
-  font-family: var(--font-sans);
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.35em;
-  color: var(--text-tertiary);
-  margin-bottom: 0.6rem;
-  font-weight: 600;
-}
-
-.heroTitle {
-  position: relative;
-  z-index: 1;
-  font-family: var(--font-serif);
-  font-size: clamp(2rem, 3.5vw, 3.2rem);
-  line-height: 1.08;
-  font-weight: 300;
-  margin-bottom: 1rem;
-  color: var(--text-primary);
-  letter-spacing: 0.02em;
-  text-wrap: balance;
-}
-
-.heroTitle span {
-  font-weight: 500;
-  color: var(--secondary);
-  position: relative;
-}
-
-/* Underline accent di bawah highlight word */
-.heroTitle span::after {
-  content: "";
-  position: absolute;
-  bottom: -3px;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: linear-gradient(to right, var(--secondary), transparent);
-  border-radius: 999px;
-}
-
-.heroDesc {
-  position: relative;
-  z-index: 1;
-  font-family: var(--font-sans);
-  font-size: 0.95rem;
-  line-height: 1.75;
-  color: var(--text-secondary);
-  margin-bottom: 1.2rem;
-  font-weight: 400;
-  letter-spacing: 0.01em;
-  max-width: 520px;
-}
-
-.heroButtons {
-  display: flex;
-  gap: 0.8rem;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-/* --- Tombol Utama (CTA Primary) --- */
-.ctaPrimary {
-  background-color: var(--secondary) !important;
-  color: var(--on-secondary) !important;
-  border: 1px solid var(--secondary);
-  padding: 0.75rem 1.6rem;
-  font-family: var(--font-sans);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  font-size: 0.75rem;
-  cursor: pointer;
-  border-radius: 10px;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 6px 20px rgba(var(--secondary-rgb), 0.35);
-  text-decoration: none;
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  transition: opacity 0.3s ease, transform 0.25s ease, box-shadow 0.3s ease;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.ctaPrimary:hover {
-  opacity: 0.92;
-  transform: translateY(-2px);
-  box-shadow: 0 10px 28px rgba(var(--secondary-rgb), 0.45);
-}
-
-.ctaPrimary:active {
-  transform: translateY(0) scale(0.97);
-  box-shadow: 0 4px 12px rgba(var(--secondary-rgb), 0.25);
-}
-
-/* Shimmer sweep on hover */
-.ctaPrimary::after {
-  content: "";
-  position: absolute;
-  top: -50%;
-  left: -75%;
-  width: 50%;
-  height: 200%;
-  background: linear-gradient(to right,
-      rgba(255, 255, 255, 0) 0%,
-      rgba(255, 255, 255, 0.4) 50%,
-      rgba(255, 255, 255, 0) 100%);
-  transform: skewX(-15deg);
-  transition: left 0.6s ease;
-}
-
-.ctaPrimary:hover::after {
-  left: 130%;
-}
-
-.btnIcon {
-  flex-shrink: 0;
-  transition: transform 0.3s ease;
-}
-
-.ctaPrimary:hover .btnIcon {
-  transform: translateX(3px);
-}
-
-/* --- Tombol Sekunder (CTA Secondary) --- */
-.ctaSecondary {
-  padding: 0.75rem 1.4rem;
-  border-radius: 10px;
-  font-family: var(--font-sans);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  font-size: 0.75rem;
-  text-decoration: none;
-  outline: none;
-  background-color: transparent;
-  color: var(--text-primary);
-  cursor: pointer;
-  border: 1px solid var(--border-color);
-  backdrop-filter: blur(8px);
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, transform 0.25s ease;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.ctaSecondary:hover {
-  background-color: rgba(var(--surface-primary-rgb), 0.5);
-  border-color: var(--secondary);
-  color: var(--secondary);
-  transform: translateY(-2px);
-}
-
-.ctaSecondary:active {
-  transform: translateY(0) scale(0.97);
-}
-
-.btnIconSecondary {
-  flex-shrink: 0;
-  transition: transform 0.3s ease;
-}
-
-.ctaSecondary:hover .btnIconSecondary {
-  transform: translateX(3px);
 }
 
 /* ====================================================
-   RESPONSIVE MOBILE OPTIMIZATIONS
+   RESPONSIVE BREAKPOINTS
    ==================================================== */
 @media (max-width: 960px) {
+  .hero {
+    padding: 6rem 0 3.5rem;
+  }
+
   .heroInner {
     grid-template-columns: 1fr;
-    gap: 2rem;
-    padding: 0 1.2rem;
-    min-height: unset;
-    padding-top: 100px;
-    padding-bottom: 60px;
-  }
-
-  .heroInner.noVisual {
-    grid-template-columns: 1fr;
-  }
-
-  .heroVisualWrapper {
-    order: 1;
-    height: 380px;
-  }
-
-  .heroVisual {
-    order: 1;
-    height: 380px;
+    gap: 3rem;
+    padding: 0 1.5rem;
   }
 
   .content {
+    max-width: 100%;
     order: 2;
-    padding: 2rem 1.5rem;
-    border-radius: 8px;
-    width: 100%;
-    margin: 0;
+  }
+
+  .heroVisualWrapper {
+    justify-content: center;
+    order: 1;
+  }
+
+  .heroVisualFrame {
+    max-width: 400px;
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 640px) {
   .hero {
-    height: auto;
-    min-height: 100vh;
+    padding: 5.5rem 0 3rem;
+    min-height: auto;
   }
 
-  .heroTagline {
-    font-size: 0.65rem;
-    letter-spacing: 0.3em;
-    margin-bottom: 0.5rem;
+  .heroInner {
+    gap: 2.25rem;
+    padding: 0 1.25rem;
   }
 
-  .heroBadge {
-    font-size: 0.62rem;
-    padding: 4px 10px;
-    margin-bottom: 0.6rem;
+  .overlineRow {
+    margin-bottom: 1.15rem;
   }
 
   .heroTitle {
-    font-size: 1.85rem;
-    line-height: 1.15;
-    margin-bottom: 0.85rem;
+    font-size: 2.1rem;
+    margin-bottom: 1.25rem;
   }
 
   .heroDesc {
-    font-size: 0.88rem;
-    line-height: 1.65;
-    margin-bottom: 1rem;
+    font-size: 0.92rem;
+    line-height: 1.75;
+    margin-bottom: 1.85rem;
   }
 
   .heroButtons {
     flex-direction: column;
-    width: 100%;
-    gap: 0.65rem;
     align-items: stretch;
+    width: 100%;
+    gap: 0.75rem;
   }
 
   .ctaPrimary,
   .ctaSecondary {
     width: 100%;
-    text-align: center;
-    padding: 0.85rem 1rem;
-    font-size: 0.75rem;
-    letter-spacing: 1.5px;
-    justify-content: center;
   }
 
   .statsRow {
-    margin-top: 1.2rem;
-    padding-top: 1.1rem;
+    margin-top: 2.25rem;
+    padding-top: 1.25rem;
+    gap: 1.5rem;
+    justify-content: space-between;
   }
 
   .statValue {
-    font-size: 1.2rem;
+    font-size: 1.15rem;
   }
 
   .statLabel {
-    font-size: 0.6rem;
+    font-size: 0.58rem;
   }
 
   .scrollIndicator {
     display: none;
-  }
-
-  .tooltipTopLeft {
-    top: 10px;
-    left: 10px;
-  }
-
-  .tooltipBottomRight {
-    bottom: 10px;
-    right: 10px;
-  }
-
-  .heroTooltip {
-    padding: 6px 12px;
-    font-size: 0.68rem;
-    gap: 6px;
   }
 }
