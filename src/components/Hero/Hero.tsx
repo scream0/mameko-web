@@ -1,11 +1,9 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-import Image from "next/image";
 import { getPublicSettings } from "@/services/settingsService";
 import { AppIcon } from "@/components/UI/Icon/AppIcon";
 import styles from "./Hero.module.css";
 import heroData from "@/data/ui/heroConfig.json";
-import { optimizeCloudinaryUrl, IMAGE_PRESETS } from "@/utils/imageOptimizer";
 
 export function Hero() {
   const [resolvedHero, setResolvedHero] = useState(heroData);
@@ -14,7 +12,6 @@ export function Hero() {
   const [showScroll, setShowScroll] = useState(true);
   const [statsVisible, setStatsVisible] = useState(false);
 
-  const visualRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLElement | null>(null);
   const statsRef = useRef<HTMLDivElement | null>(null);
 
@@ -24,8 +21,8 @@ export function Hero() {
       if (rafId) return;
       rafId = requestAnimationFrame(() => {
         const sy = window.scrollY;
-        if (visualRef.current) {
-          visualRef.current.style.transform = `translateY(${sy * -0.03}px)`;
+        if (contentRef.current) {
+          contentRef.current.style.transform = `translateY(${sy * -0.08}px)`;
         }
         setShowScroll(sy < 60);
         rafId = null;
@@ -51,10 +48,6 @@ export function Hero() {
           setResolvedHero({
             ...heroData,
             ...h,
-            tagline: h.tagline?.trim() ? h.tagline : heroData.tagline,
-            badge: h.badge?.trim() ? h.badge : heroData.badge,
-            image: h.image?.trim() ? h.image : "",
-            imageAlt: h.imageAlt?.trim() ? h.imageAlt : (heroData.imageAlt || "Hero Visual"),
             title: {
               main: h.title?.main?.trim() ? h.title.main : heroData.title.main,
               highlight: h.title?.highlight?.trim() ? h.title.highlight : heroData.title.highlight,
@@ -142,31 +135,20 @@ export function Hero() {
     return () => observer.disconnect();
   }, []);
 
-  const heroBackgroundImage =
-    resolvedHero?.image && resolvedHero.image.trim() !== ""
-      ? resolvedHero.image
-      : "";
-  const heroImageAlt =
-    resolvedHero?.imageAlt && resolvedHero.imageAlt.trim() !== ""
-      ? resolvedHero.imageAlt
-      : heroData?.imageAlt;
-
   const stats = resolvedHero?.stats || heroData.stats || [];
-  const fallback = heroData.fallbackVisual;
 
   return (
     <section id="home" className={`${styles.hero} ${isDimmed ? styles.dimmed : ""}`}>
       <div className={styles.heroGrain} aria-hidden="true" />
+      <div className={styles.architecturalGrid} aria-hidden="true" />
       <div className={styles.ambientBackdrop} aria-hidden="true" />
 
       <div className={styles.heroInner}>
-        {/* Left Column: Unboxed Architectural Editorial Typography */}
         <main ref={contentRef} className={styles.content}>
           <h1
             className={`${styles.heroTitle} ${styles.reveal} ${styles.delay0} ${isRevealed ? styles.revealed : ""}`}
           >
-            {resolvedHero?.title?.main}
-            <br />
+            {resolvedHero?.title?.main}{" "}
             <span className={styles.titleAccent}>{resolvedHero?.title?.highlight}</span>
           </h1>
 
@@ -186,7 +168,7 @@ export function Hero() {
               className={styles.ctaPrimary}
             >
               <span>{resolvedHero?.buttons?.primary?.label}</span>
-              <AppIcon name="arrow-right" size={15} className={styles.btnIcon} />
+              <AppIcon name="arrow-right" size={16} className={styles.btnIcon} />
             </a>
             <a
               href={resolvedHero?.buttons?.secondary?.href}
@@ -210,46 +192,6 @@ export function Hero() {
             </div>
           )}
         </main>
-
-        {/* Right Column: Quiet Gallery Plate / Lookbook Frame */}
-        <div
-          className={`${styles.heroVisualWrapper} ${styles.reveal} ${styles.delay1} ${isRevealed ? styles.revealed : ""}`}
-        >
-          <div ref={visualRef} className={styles.heroVisualFrame}>
-            <div className={styles.galleryMat}>
-              {heroBackgroundImage ? (
-                <Image
-                  src={optimizeCloudinaryUrl(heroBackgroundImage, IMAGE_PRESETS.HERO)}
-                  alt={heroImageAlt}
-                  className={styles.heroVisualImg}
-                  width={640}
-                  height={800}
-                  priority
-                  sizes="(max-width: 960px) 100vw, 44vw"
-                />
-              ) : (
-                <div
-                  className={styles.heroFallbackAtelier}
-                  aria-label={fallback?.label}
-                >
-                  <div className={styles.atelierArch} aria-hidden="true">
-                    <span className={styles.atelierMonogram}>
-                      {fallback?.monogram}
-                    </span>
-                  </div>
-                  <span className={styles.atelierCaption}>
-                    {resolvedHero?.tagline}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            <div className={styles.plateFooter}>
-              <span className={styles.plateCode}>{heroData.plateNumber}</span>
-              <span className={styles.plateNote}>{heroData.atelierNote}</span>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Whisper-quiet Editorial Hairline Scroll Cue */}
