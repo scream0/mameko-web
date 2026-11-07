@@ -1,4 +1,3 @@
-﻿// @ts-nocheck
 "use client";
 import { useRouter } from "next/navigation";
 import { getApiBaseUrl } from "@/lib/apiClient";
@@ -31,18 +30,18 @@ const money = (value: any) =>
 
 export default function UserManagement() {
   const router = useRouter();
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [roleFilter, setRoleFilter] = useState("all");
-  const [updatingId, setUpdatingId] = useState(null);
-  const [confirmTarget, setConfirmTarget] = useState(null);
-  const [deleteTarget, setDeleteTarget] = useState(null);
-  const [deletingId, setDeletingId] = useState(null);
+  const [updatingId, setUpdatingId] = useState<any>(null);
+  const [confirmTarget, setConfirmTarget] = useState<any>(null);
+  const [deleteTarget, setDeleteTarget] = useState<any>(null);
+  const [deletingId, setDeletingId] = useState<any>(null);
   const [page, setPage] = useState(1);
   const rowsPerPage = 10;
-  const lastUserIdRef = useRef(null);
+  const lastUserIdRef = useRef<any>(null);
 
   const loadUsers = async () => {
     try {
@@ -200,69 +199,12 @@ export default function UserManagement() {
         } catch (_) { /* body kosong / non-JSON, abaikan */ }
 
         if (res.ok && result?.success !== false && !result?.error) {
-          console.info("[DeleteUser] Go API ok (mungkin soft-delete). Melanjutkan RPC hard delete...");
-          // ⚠️ Go API mungkin hanya melakukan soft-delete (status=inactive)
-          // Selalu jalankan RPC untuk memastikan hard delete dari auth.users
-          const { data: rpcData, error: rpcError } = await mamekoClient.rpc("delete_user_by_admin", {
-            target_user_id: targetUserId,
-          });
-          if (!rpcError) {
-            deletionSucceeded = true;
-            const deletedFromAuth = rpcData?.deleted_from_auth ?? rpcData;
-            console.info(
-              "[DeleteUser] Hard delete via RPC:",
-              deletedFromAuth ? "termasuk auth.users ✓" : "hanya profiles (auth.users mungkin masih ada)",
-            );
-          } else {
-            // RPC gagal tapi Go API sudah soft-delete - anggap berhasil dengan warning
-            console.warn("[DeleteUser] RPC gagal setelah Go API ok:", rpcError.message);
-            deletionSucceeded = true; // Go API sudah soft-delete, cukup untuk hilang dari list
-          }
-        } else {
-          console.warn(
-            "[DeleteUser] Go API mengembalikan error:",
-            res.status,
-            result,
-          );
-        }
-      } catch (apiErr) {
-        console.warn("[DeleteUser] API DELETE /api/admin/team gagal, coba Supabase RPC:", apiErr);
-      }
-
-      // 2. Fallback via Supabase RPC jika Go API gagal atau belum menghandle auth.users
-      if (!deletionSucceeded) {
-        console.info("[DeleteUser] Mencoba RPC delete_user_by_admin...");
-        const { data: rpcData, error: rpcError } = await mamekoClient.rpc("delete_user_by_admin", {
-          target_user_id: targetUserId,
-        });
-        if (!rpcError) {
           deletionSucceeded = true;
-          const deletedFromAuth = rpcData?.deleted_from_auth ?? rpcData;
-          if (!deletedFromAuth) {
-            console.warn(
-              "[DeleteUser] Berhasil via RPC tapi auth.users belum terhapus - Go backend perlu menggunakan Supabase Admin API.",
-            );
-          } else {
-            console.info("[DeleteUser] Berhasil sepenuhnya via Supabase RPC:", targetUserId);
-          }
         } else {
-          console.warn("[DeleteUser] RPC gagal:", rpcError.message, "- mencoba hapus profiles langsung...");
-          // Fallback: hapus dari public.profiles saja (auth.users tetap ada, tapi user tidak muncul di list)
-          const { error: profileDelError } = await mamekoClient
-            .from("profiles")
-            .delete()
-            .eq("id", targetUserId);
-          if (!profileDelError) {
-            deletionSucceeded = true;
-            console.warn(
-              "[DeleteUser] Hanya profiles yang terhapus - auth.users masih ada. Hubungi admin server untuk hapus permanen.",
-            );
-          } else {
-            throw new Error(
-              rpcError?.message || profileDelError?.message || "Gagal menghapus pengguna.",
-            );
-          }
+          throw new Error(result?.error || "Gagal menghapus pengguna.");
         }
+      } catch (apiErr: any) {
+        throw new Error(apiErr?.message || "Gagal menghapus pengguna.");
       }
 
       // Fix #1: Update state lokal optimis LALU reload dari server untuk konfirmasi

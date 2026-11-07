@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import React, { useEffect, useState, useRef } from "react";
 import Image from "next/image";
@@ -24,7 +23,7 @@ export function About() {
   const [aboutImageAlt, setAboutImageAlt] = useState(
     aboutData?.image?.alt || "About image",
   );
-  const [aboutContent, setAboutContent] = useState(aboutData?.content || {});
+  const [aboutContent, setAboutContent] = useState<any>(aboutData?.content || {});
   const [aboutFeatures, setAboutFeatures] = useState(
     aboutData?.features || [],
   );
@@ -40,7 +39,7 @@ export function About() {
     }
   }, [aboutImage]);
 
-  const aboutRef = useRef(null);
+  const aboutRef = useRef<any>(null);
   const [isVisible, setIsVisible] = useState(false);
 
   // Intersection Observer untuk memicu animasi saat di-scroll

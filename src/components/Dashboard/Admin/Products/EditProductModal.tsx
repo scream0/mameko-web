@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import ProductForm from "./ProductForm";
 import styles from "./EditProductModal.module.css";

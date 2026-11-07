@@ -1,18 +1,17 @@
-// @ts-nocheck
 "use client";
 import React, { useEffect, useRef } from "react";
 import styles from "./InteractiveBackground.module.css";
 
 export default function InteractiveBackground() {
-  const glowRef1 = useRef(null);
-  const glowRef2 = useRef(null);
+  const glowRef1 = useRef<any>(null);
+  const glowRef2 = useRef<any>(null);
 
   // Track current offset
   const currentOffset = useRef({ x: 0, y: 0 });
   // Track target offset from mouse
   const targetOffset = useRef({ x: 0, y: 0 });
 
-  const requestRef = useRef(null);
+  const requestRef = useRef<any>(null);
 
   useEffect(() => {
     // Respect reduced motion

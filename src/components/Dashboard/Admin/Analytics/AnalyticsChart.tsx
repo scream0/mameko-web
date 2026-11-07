@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { getApiBaseUrl } from "@/lib/apiClient";
 import { useEffect, useState, useCallback } from "react";
 import {
@@ -47,7 +46,7 @@ export default function AnalyticsChart() {
 
       transactions.forEach((tx: any) => {
         const date = getTransactionDate(tx);
-        if (date && !isNaN(date)) {
+        if (date && !isNaN(date.getTime())) {
           const dayName = date.toLocaleDateString("en-US", {
             weekday: "short",
           });
@@ -78,7 +77,7 @@ export default function AnalyticsChart() {
 
       transactions.forEach((tx: any) => {
         const date = getTransactionDate(tx);
-        if (date && !isNaN(date)) {
+        if (date && !isNaN(date.getTime())) {
           const monthName = date.toLocaleDateString("en-US", {
             month: "short",
           });
@@ -108,7 +107,7 @@ export default function AnalyticsChart() {
 
       transactions.forEach((tx: any) => {
         const date = getTransactionDate(tx);
-        if (date && !isNaN(date)) {
+        if (date && !isNaN(date.getTime())) {
           const dStr = date.toLocaleDateString("id-ID", {
             day: "2-digit",
             month: "short",
@@ -133,7 +132,7 @@ export default function AnalyticsChart() {
 
     transactions.forEach((tx: any) => {
       const date = getTransactionDate(tx);
-      if (date && !isNaN(date)) {
+      if (date && !isNaN(date.getTime())) {
         const year = date.getFullYear().toString();
         const month = date.toLocaleString("en-US", { month: "long" });
         const amount = getTransactionAmount(tx);
@@ -157,7 +156,7 @@ export default function AnalyticsChart() {
     });
 
     const formattedSummary = Object.keys(yearsMap)
-      .sort((a, b) => b - a)
+      .sort((a, b) => Number(b) - Number(a))
       .map((year) => {
         const dataYear = yearsMap[year];
         const avgOrder =
@@ -242,7 +241,7 @@ export default function AnalyticsChart() {
       if (headerElement) headerElement.style.display = "flex";
 
       const html2pdf = (await import("html2pdf.js")).default;
-      const opt = {
+      const opt: any = {
         margin: [15, 10, 15, 10], // top, left, bottom, right
         filename: `Laporan_Analitik_${timeframe}_${new Date().getTime()}.pdf`,
         image: { type: "jpeg", quality: 1.0 },

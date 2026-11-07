@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { getPublicSettings } from "@/services/settingsService";
@@ -17,7 +16,7 @@ export function Contact() {
   // State resolved dari DB (fallback ke JSON)
   const [contactInfo, setContactInfo] = useState(contactData);
 
-  const contactRef = useRef(null);
+  const contactRef = useRef<any>(null);
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {

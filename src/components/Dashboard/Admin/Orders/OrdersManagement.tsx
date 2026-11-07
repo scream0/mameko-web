@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import { getApiBaseUrl } from "@/lib/apiClient";
 import { useEffect, useState } from "react";
@@ -26,14 +25,14 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
   const subtabParam = searchParams.get("subtab");
 
   const [orders, setOrders] = useState<any[]>([]);
-  const [storeSettings, setStoreSettings] = useState(null);
+  const [storeSettings, setStoreSettings] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState({ currentPage: 1, totalPages: 1, totalOrders: 0 });
-  const [updatingId, setUpdatingId] = useState(null);
-  const [activeOrder, setActiveOrder] = useState(null);
+  const [updatingId, setUpdatingId] = useState<any>(null);
+  const [activeOrder, setActiveOrder] = useState<any>(null);
   const [shippingDraft, setShippingDraft] = useState({ courierName: "", serviceType: "", trackingNumber: "" });
   const [shippingMode, setShippingMode] = useState("auto"); // "auto" | "manual"
   const [selectedOrders, setSelectedOrders] = useState<any[]>([]);
@@ -286,7 +285,7 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
     }
   };
 
-  const updateOrderStatusAdmin = async (orderId: any, targetStatus, note: any) => {
+  const updateOrderStatusAdmin = async (orderId: any, targetStatus: any, note?: any) => {
     try {
       setUpdatingId(orderId);
       const token = await getSupabaseToken();

@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
@@ -115,7 +114,7 @@ function getNotificationCategory(n: any): "order" | "payment" | "promo" | "syste
   return "system";
 }
 
-const TYPE_ICON: Record<string, JSX.Element> = {
+const TYPE_ICON: Record<string, React.ReactNode> = {
   order: <AppIcon name="package" size={18} />,
   payment: <AppIcon name="creditcard" size={18} />,
   promo: <AppIcon name="gift" size={18} />,
@@ -129,12 +128,12 @@ export default function NotificationsSection({ onUnreadCountChange }: any) {
   const [filter, setFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [submittingMarkAllRead, setSubmittingMarkAllRead] = useState(false);
-  const [deletingId, setDeletingId] = useState(null);
-  const [notificationToDelete, setNotificationToDelete] = useState(null);
+  const [deletingId, setDeletingId] = useState<any>(null);
+  const [notificationToDelete, setNotificationToDelete] = useState<any>(null);
   const [showDeleteAllModal, setShowDeleteAllModal] = useState(false);
   const [submittingDeleteAll, setSubmittingDeleteAll] = useState(false);
-  const [currentSession, setCurrentSession] = useState(null);
-  const lastUserIdRef = useRef(null);
+  const [currentSession, setCurrentSession] = useState<any>(null);
+  const lastUserIdRef = useRef<any>(null);
 
   const loadNotifications = useCallback(async (session: any) => {
     try {
@@ -144,7 +143,7 @@ export default function NotificationsSection({ onUnreadCountChange }: any) {
       const res = await fetch(getApiBaseUrl() + "/api/user/notifications", {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
-      let result = {};
+      let result: any = {};
       const contentType = res.headers.get("content-type");
       if (contentType && contentType.includes("application/json")) {
         const text = await res.text();
@@ -241,7 +240,7 @@ export default function NotificationsSection({ onUnreadCountChange }: any) {
             if (payload.eventType === "INSERT") {
               setNotifications((prev) => {
                 if (prev.some((n) => n.id === mapped.id)) return prev;
-                return [mapped, ...prev].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                return [mapped, ...prev].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
               });
             } else if (payload.eventType === "UPDATE") {
               setNotifications((prev) =>

@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import { getApiBaseUrl } from "@/lib/apiClient";
 import { useEffect, useState, useMemo, useCallback, useRef } from "react";
@@ -15,7 +14,7 @@ import { resolveCanonicalNotificationUrl } from "@/utils/notificationRouter";
 import { sanitizeUserError } from "@/utils/errorSanitizer";
 
 function timeAgo(dateString: any) {
-  const t = config.timeAgo || {};
+  const t: any = config.timeAgo || {};
   if (!dateString) return t.justNow || "Baru saja";
   const date = new Date(dateString);
   if (isNaN(date.getTime())) return t.justNow || "Baru saja";
@@ -49,8 +48,8 @@ export default function NotificationCenter({ onUnreadCountChange }: any) {
   const [filter, setFilter] = useState("all");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [notificationToDelete, setNotificationToDelete] = useState(null);
-  const lastUserIdRef = useRef(null);
+  const [notificationToDelete, setNotificationToDelete] = useState<any>(null);
+  const lastUserIdRef = useRef<any>(null);
   const [createForm, setCreateForm] = useState({
     title: "",
     message: "",
@@ -74,7 +73,7 @@ export default function NotificationCenter({ onUnreadCountChange }: any) {
         headers,
       });
       const contentType = res.headers.get("content-type");
-      let result = {};
+      let result: any = {};
       if (contentType && contentType.includes("application/json")) {
         const text = await res.text();
         try {
@@ -149,7 +148,7 @@ export default function NotificationCenter({ onUnreadCountChange }: any) {
             if (payload.eventType === "INSERT") {
               setNotifications((prev) => {
                 if (prev.some((n) => n.id === mapped.id)) return prev;
-                return [mapped, ...prev].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                return [mapped, ...prev].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
               });
             } else if (payload.eventType === "UPDATE") {
               setNotifications((prev) =>
@@ -207,7 +206,7 @@ export default function NotificationCenter({ onUnreadCountChange }: any) {
 
       if (!res.ok) {
         const contentType = res.headers.get("content-type");
-        let result = {};
+        let result: any = {};
         if (contentType && contentType.includes("application/json")) {
           const text = await res.text();
           try {
@@ -305,7 +304,7 @@ export default function NotificationCenter({ onUnreadCountChange }: any) {
         body: JSON.stringify({ title, message, link, type, audience }),
       });
       const contentType = res.headers.get("content-type");
-      let result = {};
+      let result: any = {};
       if (contentType && contentType.includes("application/json")) {
         const text = await res.text();
         try {

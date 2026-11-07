@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
@@ -416,7 +415,7 @@ export default function UserChatView({
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
-      if (e.isComposing || (e as any).keyCode === 229) return;
+      if ((e.nativeEvent as any)?.isComposing || (e as any).isComposing || (e as any).keyCode === 229) return;
       handleSendMessage(e);
     }
   };

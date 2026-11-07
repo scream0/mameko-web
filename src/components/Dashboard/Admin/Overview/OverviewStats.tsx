@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import { useState, useEffect } from "react";
 import styles from "./OverviewStats.module.css";
@@ -68,7 +67,7 @@ export default function OverviewStats() {
       setStats(summary);
     } catch (err: any) {
       console.error("OverviewStats fetch error:", err);
-      toast.error(overviewConfig.toasts.statsLoadError);
+      toast.error(overviewConfig.toasts.statsError || overviewConfig.toasts.loadError);
     } finally {
       setLoading(false);
     }

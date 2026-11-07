@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import { getApiBaseUrl } from "@/lib/apiClient";
 import { useState, useRef, useEffect, useCallback } from "react";
@@ -15,18 +14,22 @@ import biteshipConfig from "@/data/ui/biteshipAreaConfig.json";
  *  - placeholder: string
  */
 export function BiteshipAreaSelect({
-  value = {},
+  value = {} as any,
   onChange,
   placeholder = biteshipConfig?.search?.placeholder || "Ketik nama Kecamatan, Kota, atau Kode Pos...",
+}: {
+  value?: any;
+  onChange?: (updatedFields: any) => void;
+  placeholder?: string;
 }) {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState([]);
+  const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
-  const debounceRef = useRef(null);
-  const wrapperRef = useRef(null);
+  const debounceRef = useRef<any>(null);
+  const wrapperRef = useRef<any>(null);
 
   // Jika sudah ada data wilayah tersimpan dan user tidak sedang mengetik/edit
   const hasSelectedArea = Boolean(value.city && (value.district || value.province));

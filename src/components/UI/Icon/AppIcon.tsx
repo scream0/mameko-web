@@ -70,6 +70,7 @@ import {
   EyeOff,
   Info,
   ThumbsUp,
+  Home,
 } from "lucide-react";
 
 const iconMap: Record<string, React.ElementType> = {
@@ -140,7 +141,6 @@ const iconMap: Record<string, React.ElementType> = {
   "send": Send,
   "chevron-down": ChevronDown,
   "banknote": Banknote,
-  "copy": Copy,
   "check-circle": CheckCircle,
   "corner-down-left": CornerDownLeft,
   "corner-up-left": CornerUpLeft,
@@ -167,8 +167,7 @@ const iconMap: Record<string, React.ElementType> = {
   "thumbs-up": ThumbsUp,
   "like": ThumbsUp,
   "whatsapp": MessageCircle,
-  "return": RotateCcw,
-  "refund": RotateCcw,
+  "home": Home,
 };
 
 const InstagramLogo = ({ className, size = 24, ...props }: any) => (
@@ -225,7 +224,7 @@ interface AppIconProps extends Omit<LucideProps, "ref"> {
 }
 
 export function AppIcon({ name, className, size = 24, strokeWidth = 2, ...props }: AppIconProps) {
-  const IconComponent = iconMap[name] || Search;
+  const IconComponent = iconMap[name] || Circle;
 
   return (
     <IconComponent

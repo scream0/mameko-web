@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import { getApiBaseUrl } from "@/lib/apiClient";
 import { useEffect, useRef, useState, useCallback } from "react";
@@ -93,15 +92,15 @@ function formatTemplate(template, payload: any) {
   });
 }
 
-export default function AdminDashboard() {
+export default function AdminDashboard(_props: { user?: any } = {}) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { user, loading, isAdmin, role, accessError } = useAdminAuth();
 
-  const sidebarRef = useRef(null);
-  const mobileMenuButtonRef = useRef(null);
-  const mainContentRef = useRef(null);
+  const sidebarRef = useRef<any>(null);
+  const mobileMenuButtonRef = useRef<any>(null);
+  const mainContentRef = useRef<any>(null);
 
   const currentTabParam = searchParams.get("tab");
   const activeTab = VALID_TABS.includes(currentTabParam)

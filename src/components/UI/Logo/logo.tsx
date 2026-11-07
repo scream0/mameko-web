@@ -1,6 +1,5 @@
-// @ts-nocheck
 // src/components/ui/Logo.jsx
-export const Logo = ({ className }) => {
+export const Logo = ({ className }: { className?: string } = {}) => {
   return (
     <svg
       id="Layer_1"

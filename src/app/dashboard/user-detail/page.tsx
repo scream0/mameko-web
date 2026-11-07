@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import ProfileSection from "@/components/Dashboard/User/Profil/UserProfil";
 import { useSearchParams } from "next/navigation";

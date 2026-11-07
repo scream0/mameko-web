@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import { useProductForm } from "@/hooks/useProductForm";
 import styles from "./ProductForm.module.css";

@@ -77,9 +77,11 @@ export function optimizeCloudinaryUrl(
  * Preset ukuran umum untuk konsistensi & caching Cloudinary CDN
  */
 export const IMAGE_PRESETS = {
+  AVATAR: { width: 100 },       // User & review avatars
   THUMBNAIL_SM: { width: 100 }, // Navbar search, dropdowns (40-50px displayed)
   THUMBNAIL: { width: 140 },    // Cart sidebar, variant swatches, checkout items (60-80px displayed)
   PRODUCT_CARD: { width: 450 }, // Catalog grid cards (320-350px displayed, 2x retina)
+  PRODUCT_GRID: { width: 450 }, // Feed & catalog product grid alias
   PRODUCT_DETAIL: { width: 800 }, // Product modal & detail page (500-600px displayed)
   HERO: { width: 900 },         // Hero visual showcase (600-800px displayed)
   ABOUT: { width: 700 },        // Editorial about visual (584px displayed)

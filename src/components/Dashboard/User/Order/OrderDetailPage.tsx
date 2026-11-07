@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import { useEffect, useMemo, useState, useRef } from "react";
 import { useRouter, usePathname, useSearchParams, useParams } from "next/navigation";
@@ -73,7 +72,7 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const routeParams = useParams();
-  const lastUserIdRef = useRef(null);
+  const lastUserIdRef = useRef<any>(null);
 
   // Menangkap orderId dari prop, useParams, searchParams (?order_id=...), atau URL path
   const resolvedOrderId = useMemo(() => {
@@ -94,31 +93,31 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
     return null;
   }, [propOrderId, routeParams, searchParams, pathname]);
 
-  const [order, setOrder] = useState(null);
-  const [items, setItems] = useState([]);
-  const [shipping, setShipping] = useState(null);
-  const [history, setHistory] = useState([]);
-  const [trackingHistory, setTrackingHistory] = useState([]);
+  const [order, setOrder] = useState<any>(null);
+  const [items, setItems] = useState<any[]>([]);
+  const [shipping, setShipping] = useState<any>(null);
+  const [history, setHistory] = useState<any[]>([]);
+  const [trackingHistory, setTrackingHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null);
-  const [error, setError] = useState(null);
+  const [user, setUser] = useState<any>(null);
+  const [error, setError] = useState<any>(null);
   const [copied, setCopied] = useState(false);
   const [copiedResi, setCopiedResi] = useState(false);
 
-  const [proofFile, setProofFile] = useState(null);
-  const [proofPreview, setProofPreview] = useState(null);
+  const [proofFile, setProofFile] = useState<any>(null);
+  const [proofPreview, setProofPreview] = useState<any>(null);
   const [isSubmittingProof, setIsSubmittingProof] = useState(false);
 
   // Review Modal States
-  const [reviewModalOrder, setReviewModalOrder] = useState(null);
-  const [reviewTargetItem, setReviewTargetItem] = useState(null);
+  const [reviewModalOrder, setReviewModalOrder] = useState<any>(null);
+  const [reviewTargetItem, setReviewTargetItem] = useState<any>(null);
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
-  const [reviewPhotoFile, setReviewPhotoFile] = useState(null);
-  const [reviewPhotoPreview, setReviewPhotoPreview] = useState(null);
+  const [reviewPhotoFile, setReviewPhotoFile] = useState<any>(null);
+  const [reviewPhotoPreview, setReviewPhotoPreview] = useState<any>(null);
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
-  const [storeSettings, setStoreSettings] = useState(null);
+  const [storeSettings, setStoreSettings] = useState<any>(null);
 
   // Load Settings & Midtrans Snap Script
   useEffect(() => {
@@ -243,7 +242,7 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
         });
 
         const contentType = res.headers.get("content-type");
-        let result = {};
+        let result: any = {};
 
         if (contentType && contentType.includes("application/json")) {
           const text = await res.text();
@@ -421,6 +420,11 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
 
   const discountAmount = useMemo(() => {
     const raw = Number(order?.discount_amount || order?.discountAmount || 0);
+    return Number.isFinite(raw) ? raw : 0;
+  }, [order]);
+
+  const promoDiscountAmount = useMemo(() => {
+    const raw = Number(order?.promo_discount_amount || order?.promoDiscountAmount || 0);
     return Number.isFinite(raw) ? raw : 0;
   }, [order]);
 
@@ -659,7 +663,7 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
 
       document.body.appendChild(invoiceElement);
 
-      const opt = {
+      const opt: any = {
         margin: [0.4, 0.4, 0.4, 0.4],
         filename: `${orderDetailConfig.invoice.filenamePrefix}${order.order_number || resolvedOrderId}.pdf`,
         image: { type: "jpeg", quality: 0.98 },
@@ -667,7 +671,7 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
         jsPDF: { unit: "in", format: "a4", orientation: "portrait" }
       };
 
-      await html2pdf().from(invoiceElement).set(opt).save();
+      await (html2pdf as any)().from(invoiceElement).set(opt).save();
       toast.dismiss(toastId);
       toast.success(orderDetailConfig.invoice.success);
     } catch (error) {
@@ -690,7 +694,7 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
     window.open(`https://jet.co.id/track?hal=1&track_id=${resi}`, "_blank", "noopener,noreferrer");
   };
 
-  const syncPaymentStatus = async (result = {}) => {
+  const syncPaymentStatus = async (result: any = {}) => {
     try {
       const { data: { session } } = await auth.getSession();
       const token = session?.access_token;
@@ -1095,7 +1099,7 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
   };
 
   // ── 24-Hour Countdown Timer for Pending Orders ──
-  const [timeLeft, setTimeLeft] = useState(null);
+  const [timeLeft, setTimeLeft] = useState<any>(null);
 
   useEffect(() => {
     if (!isPendingStatus || !order?.created_at) return;

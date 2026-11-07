@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { mamekoClient } from "@/lib/mamekoClient";
@@ -13,7 +12,7 @@ import { sanitizeUserError } from "@/utils/errorSanitizer";
 
 const playNotificationSound = () => {
   try {
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
 
@@ -44,22 +43,22 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
   const directUserName = searchParams ? searchParams.get("userName") : null;
   const directUserEmail = searchParams ? searchParams.get("userEmail") : null;
   const [users, setUsers] = useState<any[]>([]);
-  const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [replyingToMessage, setReplyingToMessage] = useState<any | null>(null);
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState(null);
+  const [selectedFile, setSelectedFile] = useState<any>(null);
+  const [previewUrl, setPreviewUrl] = useState<any>(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [zoomedImage, setZoomedImage] = useState(null);
+  const [zoomedImage, setZoomedImage] = useState<any>(null);
   const [isTyping, setIsTyping] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState(new Set());
 
-  const messagesEndRef = useRef(null);
-  const chatContainerRef = useRef(null);
-  const fileInputRef = useRef(null);
-  const presenceChannelRef = useRef(null);
-  const typingTimeoutRef = useRef(null);
+  const messagesEndRef = useRef<any>(null);
+  const chatContainerRef = useRef<any>(null);
+  const fileInputRef = useRef<any>(null);
+  const presenceChannelRef = useRef<any>(null);
+  const typingTimeoutRef = useRef<any>(null);
 
   const selectedUserRef = useRef(selectedUser);
 

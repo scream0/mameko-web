@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import { useState, useEffect, lazy, Suspense, useCallback, useRef } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
@@ -22,7 +21,7 @@ import { convertToWebP } from "@/utils/imageConverter";
 const WishlistSection = lazy(() => import("@/components/Dashboard/User/Wishlist/WishlistSection"));
 const UserSettings = lazy(() => import("@/components/Dashboard/User/Settings/UserSettings"));
 
-export default function ProfileSection() {
+export default function ProfileSection(_props: { username?: any } = {}) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -82,13 +81,13 @@ export default function ProfileSection() {
     bankAccountName: "",
   });
 
-  const [availableVouchers, setAvailableVouchers] = useState([]);
-  const [addresses, setAddresses] = useState([]);
+  const [availableVouchers, setAvailableVouchers] = useState<any[]>([]);
+  const [addresses, setAddresses] = useState<any[]>([]);
 
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const [tempProfile, setTempProfile] = useState({});
+  const [tempProfile, setTempProfile] = useState<any>({});
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
-  const [currentAddress, setCurrentAddress] = useState(null);
+  const [currentAddress, setCurrentAddress] = useState<any>(null);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [passwords, setPasswords] = useState({
     currentPassword: "",
@@ -102,11 +101,11 @@ export default function ProfileSection() {
   const [verifiedPhones, setVerifiedPhones] = useState<string[]>([]);
   const pendingAddressRef = useRef<any>(null);
 
-  const [currentSession, setCurrentSession] = useState(null);
-  const [currentUser, setCurrentUser] = useState(null);
+  const [currentSession, setCurrentSession] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   const [isAvatarDeleteConfirmOpen, setIsAvatarDeleteConfirmOpen] = useState(false);
-  const [addressToDeleteId, setAddressToDeleteId] = useState(null);
+  const [addressToDeleteId, setAddressToDeleteId] = useState<any>(null);
 
   const extractPublicIdFromUrl = (url: any) => {
     if (!url || !url.includes("cloudinary.com")) return "";
@@ -170,9 +169,9 @@ export default function ProfileSection() {
         fetch(`${apiBase}/api/user/${userId}/addresses`, { headers, cache: "no-store" })
       ]);
       
-      let result = {};
-      let resultVouchers = {};
-      let resultAddresses = [];
+      let result: any = {};
+      let resultVouchers: any = {};
+      let resultAddresses: any = [];
       try {
         if (res.ok) {
           const text = await res.text();

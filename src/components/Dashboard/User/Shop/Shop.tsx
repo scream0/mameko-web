@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import Image from "next/image";
@@ -16,7 +15,7 @@ import { getLocalWishlist, syncWishlistWithBackend, toggleWishlistItem } from "@
 
 const PRODUCTS_PER_PAGE = 12;
 
-export default function Shop({ searchQuery = "", onBukaDetail, initialData }) {
+export default function Shop({ searchQuery = "", onBukaDetail, initialData }: { searchQuery?: string; onBukaDetail?: any; initialData?: any } = {}) {
   const { addToCart, activePromo } = useStore();
 
   const [products, setProducts] = useState(
@@ -43,7 +42,7 @@ export default function Shop({ searchQuery = "", onBukaDetail, initialData }) {
     }
   );
 
-  const [wishlist, setWishlist] = useState([]);
+  const [wishlist, setWishlist] = useState<any[]>([]);
   const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
 
   // Debounced search query
@@ -82,7 +81,7 @@ export default function Shop({ searchQuery = "", onBukaDetail, initialData }) {
   }, []);
 
   // Scroll Reveal Animation
-  const shopRef = useRef(null);
+  const shopRef = useRef<any>(null);
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {

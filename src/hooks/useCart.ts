@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useStore } from "@/context/StoreContext";
 
 // Custom hook to easily access cart-specific parts of the store context.

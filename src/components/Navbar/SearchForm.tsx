@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import { useEffect, useRef } from "react";
 import styles from "./SearchForm.module.css";
@@ -13,7 +12,7 @@ export function SearchForm({
   onResultClick,
   rupiah,
 }) {
-  const inputRef = useRef(null);
+  const inputRef = useRef<any>(null);
 
   useEffect(() => {
     if (isActive && inputRef.current) {

@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import { getApiBaseUrl } from "@/lib/apiClient";
 import { useState, useEffect, useRef, useCallback } from "react";
@@ -17,7 +16,7 @@ import UserManagement from "./UserManagement";
 import privacyConfig from "@/data/ui/privacyConfig.json";
 import termsConfig from "@/data/ui/termsConfig.json";
 
-const EMPTY = {
+const EMPTY: any = {
   store: {
     storeName: "",
     storeEmail: "",
@@ -132,16 +131,16 @@ export default function SettingsView() {
   const [isFetching, setIsFetching] = useState(true);
   const [activeTab, setActiveTab] = useState("store");
   const [rawSettings, setRawSettings] = useState<any>(null);
-  const lastUserIdRef = useRef(null);
+  const lastUserIdRef = useRef<any>(null);
   
   // State untuk file gambar About & Hero
-  const [selectedAboutImageFile, setSelectedAboutImageFile] = useState(null);
+  const [selectedAboutImageFile, setSelectedAboutImageFile] = useState<any>(null);
   const [aboutImagePreviewUrl, setAboutImagePreviewUrl] = useState("");
 
-  const [selectedHeroImageFile, setSelectedHeroImageFile] = useState(null);
+  const [selectedHeroImageFile, setSelectedHeroImageFile] = useState<any>(null);
   const [heroImagePreviewUrl, setHeroImagePreviewUrl] = useState("");
 
-  const [currentSession, setCurrentSession] = useState(null);
+  const [currentSession, setCurrentSession] = useState<any>(null);
 
   const cfg = settingsConfig;
 
@@ -928,7 +927,7 @@ export default function SettingsView() {
             <div className={styles.accountSectionHeader}>
               <h4 className={styles.sectionTitle}>{cfg.account?.title || "Manajemen Akun"}</h4>
               <p className={styles.helpText}>
-                {cfg.account?.helpText || "Anda dapat mengelola pengguna admin di bagian bawah."}
+                {(cfg.account as any)?.helpText || cfg.account?.desc || "Anda dapat mengelola pengguna admin di bagian bawah."}
               </p>
             </div>
             
@@ -959,10 +958,10 @@ export default function SettingsView() {
    ============================================================ */
 function StoreTab({ settings, handleInputChange, cfg }) {
   const [areaSearch, setAreaSearch] = useState("");
-  const [areaOptions, setAreaOptions] = useState([]);
+  const [areaOptions, setAreaOptions] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
-  const searchTimeoutRef = useRef(null);
+  const searchTimeoutRef = useRef<any>(null);
 
   const handleAreaSearch = (e: any) => {
     const val = e.target.value;
@@ -2438,7 +2437,7 @@ function CouriersTab({ settings, updateCouriers, updateBiteshipMode, updateBites
   const activeCouriers = settings.activeCouriers || [];
   const isProduction = settings.biteshipIsProduction ?? false;
   const isAutoOrder = settings.biteshipAutoOrder ?? false;
-  const [courierList, setCourierList] = useState([]);
+  const [courierList, setCourierList] = useState<any[]>([]);
   const [loadingCouriers, setLoadingCouriers] = useState(false);
   const [fetchError, setFetchError] = useState("");
 

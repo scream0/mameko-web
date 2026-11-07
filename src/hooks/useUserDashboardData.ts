@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 
 import { useEffect, useState } from "react";
@@ -58,9 +57,9 @@ function normalizeUserName(...candidates) {
 }
 
 export function useUserDashboardData() {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<any>(null);
   const [userName, setUserName] = useState("");
-  const [role, setRole] = useState(null);
+  const [role, setRole] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [retryKey, setRetryKey] = useState(0);
@@ -92,7 +91,7 @@ export function useUserDashboardData() {
           cache: "no-store" 
         });
         
-        let result = {};
+        let result: any = {};
         const contentType = res.headers.get("content-type");
         if (contentType && contentType.includes("application/json")) {
           const text = await res.text();

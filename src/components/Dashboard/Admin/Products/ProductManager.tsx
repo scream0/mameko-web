@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import { getApiBaseUrl } from "@/lib/apiClient";
 import { useState, useEffect, useCallback } from "react";
@@ -20,9 +19,9 @@ export default function ProductManager() {
   const [loading, setLoading] = useState(true);
 
   // Modal states
-  const [editingProduct, setEditingProduct] = useState(null);
+  const [editingProduct, setEditingProduct] = useState<any>(null);
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [productToDelete, setProductToDelete] = useState(null);
+  const [productToDelete, setProductToDelete] = useState<any>(null);
 
   // Control states
   const [currentPage, setCurrentPage] = useState(1);
@@ -62,8 +61,8 @@ export default function ProductManager() {
     setLoading(true);
 
     const params = new URLSearchParams();
-    params.set("page", currentPage);
-    params.set("limit", PRODUCTS_PER_PAGE);
+    params.set("page", String(currentPage));
+    params.set("limit", String(PRODUCTS_PER_PAGE));
 
     // Search
     if (searchTerm) {

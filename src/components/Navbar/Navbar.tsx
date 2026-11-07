@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import { useState, useRef, useEffect, useMemo } from "react";
 import Link from "next/link";
@@ -26,18 +25,18 @@ const Modal = dynamic(
 );
 
 export function Navbar() {
-  const [activePanel, setActivePanel] = useState(null);
+  const [activePanel, setActivePanel] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [animate, setAnimate] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const [activeHash, setActiveHash] = useState("");
-  const [hoverStyle, setHoverStyle] = useState({});
-  const [hoveredLink, setHoveredLink] = useState(null);
+  const [hoverStyle, setHoverStyle] = useState<any>({});
+  const [hoveredLink, setHoveredLink] = useState<any>(null);
 
   const {
     products,
@@ -56,7 +55,7 @@ export function Navbar() {
   const authItems = config?.authSection?.auth?.authenticated || [];
   const unauthItem = config?.authSection?.auth?.unauthenticated?.[0];
 
-  const userMenuRef = useRef(null);
+  const userMenuRef = useRef<any>(null);
 
   useScrollLock(
     activePanel === "navbar" || activePanel === "search" || isCartOpen

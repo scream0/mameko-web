@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import React, { useState, useMemo } from "react";
 import styles from "./MyVouchers.module.css";
@@ -18,8 +17,15 @@ const MyVouchers = ({
   isCheckoutMode = false,
   onSelectVoucher,
   appliedClaimIds = [], // <-- Diterima dari CheckoutPage
+}: {
+  availableVouchers?: any[];
+  claimedVouchers?: any[];
+  refreshProfile?: any;
+  isCheckoutMode?: boolean;
+  onSelectVoucher?: any;
+  appliedClaimIds?: any[];
 }) => {
-  const [claimingId, setClaimingId] = useState(null);
+  const [claimingId, setClaimingId] = useState<any>(null);
   const [optimisticClaimed, setOptimisticClaimed] = useState(new Set());
   const [activeTab, setActiveTab] = useState("all");
 
@@ -36,7 +42,7 @@ const MyVouchers = ({
       if (a.status === "active" && b.status !== "active") return -1;
       if (b.status === "active" && a.status !== "active") return 1;
 
-      if (aExpiry && bExpiry) return aExpiry - bExpiry;
+      if (aExpiry && bExpiry) return aExpiry.getTime() - bExpiry.getTime();
       return 0;
     });
   }, [claimedVouchers]);

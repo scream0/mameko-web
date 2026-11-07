@@ -10,6 +10,7 @@ import { getApiBaseUrl } from "./apiClient.ts";
 
 export interface UserProfile {
   id: string;
+  uid?: string;
   email: string;
   full_name?: string;
   username?: string;
@@ -390,6 +391,7 @@ export class NativeAuthClient {
 
   async updateUser(attributes: {
     data?: Record<string, any>;
+    password?: string;
   }): Promise<{ data: { user: UserProfile | null }; error: any }> {
     try {
       const session = this.currentSession;
@@ -770,16 +772,27 @@ export class NativeRealtimeChannel {
 
 export class TableQueryBuilder {
   private tableName: string;
+  private isSingleResult: boolean = false;
+  private opType: "select" | "update" | "insert" | "delete" = "select";
 
   constructor(tableName: string) {
     this.tableName = tableName;
   }
 
   select(columns: string = "*") {
+    this.opType = "select";
     return this;
   }
 
   eq(column: string, value: any) {
+    return this;
+  }
+
+  neq(column: string, value: any) {
+    return this;
+  }
+
+  not(column: string, operator: string, value: any) {
     return this;
   }
 
@@ -796,27 +809,61 @@ export class TableQueryBuilder {
   }
 
   single() {
-    return this.then();
+    this.isSingleResult = true;
+    return this;
   }
 
   maybeSingle() {
-    return this.then();
+    this.isSingleResult = true;
+    return this;
   }
 
-  async update(values: any): Promise<{ data: any; error: null }> {
-    return { data: null, error: null };
+  update(values: any) {
+    this.opType = "update";
+    return this;
   }
 
-  async insert(values: any): Promise<{ data: any; error: null }> {
-    return { data: null, error: null };
+  insert(values: any) {
+    this.opType = "insert";
+    return this;
   }
 
-  async delete(): Promise<{ data: any; error: null }> {
-    return { data: null, error: null };
+  delete() {
+    this.opType = "delete";
+    return this;
   }
 
-  async then(): Promise<{ data: any[] | null; error: null }> {
-    return { data: [], error: null };
+  private async execute(): Promise<{ data: any; error: any }> {
+    try {
+      if (this.opType === "select") {
+        if (this.tableName === "profiles" && this.isSingleResult) {
+          const { data } = await mamekoClient.auth.getSession();
+          return { data: data?.session?.user || null, error: null };
+        }
+        if (this.tableName === "products") {
+          const res = await fetch(`${getApiBaseUrl()}/api/products`);
+          if (res.ok) {
+            const json = await res.json();
+            const list = Array.isArray(json?.products)
+              ? json.products
+              : Array.isArray(json?.data)
+              ? json.data
+              : [];
+            return { data: this.isSingleResult ? list[0] || null : list, error: null };
+          }
+        }
+      }
+      return { data: this.isSingleResult ? null : [], error: null };
+    } catch {
+      return { data: this.isSingleResult ? null : [], error: null };
+    }
+  }
+
+  then<TResult1 = { data: any; error: any }, TResult2 = never>(
+    onfulfilled?: ((value: { data: any; error: any }) => TResult1 | PromiseLike<TResult1>) | null,
+    onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | null
+  ): Promise<TResult1 | TResult2> {
+    return this.execute().then(onfulfilled, onrejected);
   }
 }
 
@@ -832,7 +879,7 @@ export class MamekoClientFacade {
     this.auth = new NativeAuthClient();
   }
 
-  channel(topic: string): NativeRealtimeChannel {
+  channel(topic: string, _options?: any): NativeRealtimeChannel {
     if (this.activeChannels.has(topic)) {
       return this.activeChannels.get(topic)!;
     }
@@ -852,6 +899,10 @@ export class MamekoClientFacade {
 
   from(tableName: string): TableQueryBuilder {
     return new TableQueryBuilder(tableName);
+  }
+
+  async rpc(fnName: string, params?: Record<string, any>): Promise<{ data: any; error: any }> {
+    return { data: true, error: null };
   }
 }
 

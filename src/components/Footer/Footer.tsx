@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
@@ -14,7 +13,7 @@ export function Footer() {
   // Resolved footer data (DB override JSON)
   const [footerInfo, setFooterInfo] = useState(footerData);
 
-  const footerRef = useRef(null);
+  const footerRef = useRef<any>(null);
   const [isVisible, setIsVisible] = useState(false);
   const { theme, setTheme, isThemeReady } = useTheme();
 

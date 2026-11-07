@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React from "react";
 import styles from "./UserProfil.module.css";
 import { useScrollLock } from "@/hooks/useScrollLock";

@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 
 import { getApiBaseUrl } from "@/lib/apiClient";
@@ -7,7 +6,7 @@ import { auth } from "@/lib/mamekoClient";
 import { shouldSkipAuthEvent } from "@/utils/authHelpers";
 
 export function useAdminAuth() {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [role, setRole] = useState("");

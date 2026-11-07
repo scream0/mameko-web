@@ -1,4 +1,3 @@
-﻿// @ts-nocheck
 "use client";
 import { useState, useEffect } from "react";
 import styles from "./ProductModal.module.css";
@@ -24,10 +23,10 @@ export function Modal({ isOpen, item, onClose, onAddToCart, onTanyaProduk, rupia
   const { activePromo } = useStore();
   const [currentSize, setCurrentSize] = useState("");
   const [modalQty, setModalQty] = useState(1);
-  const [selectedVariant, setSelectedVariant] = useState(null);
+  const [selectedVariant, setSelectedVariant] = useState<any>(null);
   const [isClosing, setIsClosing] = useState(false);
 
-  const [reviews, setReviews] = useState([]);
+  const [reviews, setReviews] = useState<any[]>([]);
   const [loadingReviews, setLoadingReviews] = useState(false);
   const [reviewsPage, setReviewsPage] = useState(1);
   const [hasMoreReviews, setHasMoreReviews] = useState(true);

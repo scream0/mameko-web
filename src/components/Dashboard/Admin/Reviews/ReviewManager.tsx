@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import { getApiBaseUrl } from "@/lib/apiClient";
 import { useState, useEffect } from "react";
@@ -19,10 +18,6 @@ const getAuthSession = async () => {
       const res = await auth.getSession();
       return res?.data?.session || null;
     }
-    if (mamekoClient?.getSession) {
-      const res = await mamekoClient.getSession();
-      return res?.data?.session || null;
-    }
     return null;
   } catch (err) {
     console.error("Gagal mengambil sesi:", err);
@@ -32,18 +27,17 @@ const getAuthSession = async () => {
 
 const getAuthInstance = () => {
   if (mamekoClient?.auth) return mamekoClient.auth;
-  if (auth?.onAuthStateChange) return auth;
-  return mamekoClient;
+  return auth;
 };
 
 export default function ReviewManager() {
-  const [reviews, setReviews] = useState([]);
+  const [reviews, setReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
-  const [updatingId, setUpdatingId] = useState(null);
-  const [deleteReviewId, setDeleteReviewId] = useState(null);
+  const [updatingId, setUpdatingId] = useState<any>(null);
+  const [deleteReviewId, setDeleteReviewId] = useState<any>(null);
   useScrollLock(Boolean(deleteReviewId));
-  const [selectedIds, setSelectedIds] = useState([]);
+  const [selectedIds, setSelectedIds] = useState<any[]>([]);
   const [isBulkProcessing, setIsBulkProcessing] = useState(false);
 
   const fetchReviews = async (session: any) => {
@@ -440,7 +434,7 @@ export default function ReviewManager() {
                         disabled={updatingId === review.id}
                       >
                         {updatingId === review.id
-                          ? reviewConfig.buttons.processing
+                          ? (reviewConfig.buttons as any).processing || reviewConfig.buttons.loading
                           : reviewConfig.buttons.delete}
                       </button>
                     </td>

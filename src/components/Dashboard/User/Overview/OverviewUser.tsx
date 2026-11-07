@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import { useEffect, useState, useMemo, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
@@ -40,13 +39,13 @@ export default function OverviewUser({ setActiveTab }) {
     fullName: "",
     username: "",
   });
-  const [recentOrders, setRecentOrders] = useState([]);
+  const [recentOrders, setRecentOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const lastUserIdRef = useRef(null);
+  const lastUserIdRef = useRef<any>(null);
 
   // State untuk sesi & user
-  const [currentSession, setCurrentSession] = useState(null);
-  const [currentUser, setCurrentUser] = useState(null);
+  const [currentSession, setCurrentSession] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   useEffect(() => {
     let subscription = null;
@@ -103,7 +102,7 @@ export default function OverviewUser({ setActiveTab }) {
         const [orderRes, userRes] = await Promise.all([orderPromise, userPromise]);
 
         let orderData = [];
-        let orderResult = {};
+        let orderResult: any = {};
         if (orderRes && orderRes.ok) {
           orderResult = await orderRes.json();
           orderData = Array.isArray(orderResult)
@@ -192,8 +191,8 @@ export default function OverviewUser({ setActiveTab }) {
 
         // Urutkan aktivitas pesanan dari yang terbaru secara presisi
         const sortedOrders = [...orderData].sort((a, b) => {
-          const dateA = new Date(a.createdAt || a.created_at || a.updated_at || 0);
-          const dateB = new Date(b.createdAt || b.created_at || b.updated_at || 0);
+          const dateA = new Date(a.createdAt || a.created_at || a.updated_at || 0).getTime();
+          const dateB = new Date(b.createdAt || b.created_at || b.updated_at || 0).getTime();
           return dateB - dateA;
         });
 

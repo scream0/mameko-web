@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 
 import {
@@ -18,7 +17,7 @@ import { shouldSkipAuthEvent, logoutUser } from "@/utils/authHelpers";
 import { loadMidtransSnap } from "@/lib/midtrans";
 import { getApiBaseUrl } from "@/lib/apiClient";
 
-const StoreContext = createContext();
+const StoreContext = createContext<any>(undefined);
 
 // Helper: pastikan setiap item cart punya cartId yang konsisten.
 // Diperlukan karena data lama di DB / localStorage mungkin belum
@@ -34,13 +33,13 @@ const normalizeCartItems = (items = []) =>
 
 export function StoreProvider({ children }) {
   const router = useRouter();
-  const [user, setUser] = useState(null);
-  const [currentSession, setCurrentSession] = useState(null);
+  const [user, setUser] = useState<any>(null);
+  const [currentSession, setCurrentSession] = useState<any>(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState<any[]>([]);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
-  const [promoSettings, setPromoSettings] = useState(null);
+  const [promoSettings, setPromoSettings] = useState<any>(null);
   const [cart, setCart] = useState({ items: [] });
 
   // load cart dari localStorage SETELAH mount (client-only, post-hydration)
@@ -254,7 +253,7 @@ const handleUserData = useCallback(async (currentUser, token) => {
 }, [isCartSynced, syncCartWithDB]); // ⬅️ `cart` DIHAPUS dari dependency
 
   // ref untuk selalu pegang versi terbaru handleUserData tanpa jadi dependency effect
-  const handleUserDataRef = useRef(null);
+  const handleUserDataRef = useRef<any>(null);
   useEffect(() => {
     handleUserDataRef.current = handleUserData;
   }, [handleUserData]);
@@ -488,7 +487,7 @@ const handleUserData = useCallback(async (currentUser, token) => {
   };
 
   const getAvailableVariants = (productId, itemFallback = null) => {
-    const list = Array.isArray(products) ? products : (products?.data || []);
+    const list = Array.isArray(products) ? products : ((products as any)?.data || []);
     const product = list.find(
       (p) =>
         String(p.id) === String(productId) ||
@@ -598,7 +597,7 @@ const handleUserData = useCallback(async (currentUser, token) => {
   };
 
   const [shippingCost, setShippingCost] = useState(0);
-  const [isCalculatingShipping, setIsCalculatingShipping] = useState(0);
+  const [isCalculatingShipping, setIsCalculatingShipping] = useState(false);
 
   // Hitung ongkir (estimasi lokal / fallback pengiriman).
   const calculateShippingCost = useCallback(
@@ -619,7 +618,7 @@ const handleUserData = useCallback(async (currentUser, token) => {
     [],
   );
 
-  const processPayment = async (customParams = {}) => {
+  const processPayment = async (customParams: any = {}) => {
     if (!user) {
       toast.error("Silakan login untuk checkout!");
       router.push(

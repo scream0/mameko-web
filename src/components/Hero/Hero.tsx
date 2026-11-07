@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
@@ -18,10 +17,10 @@ export function Hero() {
   const [statsVisible, setStatsVisible] = useState(false);
 
   // Refs untuk visual transform & spotlight tanpa trigger re-render React
-  const visualRef = useRef(null);
-  const contentRef = useRef(null);
-  const spotlightRef = useRef(null);
-  const statsRef = useRef(null);
+  const visualRef = useRef<any>(null);
+  const contentRef = useRef<any>(null);
+  const spotlightRef = useRef<any>(null);
+  const statsRef = useRef<any>(null);
 
   // Parallax scroll effect yang efisien (Direct DOM RAF update)
   useEffect(() => {

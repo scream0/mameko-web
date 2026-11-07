@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import { getApiBaseUrl } from "@/lib/apiClient";
 import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
@@ -24,7 +23,8 @@ import { AppIcon } from "@/components/UI/Icon/AppIcon";
 const ORIGIN_AREA_FALLBACK = DEFAULT_ORIGIN_AREA_ID;
 const MAX_APPLIED_VOUCHERS = 2;
 
-const emptyAddressForm = (displayName = "", phone = "") => ({
+const emptyAddressForm = (displayName = "", phone = ""): Record<string, any> => ({
+  id: "",
   label: checkoutConfig.address.defaultLabelName || "Rumah",
   recipientName: displayName || "",
   recipientPhone: phone || "",
@@ -32,8 +32,10 @@ const emptyAddressForm = (displayName = "", phone = "") => ({
   district: "",
   province: "",
   city: "",
+  cityId: "",
   postalCode: "",
   biteshipAreaId: "",
+  isPrimary: false,
   notes: "",
 });
 
@@ -275,7 +277,7 @@ export default function CheckoutPage() {
 
   // ── Address ──
   const [addresses, setAddresses] = useState<any[]>([]);
-  const [selectedAddressId, setSelectedAddressId] = useState(null);
+  const [selectedAddressId, setSelectedAddressId] = useState<any>(null);
   const [addressLoading, setAddressLoading] = useState(true);
 
   // ── Address Modal ──
@@ -329,12 +331,12 @@ export default function CheckoutPage() {
   }, [currentUser]);
 
   // ── Courier ──
-  const [courierOptions, setCourierOptions] = useState([]);
-  const [selectedCourierKey, setSelectedCourierKey] = useState(null);
+  const [courierOptions, setCourierOptions] = useState<any[]>([]);
+  const [selectedCourierKey, setSelectedCourierKey] = useState<any>(null);
   const [courierLoading, setCourierLoading] = useState(false);
   const [shippingCost, setShippingCost] = useState(0);
   const [shippingMeta, setShippingMeta] = useState({ kind: "", message: "" });
-  const selectedCourierKeyRef = useRef(null);
+  const selectedCourierKeyRef = useRef<any>(null);
 
   useEffect(() => {
     selectedCourierKeyRef.current = selectedCourierKey;
@@ -722,7 +724,7 @@ export default function CheckoutPage() {
 
   const [voucherCodeInput, setVoucherCodeInput] = useState("");
 
-  const handleApplyVoucherCode = (inputCode: any) => {
+  const handleApplyVoucherCode = (inputCode?: any) => {
     const codeToFind = (inputCode || voucherCodeInput).trim().toUpperCase();
     if (!codeToFind) {
       toast.error(checkoutConfig.toasts.voucherCodeRequired);

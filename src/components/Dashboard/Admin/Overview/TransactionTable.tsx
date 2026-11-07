@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import { getApiBaseUrl } from "@/lib/apiClient";
 import { useState, useEffect, useMemo } from "react";
@@ -11,14 +10,14 @@ const ORDERS_PER_PAGE = 15;
 
 export default function TransactionTable() {
   // State for data and loading
-  const [allOrders, setAllOrders] = useState([]);
+  const [allOrders, setAllOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   // State for controls
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [visibleCount, setVisibleCount] = useState(ORDERS_PER_PAGE);
-  const [savedViews, setSavedViews] = useState([]);
+  const [savedViews, setSavedViews] = useState<any[]>([]);
 
   const getAuthHeaders = async () => {
     const { data: { session } } = await auth.getSession();
@@ -37,13 +36,13 @@ export default function TransactionTable() {
         : {};
 
       const transactions = (ordersResult.data || ordersResult.orders || []).sort(
-        (a, b: any) => new Date(b.created_at || 0) - new Date(a.created_at || 0)
+        (a: any, b: any) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
       );
 
       setAllOrders(transactions);
     } catch (error) {
       console.error("Gagal mengambil data pesanan:", error);
-      toast.error(overviewConfig.toasts.ordersLoadError);
+      toast.error(overviewConfig.toasts.loadError);
     } finally {
       setLoading(false);
     }
@@ -181,7 +180,7 @@ export default function TransactionTable() {
       <div className={styles.titleRow}>
         <h3 className={styles.sectionTitle}>{overviewConfig.ordersSection.title}</h3>
         <button className={styles.exportBtn} onClick={exportOrders}>
-          {overviewConfig.ordersSection.export}
+          {overviewConfig.ordersSection.buttons?.export || (overviewConfig.ordersSection as any).export}
         </button>
       </div>
 
@@ -194,7 +193,7 @@ export default function TransactionTable() {
           onChange={(e) => setSearchTerm(e.target.value)}
         />
         <button className={styles.saveViewBtn} onClick={saveCurrentView}>
-          {overviewConfig.ordersSection.saveView}
+          {overviewConfig.ordersSection.buttons?.saveView || (overviewConfig.ordersSection as any).saveView}
         </button>
         <select
           className={styles.filterSelect}
@@ -319,13 +318,13 @@ export default function TransactionTable() {
                 className={styles.loadMoreBtn}
                 onClick={() => setVisibleCount((prev) => prev + ORDERS_PER_PAGE)}
               >
-                {overviewConfig.ordersSection.loadMore}
+                {overviewConfig.ordersSection.buttons?.loadMore || (overviewConfig.ordersSection as any).loadMore}
               </button>
             </div>
           )}
           {!hasMore && visibleOrders.length > 0 && (
             <p className={styles.emptyText}>
-              {overviewConfig.ordersSection.allLoaded}
+              {overviewConfig.ordersSection.buttons?.allLoaded || (overviewConfig.ordersSection as any).allLoaded}
             </p>
           )}
         </>

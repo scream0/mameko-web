@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import styles from "./OrdersSection.module.css";
@@ -108,30 +107,30 @@ export default function OrdersSection() {
   }, [statusParam]);
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [orders, setOrders] = useState([]);
+  const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const { addToCart } = useStore();
   const [visibleCount, setVisibleCount] = useState(5);
 
-  const [currentUser, setCurrentUser] = useState(null);
-  const [currentSession, setCurrentSession] = useState(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [currentSession, setCurrentSession] = useState<any>(null);
   const [isMidtransEnabled, setIsMidtransEnabled] = useState(false);
 
   const [isCancelling, setIsCancelling] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
-  const [isPayingId, setIsPayingId] = useState(null);
+  const [isPayingId, setIsPayingId] = useState<any>(null);
 
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
-  const [selectedOrderToCancel, setSelectedOrderToCancel] = useState(null);
-  const [orderToConfirm, setOrderToConfirm] = useState(null);
-  const lastUserIdRef = useRef(null);
+  const [selectedOrderToCancel, setSelectedOrderToCancel] = useState<any>(null);
+  const [orderToConfirm, setOrderToConfirm] = useState<any>(null);
+  const lastUserIdRef = useRef<any>(null);
 
-  const [reviewModalOrder, setReviewModalOrder] = useState(null);
-  const [reviewTargetItem, setReviewTargetItem] = useState(null);
+  const [reviewModalOrder, setReviewModalOrder] = useState<any>(null);
+  const [reviewTargetItem, setReviewTargetItem] = useState<any>(null);
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
-  const [reviewPhotoFile, setReviewPhotoFile] = useState(null);
-  const [reviewPhotoPreview, setReviewPhotoPreview] = useState(null);
+  const [reviewPhotoFile, setReviewPhotoFile] = useState<any>(null);
+  const [reviewPhotoPreview, setReviewPhotoPreview] = useState<any>(null);
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
   useEffect(() => {
@@ -504,7 +503,7 @@ export default function OrdersSection() {
           toast(
             (ordersConfig.toasts.stockAdjusted || 'Stok terbatas! Jumlah "{name}" disesuaikan jadi {qty}.')
               .replace("{name}", itemName)
-              .replace("{qty}", finalQty),
+              .replace("{qty}", String(finalQty)),
           );
         }
 

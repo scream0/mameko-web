@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { getApiBaseUrl } from "@/lib/apiClient";
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
@@ -9,10 +8,10 @@ import { convertToWebP } from "@/utils/imageConverter";
 import addConfig from "@/data/ui/addProductConfig.json";
 import editConfig from "@/data/ui/editProductConfig.json";
 
-export function useProductForm(initialProduct = null, onSuccess) {
+export function useProductForm(initialProduct: any = null, onSuccess?: any) {
   const isEditMode = Boolean(initialProduct);
 
-  const getInitialFormData = () => ({
+  const getInitialFormData = (): Record<string, any> => ({
     name: initialProduct?.name || "",
     category: initialProduct?.category || "Parfum",
     description: initialProduct?.description || "",
@@ -24,6 +23,9 @@ export function useProductForm(initialProduct = null, onSuccess) {
     province: initialProduct?.province || "",
     city: initialProduct?.city || "",
     cityId: initialProduct?.cityId || "",
+    district: initialProduct?.district || "",
+    postalCode: initialProduct?.postalCode || "",
+    biteshipAreaId: initialProduct?.biteshipAreaId || "",
     stockLocation: initialProduct?.stockLocation || "",
   });
 
@@ -191,7 +193,7 @@ export function useProductForm(initialProduct = null, onSuccess) {
       );
 
       // 3. Prepare payload
-      const payload = {
+      const payload: Record<string, any> = {
         name: formData.name,
         category: formData.category,
         description: formData.description,

@@ -1,11 +1,10 @@
-// @ts-nocheck
 "use client";
 import { useEffect, useState } from "react";
 import { useStore } from "@/context/StoreContext";
 import { useTheme } from "@/context/ThemeContext";
 import styles from "./UserDashboard.module.css";
 import { useUserDashboardData } from "@/hooks/useUserDashboardData";
-import { auth } from "@/lib/mamekoClient";
+import { auth, mamekoClient } from "@/lib/mamekoClient";
 import { logoutUser } from "@/utils/authHelpers";
 import toast from "react-hot-toast";
 import { getApiBaseUrl } from "@/lib/apiClient";
@@ -75,7 +74,7 @@ export default function UserDashboard({ user }) {
 
   const { isCartOpen, setIsCartOpen, cartQuantity, addToCart, rupiah } = useStore();
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
@@ -113,7 +112,7 @@ export default function UserDashboard({ user }) {
         const res = await fetch(getApiBaseUrl() + "/api/user/notifications", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        let result = {};
+        let result: any = {};
         const contentType = res.headers.get("content-type");
         if (contentType && contentType.includes("application/json")) {
           const text = await res.text();

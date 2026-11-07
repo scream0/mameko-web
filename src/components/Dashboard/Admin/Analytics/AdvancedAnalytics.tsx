@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import { getApiBaseUrl } from "@/lib/apiClient";
 import { useEffect, useState, useCallback } from "react";
@@ -30,9 +29,9 @@ export default function AdvancedAnalytics() {
     currentMonthRev: 0,
     lastMonthRev: 0,
   });
-  const [variantData, setVariantData] = useState([]);
-  const [statusData, setStatusData] = useState([]);
-  const [inventoryList, setInventoryList] = useState([]);
+  const [variantData, setVariantData] = useState<any[]>([]);
+  const [statusData, setStatusData] = useState<any[]>([]);
+  const [inventoryList, setInventoryList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Helper aman untuk mengambil tanggal & harga dari berbagai struktur API

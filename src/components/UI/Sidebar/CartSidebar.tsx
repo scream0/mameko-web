@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -16,7 +15,7 @@ const AddressModal = dynamic(
   { ssr: false }
 );
 
-export function CartSidebar() {
+export function CartSidebar(_props: { isOpen?: boolean; onClose?: () => void } = {}) {
   const router = useRouter();
   const {
     isCartOpen,

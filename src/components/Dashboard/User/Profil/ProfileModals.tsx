@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React from "react";
 import styles from "./UserProfil.module.css";
 import { useScrollLock } from "@/hooks/useScrollLock";
@@ -318,7 +317,7 @@ export function AddressFormModal({
           <div className={styles.formGroup}>
             <label className={styles.inputLabel}>{cfg.street} *</label>
             <textarea
-              rows="2"
+              rows={2}
               value={currentAddress.street}
               onChange={(e) => setCurrentAddress({ ...currentAddress, street: e.target.value })}
               required
@@ -450,6 +449,14 @@ export function OTPModal({
   phone,
   loading,
   profileConfig,
+}: {
+  isOpen?: any;
+  onClose?: any;
+  onSubmit?: any;
+  onResend?: any;
+  phone?: any;
+  loading?: any;
+  profileConfig?: any;
 }) {
   const [otp, setOtp] = React.useState(new Array(6).fill(""));
   const inputRefs = React.useRef([]);
@@ -569,13 +576,13 @@ export function OTPModal({
                 type="tel"
                 inputMode="numeric"
                 pattern="[0-9]*"
-                maxLength="1"
+                maxLength={1}
                 key={index}
                 value={data}
                 onChange={(e) => handleChange(e.target.value, index)}
                 onKeyDown={(e) => handleKeyDown(e, index)}
                 onPaste={handlePaste}
-                ref={(ref) => inputRefs.current[index] = ref}
+                ref={(ref) => { inputRefs.current[index] = ref; }}
                 disabled={loading}
                 autoComplete="one-time-code"
                 className={styles.otpDigitInput}
