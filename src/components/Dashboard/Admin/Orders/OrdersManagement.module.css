@@ -653,21 +653,21 @@
 }
 
 .pending {
-  background: rgba(255, 193, 7, 0.15);
+  background: rgba(var(--secondary-rgb), 0.15);
   color: #ffc107;
-  border: 1px solid rgba(255, 193, 7, 0.3);
+  border: 1px solid rgba(var(--secondary-rgb), 0.3);
 }
 
 .approved, .completed {
-  background: rgba(40, 167, 69, 0.15);
+  background: rgba(var(--success-color-rgb), 0.15);
   color: #28a745;
-  border: 1px solid rgba(40, 167, 69, 0.3);
+  border: 1px solid rgba(var(--success-color-rgb), 0.3);
 }
 
 .rejected, .failed {
-  background: rgba(220, 53, 69, 0.15);
+  background: rgba(var(--danger-color-rgb), 0.15);
   color: #dc3545;
-  border: 1px solid rgba(220, 53, 69, 0.3);
+  border: 1px solid rgba(var(--danger-color-rgb), 0.3);
 }
 
 /* Action Buttons */
@@ -696,9 +696,9 @@
 }
 
 .actionBtnDanger {
-  background: rgba(220, 53, 69, 0.1);
+  background: rgba(var(--danger-color-rgb), 0.1);
   color: #dc3545;
-  border: 1px solid rgba(220, 53, 69, 0.2);
+  border: 1px solid rgba(var(--danger-color-rgb), 0.2);
 }
 
 .actionBtnDanger:hover {
@@ -790,9 +790,9 @@
 }
 
 @keyframes pulse {
-  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
-  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(var(--danger-color-rgb), 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(var(--danger-color-rgb), 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(var(--danger-color-rgb), 0); }
 }
 /* Timeline CSS */
 .timeline {
@@ -1096,13 +1096,13 @@
 }
 
 .btnActionBlue {
-  background-color: rgba(59, 130, 246, 0.1);
+  background-color: rgba(var(--info-color-rgb), 0.1);
   color: #3b82f6;
-  border-color: rgba(59, 130, 246, 0.3);
+  border-color: rgba(var(--info-color-rgb), 0.3);
 }
 
 .btnActionBlue:hover {
-  background-color: rgba(59, 130, 246, 0.2);
+  background-color: rgba(var(--info-color-rgb), 0.2);
 }
 
 .actionGrid {

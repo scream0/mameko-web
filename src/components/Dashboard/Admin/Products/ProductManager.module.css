@@ -117,7 +117,7 @@
   gap: 24px;
   width: 100%;
   box-sizing: border-box;
-  box-shadow: 0 16px 36px rgba(17, 13, 10, 0.06);
+  box-shadow: 0 16px 36px rgba(var(--primary-accent-rgb), 0.06);
 }
 
 .headerRow {

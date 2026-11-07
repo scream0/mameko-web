@@ -70,7 +70,7 @@
 .auroraBg::after {
   width: 70vw;
   height: 70vw;
-  background: radial-gradient(circle, rgba(147, 51, 234, 0.2), transparent 70%);
+  background: radial-gradient(circle, rgba(var(--secondary-rgb), 0.16), transparent 70%);
   bottom: -20vw;
   right: -10vw;
   animation-delay: -5s;
@@ -130,7 +130,7 @@
   pointer-events: none;
   transition: background 0.1s ease-out;
   background: radial-gradient(600px circle at var(--spotlight-x, 50%) var(--spotlight-y, 50%),
-      var(--spotlight-color, rgba(229, 228, 226, 0.1)),
+      var(--spotlight-color, rgba(var(--secondary-rgb), 0.08)),
       transparent 80%);
 }
 

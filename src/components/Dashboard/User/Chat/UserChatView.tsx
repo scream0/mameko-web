@@ -142,7 +142,19 @@ export default function UserChatView({
       if (res.ok) {
         const json = await res.json();
         const fetchedData = Array.isArray(json?.data) ? json.data : [];
-        setMessages(fetchedData);
+        setMessages((prev) => {
+          if (
+            prev.length === fetchedData.length &&
+            prev.every(
+              (m, idx) =>
+                m.id === fetchedData[idx]?.id &&
+                Boolean(m.is_read) === Boolean(fetchedData[idx]?.is_read)
+            )
+          ) {
+            return prev;
+          }
+          return fetchedData;
+        });
 
         // Tandai pesan admin sebagai telah dibaca
         const unreadAdminMsgIds = fetchedData
@@ -181,6 +193,19 @@ export default function UserChatView({
         sendHeartbeat();
       }, 15000);
 
+      const syncInterval = setInterval(() => {
+        if (typeof document !== "undefined" && document.visibilityState === "visible") {
+          fetchMessages();
+        }
+      }, 4000);
+
+      const handleWsConnected = () => {
+        fetchMessages();
+      };
+      if (typeof window !== "undefined") {
+        window.addEventListener("mameko-ws-connected", handleWsConnected);
+      }
+
       // Realtime WebSocket listener
       const userId = user?.uid || user?.id;
       const channel = mamekoClient
@@ -188,33 +213,52 @@ export default function UserChatView({
         .on(
           "postgres_changes",
           {
-            event: "INSERT",
+            event: "*",
             schema: "public",
             table: "chats",
             filter: `user_id=eq.${userId}`,
           },
           (payload) => {
-            const incoming = payload.new;
-            if (incoming) {
-              setMessages((prev) => {
-                if (prev.some((m) => m.id === incoming.id)) return prev;
-                return [...prev, incoming];
-              });
-
-              if (incoming.sender_role === "admin") {
-                setIsAdminTyping(false);
-                mamekoClient.auth.getSession().then(({ data: { session } }) => {
-                  if (session?.access_token) {
-                    fetch(`${getApiBaseUrl()}/api/user/chats/read`, {
-                      method: "PUT",
-                      headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${session.access_token}`,
-                      },
-                      body: JSON.stringify({ ids: [incoming.id], message_ids: [incoming.id] }),
-                    }).catch(() => {});
-                  }
+            if (payload.eventType === "INSERT") {
+              const incoming = payload.new;
+              if (incoming && incoming.id) {
+                setMessages((prev) => {
+                  if (prev.some((m) => m.id === incoming.id)) return prev;
+                  return [...prev, incoming];
                 });
+
+                if (incoming.sender_role === "admin") {
+                  setIsAdminTyping(false);
+                  mamekoClient.auth.getSession().then(({ data: { session } }) => {
+                    if (session?.access_token) {
+                      fetch(`${getApiBaseUrl()}/api/user/chats/read`, {
+                        method: "PUT",
+                        headers: {
+                          "Content-Type": "application/json",
+                          Authorization: `Bearer ${session.access_token}`,
+                        },
+                        body: JSON.stringify({ ids: [incoming.id], message_ids: [incoming.id] }),
+                      }).catch(() => {});
+                    }
+                  });
+                }
+              }
+            } else if (payload.eventType === "UPDATE") {
+              const updated = payload.new;
+              if (!updated) return;
+              if (Array.isArray(updated.ids)) {
+                const readSet = new Set(updated.ids);
+                setMessages((prev) =>
+                  prev.map((m) => (readSet.has(m.id) ? { ...m, is_read: true } : m))
+                );
+              } else if (updated.reader_role === "admin") {
+                setMessages((prev) =>
+                  prev.map((m) => (m.sender_role === "user" ? { ...m, is_read: true } : m))
+                );
+              } else if (updated.id) {
+                setMessages((prev) =>
+                  prev.map((m) => (m.id === updated.id ? { ...m, ...updated } : m))
+                );
               }
             }
           }
@@ -255,6 +299,10 @@ export default function UserChatView({
 
       return () => {
         clearInterval(pollInterval);
+        clearInterval(syncInterval);
+        if (typeof window !== "undefined") {
+          window.removeEventListener("mameko-ws-connected", handleWsConnected);
+        }
         mamekoClient.removeChannel(channel);
         if (presenceChannelRef.current) {
           mamekoClient.removeChannel(presenceChannelRef.current);
@@ -265,7 +313,7 @@ export default function UserChatView({
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isAdminTyping]);
+  }, [messages.length, isAdminTyping]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -300,7 +348,7 @@ export default function UserChatView({
       presenceChannelRef.current.send({
         type: "broadcast",
         event: "typing",
-        payload: { role: "user" },
+        payload: { role: "user", userId: user?.uid || user?.id },
       });
     }
   };

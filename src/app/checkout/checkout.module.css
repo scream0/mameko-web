@@ -1170,8 +1170,8 @@
   font-size: 0.7rem;
   font-weight: 600;
   color: #dc2626;
-  background: rgba(220, 38, 38, 0.09);
-  border: 1px solid rgba(220, 38, 38, 0.24);
+  background: rgba(var(--danger-color-rgb), 0.09);
+  border: 1px solid rgba(var(--danger-color-rgb), 0.24);
   padding: 0.18rem 0.5rem;
   border-radius: 6px;
   margin-top: 0.3rem;
@@ -1180,8 +1180,8 @@
 
 [data-theme="dark"] .stockExceededBadge {
   color: #f87171;
-  background: rgba(239, 68, 68, 0.16);
-  border-color: rgba(239, 68, 68, 0.35);
+  background: rgba(var(--danger-color-rgb), 0.16);
+  border-color: rgba(var(--danger-color-rgb), 0.35);
 }
 
 .stockAlertBanner {
@@ -1191,13 +1191,13 @@
   padding: 0.9rem 1rem;
   margin-top: 1rem;
   border-radius: 12px;
-  background: rgba(239, 68, 68, 0.08);
-  border: 1px solid rgba(239, 68, 68, 0.28);
+  background: rgba(var(--danger-color-rgb), 0.08);
+  border: 1px solid rgba(var(--danger-color-rgb), 0.28);
 }
 
 [data-theme="dark"] .stockAlertBanner {
-  background: rgba(239, 68, 68, 0.12);
-  border-color: rgba(239, 68, 68, 0.36);
+  background: rgba(var(--danger-color-rgb), 0.12);
+  border-color: rgba(var(--danger-color-rgb), 0.36);
 }
 
 .stockAlertHeader {
@@ -1247,8 +1247,8 @@
   margin-top: 1rem;
   padding: 0.65rem 0.95rem;
   border-radius: 8px;
-  background: rgba(245, 158, 11, 0.08);
-  border: 1px solid rgba(245, 158, 11, 0.25);
+  background: rgba(var(--secondary-rgb), 0.08);
+  border: 1px solid rgba(var(--secondary-rgb), 0.25);
   color: #b45309;
   font-size: 0.76rem;
   font-weight: 600;
@@ -1257,8 +1257,8 @@
 }
 
 [data-theme="dark"] .nonRefundableNotice {
-  background: rgba(245, 158, 11, 0.12);
-  border-color: rgba(245, 158, 11, 0.32);
+  background: rgba(var(--secondary-rgb), 0.12);
+  border-color: rgba(var(--secondary-rgb), 0.32);
   color: #fbbf24;
 }
 

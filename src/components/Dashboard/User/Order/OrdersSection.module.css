@@ -316,41 +316,41 @@
 }
 
 .statusPending {
-  background: rgba(217, 119, 6, 0.12);
+  background: rgba(var(--secondary-rgb), 0.12);
   color: #d97706;
-  border: 1px solid rgba(217, 119, 6, 0.3);
+  border: 1px solid rgba(var(--secondary-rgb), 0.3);
 }
 .statusPending::before {
   background: #d97706;
 }
 
 .statusSuccess {
-  background: rgba(16, 185, 129, 0.12);
+  background: rgba(var(--success-color-rgb), 0.12);
   color: #059669;
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  border: 1px solid rgba(var(--success-color-rgb), 0.3);
 }
 .statusSuccess::before {
   background: #059669;
 }
 
 .statusProcessing {
-  background: rgba(59, 130, 246, 0.12);
+  background: rgba(var(--info-color-rgb), 0.12);
   color: #2563eb;
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  border: 1px solid rgba(var(--info-color-rgb), 0.3);
 }
 :global([data-theme="dark"]) .statusProcessing {
-  background: rgba(56, 189, 248, 0.12);
+  background: rgba(var(--info-color-rgb), 0.12);
   color: #38bdf8;
-  border-color: rgba(56, 189, 248, 0.3);
+  border-color: rgba(var(--info-color-rgb), 0.3);
 }
 .statusProcessing::before {
   background: currentColor;
 }
 
 .statusShipping {
-  background: rgba(234, 88, 12, 0.12);
+  background: rgba(var(--secondary-rgb), 0.12);
   color: #ea580c;
-  border: 1px solid rgba(234, 88, 12, 0.3);
+  border: 1px solid rgba(var(--secondary-rgb), 0.3);
 }
 .statusShipping::before {
   background: #ea580c;
@@ -369,18 +369,18 @@
 }
 
 .statusCancelled {
-  background: rgba(239, 68, 68, 0.12);
+  background: rgba(var(--danger-color-rgb), 0.12);
   color: #dc2626;
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  border: 1px solid rgba(var(--danger-color-rgb), 0.3);
 }
 .statusCancelled::before {
   background: #dc2626;
 }
 
 .statusReturn {
-  background: rgba(245, 158, 11, 0.12);
+  background: rgba(var(--secondary-rgb), 0.12);
   color: #d97706;
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  border: 1px solid rgba(var(--secondary-rgb), 0.3);
 }
 .statusReturn::before {
   background: #d97706;
@@ -541,9 +541,9 @@
   gap: 0.4rem;
   -webkit-tap-highlight-color: transparent;
   box-sizing: border-box;
-  background: rgba(245, 158, 11, 0.12);
+  background: rgba(var(--secondary-rgb), 0.12);
   color: #d97706;
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  border: 1px solid rgba(var(--secondary-rgb), 0.3);
 }
 
 :global([data-theme="dark"]) .trackReturnBtn {
@@ -568,19 +568,19 @@
 }
 
 .returnStatusBannerPending {
-  background: rgba(245, 158, 11, 0.08);
+  background: rgba(var(--secondary-rgb), 0.08);
   border-left: 3px solid #f59e0b;
   color: var(--text-primary);
 }
 
 .returnStatusBannerApproved {
-  background: rgba(16, 185, 129, 0.08);
+  background: rgba(var(--success-color-rgb), 0.08);
   border-left: 3px solid #10b981;
   color: var(--text-primary);
 }
 
 .returnStatusBannerRejected {
-  background: rgba(239, 68, 68, 0.08);
+  background: rgba(var(--danger-color-rgb), 0.08);
   border-left: 3px solid #ef4444;
   color: var(--text-primary);
 }
@@ -590,9 +590,9 @@
 }
 
 .cancelBtn {
-  background: rgba(239, 68, 68, 0.1);
+  background: rgba(var(--danger-color-rgb), 0.1);
   color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  border: 1px solid rgba(var(--danger-color-rgb), 0.3);
 }
 
 .cancelBtn:hover {
@@ -1202,7 +1202,8 @@
   border-radius: 4px;
   font-weight: 700;
   letter-spacing: 0.5px;
-  font-family: monospace;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
 }
 
 /* --- RETURN STATUS ADMIN BANNER --- */
@@ -1216,17 +1217,17 @@
 }
 
 .returnStatusApproved {
-  background: rgba(16, 185, 129, 0.08);
+  background: rgba(var(--success-color-rgb), 0.08);
   border-left: 3px solid #10b981;
 }
 
 .returnStatusRejected {
-  background: rgba(239, 68, 68, 0.08);
+  background: rgba(var(--danger-color-rgb), 0.08);
   border-left: 3px solid #ef4444;
 }
 
 .returnStatusPending {
-  background: rgba(245, 158, 11, 0.08);
+  background: rgba(var(--secondary-rgb), 0.08);
   border-left: 3px solid #f59e0b;
 }
 

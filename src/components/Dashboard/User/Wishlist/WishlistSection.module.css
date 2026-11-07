@@ -356,17 +356,17 @@
 }
 
 .stock_available {
-  background: rgba(16, 185, 129, 0.15);
+  background: rgba(var(--success-color-rgb), 0.15);
   color: var(--success-color, #10b981);
 }
 
 .stock_lowStock {
-  background: rgba(245, 158, 11, 0.15);
+  background: rgba(var(--secondary-rgb), 0.15);
   color: #f59e0b;
 }
 
 .stock_outOfStock {
-  background: rgba(239, 68, 68, 0.15);
+  background: rgba(var(--danger-color-rgb), 0.15);
   color: var(--danger-color, #ef4444);
 }
 

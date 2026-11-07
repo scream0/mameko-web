@@ -13,7 +13,7 @@
   width: 100%;
   margin: 0 auto;
   box-sizing: border-box;
-  box-shadow: 0 16px 36px rgba(17, 13, 10, 0.05);
+  box-shadow: 0 16px 36px rgba(var(--primary-accent-rgb), 0.05);
 }
 
 .settingsTitle {
@@ -1018,9 +1018,9 @@
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  background: rgba(16, 185, 129, 0.15);
+  background: rgba(var(--success-color-rgb), 0.15);
   color: #10b981;
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  border: 1px solid rgba(var(--success-color-rgb), 0.3);
   padding: 0.35rem 0.8rem;
   border-radius: 999px;
   font-size: 0.8rem;
@@ -1031,9 +1031,9 @@
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  background: rgba(239, 68, 68, 0.15);
+  background: rgba(var(--danger-color-rgb), 0.15);
   color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  border: 1px solid rgba(var(--danger-color-rgb), 0.3);
   padding: 0.35rem 0.8rem;
   border-radius: 999px;
   font-size: 0.8rem;
@@ -1193,7 +1193,7 @@
 .removeSectionBtn:hover {
   border-color: #ef4444;
   color: #ef4444;
-  background: rgba(239, 68, 68, 0.1);
+  background: rgba(var(--danger-color-rgb), 0.1);
 }
 
 .emptySectionsNotice {

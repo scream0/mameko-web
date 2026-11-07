@@ -183,27 +183,27 @@
 
 /* Badge variants */
 .statusPending {
-  background: rgba(245, 158, 11, 0.12);
+  background: rgba(var(--secondary-rgb), 0.12);
   color: #d97706;
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  border: 1px solid rgba(var(--secondary-rgb), 0.3);
 }
 
 .statusSuccess {
-  background: rgba(16, 185, 129, 0.12);
+  background: rgba(var(--success-color-rgb), 0.12);
   color: #059669;
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  border: 1px solid rgba(var(--success-color-rgb), 0.3);
 }
 
 .statusProcessing {
-  background: rgba(59, 130, 246, 0.12);
+  background: rgba(var(--info-color-rgb), 0.12);
   color: #2563eb;
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  border: 1px solid rgba(var(--info-color-rgb), 0.3);
 }
 
 .statusShipping {
-  background: rgba(6, 182, 212, 0.12);
+  background: rgba(var(--info-color-rgb), 0.12);
   color: #0891b2;
-  border: 1px solid rgba(6, 182, 212, 0.3);
+  border: 1px solid rgba(var(--info-color-rgb), 0.3);
 }
 
 .statusCompleted {
@@ -217,15 +217,15 @@
 }
 
 .statusCancelled {
-  background: rgba(239, 68, 68, 0.12);
+  background: rgba(var(--danger-color-rgb), 0.12);
   color: #dc2626;
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  border: 1px solid rgba(var(--danger-color-rgb), 0.3);
 }
 
 .statusWarning {
-  background: rgba(245, 158, 11, 0.12);
+  background: rgba(var(--secondary-rgb), 0.12);
   color: #d97706;
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  border: 1px solid rgba(var(--secondary-rgb), 0.3);
 }
 
 /* --- Hero Action Buttons --- */
@@ -304,23 +304,23 @@
   background: linear-gradient(135deg, #f59e0b, #d97706);
   color: #ffffff;
   border: 1px solid #d97706;
-  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.35);
+  box-shadow: 0 4px 16px rgba(var(--secondary-rgb), 0.35);
 }
 
 :global([data-theme="dark"]) .payBtn {
   background: linear-gradient(135deg, #10b981, #059669);
   border-color: #059669;
-  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.35);
+  box-shadow: 0 4px 16px rgba(var(--success-color-rgb), 0.35);
 }
 
 .payBtn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 22px rgba(245, 158, 11, 0.45);
+  box-shadow: 0 6px 22px rgba(var(--secondary-rgb), 0.45);
   filter: brightness(1.05);
 }
 
 :global([data-theme="dark"]) .payBtn:hover {
-  box-shadow: 0 6px 22px rgba(16, 185, 129, 0.45);
+  box-shadow: 0 6px 22px rgba(var(--success-color-rgb), 0.45);
 }
 
 .payBtn:active {
@@ -339,7 +339,7 @@
   background: rgba(var(--danger-color-rgb, 239, 68, 68), 0.15);
   border-color: var(--danger-color, #ef4444);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+  box-shadow: 0 4px 12px rgba(var(--danger-color-rgb), 0.2);
 }
 
 .cancelOrderBtn:disabled {
@@ -549,7 +549,8 @@
 }
 
 .resiCode {
-  font-family: monospace;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 1rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -826,8 +827,8 @@
   width: 72px;
   height: 72px;
   border-radius: 50%;
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.25);
+  background: rgba(var(--danger-color-rgb), 0.1);
+  border: 1px solid rgba(var(--danger-color-rgb), 0.25);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1421,7 +1422,8 @@
   font-size: 1.15rem;
   color: var(--primary-accent);
   letter-spacing: 1px;
-  font-family: monospace;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
 }
 
 .bannerCancelled {

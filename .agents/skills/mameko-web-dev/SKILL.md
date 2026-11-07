@@ -143,10 +143,14 @@ const res = await fetch(`${getApiBaseUrl()}/api/user/orders`, {
 
 ### A. Native Go WebSocket & Strict Separation of Chat vs Notifications
 1. **Engine Tunggal Realtime**: Native Go Backend WebSocket (`/ws/chats?token=<jwt>`) via `src/lib/mamekoClient.ts`.
-   - Menyediakan latensi instan (< 50ms) langsung dari `websocket.GlobalHub.BroadcastChat()`.
-   - Menghubungkan client user dan admin dengan dukungan smart polling failover saat window aktif.
-2. **Pemisahan Mutlak Channel Chat & Notifikasi**:
-   - Event WebSocket `new_message` dan `messages_read` di `mamekoClient.ts` HANYA boleh dikirim ke listener `table: "chats"`, dan DILARANG bocor ke listener `table: "notifications"`.
+   - Menyediakan latensi instan (< 50ms) langsung dari `websocket.GlobalHub.BroadcastChat()` dan `BroadcastReadStatus()`.
+   - Menghubungkan client user dan admin dengan dukungan smart polling failover (4 detik saat `document.visibilityState === "visible"`) dan event `mameko-ws-connected`.
+2. **Pencegahan Race Condition WebSocket & Multi-Tab**:
+   - **Per-Tab Session Isolation**: `NativeAuthClient` wajib membaca/menyimpan token ke `sessionStorage` terlebih dahulu sebelum `localStorage` agar pembukaan Tab User dan Tab Admin di browser yang sama tidak saling menimpa token atau koneksi WebSocket.
+   - **Socket Instance Guard**: Seluruh handler `ws.onopen`, `ws.onmessage`, `ws.onclose`, dan `ws.onerror` pada `SharedRealtimeSocket` wajib diawali `if (this.ws !== ws) return;`, dan `unregister()` wajib memiliki *grace period* `1500ms` agar React StrictMode / perpindahan tab tidak memutus koneksi aktif.
+   - **Channel Isolation**: `mamekoClient.channel(topic)` wajib mengembalikan instance `NativeRealtimeChannel` baru di dalam `Set<NativeRealtimeChannel>` (bukan berbagi satu instance per nama topik) agar `removeChannel()` pada satu komponen tidak mematikan listener komponen lain.
+3. **Pemisahan Mutlak Channel Chat & Notifikasi**:
+   - Event WebSocket `new_message` dan `messages_read` di `mamekoClient.ts` HANYA boleh dikirim ke listener `table: "chats"` yang cocok dengan `filter.event` (`INSERT`, `UPDATE`, `*`) dan `filter.filter` (`user_id=eq.<id>`), serta DILARANG bocor ke listener `table: "notifications"`.
    - Pesan chat dari Admin ke User wajib masuk ke badge `unreadChatCount` khusus pada ikon Chat (Navbar, Sidebar, dan Mobile Bottom Nav), bukan ke tab Notifikasi (`NotificationsSection` / `NotificationCenter`).
 
 ### B. Normalisasi Tautan Notifikasi (Zero 404 Routing)

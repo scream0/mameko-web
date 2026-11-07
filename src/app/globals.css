@@ -5,6 +5,7 @@
 :root {
   --font-serif: var(--font-tenor), "Tenor Sans", serif;
   --font-sans: var(--font-lato), "Lato", sans-serif;
+  --font-mono: ui-monospace, "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
 
   /* Light Theme Palette (Frosted Quartz & Midnight Slate with Volcanic Amber) */
   --background: #F8FAFC;
@@ -60,6 +61,7 @@
   --secondary-rgb: 217, 119, 6;
   --danger-color-rgb: 220, 38, 38;
   --success-color-rgb: 5, 150, 105;
+  --info-color-rgb: 2, 132, 199;
 
   /* Skeleton loading colors (Light theme) */
   --skeleton-base: rgba(15, 23, 42, 0.08);
@@ -124,6 +126,7 @@
   --secondary-rgb: 245, 158, 11;
   --danger-color-rgb: 248, 113, 113;
   --success-color-rgb: 16, 185, 129;
+  --info-color-rgb: 56, 189, 248;
 
   /* Skeleton loading colors (Dark theme) */
   --skeleton-base: rgba(148, 163, 184, 0.12);
@@ -316,4 +319,52 @@ h4,
   display: inline-flex;
   align-items: center;
   justify-content: center;
+}
+
+
+/* --- 5. Editorial Tabular Numerals & Monospace Identifiers --- */
+.tabular-nums {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+
+/* --- 6. Staggered Entrance Choreography --- */
+@keyframes editorialRevealUp {
+  0% {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.reveal-editorial {
+  animation: editorialRevealUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.stagger-1 {
+  animation-delay: 80ms;
+}
+
+.stagger-2 {
+  animation-delay: 160ms;
+}
+
+.stagger-3 {
+  animation-delay: 240ms;
+}
+
+.stagger-4 {
+  animation-delay: 320ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-editorial {
+    animation: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
 }

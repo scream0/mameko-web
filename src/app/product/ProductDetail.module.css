@@ -1,4 +1,4 @@
-﻿/* ====================================================
+/* ====================================================
    PRODUCT DETAIL PAGE CSS (Luxury High-End Theme)
    ==================================================== */
 
@@ -431,7 +431,7 @@
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: rgba(220, 38, 38, 0.12);
+  background: rgba(var(--danger-color-rgb), 0.12);
   color: var(--danger-color);
   display: flex;
   align-items: center;

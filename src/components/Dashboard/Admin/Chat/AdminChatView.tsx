@@ -95,20 +95,6 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
   useEffect(() => {
     fetchUsers();
 
-    // Safely clean up any lingering channels before creating new ones
-    const existingMessages = mamekoClient
-      .getChannels()
-      .find((c) => c.topic === "admin_public_chats");
-    if (existingMessages) {
-      mamekoClient.removeChannel(existingMessages);
-    }
-    const existingPresence = mamekoClient
-      .getChannels()
-      .find((c) => c.topic === "public:chats:presence");
-    if (existingPresence) {
-      mamekoClient.removeChannel(existingPresence);
-    }
-
     const channel = mamekoClient
       .channel("admin_public_chats")
       .on(
@@ -117,7 +103,9 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
         (payload) => {
           if (payload.eventType === "INSERT") {
             const incoming = payload.new;
+            if (!incoming || !incoming.id) return;
             if (incoming?.sender_role === "user") {
+              setIsTyping(false);
               playNotificationSound();
             }
             // Update messages if the active chat matches
@@ -148,11 +136,27 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
             fetchUsers();
           } else if (payload.eventType === "UPDATE") {
             const updated = payload.new;
-            if (updated) {
+            if (!updated) return;
+            const currentSelected = selectedUserRef.current;
+            if (currentSelected && updated.user_id && updated.user_id !== currentSelected.id) {
+              fetchUsers();
+              return;
+            }
+            if (Array.isArray(updated.ids)) {
+              const readSet = new Set(updated.ids);
+              setMessages((prev) =>
+                prev.map((m) => (readSet.has(m.id) ? { ...m, is_read: true } : m))
+              );
+            } else if (updated.reader_role === "user") {
+              setMessages((prev) =>
+                prev.map((m) => (m.sender_role === "admin" ? { ...m, is_read: true } : m))
+              );
+            } else if (updated.id) {
               setMessages((prev) =>
                 prev.map((m) => (m.id === updated.id ? { ...m, ...updated } : m))
               );
             }
+            fetchUsers();
           }
         }
       )
@@ -174,7 +178,11 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
         setOnlineUsers(online);
       })
       .on("broadcast", { event: "typing" }, ({ payload }) => {
-        if (payload?.role === "user" && selectedUserRef.current?.id === payload.userId) {
+        const typingUserId = payload?.userId || payload?.user_id;
+        if (
+          payload?.role === "user" &&
+          (!typingUserId || selectedUserRef.current?.id === typingUserId)
+        ) {
           setIsTyping(true);
           clearTimeout(typingTimeoutRef.current);
           typingTimeoutRef.current = setTimeout(() => {
@@ -208,8 +216,31 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
     sendAdminHeartbeat();
     const heartbeatTimer = setInterval(sendAdminHeartbeat, 20000);
 
+    const syncTimer = setInterval(() => {
+      if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        fetchUsers();
+        if (selectedUserRef.current?.id) {
+          fetchMessages(selectedUserRef.current.id, true);
+        }
+      }
+    }, 4000);
+
+    const handleWsConnected = () => {
+      fetchUsers();
+      if (selectedUserRef.current?.id) {
+        fetchMessages(selectedUserRef.current.id, true);
+      }
+    };
+    if (typeof window !== "undefined") {
+      window.addEventListener("mameko-ws-connected", handleWsConnected);
+    }
+
     return () => {
       clearInterval(heartbeatTimer);
+      clearInterval(syncTimer);
+      if (typeof window !== "undefined") {
+        window.removeEventListener("mameko-ws-connected", handleWsConnected);
+      }
       mamekoClient.removeChannel(channel);
       if (presenceChannelRef.current) {
         mamekoClient.removeChannel(presenceChannelRef.current);
@@ -247,7 +278,7 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, isTyping]);
+  }, [messages.length, isTyping]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -293,7 +324,7 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
     }
   };
 
-  const fetchMessages = async (userId: any) => {
+  const fetchMessages = async (userId: any, silent = false) => {
     try {
       const { data: { session } } = await mamekoClient.auth.getSession();
       const token = session?.access_token;
@@ -306,8 +337,20 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
       const result = res.headers?.get("content-type")?.includes("application/json") ? await res.json() : {};
       if (!res.ok || !result.success) throw new Error(result.error || `HTTP ${res.status}`);
 
-      const data = result.data || [];
-      setMessages(data);
+      const data = Array.isArray(result.data) ? result.data : [];
+      setMessages((prev) => {
+        if (
+          prev.length === data.length &&
+          prev.every(
+            (m, idx) =>
+              m.id === data[idx]?.id &&
+              Boolean(m.is_read) === Boolean(data[idx]?.is_read)
+          )
+        ) {
+          return prev;
+        }
+        return data;
+      });
 
       // Mark unread as read
       const unreadIds = data.filter((m: any) => m.sender_role === "user" && !m.is_read).map((m: any) => m.id);
@@ -324,7 +367,9 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
       }
     } catch (err) {
       console.error("Fetch messages error:", err);
-      toast.error(adminChatConfig.toasts.fetchError || "Gagal mengambil pesan");
+      if (!silent) {
+        toast.error(adminChatConfig.toasts.fetchError || "Gagal mengambil pesan");
+      }
     }
   };
 

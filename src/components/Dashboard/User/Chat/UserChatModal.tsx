@@ -100,6 +100,19 @@ export default function UserChatModal({ isOpen, onClose, user }: any) {
         sendHeartbeat();
       }, 15000);
 
+      const syncInterval = setInterval(() => {
+        if (typeof document !== "undefined" && document.visibilityState === "visible") {
+          fetchMessages();
+        }
+      }, 4000);
+
+      const handleWsConnected = () => {
+        fetchMessages();
+      };
+      if (typeof window !== "undefined") {
+        window.addEventListener("mameko-ws-connected", handleWsConnected);
+      }
+
       const channel = mamekoClient
         .channel("public:chats:user")
         .on(
@@ -113,15 +126,44 @@ export default function UserChatModal({ isOpen, onClose, user }: any) {
           (payload) => {
             if (payload.eventType === "INSERT") {
               const incoming = payload.new;
-              setMessages((prev) => {
-                if (prev.find((m) => m.id === incoming.id)) return prev;
-                return [...prev, incoming];
-              });
+              if (incoming && incoming.id) {
+                setMessages((prev) => {
+                  if (prev.find((m) => m.id === incoming.id)) return prev;
+                  return [...prev, incoming];
+                });
+                if (incoming.sender_role === "admin") {
+                  setIsAdminTyping(false);
+                  mamekoClient.auth.getSession().then(({ data: { session } }) => {
+                    if (session?.access_token) {
+                      fetch(`${getApiBaseUrl()}/api/user/chats/read`, {
+                        method: "PUT",
+                        headers: {
+                          "Content-Type": "application/json",
+                          Authorization: `Bearer ${session.access_token}`,
+                        },
+                        body: JSON.stringify({ ids: [incoming.id] }),
+                      }).catch(() => {});
+                    }
+                  });
+                }
+              }
             } else if (payload.eventType === "UPDATE") {
               const updated = payload.new;
-              setMessages((prev) =>
-                prev.map((m) => (m.id === updated.id ? updated : m))
-              );
+              if (!updated) return;
+              if (Array.isArray(updated.ids)) {
+                const readSet = new Set(updated.ids);
+                setMessages((prev) =>
+                  prev.map((m) => (readSet.has(m.id) ? { ...m, is_read: true } : m))
+                );
+              } else if (updated.reader_role === "admin") {
+                setMessages((prev) =>
+                  prev.map((m) => (m.sender_role === "user" ? { ...m, is_read: true } : m))
+                );
+              } else if (updated.id) {
+                setMessages((prev) =>
+                  prev.map((m) => (m.id === updated.id ? { ...m, ...updated } : m))
+                );
+              }
             }
           }
         )
@@ -144,8 +186,8 @@ export default function UserChatModal({ isOpen, onClose, user }: any) {
         })
         .on("broadcast", { event: "typing" }, (payload) => {
           if (
-            payload.payload.role === "admin" &&
-            payload.payload.targetUserId === (user.uid || user.id)
+            payload.payload?.role === "admin" &&
+            (!payload.payload?.targetUserId || payload.payload?.targetUserId === (user.uid || user.id))
           ) {
             setIsAdminTyping(true);
             if (typingTimeoutRef.current)
@@ -168,6 +210,10 @@ export default function UserChatModal({ isOpen, onClose, user }: any) {
 
       return () => {
         clearInterval(pollInterval);
+        clearInterval(syncInterval);
+        if (typeof window !== "undefined") {
+          window.removeEventListener("mameko-ws-connected", handleWsConnected);
+        }
         mamekoClient.removeChannel(channel);
         mamekoClient.removeChannel(presenceChannel);
       };
@@ -195,7 +241,7 @@ export default function UserChatModal({ isOpen, onClose, user }: any) {
       clearTimeout(timer2);
       clearTimeout(timer3);
     };
-  }, [messages, isOpen]);
+  }, [messages.length, isOpen]);
 
   const fetchMessages = async () => {
     const userId = user.uid || user.id;
@@ -212,6 +258,7 @@ export default function UserChatModal({ isOpen, onClose, user }: any) {
         getApiBaseUrl() + "/api/user/chats",
         {
           headers: { Authorization: `Bearer ${token}` },
+          cache: "no-store",
         }
       );
       const result = res.headers
@@ -224,8 +271,20 @@ export default function UserChatModal({ isOpen, onClose, user }: any) {
           result.error || `HTTP ${res.status} - Gagal mengambil pesan`
         );
 
-      const data = result.data || [];
-      setMessages(data);
+      const data = Array.isArray(result.data) ? result.data : [];
+      setMessages((prev) => {
+        if (
+          prev.length === data.length &&
+          prev.every(
+            (m, idx) =>
+              m.id === data[idx]?.id &&
+              Boolean(m.is_read) === Boolean(data[idx]?.is_read)
+          )
+        ) {
+          return prev;
+        }
+        return data;
+      });
 
       // Tandai pesan admin sebagai telah dibaca
       const unreadIds = data

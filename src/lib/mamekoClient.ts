@@ -43,15 +43,37 @@ export class NativeAuthClient {
 
   private loadSessionFromStorage(): Session | null {
     try {
+      const sessionToken = sessionStorage.getItem("mameko_access_token");
+      const sessionUser = sessionStorage.getItem("mameko_user");
+
       const storedToken =
+        sessionToken ||
         localStorage.getItem("mameko_access_token") ||
         localStorage.getItem("sb-access-token");
-      const storedUser = localStorage.getItem("mameko_user");
+      const storedUser =
+        (sessionToken ? sessionUser : null) ||
+        localStorage.getItem("mameko_user");
 
       if (storedToken && storedUser) {
         const user = JSON.parse(storedUser);
         const refreshToken =
-          localStorage.getItem("mameko_refresh_token") || undefined;
+          (sessionToken
+            ? sessionStorage.getItem("mameko_refresh_token")
+            : null) ||
+          localStorage.getItem("mameko_refresh_token") ||
+          undefined;
+
+        // Pin session to this tab's sessionStorage so multi-tab testing (User + Admin) never collides
+        if (!sessionToken) {
+          try {
+            sessionStorage.setItem("mameko_access_token", storedToken);
+            sessionStorage.setItem("mameko_user", storedUser);
+            if (refreshToken) {
+              sessionStorage.setItem("mameko_refresh_token", refreshToken);
+            }
+          } catch {}
+        }
+
         this.currentSession = {
           access_token: storedToken,
           refresh_token: refreshToken,
@@ -84,17 +106,24 @@ export class NativeAuthClient {
 
     try {
       if (session) {
+        const userJson = JSON.stringify(session.user);
+        sessionStorage.setItem("mameko_access_token", session.access_token);
+        sessionStorage.setItem("mameko_user", userJson);
         localStorage.setItem("mameko_access_token", session.access_token);
+        localStorage.setItem("mameko_user", userJson);
         if (session.refresh_token) {
+          sessionStorage.setItem("mameko_refresh_token", session.refresh_token);
           localStorage.setItem("mameko_refresh_token", session.refresh_token);
         }
-        localStorage.setItem("mameko_user", JSON.stringify(session.user));
 
         // Set document cookie untuk kompatibilitas SSR / Middleware
         const maxAge = 60 * 60 * 24 * 7; // 7 hari
         document.cookie = `mameko_access_token=${session.access_token}; path=/; max-age=${maxAge}; SameSite=Lax`;
         SharedRealtimeSocket.getInstance().reconnectWithToken(session.access_token);
       } else {
+        sessionStorage.removeItem("mameko_access_token");
+        sessionStorage.removeItem("mameko_refresh_token");
+        sessionStorage.removeItem("mameko_user");
         localStorage.removeItem("mameko_access_token");
         localStorage.removeItem("sb-access-token");
         localStorage.removeItem("mameko_refresh_token");
@@ -519,8 +548,10 @@ export class NativeAuthClient {
 class SharedRealtimeSocket {
   private static instance: SharedRealtimeSocket | null = null;
   private ws: WebSocket | null = null;
+  private currentToken: string = "";
   private channels: Set<NativeRealtimeChannel> = new Set();
   private reconnectTimer: any = null;
+  private disconnectTimer: any = null;
   private pingTimer: any = null;
   private isConnecting = false;
 
@@ -532,6 +563,7 @@ class SharedRealtimeSocket {
   }
 
   public register(ch: NativeRealtimeChannel) {
+    clearTimeout(this.disconnectTimer);
     this.channels.add(ch);
     this.ensureConnected();
   }
@@ -539,7 +571,12 @@ class SharedRealtimeSocket {
   public unregister(ch: NativeRealtimeChannel) {
     this.channels.delete(ch);
     if (this.channels.size === 0) {
-      this.disconnect();
+      clearTimeout(this.disconnectTimer);
+      this.disconnectTimer = setTimeout(() => {
+        if (this.channels.size === 0) {
+          this.disconnect();
+        }
+      }, 1500);
     }
   }
 
@@ -559,26 +596,26 @@ class SharedRealtimeSocket {
   }
 
   public disconnect() {
+    clearTimeout(this.disconnectTimer);
     clearInterval(this.pingTimer);
     clearTimeout(this.reconnectTimer);
-    if (this.ws) {
-      try {
-        this.ws.close();
-      } catch (e) { }
-      this.ws = null;
-    }
+    const oldWs = this.ws;
+    this.ws = null;
+    this.currentToken = "";
     this.isConnecting = false;
+    if (oldWs) {
+      try {
+        oldWs.close();
+      } catch (e) { }
+    }
   }
 
   private ensureConnected(providedToken?: string) {
     if (typeof window === "undefined") return;
-    if (this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) {
-      return;
-    }
-    if (this.isConnecting) return;
 
     const token =
       providedToken ||
+      sessionStorage.getItem("mameko_access_token") ||
       localStorage.getItem("mameko_access_token") ||
       localStorage.getItem("sb-access-token") ||
       "";
@@ -588,34 +625,53 @@ class SharedRealtimeSocket {
       return;
     }
 
+    if (
+      this.ws &&
+      (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)
+    ) {
+      if (this.currentToken && this.currentToken !== token) {
+        this.disconnect();
+      } else {
+        return;
+      }
+    }
+    if (this.isConnecting) return;
+
     this.isConnecting = true;
+    this.currentToken = token;
     try {
       const baseUrl = getApiBaseUrl();
       const wsProto = baseUrl.startsWith("https") ? "wss:" : "ws:";
       const host = baseUrl.replace(/^https?:\/\//, "");
       const wsUrl = `${wsProto}//${host}/ws/chats?token=${encodeURIComponent(token)}`;
 
-      this.ws = new WebSocket(wsUrl);
+      const ws = new WebSocket(wsUrl);
+      this.ws = ws;
 
-      this.ws.onopen = () => {
+      ws.onopen = () => {
+        if (this.ws !== ws) return;
         this.isConnecting = false;
         clearInterval(this.pingTimer);
         this.pingTimer = setInterval(() => {
-          if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+          if (this.ws === ws && ws.readyState === WebSocket.OPEN) {
             try {
-              this.ws.send("ping");
+              ws.send("ping");
             } catch (e) { }
           }
-        }, 30000);
+        }, 25000);
 
         try {
-          this.ws?.send("ping");
+          ws.send("ping");
         } catch (e) { }
 
         this.channels.forEach((ch) => ch.notifySubscribed());
+        try {
+          window.dispatchEvent(new CustomEvent("mameko-ws-connected"));
+        } catch {}
       };
 
-      this.ws.onmessage = (event) => {
+      ws.onmessage = (event) => {
+        if (this.ws !== ws) return;
         try {
           const parsed = JSON.parse(event.data);
           this.channels.forEach((ch) => ch.dispatchMessage(parsed));
@@ -624,16 +680,19 @@ class SharedRealtimeSocket {
         }
       };
 
-      this.ws.onclose = () => {
+      ws.onclose = () => {
+        if (this.ws !== ws) return;
+        this.ws = null;
         this.isConnecting = false;
         clearInterval(this.pingTimer);
         if (this.channels.size > 0) {
           clearTimeout(this.reconnectTimer);
-          this.reconnectTimer = setTimeout(() => this.ensureConnected(), 3000);
+          this.reconnectTimer = setTimeout(() => this.ensureConnected(), 2000);
         }
       };
 
-      this.ws.onerror = (err) => {
+      ws.onerror = (err) => {
+        if (this.ws !== ws) return;
         this.isConnecting = false;
         console.warn("[SharedWS] Connection warning:", err);
       };
@@ -698,8 +757,23 @@ export class NativeRealtimeChannel {
     }
   }
 
+  private matchesPostgresFilter(l: { type: string; filter: Record<string, any> }, eventType: string, rowData: any): boolean {
+    if (l.type !== "postgres_changes" && l.type !== "*") return false;
+    if (l.filter?.table && l.filter.table !== "chats") return false;
+    if (l.filter?.event && l.filter.event !== "*" && String(l.filter.event).toUpperCase() !== eventType) {
+      return false;
+    }
+    if (typeof l.filter?.filter === "string" && l.filter.filter.startsWith("user_id=eq.")) {
+      const expectedUserId = l.filter.filter.slice("user_id=eq.".length).trim();
+      if (expectedUserId && rowData?.user_id && String(rowData.user_id) !== expectedUserId) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   public dispatchMessage(parsed: any) {
-    if (!this.isSubscribed) return;
+    if (!this.isSubscribed || !parsed) return;
 
     if (parsed.event === "new_message") {
       const payload = {
@@ -711,11 +785,7 @@ export class NativeRealtimeChannel {
       };
 
       this.listeners.forEach((l) => {
-        if (l.type === "postgres_changes" || l.type === "*") {
-          // If a table filter is defined and is NOT 'chats', do not dispatch chat messages to it
-          if (l.filter?.table && l.filter.table !== "chats") {
-            return;
-          }
+        if (this.matchesPostgresFilter(l, "INSERT", parsed.data)) {
           l.callback(payload);
         }
       });
@@ -729,12 +799,20 @@ export class NativeRealtimeChannel {
       };
 
       this.listeners.forEach((l) => {
-        if (l.type === "postgres_changes" || l.type === "*") {
-          // If a table filter is defined and is NOT 'chats', do not dispatch chat updates to it
-          if (l.filter?.table && l.filter.table !== "chats") {
-            return;
-          }
+        if (this.matchesPostgresFilter(l, "UPDATE", parsed.data)) {
           l.callback(payload);
+        }
+      });
+    } else if (parsed.event === "typing") {
+      const broadcastPayload = {
+        type: "broadcast",
+        event: "typing",
+        payload: parsed.data || {},
+      };
+
+      this.listeners.forEach((l) => {
+        if (l.type === "broadcast" && (!l.filter?.event || l.filter.event === "typing")) {
+          l.callback(broadcastPayload);
         }
       });
     }
@@ -762,6 +840,7 @@ export class NativeRealtimeChannel {
 
   unsubscribe() {
     this.isSubscribed = false;
+    this.listeners = [];
     SharedRealtimeSocket.getInstance().unregister(this);
   }
 }
@@ -873,18 +952,15 @@ export class TableQueryBuilder {
 
 export class MamekoClientFacade {
   public auth: NativeAuthClient;
-  private activeChannels: Map<string, NativeRealtimeChannel> = new Map();
+  private activeChannels: Set<NativeRealtimeChannel> = new Set();
 
   constructor() {
     this.auth = new NativeAuthClient();
   }
 
   channel(topic: string, _options?: any): NativeRealtimeChannel {
-    if (this.activeChannels.has(topic)) {
-      return this.activeChannels.get(topic)!;
-    }
     const ch = new NativeRealtimeChannel(topic);
-    this.activeChannels.set(topic, ch);
+    this.activeChannels.add(ch);
     return ch;
   }
 
@@ -893,8 +969,9 @@ export class MamekoClientFacade {
   }
 
   removeChannel(ch: NativeRealtimeChannel) {
+    if (!ch) return;
     ch.unsubscribe();
-    this.activeChannels.delete(ch.topic);
+    this.activeChannels.delete(ch);
   }
 
   from(tableName: string): TableQueryBuilder {

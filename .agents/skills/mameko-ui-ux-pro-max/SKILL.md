@@ -157,3 +157,4 @@ Box(
 - [ ] **Contrast Verification**: Does body text meet WCAG contrast guidelines against the surface color?
 - [ ] **Semantic Icon Registry**: Are all `<AppIcon name="..." />` keys explicitly registered in `AppIcon.tsx` with a neutral `Circle` fallback (never `Search`)?
 - [ ] **Separated Chat & Notification Badges**: Do incoming chat messages update only the Chat badge (`unreadChatCount`) without leaking into the Notification list?
+- [ ] **Anti-AI-Slop & Token Integrity (`frontend-design`)**: Are there zero cliched purple gradients (`147, 51, 234` / `139, 92, 246`), zero generic fonts (`Inter`, `Roboto`, `Arial`, raw `monospace`), zero undefined font tokens (`--font-cormorant`), and zero hardcoded semantic `rgba(R, G, B, A)` colors bypassing `globals.css` variables?

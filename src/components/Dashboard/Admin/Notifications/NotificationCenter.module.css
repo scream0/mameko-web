@@ -207,23 +207,28 @@
 }
 
 .type_order {
-  background: rgba(59, 130, 246, 0.15);
+  background: var(--info-bg);
+  border-color: var(--info-border);
 }
 
 .type_payment {
-  background: rgba(16, 185, 129, 0.15);
+  background: var(--success-bg);
+  border-color: var(--success-border);
 }
 
 .type_promo {
-  background: rgba(251, 191, 36, 0.15);
+  background: var(--warning-bg);
+  border-color: var(--warning-border);
 }
 
 .type_system {
-  background: rgba(139, 92, 246, 0.15);
+  background: var(--secondary-container);
+  border-color: var(--warning-border);
 }
 
 .type_stock {
-  background: rgba(239, 68, 68, 0.15);
+  background: var(--danger-bg);
+  border-color: var(--danger-border);
 }
 
 .notificationContent {

@@ -684,7 +684,7 @@
 }
 
 .variantRowActive:hover {
-  background: rgba(2, 245, 161, 0.16);
+  background: rgba(var(--success-color-rgb), 0.16);
 }
 
 .variantRowLeft {

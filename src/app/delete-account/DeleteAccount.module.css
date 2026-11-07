@@ -9,7 +9,7 @@
 .headerSection {
   position: relative;
   padding: 6rem 1.5rem 3.5rem;
-  background: radial-gradient(circle at 50% 0%, rgba(220, 38, 38, 0.08) 0%, transparent 70%);
+  background: radial-gradient(circle at 50% 0%, rgba(var(--danger-color-rgb), 0.08) 0%, transparent 70%);
   border-bottom: 1px solid var(--border-color);
   text-align: center;
 }
@@ -135,13 +135,13 @@
 }
 
 .boxDeleted {
-  background: rgba(220, 38, 38, 0.05);
-  border: 1px solid rgba(220, 38, 38, 0.2);
+  background: rgba(var(--danger-color-rgb), 0.05);
+  border: 1px solid rgba(var(--danger-color-rgb), 0.2);
 }
 
 .boxAnonymized {
-  background: rgba(2, 132, 199, 0.05);
-  border: 1px solid rgba(2, 132, 199, 0.2);
+  background: rgba(var(--info-color-rgb), 0.05);
+  border: 1px solid rgba(var(--info-color-rgb), 0.2);
 }
 
 .boxTitle {
@@ -227,7 +227,7 @@
 .btnDeleteAccount:hover:not(:disabled) {
   filter: brightness(1.1);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
+  box-shadow: 0 4px 12px rgba(var(--danger-color-rgb), 0.25);
 }
 
 .btnDeleteAccount:disabled {
@@ -429,10 +429,10 @@
   font-size: 0.75rem;
   padding: 0.25rem 0.65rem;
   border-radius: 9999px;
-  background: var(--success-bg, rgba(16, 185, 129, 0.12));
+  background: var(--success-bg, rgba(var(--success-color-rgb), 0.12));
   color: var(--success-color, #10b981);
   font-weight: 600;
-  border: 1px solid var(--success-border, rgba(16, 185, 129, 0.25));
+  border: 1px solid var(--success-border, rgba(var(--success-color-rgb), 0.25));
 }
 
 .warningNotice {
@@ -451,7 +451,7 @@
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: var(--success-bg, rgba(16, 185, 129, 0.12));
+  background: var(--success-bg, rgba(var(--success-color-rgb), 0.12));
   color: var(--success-color, #10b981);
   display: flex;
   align-items: center;

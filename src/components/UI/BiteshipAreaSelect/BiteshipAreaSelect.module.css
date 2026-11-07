@@ -23,7 +23,7 @@
 
 .searchInput:focus {
   border-color: var(--color-primary, #2563eb);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  box-shadow: 0 0 0 3px rgba(var(--info-color-rgb), 0.15);
 }
 
 .searchIcon {
@@ -93,7 +93,7 @@
 .postalBadge {
   display: inline-block;
   padding: 2px 6px;
-  background: rgba(37, 99, 235, 0.1);
+  background: rgba(var(--info-color-rgb), 0.1);
   color: var(--color-primary, #2563eb);
   border-radius: 4px;
   font-size: 0.75rem;
