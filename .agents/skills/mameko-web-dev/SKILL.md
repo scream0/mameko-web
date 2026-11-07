@@ -3,8 +3,9 @@ name: mameko-web-dev
 description: >-
   Standard and runbook for developing, auditing, and maintaining the Mameko Web application
   (Next.js 15 App Router + React 19 + TypeScript + CSS Modules + data/ui JSON pattern + Cloudflare Pages).
-  Covers architectural guidelines, 100% Zero Hardcode standard, StoreContext state management,
-  API client communication with Go Backend & Supabase, settings persistence, and Cloudflare Pages deployment.
+  Covers architectural guidelines, 100% Zero Hardcode standard, Zero @ts-nocheck mandate, StoreContext state management,
+  API & Native WebSocket client communication with Go Backend & Self-Hosted Docker PostgreSQL 16,
+  chat/notification channel separation, non-refundable policy, and Cloudflare Pages deployment.
 ---
 
 # Mameko Web Development & Architecture Standard
@@ -17,18 +18,18 @@ This skill defines the official architectural guidelines, coding conventions, st
 
 The web application is built with modern, zero-bloat web technologies designed for peak performance:
 - **Framework**: Next.js 15 (App Router with static exports for Cloudflare Pages)
-- **UI & Logic**: React 19, TypeScript
+- **UI & Logic**: React 19, TypeScript (Zero `@ts-nocheck` across `src/`)
 - **Styling**: Strict CSS Modules (`*.module.css`) + CSS Custom Properties (`globals.css`)
 - **State Management**: `StoreContext.tsx` via custom `useStore()` hook
-- **Data Integration**: Go Fiber REST API via `src/lib/apiClient.ts` & Supabase PostgreSQL via `src/lib/supabaseClient.ts`
-- **Hosting & Edge**: Cloudflare Pages with Cloudflare Tunnel connecting to self-hosted Go Backend
+- **Data & Auth Integration**: Self-Hosted Go Fiber REST & Native WebSocket API (`mameko-api`) backed by Self-Hosted Docker PostgreSQL 16 (`mameko-postgres`) via `src/lib/mamekoClient.ts` & `src/lib/apiClient.ts` (100% Zero Supabase Cloud dependency)
+- **Hosting & Edge**: Cloudflare Pages with Cloudflare Zero Trust Tunnel (`mameko-tunnel`) connecting to `https://api.mameko.my.id`
 
 ### Key Directory Layout (`mameko-web/src`):
 ```text
 src/
-├── app/                  # Next.js App Router pages (layout.tsx, page.tsx, dashboard/, checkout/, privacy/, terms/, etc.)
+├── app/                  # Next.js App Router pages (layout.tsx, page.tsx, error.tsx, global-error.tsx, dashboard/, checkout/, privacy/, terms/, etc.)
 ├── components/           # Component library grouped by domain:
-│   ├── Dashboard/        # Admin & User dashboards, settings, user management, order views
+│   ├── Dashboard/        # Admin & User dashboards, settings, user management, order views, chat views
 │   ├── UI/               # Reusable atomic UI (Button, Modal, AppIcon, ThemeToggle)
 │   ├── Legal/            # Shared legal document layouts (LegalLayout.tsx)
 │   ├── Navbar/ & Footer/ # Global navigation and branding
@@ -37,10 +38,10 @@ src/
 ├── context/              # Global React Contexts (StoreContext, ThemeContext)
 ├── data/ui/              # Centralized JSON UI configuration files (100% Zero Hardcode!)
 ├── hooks/                # Custom React hooks (useCart, useOutsideClick, useProductFilter)
-├── lib/                  # Shared clients (apiClient.ts, supabaseClient.ts, midtrans.ts)
+├── lib/                  # Shared clients (mamekoClient.ts, apiClient.ts, midtrans.ts)
 ├── services/             # Frontend data-access services (settingsService.ts, productService.ts)
 ├── types/                # TypeScript interface definitions (data.ts, index.ts)
-└── utils/                # Helper utilities (authHelpers, rateLimit, imageConverter)
+└── utils/                # Helper utilities (authHelpers, notificationRouter, errorSanitizer, imageOptimizer)
 ```
 
 ---
@@ -111,7 +112,8 @@ const res = await fetch(`${getApiBaseUrl()}/api/user/orders`, {
 ### Settings & Legal Persistence Flow
 1. **Public Reading**: `getPublicSettings()` in `settingsService.ts` calls `GET /api/settings?public=true` (cached for 5 minutes).
 2. **Admin Reading & Saving**: `getAdminSettings(session)` and `saveSettings(payload, session)` call `/api/settings` and `/api/admin/settings` with bearer token.
-3. **Database Layer**: Data disimpan di tabel `store_config` Supabase PostgreSQL. Kolom `legal jsonb` menyimpan seluruh pasal kustom (`privacy.sections` dan `terms.sections`).
+3. **Database Layer**: Data disimpan di tabel `store_config` pada Self-Hosted Docker PostgreSQL 16 (`mameko-postgres`). Kolom `legal jsonb` menyimpan seluruh pasal kustom (`privacy.sections` dan `terms.sections`).
+4. **Non-Refundable Business Policy (All Sales Are Final)**: Seluruh produk Mameko bersifat **Non-Refundable**. Dilarang menambahkan fitur pengajuan retur/refund, modal retur, atau tab pengembalian di dashboard User maupun Admin.
 
 ---
 
@@ -139,14 +141,13 @@ const res = await fetch(`${getApiBaseUrl()}/api/user/orders`, {
 
 ## 6. Realtime Communication, Notification Routing & Error Boundaries
 
-### A. Dual-Engine Realtime Communication (Chat & Status)
-1. **Engine Utama**: Native Go Backend WebSocket (`/ws/chats?token=<jwt>`).
+### A. Native Go WebSocket & Strict Separation of Chat vs Notifications
+1. **Engine Tunggal Realtime**: Native Go Backend WebSocket (`/ws/chats?token=<jwt>`) via `src/lib/mamekoClient.ts`.
    - Menyediakan latensi instan (< 50ms) langsung dari `websocket.GlobalHub.BroadcastChat()`.
-   - Menghubungkan client user dan admin tanpa ketergantungan pada polling manual.
-2. **Engine Sekunder**: Supabase Realtime Channel (`postgres_changes` pada tabel `public.chats`).
-   - Mengharuskan policy RLS eksplisit bagi role admin untuk membaca seluruh chat dan publikasi aktif `supabase_realtime`.
-3. **Mekanisme Failover**:
-   - Jika koneksi WebSocket terputus, hook client otomatis fallback ke Supabase Realtime, didukung smart polling interval saat window aktif.
+   - Menghubungkan client user dan admin dengan dukungan smart polling failover saat window aktif.
+2. **Pemisahan Mutlak Channel Chat & Notifikasi**:
+   - Event WebSocket `new_message` dan `messages_read` di `mamekoClient.ts` HANYA boleh dikirim ke listener `table: "chats"`, dan DILARANG bocor ke listener `table: "notifications"`.
+   - Pesan chat dari Admin ke User wajib masuk ke badge `unreadChatCount` khusus pada ikon Chat (Navbar, Sidebar, dan Mobile Bottom Nav), bukan ke tab Notifikasi (`NotificationsSection` / `NotificationCenter`).
 
 ### B. Normalisasi Tautan Notifikasi (Zero 404 Routing)
 1. **Canonical Resolver (`resolveCanonicalNotificationUrl`)**:
@@ -155,10 +156,11 @@ const res = await fetch(`${getApiBaseUrl()}/api/user/orders`, {
    - Tautan admin seperti `"/admin/orders"` WAJIB dinormalisasi menjadi `/dashboard?tab=orders`.
    - Tautan rusak atau tidak dikenal WAJIB dialihkan dengan aman ke `/dashboard?tab=notifications` tanpa pernah memicu halaman 404.
 
-### C. App Router Global Error Resilience
+### C. App Router Global Error Resilience & Icon Registry Integrity
 1. `src/app/error.tsx` dan `src/app/global-error.tsx` WAJIB terpasang untuk menangani crash rendering tak terduga.
-2. Tampilan error wajib editorial, ramah manusia, bebas stacktrace, dan memuat tombol pemulihan interaktif (`reset()`) dengan copy dari `src/data/ui/common.json`.
+2. Tampilan error wajib editorial, ramah manusia, bebas stacktrace, dan memuat tombol pemulihan interaktif (`reset()`) dengan copy dari `src/data/ui/errorConfig.json`.
 3. Seluruh catch block pemanggilan API wajib membungkus toast error dengan `sanitizeUserError(err)`.
+4. Setiap pemanggilan `<AppIcon name="..." />` wajib terdaftar di `iconMap` dalam `src/components/UI/Icon/AppIcon.tsx` (termasuk `"home": Home`), dengan fallback netral `Circle` (dilarang menggunakan `Search` sebagai fallback default).
 
 ---
 
@@ -166,19 +168,26 @@ const res = await fetch(`${getApiBaseUrl()}/api/user/orders`, {
 
 Before committing or pushing any web changes:
 
-### Step 1: Run Unit Tests
+### Step 1: Verify Zero `@ts-nocheck` & Run TypeScript Compiler
+```powershell
+Select-String -Path "src\**\*.ts","src\**\*.tsx" -Pattern "@ts-nocheck"
+npx tsc --noEmit
+```
+*Ensure 0 `@ts-nocheck` directives exist and `tsc --noEmit` exits with 0 errors.*
+
+### Step 2: Run Unit Tests
 ```powershell
 npm test
 ```
-*Verify that all tests in `src/**/*.test.ts` pass (7/7 tests passed).*
+*Verify that all tests in `src/**/*.test.ts` pass (15/15 tests passed).*
 
-### Step 2: Run Production Build
+### Step 3: Run Production Build
 ```powershell
 npm run build
 ```
-*Ensure Next.js compiles all 18 static pages without type errors or broken imports.*
+*Ensure Next.js compiles all 19 static pages without type errors or broken imports.*
 
-### Step 3: Git Synchronization
+### Step 4: Git Synchronization
 ```powershell
 git status
 git add <files>

@@ -2,9 +2,9 @@
 name: mameko-coding-standards-and-best-practices
 description: >-
   Mandatory development standard and code quality runbook for Mameko Web: Best practices for
-  React 19 lifecycle safety, AbortController on async fetch, atomic double-click guards on checkout/payments,
-  anti-flicker skeleton state management, optimistic UI with error rollback, clean error propagation,
-  and robust API contracts with the Go Backend.
+  zero @ts-nocheck compile-time safety, React 19 lifecycle safety, AbortController on async fetch,
+  atomic double-click guards on checkout/payments, anti-flicker skeleton state management,
+  optimistic UI with error rollback, clean error propagation, and robust API contracts with the Go Backend.
 ---
 
 # Mameko Web Coding Standards & Best Practices Skill
@@ -117,16 +117,35 @@ Never allow an empty container to collapse to `0px` while loading if it will pop
 - Always use `<ComponentName>.module.css` with CSS custom properties from `globals.css` (e.g. `var(--primary-accent)`, `var(--surface-primary)`).
 - Ensure every colored background container adheres to the **Container-Content Pairing** rule for high contrast accessibility (WCAG AAA).
 
+### Rule 4.3: AppIcon Registry Completeness
+- Every `<AppIcon name="..." />` invoked in JSX/TSX **must** have its key registered in `iconMap` inside `src/components/UI/Icon/AppIcon.tsx`.
+- Never use a semantically misleading icon (such as `Search`) as the default fallback in `AppIcon.tsx`; always use a neutral shape (`Circle`) and register the exact Lucide icon (`"home": Home`, etc.) before rendering.
+
 ---
 
-## 5. Pre-Commit Verification Runbook
+## 5. Compile-Time Type Safety & Zero `@ts-nocheck` Standard
 
-Before completing any task or committing changes in `mameko-web`, run:
+### Rule 5.1: Strict Prohibition of `// @ts-nocheck` and `// @ts-ignore`
+- **DILARANG KERAS** menambahkan `// @ts-nocheck` atau `// @ts-ignore` pada file `.ts` maupun `.tsx` di dalam `src/`.
+- Penggunaan `@ts-nocheck` menyembunyikan variabel atau import yang belum dideklarasikan (seperti `ReferenceError: mamekoClient is not defined` atau variabel kalkulasi invoice yang hilang), yang akan meledak saat runtime menjadi layar error `"500 — Terjadi Kendala Teknis"`.
+- Seluruh properti komponen (termasuk alias prop modal seperti `onClose` / `onCancel`), key konfigurasi `src/data/ui/*Config.json`, dan method client (`mamekoClient`, `auth`) wajib memiliki tipe yang valid dan diverifikasi oleh compiler TypeScript.
+
+---
+
+## 6. Pre-Commit Verification Runbook
+
+Before completing any task or committing changes in `mameko-web`, run all four checks:
 ```powershell
-# 1. Run unit tests
+# 1. Verify zero @ts-nocheck directives exist in src/
+Select-String -Path "src\**\*.ts","src\**\*.tsx" -Pattern "@ts-nocheck"
+
+# 2. Run full TypeScript compiler validation
+npx tsc --noEmit
+
+# 3. Run unit tests
 npm test
 
-# 2. Run Next.js production build verification
+# 4. Run Next.js production build verification
 npm run build
 ```
-Both commands **must** exit with code 0 (100% passed).
+`Select-String` must return empty (0 matches), and `npx tsc --noEmit`, `npm test`, and `npm run build` **must** exit with code 0 (100% passed).

@@ -81,9 +81,14 @@ Digital elements should respond with natural physical weight:
   - Avatars: Circle shape.
 - Use `Crossfade` or `AnimatedContent` during state transitions (loading → content / empty state) to eliminate jarring white flashes.
 
-### Pillar 7: Universal Accessibility (WCAG 2.1 AAA)
+### Pillar 7: Universal Accessibility (WCAG 2.1 AAA) & Semantic Icon Integrity
 - Text contrast must exceed **4.5:1** for regular text and **3.0:1** for large bold titles against their background.
 - Semantic icons and images must provide localized, descriptive `contentDescription` for screen readers (TalkBack / NVDA).
+- **AppIcon Registry Completeness**:
+  - Every `<AppIcon name="..." />` used in Mameko Web must map to a semantically accurate Lucide icon in `src/components/UI/Icon/AppIcon.tsx` (e.g., `"home": Home` for `"Kembali ke Beranda"`).
+  - Never use a semantically misleading icon (such as `Search` magnifying glass) as the default fallback for unmapped icon keys; always use a neutral geometric shape (`Circle`) and verify all icon keys are registered.
+- **Dedicated Channel Badges (Chat vs Notifications)**:
+  - Incoming chat messages must increment the dedicated `unreadChatCount` badge on the Chat menu icon (Navbar, Sidebar, Mobile Bottom Navigation) and must never pollute the general Notification bell/tab.
 
 ---
 
@@ -150,3 +155,5 @@ Box(
 - [ ] **Tactile Feedback**: Do primary interactive cards and CTA buttons incorporate tactile press animations?
 - [ ] **Zero Layout Shift**: Are loading skeletons proportionally identical to the loaded content?
 - [ ] **Contrast Verification**: Does body text meet WCAG contrast guidelines against the surface color?
+- [ ] **Semantic Icon Registry**: Are all `<AppIcon name="..." />` keys explicitly registered in `AppIcon.tsx` with a neutral `Circle` fallback (never `Search`)?
+- [ ] **Separated Chat & Notification Badges**: Do incoming chat messages update only the Chat badge (`unreadChatCount`) without leaking into the Notification list?
