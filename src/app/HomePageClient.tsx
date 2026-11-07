@@ -1,11 +1,11 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { useStore } from "@/context/StoreContext";
 import Shop from '@/components/Dashboard/User/Shop/Shop';
-import { supabase } from "@/lib/supabaseClient";
+import { mamekoClient } from "@/lib/mamekoClient";
 import type { InitialDataType, Product } from '@/types/data'; // Import shared types
 
 const Modal = dynamic(() => import("@/components/UI/Modal/ProductModal").then((mod) => mod.Modal), {
@@ -29,9 +29,9 @@ export function HomePageClient({ initialData }: { initialData: InitialDataType }
   const { addToCart, rupiah } = useStore();
   const router = useRouter();
 
-  // Supabase Realtime listener untuk store_config di landing page
+  // Realtime listener untuk store_config di landing page
   useEffect(() => {
-    const channel = supabase
+    const channel = mamekoClient
       .channel("landing-store-config-sync")
       .on(
         "postgres_changes",
@@ -45,7 +45,7 @@ export function HomePageClient({ initialData }: { initialData: InitialDataType }
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      mamekoClient.removeChannel(channel);
     };
   }, []);
 

@@ -2,7 +2,7 @@
 import { getApiBaseUrl } from "@/lib/apiClient";
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
-import { auth } from "@/lib/supabaseClient";
+import { auth } from "@/lib/mamekoClient";
 import { convertToWebP } from "@/utils/imageConverter";
 
 // Konfigurasi bisa digabungkan nanti jika diperlukan

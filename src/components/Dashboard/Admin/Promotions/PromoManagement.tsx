@@ -3,7 +3,7 @@
 import { getApiBaseUrl } from "@/lib/apiClient";
 import { useEffect, useState, useMemo } from "react";
 import toast from "react-hot-toast";
-import { auth } from "@/lib/supabaseClient";
+import { auth } from "@/lib/mamekoClient";
 import { getAdminSettings, saveSettings } from "@/services/settingsService";
 import { isPromoActive, getDiscountedPrice, formatRupiah } from "@/utils/promo";
 import promoConfig from "@/data/ui/promoManagementConfig.json";
@@ -73,7 +73,7 @@ export default function PromoManagement() {
     usage_limit: 50,
   });
 
-  const getSupabaseTokenAndSession = async () => {
+  const getAuthTokenAndSession = async () => {
     const {
       data: { session },
     } = await auth.getSession();
@@ -83,7 +83,7 @@ export default function PromoManagement() {
   const loadAllData = async () => {
     try {
       setLoading(true);
-      const { session, token } = await getSupabaseTokenAndSession();
+      const { session, token } = await getAuthTokenAndSession();
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
       // 1. Ambil pengaturan toko (termasuk promo)
@@ -171,7 +171,7 @@ export default function PromoManagement() {
     const toastId = toast.loading(promoConfig.messages.savePromoLoading);
 
     try {
-      const { session } = await getSupabaseTokenAndSession();
+      const { session } = await getAuthTokenAndSession();
       if (!session) {
         throw new Error(promoConfig.messages.authError);
       }
@@ -381,7 +381,7 @@ export default function PromoManagement() {
     );
 
     try {
-      const { token } = await getSupabaseTokenAndSession();
+      const { token } = await getAuthTokenAndSession();
       const url = getApiBaseUrl() + "/api/admin/vouchers";
       const method = isEdit ? "PUT" : "POST";
       const payload: any = {
@@ -457,7 +457,7 @@ export default function PromoManagement() {
 
   const handleToggleVoucherActive = async (id: string, currentStatus: boolean) => {
     try {
-      const { token } = await getSupabaseTokenAndSession();
+      const { token } = await getAuthTokenAndSession();
       const nextStatus = !currentStatus;
       const res = await fetch(
         getApiBaseUrl() + "/api/admin/vouchers",
@@ -496,7 +496,7 @@ export default function PromoManagement() {
   const handleDeleteVoucher = async (id: string) => {
     if (!confirm(promoConfig.vouchers.deleteConfirm)) return;
     try {
-      const { token } = await getSupabaseTokenAndSession();
+      const { token } = await getAuthTokenAndSession();
       const res = await fetch(
         getApiBaseUrl() + `/api/admin/vouchers?id=${id}`,
         {

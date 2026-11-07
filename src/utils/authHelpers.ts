@@ -1,5 +1,5 @@
 // src/utils/authHelpers.js
-import { supabase } from "@/lib/supabaseClient";
+import { mamekoClient } from "@/lib/mamekoClient";
 import { getApiBaseUrl } from "@/lib/apiClient";
 
 // --- HELPER INTERNAL (PRIVATE) ---
@@ -18,7 +18,7 @@ async function setSessionCookie(_accessToken: string) {
  * 1. Login dengan Email & Password
  */
 export const loginWithEmail = async (email: string, password: string) => {
-  const { data, error } = await supabase.auth.signInWithPassword({
+  const { data, error } = await mamekoClient.auth.signInWithPassword({
     email,
     password,
   });
@@ -41,7 +41,7 @@ export const loginWithEmail = async (email: string, password: string) => {
  * 2. Registrasi Akun Baru (Email & Password)
  */
 export const registerWithEmail = async (name: string, email: string, password: string) => {
-  const { data, error } = await supabase.auth.signUp({
+  const { data, error } = await mamekoClient.auth.signUp({
     email,
     password,
     options: {
@@ -70,7 +70,7 @@ export const registerWithEmail = async (name: string, email: string, password: s
  * 3. Login dengan Google Popup
  */
 export const loginWithGoogle = async () => {
-  const { data, error } = await supabase.auth.signInWithOAuth({
+  const { data, error } = await mamekoClient.auth.signInWithOAuth({
     provider: "google",
   });
 
@@ -82,7 +82,7 @@ export const loginWithGoogle = async () => {
 };
 
 /**
- * 4. Kirim Kode OTP via Email (Supabase Auth + Resend SMTP)
+ * 4. Kirim Kode OTP via Email (Mameko Auth + Resend SMTP)
  */
 export const sendEmailOtp = async (email: string) => {
   const cleanEmail = email.trim().toLowerCase();
@@ -92,7 +92,7 @@ export const sendEmailOtp = async (email: string) => {
 
   const redirectUrl = typeof window !== "undefined" ? `${window.location.origin}/auth/callback` : undefined;
 
-  const { data, error } = await supabase.auth.signInWithOtp({
+  const { data, error } = await mamekoClient.auth.signInWithOtp({
     email: cleanEmail,
     options: {
       emailRedirectTo: redirectUrl,
@@ -120,7 +120,7 @@ export const verifyEmailOtp = async (email: string, otpCode: string) => {
     throw new Error("Kode OTP harus terdiri dari 6 digit.");
   }
 
-  const { data, error } = await supabase.auth.verifyOtp({
+  const { data, error } = await mamekoClient.auth.verifyOtp({
     email: cleanEmail,
     token: cleanToken,
     type: "email",
@@ -149,14 +149,14 @@ export const verifyOtpAndLogin = verifyEmailOtp;
  * 6. Kirim Email Reset Password
  */
 export const resetPassword = async (email: string) => {
-  const { error } = await supabase.auth.resetPasswordForEmail(email);
+  const { error } = await mamekoClient.auth.resetPasswordForEmail(email);
   if (error) {
     throw error;
   }
 };
 
 /**
- * 7. Logout Pengguna (Hapus Cookie Sesi, Supabase Auth & Storage)
+ * 7. Logout Pengguna (Hapus Cookie Sesi, Auth Token & Storage)
  * Infallible direct logout: membersihkan cache seketika & menjamin redirect ke /login
  */
 let isLoggingOutInProgress = false;
@@ -170,10 +170,10 @@ export const logoutUser = async () => {
     if (typeof window !== "undefined") {
       try {
         sessionStorage.clear();
-        // Hapus token Supabase dari localStorage
+        // Hapus token auth dari localStorage
         for (let i = localStorage.length - 1; i >= 0; i--) {
           const key = localStorage.key(i);
-          if (key && (key.startsWith("sb-") || key.includes("supabase") || key.includes("auth"))) {
+          if (key && (key.startsWith("sb-") || key.includes("mameko") || key.includes("auth"))) {
             localStorage.removeItem(key);
           }
         }
@@ -190,7 +190,7 @@ export const logoutUser = async () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       }),
-      supabase.auth.signOut(),
+      mamekoClient.auth.signOut(),
     ]);
 
     await Promise.race([logoutNetworkWork, timeoutPromise]);

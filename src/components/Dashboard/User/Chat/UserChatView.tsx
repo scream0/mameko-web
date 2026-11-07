@@ -2,7 +2,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient";
+import { mamekoClient } from "@/lib/mamekoClient";
 import { AppIcon } from "@/components/UI/Icon/AppIcon";
 import toast from "react-hot-toast";
 import styles from "./UserChatView.module.css";
@@ -11,7 +11,13 @@ import { getApiBaseUrl } from "@/lib/apiClient";
 import { convertToWebP } from "@/utils/imageConverter";
 import { sanitizeUserError } from "@/utils/errorSanitizer";
 
-export default function UserChatView({ user }: { user: any }) {
+export default function UserChatView({
+  user,
+  onUnreadCountChange,
+}: {
+  user: any;
+  onUnreadCountChange?: (count: number) => void;
+}) {
   const searchParams = useSearchParams();
   const initialProductId = searchParams ? searchParams.get("productId") : null;
 
@@ -62,7 +68,7 @@ export default function UserChatView({ user }: { user: any }) {
     try {
       const {
         data: { session },
-      } = await supabase.auth.getSession();
+      } = await mamekoClient.auth.getSession();
       const token = session?.access_token;
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
@@ -93,7 +99,7 @@ export default function UserChatView({ user }: { user: any }) {
     try {
       const {
         data: { session },
-      } = await supabase.auth.getSession();
+      } = await mamekoClient.auth.getSession();
       const token = session?.access_token;
       const headers = {
         "Content-Type": "application/json",
@@ -124,70 +130,41 @@ export default function UserChatView({ user }: { user: any }) {
     try {
       const {
         data: { session },
-      } = await supabase.auth.getSession();
+      } = await mamekoClient.auth.getSession();
       const token = session?.access_token;
+      if (!token) return;
 
-      let fetchedData = null;
+      const res = await fetch(`${getApiBaseUrl()}/api/user/chats`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        cache: "no-store",
+      });
+      if (res.ok) {
+        const json = await res.json();
+        const fetchedData = Array.isArray(json?.data) ? json.data : [];
+        setMessages(fetchedData);
 
-      // 1. Prioritaskan API Backend Go
-      if (token) {
-        try {
-          const res = await fetch(`${getApiBaseUrl()}/api/user/chats`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-            cache: "no-store",
-          });
-          if (res.ok) {
-            const json = await res.json();
-            if (json?.data && Array.isArray(json.data)) {
-              fetchedData = json.data;
-            }
-          }
-        } catch (e) {
-          console.warn("[UserChat] Fetching from Go backend failed, fallback to Supabase:", e);
-        }
-      }
+        // Tandai pesan admin sebagai telah dibaca
+        const unreadAdminMsgIds = fetchedData
+          .filter((m: any) => m.sender_role === "admin" && !m.is_read)
+          .map((m: any) => m.id);
 
-      // 2. Fallback direct Supabase
-      if (!fetchedData) {
-        const { data, error } = await supabase
-          .from("chats")
-          .select("*")
-          .eq("user_id", userId)
-          .order("created_at", { ascending: true });
-
-        if (error) {
-          console.error("Gagal mengambil pesan Supabase:", error);
-          return;
-        }
-        fetchedData = data;
-      }
-
-      setMessages(fetchedData || []);
-
-      // Tandai pesan admin sebagai telah dibaca
-      const unreadAdminMsgIds = (fetchedData || [])
-        .filter((m: any) => m.sender_role === "admin" && !m.is_read)
-        .map((m: any) => m.id);
-
-      if (unreadAdminMsgIds.length > 0) {
-        if (token) {
+        if (unreadAdminMsgIds.length > 0) {
           fetch(`${getApiBaseUrl()}/api/user/chats/read`, {
-            method: "POST",
+            method: "PUT",
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
             },
-            body: JSON.stringify({ message_ids: unreadAdminMsgIds }),
+            body: JSON.stringify({ ids: unreadAdminMsgIds, message_ids: unreadAdminMsgIds }),
           }).catch(() => {});
+          if (onUnreadCountChange) {
+            onUnreadCountChange(0);
+          }
+        } else if (onUnreadCountChange) {
+          onUnreadCountChange(0);
         }
-
-        supabase
-          .from("chats")
-          .update({ is_read: true })
-          .in("id", unreadAdminMsgIds)
-          .then();
       }
     } catch (err) {
       console.error("Failed to fetch messages:", err);
@@ -205,9 +182,9 @@ export default function UserChatView({ user }: { user: any }) {
         sendHeartbeat();
       }, 15000);
 
-      // Realtime listener Supabase
+      // Realtime WebSocket listener
       const userId = user?.uid || user?.id;
-      const channel = supabase
+      const channel = mamekoClient
         .channel(`user-chat-${userId}`)
         .on(
           "postgres_changes",
@@ -219,27 +196,34 @@ export default function UserChatView({ user }: { user: any }) {
           },
           (payload) => {
             const incoming = payload.new;
-            setMessages((prev) => {
-              if (prev.some((m) => m.id === incoming.id)) return prev;
-              return [...prev, incoming];
-            });
+            if (incoming) {
+              setMessages((prev) => {
+                if (prev.some((m) => m.id === incoming.id)) return prev;
+                return [...prev, incoming];
+              });
 
-            if (incoming.sender_role === "admin") {
-              setIsAdminTyping(false);
-              supabase
-                .from("chats")
-                .update({ is_read: true })
-                .eq("id", incoming.id)
-                .then();
+              if (incoming.sender_role === "admin") {
+                setIsAdminTyping(false);
+                mamekoClient.auth.getSession().then(({ data: { session } }) => {
+                  if (session?.access_token) {
+                    fetch(`${getApiBaseUrl()}/api/user/chats/read`, {
+                      method: "PUT",
+                      headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${session.access_token}`,
+                      },
+                      body: JSON.stringify({ ids: [incoming.id], message_ids: [incoming.id] }),
+                    }).catch(() => {});
+                  }
+                });
+              }
             }
           }
         )
         .subscribe();
 
       // Realtime Typing & Presence Channel
-      const presenceChannel = supabase.channel(`presence-chat-${userId}`, {
-        config: { presence: { key: `user-${userId}` } },
-      });
+      const presenceChannel = mamekoClient.channel(`presence-chat-${userId}`);
 
       presenceChannel
         .on("presence", { event: "sync" }, () => {
@@ -272,9 +256,9 @@ export default function UserChatView({ user }: { user: any }) {
 
       return () => {
         clearInterval(pollInterval);
-        supabase.removeChannel(channel);
+        mamekoClient.removeChannel(channel);
         if (presenceChannelRef.current) {
-          supabase.removeChannel(presenceChannelRef.current);
+          mamekoClient.removeChannel(presenceChannelRef.current);
         }
       };
     }
@@ -340,8 +324,9 @@ export default function UserChatView({ user }: { user: any }) {
     try {
       const {
         data: { session },
-      } = await supabase.auth.getSession();
+      } = await mamekoClient.auth.getSession();
       const token = session?.access_token;
+      if (!token) throw new Error("Sesi Anda telah berakhir. Silakan masuk kembali.");
 
       // Upload gambar jika ada
       if (selectedFile) {
@@ -349,8 +334,9 @@ export default function UserChatView({ user }: { user: any }) {
         formData.append("file", selectedFile);
         formData.append("folder", "chats");
 
-        const uploadHeaders: Record<string, string> = {};
-        if (token) uploadHeaders["Authorization"] = `Bearer ${token}`;
+        const uploadHeaders: Record<string, string> = {
+          Authorization: `Bearer ${token}`,
+        };
 
         let uploadRes = await fetch(`${getApiBaseUrl()}/api/upload/image`, {
           method: "POST",
@@ -394,52 +380,26 @@ export default function UserChatView({ user }: { user: any }) {
         product_id: attachedProductId,
       };
 
-      // Kirim via Backend Go
-      let sentSuccess = false;
-      if (token) {
-        try {
-          const res = await fetch(`${getApiBaseUrl()}/api/user/chats`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify(payload),
-          });
-          if (res.ok) {
-            const json = await res.json();
-            if (json?.data) {
-              setMessages((prev) => [...prev, json.data]);
-              sentSuccess = true;
-            }
-          }
-        } catch {
-          // Fallback ke Supabase
-        }
+      const res = await fetch(`${getApiBaseUrl()}/api/user/chats`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.error || "Gagal mengirim pesan.");
       }
 
-      if (!sentSuccess) {
-        const { data, error } = await supabase
-          .from("chats")
-          .insert({
-            user_id: userId,
-            sender_role: "user",
-            message: effectiveText,
-            image_url: uploadedImageUrl,
-            reply_to_id: replyingToMessage ? replyingToMessage.id : null,
-            product_id: attachedProductId,
-            is_read: false,
-          })
-          .select()
-          .single();
-
-        if (error) throw error;
-        if (data) {
-          setMessages((prev) => {
-            if (prev.some((m) => m.id === data.id)) return prev;
-            return [...prev, data];
-          });
-        }
+      const json = await res.json();
+      if (json?.data) {
+        setMessages((prev) => {
+          if (prev.some((m) => m.id === json.data.id)) return prev;
+          return [...prev, json.data];
+        });
       }
 
       setNewMessage("");
@@ -484,8 +444,9 @@ export default function UserChatView({ user }: { user: any }) {
           <div className={styles.headerActions}>
             <button
               onClick={fetchMessages}
-              className={styles.attachBtn}
+              className={styles.headerActionBtn}
               title="Segarkan Chat"
+              aria-label="Segarkan Chat"
             >
               <AppIcon name="refresh-cw" size={16} />
             </button>

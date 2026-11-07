@@ -7,7 +7,7 @@ import toast from "react-hot-toast";
 import styles from "./ProductReviewsSection.module.css";
 import { AppIcon } from "@/components/UI/Icon/AppIcon";
 import { getApiBaseUrl } from "@/lib/apiClient";
-import { auth } from "@/lib/supabaseClient";
+import { auth } from "@/lib/mamekoClient";
 import reviewConfig from "@/data/ui/productReviewsConfig.json";
 import { optimizeCloudinaryUrl, IMAGE_PRESETS } from "@/utils/imageOptimizer";
 

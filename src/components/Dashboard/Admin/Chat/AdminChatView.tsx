@@ -1,7 +1,7 @@
 // @ts-nocheck
 "use client";
 import { useState, useEffect, useRef } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { mamekoClient } from "@/lib/mamekoClient";
 import toast from "react-hot-toast";
 import { AppIcon } from "@/components/UI/Icon/AppIcon";
 import styles from "./AdminChatView.module.css";
@@ -97,20 +97,20 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
     fetchUsers();
 
     // Safely clean up any lingering channels before creating new ones
-    const existingMessages = supabase
+    const existingMessages = mamekoClient
       .getChannels()
-      .find((c) => c.topic === "realtime:admin_public_chats");
+      .find((c) => c.topic === "admin_public_chats");
     if (existingMessages) {
-      supabase.removeChannel(existingMessages);
+      mamekoClient.removeChannel(existingMessages);
     }
-    const existingPresence = supabase
+    const existingPresence = mamekoClient
       .getChannels()
-      .find((c) => c.topic === "realtime:public:chats:presence");
+      .find((c) => c.topic === "public:chats:presence");
     if (existingPresence) {
-      supabase.removeChannel(existingPresence);
+      mamekoClient.removeChannel(existingPresence);
     }
 
-    const channel = supabase
+    const channel = mamekoClient
       .channel("admin_public_chats")
       .on(
         "postgres_changes",
@@ -118,16 +118,16 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
         (payload) => {
           if (payload.eventType === "INSERT") {
             const incoming = payload.new;
-            if (incoming.sender_role === "user") {
+            if (incoming?.sender_role === "user") {
               playNotificationSound();
             }
             // Update messages if the active chat matches
             setMessages((prev) => {
               const currentSelected = selectedUserRef.current;
-              if (currentSelected && incoming.user_id === currentSelected.id) {
+              if (currentSelected && incoming?.user_id === currentSelected.id) {
                 // If admin is viewing this chat, mark it as read immediately
                 if (incoming.sender_role === "user" && !incoming.is_read) {
-                  supabase.auth.getSession().then(({ data: { session } }) => {
+                  mamekoClient.auth.getSession().then(({ data: { session } }) => {
                     if (session?.access_token) {
                       fetch(getApiBaseUrl() + `/api/admin/chats/${incoming.user_id}/read`, {
                         method: "PUT",
@@ -149,18 +149,18 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
             fetchUsers();
           } else if (payload.eventType === "UPDATE") {
             const updated = payload.new;
-            setMessages((prev) =>
-              prev.map((m) => (m.id === updated.id ? { ...m, ...updated } : m))
-            );
+            if (updated) {
+              setMessages((prev) =>
+                prev.map((m) => (m.id === updated.id ? { ...m, ...updated } : m))
+              );
+            }
           }
         }
       )
       .subscribe();
 
     // Presence & Realtime typing
-    const presenceChannel = supabase.channel("public:chats:presence", {
-      config: { presence: { key: "admin_chat_view" } }
-    });
+    const presenceChannel = mamekoClient.channel("public:chats:presence");
 
     presenceChannel
       .on("presence", { event: "sync" }, () => {
@@ -175,7 +175,7 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
         setOnlineUsers(online);
       })
       .on("broadcast", { event: "typing" }, ({ payload }) => {
-        if (payload.role === "user" && selectedUserRef.current?.id === payload.userId) {
+        if (payload?.role === "user" && selectedUserRef.current?.id === payload.userId) {
           setIsTyping(true);
           clearTimeout(typingTimeoutRef.current);
           typingTimeoutRef.current = setTimeout(() => {
@@ -193,7 +193,7 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
 
     const sendAdminHeartbeat = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session } } = await mamekoClient.auth.getSession();
         if (session?.access_token) {
           fetch(getApiBaseUrl() + "/api/heartbeat", {
             method: "POST",
@@ -211,9 +211,9 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
 
     return () => {
       clearInterval(heartbeatTimer);
-      supabase.removeChannel(channel);
+      mamekoClient.removeChannel(channel);
       if (presenceChannelRef.current) {
-        supabase.removeChannel(presenceChannelRef.current);
+        mamekoClient.removeChannel(presenceChannelRef.current);
       }
     };
   }, []);
@@ -225,7 +225,7 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
       // Check user online status via backend in case user is on mobile app
       const checkUserStatus = async () => {
         try {
-          const { data: { session } } = await supabase.auth.getSession();
+          const { data: { session } } = await mamekoClient.auth.getSession();
           if (session?.access_token) {
             const res = await fetch(getApiBaseUrl() + `/api/admin/chats/${selectedUser.id}/status`, {
               headers: { Authorization: `Bearer ${session.access_token}` },
@@ -256,7 +256,7 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
 
   const fetchUsers = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await mamekoClient.auth.getSession();
       const token = session?.access_token;
       if (!token) return;
 
@@ -296,7 +296,7 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
 
   const fetchMessages = async (userId: any) => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await mamekoClient.auth.getSession();
       const token = session?.access_token;
       if (!token) return;
 
@@ -370,7 +370,7 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
     setIsUploading(true);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await mamekoClient.auth.getSession();
       const token = session?.access_token;
       if (!token) throw new Error("Unauthenticated");
 
@@ -434,7 +434,16 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
       {/* Sidebar Users */}
       <div className={styles.sidebar}>
         <div className={styles.sidebarHeader}>
-          {adminChatConfig.sidebarHeader}
+          <span>{adminChatConfig.sidebarHeader}</span>
+          <button
+            type="button"
+            onClick={fetchUsers}
+            className={styles.sidebarRefreshBtn}
+            title="Segarkan Percakapan"
+            aria-label="Segarkan Percakapan"
+          >
+            <AppIcon name="refresh-cw" size={14} />
+          </button>
         </div>
         <div className={styles.userList}>
           {users.length === 0 ? (
@@ -527,6 +536,20 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
                   {onlineUsers.has(selectedUser.id) ? adminChatConfig.online : adminChatConfig.offline}
                 </span>
               </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  fetchUsers();
+                  if (selectedUser) fetchMessages(selectedUser.id);
+                }}
+                className={styles.refreshHeaderBtn}
+                title="Segarkan Chat"
+                aria-label="Segarkan Chat"
+              >
+                <AppIcon name="refresh-cw" size={14} />
+                <span>Segarkan</span>
+              </button>
             </div>
             <div ref={chatContainerRef} className={styles.messagesList}>
               {messages.map((m) => {

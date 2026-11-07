@@ -1,0 +1,18 @@
+{
+  "content": {
+    "errorCode": "500",
+    "title": "Terjadi Kendala Teknis",
+    "subtitle": "Kenyamanan Anda adalah prioritas kami.",
+    "description": "Layanan sedang mengalami kendala sesaat saat memuat halaman ini. Kami telah mencatat kejadian ini agar segera diselaraskan.",
+    "subtext": "Silakan coba muat ulang halaman ini atau kembali ke beranda utama."
+  },
+  "buttons": {
+    "retry": "Coba Lagi",
+    "backHome": "Kembali ke Beranda",
+    "homeHref": "/"
+  },
+  "toasts": {
+    "retryFailed": "Gagal memulihkan halaman. Silakan coba kembali sesaat lagi."
+  }
+}
+

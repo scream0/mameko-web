@@ -32,6 +32,12 @@ Segala bentuk string di bawah ini adalah **pelanggaran kritis** apabila sampai t
    - Web/JS: `TypeError: Failed to fetch`, `TypeError: supabase.auth.updateUser is not a function`, `SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON`
    - Golang/Upstream: `Post "https://api.resend.com/emails": context deadline exceeded`, body mentah dari Midtrans/Biteship/Cloudinary
 5. **Stacktrace, Path File Server, atau Nama Tabel/Kolom Internal**.
+6. **File Mentah & Dump Output**:
+   - Pengguna dilarang menerima atau dipaksa mengunduh file mentah (seperti file `.json`, `.sql`, `.log`, `.txt`, `.tmp`, atau crash memory dump) saat terjadi kegagalan proses.
+   - Endpoint maupun handler dilarang menghasilkan browser file download dialog saat permintaan gagal; wajib mengembalikan representasi visual anggun di halaman atau toast ter-sanitasi.
+7. **Tautan Rusak & Navigasi 404 Tak Terkendali (Dead-End Notification Routing)**:
+   - Dilarang keras menavigasikan pengguna ke rute yang belum terdaftar atau tautan relatif tak valid (seperti `order/ORD-xxx` tanpa leading slash atau rute yang tidak dikenali Next.js App Router).
+   - Seluruh tautan notifikasi wajib melalui resolver kanonikal dengan failover aman ke dashboard.
 
 ---
 
@@ -138,6 +144,21 @@ catch (err: any) {
 2. **Kepatuhan Zero Hardcode Web**:
    - Seluruh teks fallback error wajib diambil dari `src/data/ui/common.json` atau file JSON fitur terkait (mematuhi `mameko-web-dev`).
 
+### C. Mandat Next.js App Router Error Boundaries (`error.tsx` & `global-error.tsx`)
+1. Setiap crash rendering atau error tak tertangani di tingkat komponen client/server **WAJIB** dicegah bocor ke layar browser menggunakan `src/app/error.tsx` dan `src/app/global-error.tsx`.
+2. Halaman error boundary wajib:
+   - Menyajikan desain visual editorial mewah berstandar Mameko (bukan default React error overlay).
+   - Menghilangkan kode stacktrace dan detail exception dari mata pengguna.
+   - Menyediakan tombol pemulihan interaktif ("Coba Lagi" via fungsi `reset()`) dan tautan kembali ke Beranda (`/`).
+   - Mengambil seluruh copy teks dari `src/data/ui/common.json`.
+
+### D. Standar Keamanan Link Notifikasi (Zero 404 Linking)
+1. **Pencegahan Tautan Relatif Mentah**:
+   - Dilarang langsung memanggil `router.push(notification.link)` tanpa normalisasi.
+   - Pola format backend seperti `"order/" + orderNumber` wajib ditransformasikan melalui helper kanonikal `resolveCanonicalNotificationUrl` menjadi `/dashboard/order-detail?id=${orderNumber}` atau `/dashboard?tab=orders`.
+2. **Fallback Safety Guard**:
+   - Jika `link` bernilai `null`, kosong, atau tidak cocok dengan rute Next.js manapun, router wajib mengarahkan pengguna ke tab aman di `/dashboard` sesuai kategori notifikasi (bukan membiarkan router membuka path rusak yang memicu halaman 404).
+
 ---
 
 ## 6. Checklist Audit Wajib Sebelum Rilis
@@ -148,4 +169,6 @@ Sebelum menyatakan tugas selesai, pastikan seluruh poin berikut terpenuhi:
 - [ ] Tidak ada `response.errorBody()?.string()` di `mameko-app` yang langsung dilempar ke `Exception(...)` tanpa melalui `ApiErrorParser`.
 - [ ] `UiText` memiliki guard anti-JSON dan anti-exception sehingga komponen Compose mustahil merender `{...}` ke layar.
 - [ ] Tidak ada `toast.error(err.message)` atau `setError(err.message)` mentah di `mameko-web` tanpa `sanitizeUserError(...)`.
+- [ ] `src/app/error.tsx` dan `src/app/global-error.tsx` aktif dan terverifikasi menangkap unhandled error tanpa menampilkan dump teknis atau file mentah.
+- [ ] Seluruh klik notifikasi (order, retur, promo, wallet) berhasil diarahkan ke rute kanonikal yang valid tanpa pernah memicu 404 Page Not Found.
 - [ ] Saat internet diputus, server mati (`502`), atau input tidak valid (`400`/`401`/`429`), pesan yang muncul di layar selalu menggunakan bahasa Indonesia yang sopan, singkat, dan jelas langkah perbaikannya.

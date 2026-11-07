@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import styles from "./OrdersSection.module.css";
 import ordersConfig from "@/data/ui/ordersConfig.json";
-import { auth, db } from "@/lib/supabaseClient";
+import { auth, db } from "@/lib/mamekoClient";
 import { shouldSkipAuthEvent } from "@/utils/authHelpers";
 import toast from "react-hot-toast";
 import { useStore } from "@/context/StoreContext";
@@ -12,7 +12,6 @@ import { OrdersSkeleton } from "@/components/UI/Skeleton/SkeletonLayouts";
 import { formatAddressDisplay } from "@/utils/address";
 import { sortOrdersByNewestFirst } from "./orderSorting";
 import { useRouter, useSearchParams } from "next/navigation";
-import ReturnsCenter from "@/components/Dashboard/User/Returns/ReturnsCenter"; // Sesuaikan path jika berbeda
 import ConfirmationModal from "@/components/UI/Modal/ConfirmationModal";
 import { getApiBaseUrl } from "@/lib/apiClient";
 import { convertToWebP } from "@/utils/imageConverter";
@@ -85,8 +84,6 @@ function formatOrderDoc(item: any, primaryAddress: any) {
       item.paymentType ||
       ordersConfig.card.defaultPaymentMethod,
     shippingAddress: formattedAddress,
-    return_status: item.return_status || item.returnStatus || "",
-    return_admin_note: item.return_admin_note || item.returnAdminNote || "",
     waybill_id: item.waybill_id || item.waybillId || null,
     shipping_detail: item.shipping_detail || item.shippingDetail || null,
     updated_at: item.updated_at || item.updatedAt || null,
@@ -99,13 +96,13 @@ export default function OrdersSection() {
   const statusParam = searchParams.get("status") || searchParams.get("filter");
 
   const [filter, setFilter] = useState(
-    statusParam && ["all", "pending", "unpaid", "processing", "shipping", "shipped", "delivered", "completed", "cancelled", "history", "return"].includes(statusParam)
+    statusParam && ["all", "pending", "unpaid", "processing", "shipping", "shipped", "delivered", "completed", "cancelled", "history"].includes(statusParam)
       ? statusParam === "completed" ? "delivered" : statusParam
       : "all"
   );
 
   useEffect(() => {
-    if (statusParam && ["all", "pending", "unpaid", "processing", "shipping", "shipped", "delivered", "completed", "cancelled", "history", "return"].includes(statusParam)) {
+    if (statusParam && ["all", "pending", "unpaid", "processing", "shipping", "shipped", "delivered", "completed", "cancelled", "history"].includes(statusParam)) {
       setFilter(statusParam === "completed" ? "delivered" : statusParam);
     }
   }, [statusParam]);
@@ -317,24 +314,19 @@ export default function OrdersSection() {
     const pending = orders.filter((o) => ["pending", "unpaid"].includes(o.status)).length;
     const processing = orders.filter((o) => ["paid", "success", "processing", "settlement", "capture", "verifying"].includes(o.status)).length;
     const shipping = orders.filter((o) => ["shipping", "shipped"].includes(o.status)).length;
-    const history = orders.filter((o) => ["completed", "delivered", "cancelled", "canceled", "return_requested", "returning", "returned", "return_rejected"].includes(o.status)).length;
-    const returnCount = orders.filter((o) =>
-      ["return_requested", "returning", "returned", "return_rejected"].includes(o.status) ||
-      Boolean(o.return_status)
-    ).length;
+    const history = orders.filter((o) => ["completed", "delivered", "cancelled", "canceled"].includes(o.status)).length;
 
-    return { total, pending, processing, shipping, history, returnCount };
+    return { total, pending, processing, shipping, history };
   }, [orders]);
 
   const filterTabs = useMemo(() => {
-    const tabs = ordersConfig.filterTabs || [
+    const tabs = (ordersConfig.filterTabs || [
       { key: "all", label: "Semua", icon: "grid" },
       { key: "pending", label: "Belum Bayar", icon: "wallet" },
       { key: "processing", label: "Sedang Dikemas", icon: "package" },
       { key: "shipping", label: "Dikirim", icon: "truck" },
       { key: "history", label: "Riwayat Pesanan", icon: "clock" },
-      { key: "return", label: "Retur", icon: "rotate-ccw" },
-    ];
+    ]).filter((t) => t.key !== "return");
 
     return tabs.map((tab) => {
       let count = 0;
@@ -343,7 +335,6 @@ export default function OrdersSection() {
       else if (tab.key === "processing") count = orderStats.processing;
       else if (tab.key === "shipping") count = orderStats.shipping;
       else if (tab.key === "history") count = orderStats.history;
-      else if (tab.key === "return") count = orderStats.returnCount;
       return { ...tab, count };
     });
   }, [orderStats]);
@@ -860,12 +851,8 @@ export default function OrdersSection() {
         </div>
       </div>
 
-      {/* Tampilan Kondisional: Jika tab "return" diklik, tampilkan ReturnsCenter */}
-      {filter === "return" ? (
-        <ReturnsCenter onNavigateOrders={() => setFilter("all")} />
-      ) : (
-        /* Orders List Container */
-        <div className={styles.ordersListContainer}>
+      {/* Orders List Container */}
+      <div className={styles.ordersListContainer}>
           {loading ? (
             <OrdersSkeleton count={3} />
           ) : filteredOrders.length === 0 ? (
@@ -915,28 +902,6 @@ export default function OrdersSection() {
                     )}
                     <p className={styles.orderNotes}>{ordersConfig.card.notesPrefix || "Catatan: "}{order.notes}</p>
                     <p className={styles.orderDate}>{ordersConfig.card.datePrefix || "Tanggal: "}{order.date}</p>
-
-                    {/* Return Status Info */}
-                    {order.return_status && (
-                      <div className={`${styles.returnStatusBanner} ${
-                        order.return_status === 'approved'
-                          ? styles.returnStatusBannerApproved
-                          : order.return_status === 'rejected'
-                          ? styles.returnStatusBannerRejected
-                          : styles.returnStatusBannerPending
-                      }`}>
-                        <strong>
-                          {order.return_status === 'approved'
-                            ? (ordersConfig.returnStatus?.approved?.banner || '✅ Return Disetujui')
-                            : order.return_status === 'rejected'
-                            ? (ordersConfig.returnStatus?.rejected?.banner || '❌ Return Ditolak')
-                            : (ordersConfig.returnStatus?.pending?.banner || '⏳ Return Sedang Diproses')}
-                        </strong>
-                        {order.return_admin_note && (
-                          <span className={styles.returnStatusNote}> — {order.return_admin_note}</span>
-                        )}
-                      </div>
-                    )}
 
                     {isFinished && (
                       <div className={styles.perItemReviewRow}>
@@ -1027,8 +992,7 @@ export default function OrdersSection() {
               </button>
             </div>
           )}
-        </div>
-      )}
+      </div>
 
       {/* --- MODAL ULASAN PRODUK DENGAN UPLOAD GAMBAR CLOUDINARY --- */}
       {reviewModalOrder && reviewTargetItem && (

@@ -3,7 +3,7 @@
 import { getApiBaseUrl } from "@/lib/apiClient";
 import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient";
+import { mamekoClient } from "@/lib/mamekoClient";
 import { shouldSkipAuthEvent } from "@/utils/authHelpers";
 import { useStore } from "@/context/StoreContext";
 import toast from "react-hot-toast";
@@ -171,7 +171,7 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     const initAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await mamekoClient.auth.getSession();
       lastUserIdRef.current = session?.user?.id || null;
       const user = session?.user || null;
       setCurrentUser(user);
@@ -214,7 +214,7 @@ export default function CheckoutPage() {
       })
       .catch((err) => console.error("Failed to load settings:", err));
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = mamekoClient.auth.onAuthStateChange((event, session) => {
       if (shouldSkipAuthEvent(event, session, lastUserIdRef.current)) return;
       lastUserIdRef.current = session?.user?.id || null;
 
@@ -294,7 +294,7 @@ export default function CheckoutPage() {
     const loadAddressesAndProfile = async () => {
       setAddressLoading(true);
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session } } = await mamekoClient.auth.getSession();
         const apiBase = getApiBaseUrl();
         const headers = session?.access_token
           ? { Authorization: `Bearer ${session.access_token}` }
@@ -375,7 +375,7 @@ export default function CheckoutPage() {
 
     setSavingAddress(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await mamekoClient.auth.getSession();
       const isPrimary = addressForm.isPrimary || addresses.length === 0;
       const payload = {
         recipientName: addressForm.recipientName,

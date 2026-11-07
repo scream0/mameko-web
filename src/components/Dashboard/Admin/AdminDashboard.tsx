@@ -27,7 +27,7 @@ import dynamic from "next/dynamic";
 import adminConfig from "@/data/ui/adminConfig.json";
 import analyticsConfig from "@/data/ui/analyticsConfig.json";
 import overviewConfig from "@/data/ui/overviewConfig.json";
-import { supabase } from "@/lib/supabaseClient";
+import { mamekoClient } from "@/lib/mamekoClient";
 import { Logo } from "@/components/UI/Logo/logo";
 
 const AnalyticsChart = dynamic(() => import("@/components/Dashboard/Admin/Analytics/AnalyticsChart"), {
@@ -151,7 +151,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (!user || !isAdmin || activeTab === "chat") return;
 
-    const presenceChannel = supabase.channel("public:chats:presence", {
+    const presenceChannel = mamekoClient.channel("public:chats:presence", {
       config: { presence: { key: `admin_${user.id || "current"}` } },
     });
 
@@ -167,7 +167,7 @@ export default function AdminDashboard() {
     });
 
     return () => {
-      supabase.removeChannel(presenceChannel);
+      mamekoClient.removeChannel(presenceChannel);
     };
   }, [user, isAdmin, activeTab]);
 
@@ -225,7 +225,7 @@ export default function AdminDashboard() {
     const startedAt = performance.now();
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await mamekoClient.auth.getSession();
       const token = session?.access_token;
       const res = await fetch(getApiBaseUrl() + "/api/admin/orders?status=pending,paid,processing,verifying&page=1&limit=1", {
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
@@ -266,7 +266,7 @@ export default function AdminDashboard() {
     const intervalId = window.setInterval(() => fetchStoreStatus(isDisposedObj), 30000);
 
     // Realtime badge updates for orders
-    const ordersChannel = supabase
+    const ordersChannel = mamekoClient
       .channel("admin-dashboard-orders-badge")
       .on(
         "postgres_changes",
@@ -280,7 +280,7 @@ export default function AdminDashboard() {
     return () => {
       isDisposedObj.current = true;
       window.clearInterval(intervalId);
-      supabase.removeChannel(ordersChannel);
+      mamekoClient.removeChannel(ordersChannel);
     };
   }, [isAdmin, user]);
 
@@ -321,7 +321,7 @@ export default function AdminDashboard() {
 
     const fetchUnreadCount = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session } } = await mamekoClient.auth.getSession();
         const token = session?.access_token;
         if (!token) return;
 
@@ -347,14 +347,14 @@ export default function AdminDashboard() {
 
     fetchUnreadCount(); // initial fetch langsung tanpa debounce
 
-    const channel = supabase
+    const channel = mamekoClient
       .channel("admin_dashboard_chat_badge")
       .on("postgres_changes", { event: "*", schema: "public", table: "chats" }, debouncedFetch)
       .subscribe();
 
     return () => {
       clearTimeout(debounceTimer);
-      supabase.removeChannel(channel);
+      mamekoClient.removeChannel(channel);
     };
   }, [isAdmin]);
 
@@ -364,7 +364,7 @@ export default function AdminDashboard() {
 
     const fetchUnreadNotifications = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session } } = await mamekoClient.auth.getSession();
         const token = session?.access_token;
         if (!token) return;
 
@@ -389,14 +389,14 @@ export default function AdminDashboard() {
 
     fetchUnreadNotifications();
 
-    const channel = supabase
+    const channel = mamekoClient
       .channel("admin_dashboard_notifications_badge")
       .on("postgres_changes", { event: "*", schema: "public", table: "notifications" }, debouncedFetch)
       .subscribe();
 
     return () => {
       clearTimeout(debounceTimer);
-      supabase.removeChannel(channel);
+      mamekoClient.removeChannel(channel);
     };
   }, [isAdmin]);
 

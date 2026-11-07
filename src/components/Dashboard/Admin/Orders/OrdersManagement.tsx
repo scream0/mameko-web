@@ -4,7 +4,7 @@ import { getApiBaseUrl } from "@/lib/apiClient";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import toast from "react-hot-toast";
-import { auth, db } from "@/lib/supabaseClient";
+import { auth, db } from "@/lib/mamekoClient";
 import styles from "./OrdersManagement.module.css";
 import { Logo } from "@/components/UI/Logo/logo";
 import adminOrdersConfig from "@/data/ui/adminOrdersConfig.json";
@@ -1147,7 +1147,7 @@ export default function OrdersManagement({ onOrderUpdate }: any) {
               )}
 
               {/* TAHAP D: FINAL (DELIVERED / CANCELLED) */}
-              {["delivered", "cancelled", "returned"].includes(orderStatus) && (
+              {["delivered", "cancelled"].includes(orderStatus) && (
                 <p className={`${styles.actionBoxDesc} ${styles.actionBoxDescMuted}`}>
                   Pesanan telah berada pada status final ({orderStatus === "delivered" ? "Selesai" : "Dibatalkan"}). Tidak diperlukan tindakan operasional lebih lanjut.
                 </p>

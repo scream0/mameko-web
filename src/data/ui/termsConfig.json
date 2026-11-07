@@ -1,14 +1,14 @@
 {
   "metadata": {
     "title": "Syarat & Ketentuan | Mameko",
-    "description": "Syarat dan Ketentuan Transaksi serta Penggunaan Layanan Make Me Kool (Mameko). Pelajari aturan pemesanan, pembayaran, pengiriman, dan kebijakan retur kami."
+    "description": "Syarat dan Ketentuan Transaksi serta Penggunaan Layanan Make Me Kool (Mameko). Pelajari aturan pemesanan, pembayaran, pengiriman, dan kebijakan produk non-refundable kami."
   },
   "badge": "Perjanjian Layanan",
   "defaults": {
     "title": "Syarat & Ketentuan",
     "subtitle": "Panduan dan perjanjian hukum yang mengikat dalam setiap transaksi dan penggunaan platform Make Me Kool.",
-    "lastUpdated": "7 Oktober 2026",
-    "summary": "Dengan melakukan pemesanan atau menggunakan platform Make Me Kool (Mameko), Anda menyetujui seluruh ketentuan pemesanan, verifikasi pembayaran Midtrans, pengiriman logistik, serta kewajiban menyertakan video unboxing utuh untuk setiap klaim garansi produk."
+    "lastUpdated": "7 November 2026",
+    "summary": "Dengan melakukan pemesanan atau menggunakan platform Make Me Kool (Mameko), Anda menyetujui seluruh ketentuan pemesanan, verifikasi pembayaran Midtrans, pengiriman logistik, serta kebijakan bahwa seluruh pembelian produk bersifat final (Non-Refundable & Non-Returnable)."
   },
   "toc": {
     "general": "1. Ketentuan Umum & Akun",
@@ -16,7 +16,7 @@
     "orders": "3. Pemesanan & Harga",
     "payment": "4. Pembayaran & Batas Waktu",
     "shipping": "5. Pengiriman & Logistik",
-    "returns": "6. Kebijakan Retur & Komplain",
+    "returns": "6. Kebijakan Non-Refundable",
     "ip": "7. Hak Kekayaan Intelektual",
     "adminClause": "8. Ketentuan Khusus Toko",
     "liability": "9. Batasan Tanggung Jawab & Hukum",
@@ -107,24 +107,24 @@
       ]
     },
     "returns": {
-      "title": "Kebijakan Retur, Komplain, & Refund",
-      "intro": "Kepuasan Anda adalah prioritas kami. Jika Anda menerima barang yang salah, kurang, atau rusak selama pengiriman:",
+      "title": "Kebijakan Produk Non-Refundable (Semua Pembelian Bersifat Final)",
+      "intro": "Demi menjaga standar higienitas, keaslian formulasi artisanal, dan integritas produk parfum kami, seluruh transaksi pembelian di Mameko bersifat final:",
       "unboxingCallout": {
-        "title": "Syarat Mutlak: Video Unboxing Utuh",
-        "desc": "Komplain kerusakan atau kekurangan barang hanya dapat diproses apabila disertai rekaman video unboxing utuh tanpa jeda (tanpa cut/edit), mulai dari resi fisik masih utuh tertempel hingga produk dikeluarkan dari kemasan pembungkus."
+        "title": "Ketentuan Mutlak: Non-Refundable & Non-Returnable",
+        "desc": "Produk yang telah dibeli, dibayar, dan diproses tidak dapat dikembalikan (non-returnable), ditukar varian aroma, maupun diajukan pengembalian dana (non-refundable) dengan alasan perubahan pikiran atau ketidakcocokan preferensi aroma pribadi."
       },
       "items": [
         {
-          "label": "Batas Waktu Pengajuan:",
-          "desc": "Komplain wajib diajukan maksimal 2x24 jam sejak status resi dinyatakan \"Delivered\" oleh pihak kurir."
+          "label": "Pemeriksaan Kualitas Ketat:",
+          "desc": "Setiap botol dan kemasan produk telah melewati inspeksi kendali mutu (Quality Control) berlapis serta dikemas dengan pelindung ekstra aman sebelum diserahkan kepada pihak ekspedisi."
         },
         {
-          "label": "Kondisi Barang:",
-          "desc": "Barang yang diretur wajib berada dalam kondisi belum terpakai, belum dicuci, dan segel/label produk masih utuh."
+          "label": "Ketelitian Sebelum Membeli:",
+          "desc": "Pembeli wajib membaca deskripsi notes aroma, konsentrasi, dan ukuran varian secara saksama sebelum menyelesaikan pembayaran."
         },
         {
-          "label": "Solusi Komplain:",
-          "desc": "Mameko akan memberikan solusi berupa pengiriman produk pengganti (dengan ongkir ditanggung pihak kami) atau pengembalian dana (refund) sesuai kesepakatan bersama."
+          "label": "Bantuan Layanan Pelanggan:",
+          "desc": "Apabila Anda membutuhkan konsultasi pemilihan varian aroma sebelum membeli, silakan hubungi tim kami melalui fitur Chat Admin."
         }
       ]
     },
@@ -169,8 +169,8 @@
     },
     {
       "id": "kebijakan-retur",
-      "title": "6. Kebijakan Retur, Komplain, & Refund",
-      "content": "Kepuasan Anda adalah prioritas kami. Jika Anda menerima barang yang salah, kurang, atau rusak selama pengiriman:\n- Syarat Mutlak: Video Unboxing Utuh tanpa jeda (tanpa cut/edit), mulai dari resi fisik masih utuh tertempel hingga produk dikeluarkan dari kemasan pembungkus.\n- Batas Waktu Pengajuan: Komplain wajib diajukan maksimal 2x24 jam sejak status resi dinyatakan \"Delivered\" oleh pihak kurir.\n- Kondisi Barang: Barang yang diretur wajib berada dalam kondisi belum terpakai, belum dicuci, dan segel/label produk masih utuh.\n- Solusi Komplain: Mameko akan memberikan solusi berupa pengiriman produk pengganti (dengan ongkir ditanggung pihak kami) atau pengembalian dana (refund) sesuai kesepakatan bersama."
+      "title": "6. Kebijakan Produk Non-Refundable (Semua Pembelian Bersifat Final)",
+      "content": "Demi menjaga standar higienitas, keaslian formulasi artisanal, dan integritas produk parfum kami, seluruh transaksi pembelian di Mameko bersifat final:\n- Ketentuan Mutlak: Produk yang telah dibeli, dibayar, dan diproses tidak dapat dikembalikan (non-returnable), ditukar varian aroma, maupun diajukan pengembalian dana (non-refundable).\n- Pemeriksaan Kualitas Ketat: Setiap botol dan kemasan produk telah melewati inspeksi kendali mutu (Quality Control) berlapis serta dikemas dengan pelindung ekstra aman sebelum diserahkan kepada pihak ekspedisi.\n- Ketelitian Sebelum Membeli: Pembeli wajib membaca deskripsi notes aroma, konsentrasi, dan ukuran varian secara saksama sebelum menyelesaikan pembayaran.\n- Bantuan Layanan Pelanggan: Apabila Anda membutuhkan konsultasi pemilihan varian aroma sebelum membeli, silakan hubungi tim kami melalui fitur Chat Admin."
     },
     {
       "id": "hak-cipta",

@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import styles from "./OverviewUser.module.css";
-import { auth, db } from "@/lib/supabaseClient";
+import { auth, db } from "@/lib/mamekoClient";
 import { useStore } from "@/context/StoreContext";
 import { getDiscountedPrice } from "@/utils/promo";
 import { shouldSkipAuthEvent } from "@/utils/authHelpers";
@@ -44,7 +44,7 @@ export default function OverviewUser({ setActiveTab }) {
   const [loading, setLoading] = useState(true);
   const lastUserIdRef = useRef(null);
 
-  // State untuk sesi & user Supabase
+  // State untuk sesi & user
   const [currentSession, setCurrentSession] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
 

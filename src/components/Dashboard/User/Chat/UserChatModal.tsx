@@ -1,7 +1,7 @@
 // @ts-nocheck
 "use client";
 import { useState, useEffect, useRef } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { mamekoClient } from "@/lib/mamekoClient";
 import { AppIcon } from "@/components/UI/Icon/AppIcon";
 import { useScrollLock } from "@/hooks/useScrollLock";
 import toast from "react-hot-toast";
@@ -35,7 +35,7 @@ export default function UserChatModal({ isOpen, onClose, user }: any) {
     try {
       const {
         data: { session },
-      } = await supabase.auth.getSession();
+      } = await mamekoClient.auth.getSession();
       const token = session?.access_token;
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
@@ -66,7 +66,7 @@ export default function UserChatModal({ isOpen, onClose, user }: any) {
     try {
       const {
         data: { session },
-      } = await supabase.auth.getSession();
+      } = await mamekoClient.auth.getSession();
       const token = session?.access_token;
       const headers = {
         "Content-Type": "application/json",
@@ -101,7 +101,7 @@ export default function UserChatModal({ isOpen, onClose, user }: any) {
         sendHeartbeat();
       }, 15000);
 
-      const channel = supabase
+      const channel = mamekoClient
         .channel("public:chats:user")
         .on(
           "postgres_changes",
@@ -128,7 +128,7 @@ export default function UserChatModal({ isOpen, onClose, user }: any) {
         )
         .subscribe();
 
-      const presenceChannel = supabase.channel("public:chats:presence", {
+      const presenceChannel = mamekoClient.channel("public:chats:presence", {
         config: { presence: { key: user.uid || user.id } },
       });
       presenceChannelRef.current = presenceChannel;
@@ -169,8 +169,8 @@ export default function UserChatModal({ isOpen, onClose, user }: any) {
 
       return () => {
         clearInterval(pollInterval);
-        supabase.removeChannel(channel);
-        supabase.removeChannel(presenceChannel);
+        mamekoClient.removeChannel(channel);
+        mamekoClient.removeChannel(presenceChannel);
       };
     }
   }, [isOpen, user]);
@@ -205,7 +205,7 @@ export default function UserChatModal({ isOpen, onClose, user }: any) {
     try {
       const {
         data: { session },
-      } = await supabase.auth.getSession();
+      } = await mamekoClient.auth.getSession();
       const token = session?.access_token;
       if (!token) return;
 
@@ -293,7 +293,7 @@ export default function UserChatModal({ isOpen, onClose, user }: any) {
     try {
       const {
         data: { session },
-      } = await supabase.auth.getSession();
+      } = await mamekoClient.auth.getSession();
       const token = session?.access_token;
       if (!token) throw new Error("Unauthenticated");
 

@@ -5,7 +5,7 @@ import { useState, useEffect, useMemo } from "react";
 import styles from "./TransactionTable.module.css";
 import toast from "react-hot-toast";
 import overviewConfig from "@/data/ui/overviewConfig.json";
-import { auth, supabase } from "@/lib/supabaseClient";
+import { auth, mamekoClient } from "@/lib/mamekoClient";
 
 const ORDERS_PER_PAGE = 15;
 
@@ -70,7 +70,7 @@ export default function TransactionTable() {
       }, 500);
     };
 
-    const channel = supabase
+    const channel = mamekoClient
       .channel("overview-transactions-updates")
       .on(
         "postgres_changes",
@@ -81,7 +81,7 @@ export default function TransactionTable() {
 
     return () => {
       clearTimeout(debounceTimer);
-      supabase.removeChannel(channel);
+      mamekoClient.removeChannel(channel);
     };
   }, []);
 

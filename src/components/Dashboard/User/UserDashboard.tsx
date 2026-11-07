@@ -5,7 +5,7 @@ import { useStore } from "@/context/StoreContext";
 import { useTheme } from "@/context/ThemeContext";
 import styles from "./UserDashboard.module.css";
 import { useUserDashboardData } from "@/hooks/useUserDashboardData";
-import { auth } from "@/lib/supabaseClient";
+import { auth } from "@/lib/mamekoClient";
 import { logoutUser } from "@/utils/authHelpers";
 import toast from "react-hot-toast";
 import { getApiBaseUrl } from "@/lib/apiClient";
@@ -70,6 +70,7 @@ export default function UserDashboard({ user }) {
   const searchParams = useSearchParams();
   const { userName, loading, error, retry } = useUserDashboardData();
   const [notificationCount, setNotificationCount] = useState(0);
+  const [unreadChatCount, setUnreadChatCount] = useState(0);
   const { theme, toggleTheme, isThemeReady } = useTheme();
 
   const { isCartOpen, setIsCartOpen, cartQuantity, addToCart, rupiah } = useStore();
@@ -84,8 +85,6 @@ export default function UserDashboard({ user }) {
   // Tentukan active tab secara aman tanpa memicu redirect paksa di awal
   const activeTab = currentTabParam === "wallet"
     ? "profile"
-    : currentTabParam === "returns"
-    ? "orders"
     : VALID_TABS.includes(currentTabParam)
     ? currentTabParam
     : DEFAULT_TAB;
@@ -93,8 +92,6 @@ export default function UserDashboard({ user }) {
   useEffect(() => {
     if (currentTabParam === "wallet") {
       router.replace("/dashboard?tab=profile");
-    } else if (currentTabParam === "returns") {
-      router.replace("/dashboard?tab=orders");
     }
   }, [currentTabParam, router]);
 
@@ -132,9 +129,13 @@ export default function UserDashboard({ user }) {
         }
 
         if (!isDisposed) {
-          const unreadCount = (result.notifications || []).filter(
-            (notification: any) => !notification.is_read
-          ).length;
+          const unreadCount = (result.notifications || [])
+            .filter((notification: any) => {
+              const t = (notification.type || "").toLowerCase();
+              const l = (notification.link || "").toLowerCase();
+              const isChat = t.startsWith("chat") || l.includes("tab=chat") || l.includes("/chat");
+              return !isChat && !notification.is_read;
+            }).length;
           setNotificationCount(unreadCount);
         }
       } catch {
@@ -146,8 +147,77 @@ export default function UserDashboard({ user }) {
 
     loadNotificationCount();
 
+    // Realtime badge updates for notifications
+    const notificationsChannel = mamekoClient
+      .channel("user_dashboard_notifications_badge")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "notifications" },
+        () => {
+          loadNotificationCount();
+        }
+      )
+      .subscribe();
+
     return () => {
       isDisposed = true;
+      mamekoClient.removeChannel(notificationsChannel);
+    };
+  }, [user]);
+
+  // Fetch unread chat count on mount & subscribe realtime WebSocket
+  useEffect(() => {
+    if (!user) return;
+
+    let isDisposed = false;
+    const userId = user?.uid || user?.id;
+
+    const fetchUnreadChatCount = async () => {
+      try {
+        const { data: { session } } = await auth.getSession();
+        const token = session?.access_token;
+        if (!token) return;
+
+        const res = await fetch(getApiBaseUrl() + "/api/user/chats", {
+          headers: { Authorization: `Bearer ${token}` },
+          cache: "no-store",
+        });
+        if (res.ok) {
+          const json = await res.json();
+          const list = Array.isArray(json?.data) ? json.data : [];
+          const unreadFromAdmin = list.filter(
+            (m: any) => m.sender_role === "admin" && !m.is_read
+          ).length;
+          if (!isDisposed) {
+            setUnreadChatCount(unreadFromAdmin);
+          }
+        }
+      } catch (err) {
+        console.error("Gagal memuat unread chat count:", err);
+      }
+    };
+
+    fetchUnreadChatCount();
+
+    let debounceTimer: any = null;
+    const debouncedFetch = () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(fetchUnreadChatCount, 300);
+    };
+
+    const chatChannel = mamekoClient
+      .channel(`user_chat_badge_${userId}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "chats" },
+        debouncedFetch
+      )
+      .subscribe();
+
+    return () => {
+      isDisposed = true;
+      clearTimeout(debounceTimer);
+      mamekoClient.removeChannel(chatChannel);
     };
   }, [user]);
 
@@ -211,7 +281,11 @@ export default function UserDashboard({ user }) {
             {filteredNav.map((item) => {
               const isActive = activeTab === item.id;
               const badgeCount =
-                item.id === "notifications" ? notificationCount : 0;
+                item.id === "notifications"
+                  ? notificationCount
+                  : item.id === "chat"
+                  ? unreadChatCount
+                  : 0;
 
               return (
                 <li key={item.id}>
@@ -311,6 +385,11 @@ export default function UserDashboard({ user }) {
               title={userConfig.navbar?.chatAria || "Chat"}
             >
               <AppIcon name="message-circle" className={styles.svgIcon} />
+              {unreadChatCount > 0 && (
+                <span className={styles.chatBadgeNavbar}>
+                  {unreadChatCount > 99 ? "99+" : unreadChatCount}
+                </span>
+              )}
             </button>
 
             {/* Cart Button */}
@@ -354,7 +433,12 @@ export default function UserDashboard({ user }) {
             <NotificationsSection onUnreadCountChange={setNotificationCount} />
           </div>
           {activeTab === "profile" && <ProfileSection />}
-          {activeTab === "chat" && <UserChatView user={user} />}
+          {activeTab === "chat" && (
+            <UserChatView
+              user={user}
+              onUnreadCountChange={setUnreadChatCount}
+            />
+          )}
         </div>
       </main>
 
@@ -363,7 +447,11 @@ export default function UserDashboard({ user }) {
         {filteredNav.map((item) => {
           const isActive = activeTab === item.id;
           const badgeCount =
-            item.id === "notifications" ? notificationCount : 0;
+            item.id === "notifications"
+              ? notificationCount
+              : item.id === "chat"
+              ? unreadChatCount
+              : 0;
 
           return (
             <button

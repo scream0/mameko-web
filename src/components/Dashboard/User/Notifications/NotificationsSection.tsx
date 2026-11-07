@@ -2,7 +2,7 @@
 "use client";
 import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient";
+import { mamekoClient } from "@/lib/mamekoClient";
 import toast from "react-hot-toast";
 import { shouldSkipAuthEvent } from "@/utils/authHelpers";
 import styles from "./NotificationsSection.module.css";
@@ -11,6 +11,8 @@ import { NotificationsSkeleton } from "@/components/UI/Skeleton/SkeletonLayouts"
 import ConfirmationModal from "@/components/UI/Modal/ConfirmationModal";
 import { AppIcon } from "@/components/UI/Icon/AppIcon";
 import { getApiBaseUrl } from "@/lib/apiClient";
+import { resolveCanonicalNotificationUrl } from "@/utils/notificationRouter";
+import { sanitizeUserError } from "@/utils/errorSanitizer";
 
 // Format waktu menjadi "Baru saja", "5 menit lalu", dst.
 function timeAgo(dateString: any) {
@@ -40,15 +42,12 @@ function isOrderNotification(n: any): boolean {
   const text = `${n.title || ""} ${n.message || ""}`.toLowerCase();
   return (
     t.startsWith("order") ||
-    t === "return" ||
-    t === "retur" ||
     l.includes("order") ||
     text.includes("pesanan") ||
     text.includes("pengiriman") ||
     text.includes("dikirim") ||
     text.includes("sampai di tujuan") ||
-    text.includes("resi") ||
-    text.includes("retur")
+    text.includes("resi")
   );
 }
 
@@ -90,12 +89,19 @@ function isPromoNotification(n: any): boolean {
   );
 }
 
+// Heuristic penentuan pesan/chat agar terpisah dari notifikasi sistem
+function isChatNotification(n: any): boolean {
+  const t = (n.type || "").toLowerCase();
+  const l = (n.link || "").toLowerCase();
+  return t.startsWith("chat") || l.includes("tab=chat") || l.includes("/chat");
+}
+
 function isSystemNotification(n: any): boolean {
   const t = (n.type || "").toLowerCase();
+  if (isChatNotification(n)) return false;
   return (
     t.startsWith("system") ||
     t.startsWith("info") ||
-    t.startsWith("chat") ||
     t.startsWith("broadcast") ||
     !t ||
     (!isOrderNotification(n) && !isPromoNotification(n) && !isPaymentNotification(n))
@@ -150,12 +156,15 @@ export default function NotificationsSection({ onUnreadCountChange }: any) {
       }
       if (!res.ok) throw new Error(result.error || notificationsConfig.toasts.fetchError);
       
-      // Map dari struktur database ke frontend (camelCase)
-      const mappedNotifications = (result.notifications || []).map((n: any) => ({
-        ...n,
-        createdAt: n.created_at,
-        isRead: n.is_read,
-      }));
+      // Map dari struktur database ke frontend (camelCase) dan filter keluar notifikasi chat
+      // Chat admin disalurkan khusus ke badge chat & view chat, bukan tab notifikasi
+      const mappedNotifications = (result.notifications || [])
+        .filter((n: any) => !isChatNotification(n))
+        .map((n: any) => ({
+          ...n,
+          createdAt: n.created_at,
+          isRead: n.is_read,
+        }));
       setNotifications(mappedNotifications);
     } catch (err) {
       console.error("Gagal memuat notifikasi:", err);
@@ -169,12 +178,12 @@ export default function NotificationsSection({ onUnreadCountChange }: any) {
     let subscription = null;
 
     const initAuth = async () => {
-      if (!supabase?.auth) {
+      if (!mamekoClient?.auth) {
         setLoading(false);
         return;
       }
 
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await mamekoClient.auth.getSession();
       setCurrentSession(session);
       lastUserIdRef.current = session?.user?.id || null;
 
@@ -184,8 +193,8 @@ export default function NotificationsSection({ onUnreadCountChange }: any) {
         setLoading(false);
       }
 
-      // Listener perubahan sesi Supabase
-      const { data: authListener } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      // Listener perubahan sesi auth
+      const { data: authListener } = mamekoClient.auth.onAuthStateChange(async (_event, session) => {
         if (shouldSkipAuthEvent(_event, session, lastUserIdRef.current)) return;
         lastUserIdRef.current = session?.user?.id || null;
         
@@ -203,7 +212,7 @@ export default function NotificationsSection({ onUnreadCountChange }: any) {
     initAuth();
 
     // Real-time subscription for user notifications
-    const realtimeChannel = supabase
+    const realtimeChannel = mamekoClient
       .channel("user_notifications_changes")
       .on(
         "postgres_changes",
@@ -218,6 +227,7 @@ export default function NotificationsSection({ onUnreadCountChange }: any) {
 
           if (
             payload.new &&
+            !isChatNotification(payload.new) &&
             (payload.new.audience === "user" ||
              payload.new.audience === "all" ||
              payload.new.user_id === userId)
@@ -250,7 +260,7 @@ export default function NotificationsSection({ onUnreadCountChange }: any) {
 
     return () => {
       if (subscription) subscription.unsubscribe();
-      supabase.removeChannel(realtimeChannel);
+      mamekoClient.removeChannel(realtimeChannel);
     };
   }, [loadNotifications]);
 
@@ -258,7 +268,7 @@ export default function NotificationsSection({ onUnreadCountChange }: any) {
     try {
       setSubmittingMarkAllRead(true);
 
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await mamekoClient.auth.getSession();
       const token = session?.access_token;
 
       const res = await fetch(getApiBaseUrl() + "/api/user/notifications", {
@@ -274,7 +284,7 @@ export default function NotificationsSection({ onUnreadCountChange }: any) {
       toast.success(notificationsConfig.toasts.markAllReadSuccess);
     } catch (err: any) {
       console.error("Gagal tandai semua dibaca:", err);
-      toast.error(err.message || notificationsConfig.toasts.updateError);
+      toast.error(sanitizeUserError(err, notificationsConfig.toasts.updateError));
     } finally {
       setSubmittingMarkAllRead(false);
     }
@@ -284,7 +294,7 @@ export default function NotificationsSection({ onUnreadCountChange }: any) {
     if (notification.isRead) return;
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await mamekoClient.auth.getSession();
       const token = session?.access_token;
 
       await fetch(getApiBaseUrl() + "/api/user/notifications", {
@@ -304,37 +314,9 @@ export default function NotificationsSection({ onUnreadCountChange }: any) {
     );
   };
 
-  const resolveNotificationLink = (rawLink: string, n?: any) => {
-    if (!rawLink) {
-      if (n) {
-        if (isPromoNotification(n)) return "/dashboard?tab=vouchers";
-        if (isOrderNotification(n) || isPaymentNotification(n)) return "/dashboard?tab=orders";
-      }
-      return "";
-    }
-    const link = rawLink.trim();
-    if (link.startsWith("/admin/orders")) {
-      const queryIdx = link.indexOf("?");
-      const query = queryIdx !== -1 ? link.substring(queryIdx + 1) : "";
-      const params = new URLSearchParams(query);
-      const subtab = params.get("tab") || params.get("subtab") || "orders";
-      return `/dashboard?tab=orders&subtab=${subtab}`;
-    }
-    if (link === "/dashboard/orders" || link === "/orders") {
-      return "/dashboard?tab=orders";
-    }
-    if (link === "/dashboard/wallet" || link === "/wallet") {
-      return "/dashboard?tab=profile";
-    }
-    if (link === "/dashboard/vouchers" || link === "/vouchers" || link.includes("voucher")) {
-      return "/dashboard?tab=vouchers";
-    }
-    return link;
-  };
-
   const handleNotificationClick = (notification: any) => {
     markRead(notification);
-    const targetLink = resolveNotificationLink(notification.link, notification);
+    const targetLink = resolveCanonicalNotificationUrl(notification.link, notification);
     if (targetLink) {
       router.push(targetLink);
     }
@@ -348,7 +330,7 @@ export default function NotificationsSection({ onUnreadCountChange }: any) {
     setShowDeleteAllModal(false);
     try {
       setSubmittingDeleteAll(true);
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await mamekoClient.auth.getSession();
       const token = session?.access_token;
 
       const res = await fetch(getApiBaseUrl() + "/api/user/notifications?id=all", {
@@ -364,7 +346,7 @@ export default function NotificationsSection({ onUnreadCountChange }: any) {
       if (onUnreadCountChange) onUnreadCountChange(0);
     } catch (err: any) {
       console.error("Gagal menghapus semua notifikasi:", err);
-      toast.error(err.message || notificationsConfig.toasts.deleteAllError);
+      toast.error(sanitizeUserError(err, notificationsConfig.toasts.deleteAllError));
     } finally {
       setSubmittingDeleteAll(false);
     }
@@ -377,7 +359,7 @@ export default function NotificationsSection({ onUnreadCountChange }: any) {
 
     try {
       setDeletingId(notification.id);
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await mamekoClient.auth.getSession();
       const token = session?.access_token;
 
       const res = await fetch(getApiBaseUrl() + `/api/user/notifications?id=${notification.id}`,
@@ -394,7 +376,7 @@ export default function NotificationsSection({ onUnreadCountChange }: any) {
       toast.success(notificationsConfig.toasts.deleteSuccess);
     } catch (err: any) {
       console.error("Gagal menghapus notifikasi:", err);
-      toast.error(err.message || notificationsConfig.toasts.deleteError);
+      toast.error(sanitizeUserError(err, notificationsConfig.toasts.deleteError));
     } finally {
       setDeletingId(null);
     }

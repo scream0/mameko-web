@@ -10,7 +10,7 @@ import {
   useRef,
 } from "react";
 import { useRouter } from "next/navigation";
-import { auth } from "@/lib/supabaseClient";
+import { auth } from "@/lib/mamekoClient";
 import toast from "react-hot-toast";
 import { isPromoActive, getDiscountedPrice, getCartPromoSummary } from "@/utils/promo";
 import { buildAddressId, normalizeAddress, formatAddressDisplay } from "@/utils/address";

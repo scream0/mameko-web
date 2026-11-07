@@ -246,7 +246,7 @@
       "summaryLabel": "Ringkasan Cepat (Summary Callout)",
       "summaryPlaceholder": "Dengan melakukan pemesanan atau menggunakan platform...",
       "contentLabel": "Konten Kustom Tambahan / Ketentuan Pembelian",
-      "contentPlaceholder": "Tuliskan aturan retur, garansi produk, atau ketentuan komersial di sini...",
+      "contentPlaceholder": "Tuliskan kebijakan non-refundable, ketentuan produk, atau aturan komersial di sini...",
       "contentDesc": "* Teks kustom ini akan ditampilkan di halaman /terms sebagai klausul resmi dari admin toko."
     },
     "resetBtn": "Pulihkan Teks Standar",

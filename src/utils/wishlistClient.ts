@@ -1,4 +1,4 @@
-﻿import { auth } from "@/lib/supabaseClient";
+﻿import { auth } from "@/lib/mamekoClient";
 import { getApiBaseUrl } from "@/lib/apiClient";
 
 const STORAGE_KEY = "shop_wishlist";

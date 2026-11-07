@@ -2,7 +2,7 @@
 "use client";
 import { getApiBaseUrl } from "@/lib/apiClient";
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { mamekoClient } from "@/lib/mamekoClient";
 import toast from "react-hot-toast";
 import AddProductForm from "./AddProductForm";
 import EditProductModal from "./EditProductModal";
@@ -36,7 +36,7 @@ export default function ProductManager() {
 
   const fetchCategories = useCallback(async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await mamekoClient
         .from("products")
         .select("category")
         .not("category", "is", null);
@@ -146,7 +146,7 @@ export default function ProductManager() {
     if (!productToDelete) return;
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await mamekoClient.auth.getSession();
       const authHeaders = session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {};
       if (productToDelete.image_public_id) {
         await fetch(getApiBaseUrl() + "/api/user/cloudinary", {

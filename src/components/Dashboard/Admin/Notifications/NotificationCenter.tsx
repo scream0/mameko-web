@@ -3,7 +3,7 @@
 import { getApiBaseUrl } from "@/lib/apiClient";
 import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { auth, supabase } from "@/lib/supabaseClient";
+import { auth, mamekoClient } from "@/lib/mamekoClient";
 import toast from "react-hot-toast";
 import styles from "./NotificationCenter.module.css";
 import { shouldSkipAuthEvent } from "@/utils/authHelpers";
@@ -11,6 +11,8 @@ import config from "@/data/ui/notificationCenterConfig.json";
 import { NotificationsSkeleton } from "@/components/UI/Skeleton/SkeletonLayouts";
 import ConfirmationModal from "@/components/UI/Modal/ConfirmationModal";
 import { Package, CreditCard, Gift, Bell, TrendingDown } from "lucide-react";
+import { resolveCanonicalNotificationUrl } from "@/utils/notificationRouter";
+import { sanitizeUserError } from "@/utils/errorSanitizer";
 
 function timeAgo(dateString: any) {
   const t = config.timeAgo || {};
@@ -57,7 +59,7 @@ export default function NotificationCenter({ onUnreadCountChange }: any) {
     audience: "admin",
   });
 
-  const getSupabaseToken = async () => {
+  const getAuthToken = async () => {
     const { data: { session } } = await auth.getSession();
     return session?.access_token || null;
   };
@@ -65,7 +67,7 @@ export default function NotificationCenter({ onUnreadCountChange }: any) {
   const loadNotifications = useCallback(async () => {
     try {
       setLoading(true);
-      const token = await getSupabaseToken();
+      const token = await getAuthToken();
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
       
       const res = await fetch(getApiBaseUrl() + "/api/admin/notifications?scope=system", {
@@ -83,20 +85,28 @@ export default function NotificationCenter({ onUnreadCountChange }: any) {
       }
       if (!res.ok) throw new Error(result.error || "Gagal memuat notifikasi.");
       
-      const mappedNotifications = (result.notifications || []).map((n: any) => ({
-        id: n.id,
-        title: n.title,
-        message: n.message,
-        link: n.link,
-        type: n.type,
-        audience: n.audience,
-        createdAt: n.created_at,
-        isRead: n.is_read,
-      }));
+      const isChatNotif = (n: any) => {
+        const t = (n?.type || "").toLowerCase();
+        const l = (n?.link || "").toLowerCase();
+        return t.startsWith("chat") || l.includes("tab=chat") || l.includes("/chat");
+      };
+
+      const mappedNotifications = (result.notifications || [])
+        .filter((n: any) => !isChatNotif(n))
+        .map((n: any) => ({
+          id: n.id,
+          title: n.title,
+          message: n.message,
+          link: n.link,
+          type: n.type,
+          audience: n.audience,
+          createdAt: n.created_at,
+          isRead: n.is_read,
+        }));
       setNotifications(mappedNotifications);
     } catch (err) {
       console.error("Gagal memuat notifikasi admin:", err);
-      toast.error(err.message || "Gagal memuat notifikasi.");
+      toast.error(sanitizeUserError(err, "Gagal memuat notifikasi."));
     } finally {
       setLoading(false);
     }
@@ -118,7 +128,7 @@ export default function NotificationCenter({ onUnreadCountChange }: any) {
       }
     });
 
-    const channel = supabase
+    const channel = mamekoClient
       .channel("admin_notifications_changes")
       .on(
         "postgres_changes",
@@ -158,7 +168,7 @@ export default function NotificationCenter({ onUnreadCountChange }: any) {
 
     return () => {
       subscription?.unsubscribe();
-      supabase.removeChannel(channel);
+      mamekoClient.removeChannel(channel);
     };
   }, [loadNotifications]);
 
@@ -180,7 +190,7 @@ export default function NotificationCenter({ onUnreadCountChange }: any) {
 
   const markAllRead = async () => {
     try {
-      const token = await getSupabaseToken();
+      const token = await getAuthToken();
       if (!token) {
         toast.error(config.validation?.sessionExpired || "Sesi Anda telah berakhir. Silakan muat ulang.");
         return;
@@ -213,14 +223,14 @@ export default function NotificationCenter({ onUnreadCountChange }: any) {
       toast.success(config.toasts.markAllReadSuccess);
     } catch (err) {
       console.error("Gagal tandai semua dibaca:", err);
-      toast.error(err.message || "Gagal memperbarui notifikasi.");
+      toast.error(sanitizeUserError(err, "Gagal memperbarui notifikasi."));
     }
   };
 
   const markRead = async (notification: any) => {
     if (notification.isRead) return;
     try {
-      const token = await getSupabaseToken();
+      const token = await getAuthToken();
       await fetch(getApiBaseUrl() + "/api/admin/notifications", {
         method: "PUT",
         headers: {
@@ -237,32 +247,11 @@ export default function NotificationCenter({ onUnreadCountChange }: any) {
     }
   };
 
-  const resolveNotificationLink = (rawLink: string) => {
-    if (!rawLink) return "";
-    const link = rawLink.trim();
-    if (link.startsWith("/admin/orders")) {
-      const queryIdx = link.indexOf("?");
-      const query = queryIdx !== -1 ? link.substring(queryIdx + 1) : "";
-      const params = new URLSearchParams(query);
-      const subtab = params.get("tab") || params.get("subtab") || "orders";
-      return `/dashboard?tab=orders&subtab=${subtab}`;
-    }
-    if (link === "/dashboard/orders" || link === "/orders") {
-      return "/dashboard?tab=orders";
-    }
-    if (link === "/dashboard/wallet" || link === "/wallet") {
-      return "/dashboard?tab=profile";
-    }
-    return link;
-  };
-
   const handleNotificationClick = (notification: any) => {
     markRead(notification);
-    if (notification.link) {
-      const targetLink = resolveNotificationLink(notification.link);
-      if (targetLink) {
-        router.push(targetLink);
-      }
+    const targetLink = resolveCanonicalNotificationUrl(notification.link, notification);
+    if (targetLink) {
+      router.push(targetLink);
     }
   };
 
@@ -276,7 +265,7 @@ export default function NotificationCenter({ onUnreadCountChange }: any) {
     setNotificationToDelete(null);
 
     try {
-      const token = await getSupabaseToken();
+      const token = await getAuthToken();
       if (!token) {
         toast.error(config.validation?.sessionExpired || "Sesi Anda telah berakhir. Silakan muat ulang.");
         return;
@@ -293,7 +282,7 @@ export default function NotificationCenter({ onUnreadCountChange }: any) {
       toast.success(config.toasts.deleteSuccess);
     } catch (err) {
       console.error("Gagal menghapus notifikasi:", err);
-      toast.error(err.message || "Gagal menghapus notifikasi.");
+      toast.error(sanitizeUserError(err, "Gagal menghapus notifikasi."));
     }
   };
 
@@ -306,7 +295,7 @@ export default function NotificationCenter({ onUnreadCountChange }: any) {
     }
     try {
       setSubmitting(true);
-      const token = await getSupabaseToken();
+      const token = await getAuthToken();
       const res = await fetch(getApiBaseUrl() + "/api/admin/notifications", {
         method: "POST",
         headers: {
@@ -332,7 +321,7 @@ export default function NotificationCenter({ onUnreadCountChange }: any) {
       await loadNotifications();
     } catch (err) {
       console.error("Gagal membuat notifikasi:", err);
-      toast.error(err.message || "Gagal membuat notifikasi.");
+      toast.error(sanitizeUserError(err, "Gagal membuat notifikasi."));
     } finally {
       setSubmitting(false);
     }

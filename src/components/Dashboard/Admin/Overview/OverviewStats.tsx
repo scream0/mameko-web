@@ -6,7 +6,7 @@ import toast from "react-hot-toast";
 import overviewConfig from "@/data/ui/overviewConfig.json";
 import { StatsSkeleton } from "@/components/UI/Skeleton/SkeletonLayouts";
 import { calculateDashboardStats } from "@/utils/dashboardSummary";
-import { auth, supabase } from "@/lib/supabaseClient";
+import { auth, mamekoClient } from "@/lib/mamekoClient";
 import { getApiBaseUrl } from "@/lib/apiClient";
 
 export default function OverviewStats() {
@@ -86,7 +86,7 @@ export default function OverviewStats() {
       }, 500);
     };
 
-    const channel = supabase
+    const channel = mamekoClient
       .channel("overview-stats-updates")
       .on(
         "postgres_changes",
@@ -102,7 +102,7 @@ export default function OverviewStats() {
 
     return () => {
       clearTimeout(debounceTimer);
-      supabase.removeChannel(channel);
+      mamekoClient.removeChannel(channel);
     };
   }, []);
 

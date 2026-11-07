@@ -137,7 +137,32 @@ const res = await fetch(`${getApiBaseUrl()}/api/user/orders`, {
 
 ---
 
-## 6. Pre-Commit & Quality Verification Runbook
+## 6. Realtime Communication, Notification Routing & Error Boundaries
+
+### A. Dual-Engine Realtime Communication (Chat & Status)
+1. **Engine Utama**: Native Go Backend WebSocket (`/ws/chats?token=<jwt>`).
+   - Menyediakan latensi instan (< 50ms) langsung dari `websocket.GlobalHub.BroadcastChat()`.
+   - Menghubungkan client user dan admin tanpa ketergantungan pada polling manual.
+2. **Engine Sekunder**: Supabase Realtime Channel (`postgres_changes` pada tabel `public.chats`).
+   - Mengharuskan policy RLS eksplisit bagi role admin untuk membaca seluruh chat dan publikasi aktif `supabase_realtime`.
+3. **Mekanisme Failover**:
+   - Jika koneksi WebSocket terputus, hook client otomatis fallback ke Supabase Realtime, didukung smart polling interval saat window aktif.
+
+### B. Normalisasi Tautan Notifikasi (Zero 404 Routing)
+1. **Canonical Resolver (`resolveCanonicalNotificationUrl`)**:
+   - Dilarang keras melakukan `router.push(n.link)` secara langsung dengan path relatif tanpa leading slash.
+   - Pola backend seperti `"order/ORD-123"` WAJIB dinormalisasi menjadi `/dashboard/order-detail?id=ORD-123` atau `/dashboard?tab=orders&orderId=ORD-123`.
+   - Tautan admin seperti `"/admin/orders"` WAJIB dinormalisasi menjadi `/dashboard?tab=orders`.
+   - Tautan rusak atau tidak dikenal WAJIB dialihkan dengan aman ke `/dashboard?tab=notifications` tanpa pernah memicu halaman 404.
+
+### C. App Router Global Error Resilience
+1. `src/app/error.tsx` dan `src/app/global-error.tsx` WAJIB terpasang untuk menangani crash rendering tak terduga.
+2. Tampilan error wajib editorial, ramah manusia, bebas stacktrace, dan memuat tombol pemulihan interaktif (`reset()`) dengan copy dari `src/data/ui/common.json`.
+3. Seluruh catch block pemanggilan API wajib membungkus toast error dengan `sanitizeUserError(err)`.
+
+---
+
+## 7. Pre-Commit & Quality Verification Runbook
 
 Before committing or pushing any web changes:
 

@@ -4,7 +4,7 @@ import { getApiBaseUrl } from "@/lib/apiClient";
 import { useState, useEffect, useRef, useCallback } from "react";
 import toast from "react-hot-toast";
 import styles from "./SettingsView.module.css";
-import { auth } from "@/lib/supabaseClient";
+import { auth } from "@/lib/mamekoClient";
 import settingsConfig from "@/data/ui/settingsConfig.json";
 import { shouldSkipAuthEvent, logoutUser } from "@/utils/authHelpers";
 import { AppIcon } from "@/components/UI/Icon/AppIcon";
@@ -405,7 +405,7 @@ export default function SettingsView() {
         setIsFetching(false);
       }
 
-      // Listener perubahan sesi Supabase
+      // Listener perubahan sesi auth
       const { data: authListener } = auth.onAuthStateChange(async (_event, session) => {
         if (shouldSkipAuthEvent(_event, session, lastUserIdRef.current)) return;
         lastUserIdRef.current = session?.user?.id || null;

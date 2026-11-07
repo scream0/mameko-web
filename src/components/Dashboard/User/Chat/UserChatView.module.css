@@ -72,6 +72,31 @@
   gap: 8px;
 }
 
+.headerActionBtn {
+  background: transparent;
+  border: 1px solid rgba(var(--surface-primary-rgb), 0.22);
+  color: var(--primary-accent-text);
+  cursor: pointer;
+  padding: 7px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.headerActionBtn:hover {
+  background: rgba(var(--surface-primary-rgb), 0.18);
+  border-color: rgba(var(--surface-primary-rgb), 0.45);
+  color: var(--primary-accent-text);
+  transform: translateY(-1px);
+}
+
+.headerActionBtn:active {
+  transform: translateY(0);
+  background: rgba(var(--surface-primary-rgb), 0.28);
+}
+
 /* Operational Hours Banner */
 .operationalNotice {
   background: #f8fafc;
@@ -411,7 +436,7 @@
 }
 
 .attachBtn:hover {
-  background: #f1f5f9;
+  background: var(--surface-secondary);
   color: var(--text-primary);
 }
 

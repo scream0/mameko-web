@@ -24,15 +24,7 @@
     "delivered": { "label": "Pesanan Selesai", "badgeClass": "statusCompleted", "icon": "shield-check" },
     "completed": { "label": "Pesanan Selesai", "badgeClass": "statusCompleted", "icon": "shield-check" },
     "cancelled": { "label": "Dibatalkan", "badgeClass": "statusCancelled", "icon": "x" },
-    "canceled": { "label": "Dibatalkan", "badgeClass": "statusCancelled", "icon": "x" },
-    "return_requested": { "label": "Pengajuan Return", "badgeClass": "statusWarning", "icon": "rotate-ccw" },
-    "returning": { "label": "Barang Dikirim Balik", "badgeClass": "statusShipping", "icon": "truck" },
-    "returned": { "label": "Return Selesai", "badgeClass": "statusCompleted", "icon": "shield-check" }
-  },
-  "returnStatus": {
-    "pending": { "label": "⏳ Return Diproses", "badgeClass": "statusReturn", "icon": "rotate-ccw", "noteTitle": "Catatan Retur (Pending):" },
-    "approved": { "label": "✅ Return Disetujui", "badgeClass": "statusCompleted", "icon": "shield-check", "noteTitle": "Catatan Retur (Disetujui):" },
-    "rejected": { "label": "❌ Return Ditolak", "badgeClass": "statusCancelled", "icon": "x", "noteTitle": "Catatan Retur (Ditolak):" }
+    "canceled": { "label": "Dibatalkan", "badgeClass": "statusCancelled", "icon": "x" }
   },
   "historyActors": {
     "cancelledByUser": "Dibatalkan oleh Pengguna",
@@ -45,9 +37,6 @@
     "completedByAdmin": "Diselesaikan oleh Admin",
     "paidWebhook": "Pembayaran Terverifikasi (Midtrans)",
     "paidAdmin": "Pembayaran Dikonfirmasi oleh Admin",
-    "returnedApproved": "Return Selesai (Disetujui)",
-    "returnRequested": "Pengajuan Return Diproses",
-    "returnRejectedCompleted": "Return Ditolak (Pesanan Selesai)",
     "defaultNote": "Pembaruan status pesanan.",
     "justNow": "Baru saja",
     "creationLabel": "Pesanan Dibuat",
@@ -66,7 +55,7 @@
     },
     "shippedNotice": {
       "title": "Pesanan Sedang Dikirim",
-      "desc": "Pesanan akan otomatis selesai dalam 14 hari sejak pengiriman jika Anda tidak melakukan konfirmasi penerimaan manual atau mengajukan pengembalian."
+      "desc": "Pesanan akan otomatis selesai dalam 14 hari sejak pengiriman jika Anda tidak melakukan konfirmasi penerimaan manual."
     }
   },
   "pendingActions": {

@@ -2,7 +2,7 @@
 "use client";
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { supabase } from '@/lib/supabaseClient';
+import { mamekoClient } from '@/lib/mamekoClient';
 import { Loader2 } from 'lucide-react';
 
 function AuthCallbackContent() {
@@ -23,11 +23,11 @@ function AuthCallbackContent() {
       }
 
       if (code) {
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        const { data: { session }, error: sessionError } = await mamekoClient.auth.getSession();
         let activeSession = session;
         if (sessionError || !activeSession) {
           // Fallback manual exchange just in case
-          const { data: exchangeData, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+          const { data: exchangeData, error: exchangeError } = await mamekoClient.auth.exchangeCodeForSession(code);
           if (exchangeError) {
             setErrorMsg(exchangeError.message);
             setTimeout(() => router.push('/login?error=auth-callback-failed'), 3000);
@@ -41,7 +41,7 @@ function AuthCallbackContent() {
         const userId = activeSession?.user?.id;
         if (userId) {
           try {
-            const { data: profile } = await supabase
+            const { data: profile } = await mamekoClient
               .from('profiles')
               .select('role')
               .eq('id', userId)

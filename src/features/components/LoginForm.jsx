@@ -1,10 +1,10 @@
-﻿"use client";
+"use client";
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import loginConfig from "@/data/ui/loginConfig.json";
 import styles from "./LoginForm.module.css";
 import { useStore } from "@/context/StoreContext";
 import { useSearchParams } from "next/navigation";
-import { mamekoClient, supabase } from "@/lib/mamekoClient";
+import { mamekoClient } from "@/lib/mamekoClient";
 import { getSafeAuthRedirect } from "@/utils/authRedirect";
 import { sanitizeUserError } from "@/utils/errorSanitizer";
 import Script from "next/script";
@@ -81,7 +81,7 @@ export default function LoginForm() {
   // Helper untuk mengecek role di database dan melakukan redirect yang sesuai
   const handlePostLoginRedirect = useCallback(async (userId) => {
     try {
-      const { data: profile, error: profileError } = await supabase
+      const { data: profile, error: profileError } = await mamekoClient
         .from("profiles")
         .select("role")
         .eq("id", userId)
@@ -93,7 +93,7 @@ export default function LoginForm() {
       }
       
       if (!isAdmin) {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session } } = await mamekoClient.auth.getSession();
         const metaRole = session?.user?.user_metadata?.role;
         if (metaRole) {
           isAdmin = ["admin", "superadmin"].includes(String(metaRole).toLowerCase());
@@ -197,7 +197,7 @@ export default function LoginForm() {
     setIsLoading(true);
 
     try {
-      const { data, error: verifyError } = await supabase.auth.verifyOtp({
+      const { data, error: verifyError } = await mamekoClient.auth.verifyOtp({
         email: email.trim().toLowerCase(),
         token: otpCode,
         type: "email",
@@ -292,7 +292,7 @@ export default function LoginForm() {
 
     try {
       const redirectUrl = typeof window !== "undefined" ? `${window.location.origin}/auth/callback` : undefined;
-      const { error: signInError } = await supabase.auth.signInWithOtp({
+      const { error: signInError } = await mamekoClient.auth.signInWithOtp({
         email: cleanEmail,
         options: {
           emailRedirectTo: redirectUrl,

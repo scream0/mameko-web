@@ -3,7 +3,7 @@
 
 import { getApiBaseUrl } from "@/lib/apiClient";
 import { useEffect, useState } from "react";
-import { auth } from "@/lib/supabaseClient";
+import { auth } from "@/lib/mamekoClient";
 import { shouldSkipAuthEvent } from "@/utils/authHelpers";
 
 export function useAdminAuth() {

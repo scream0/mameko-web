@@ -11,7 +11,7 @@ import { getDiscountedPrice } from "@/utils/promo";
 import toast from "react-hot-toast";
 import { optimizeCloudinaryUrl, IMAGE_PRESETS } from "@/utils/imageOptimizer";
 import { getApiBaseUrl } from "@/lib/apiClient";
-import { auth } from "@/lib/supabaseClient";
+import { auth } from "@/lib/mamekoClient";
 import ProductReviewsSection from "@/components/Review/ProductReviewsSection";
 
 interface Variant {

@@ -27,6 +27,29 @@
   font-size: 1.1rem;
   font-family: var(--font-serif);
   letter-spacing: 0.5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sidebarRefreshBtn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.sidebarRefreshBtn:hover {
+  background: var(--surface-primary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+  transform: translateY(-1px);
 }
 
 .userList {
@@ -164,6 +187,33 @@
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.refreshHeaderBtn {
+  margin-left: auto;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.refreshHeaderBtn:hover {
+  background: var(--surface-secondary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+  transform: translateY(-1px);
+}
+
+.refreshHeaderBtn:active {
+  transform: translateY(0);
 }
 
 .backBtn {

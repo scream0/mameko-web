@@ -4,7 +4,7 @@ import { useState, useEffect, lazy, Suspense, useCallback, useRef } from "react"
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import styles from "./UserProfil.module.css";
 import profileConfig from "@/data/ui/userProfilConfig.json";
-import { auth } from "@/lib/supabaseClient";
+import { auth } from "@/lib/mamekoClient";
 import toast from "react-hot-toast";
 import { AppIcon } from "@/components/UI/Icon/AppIcon";
 import { OrdersSkeleton } from "@/components/UI/Skeleton/SkeletonLayouts";

@@ -4,23 +4,23 @@ import { getApiBaseUrl } from "@/lib/apiClient";
 import { useState, useEffect } from "react";
 import styles from "./ReviewManager.module.css";
 import { useScrollLock } from "@/hooks/useScrollLock";
-import { supabase, auth } from "@/lib/supabaseClient";
+import { mamekoClient, auth } from "@/lib/mamekoClient";
 import toast from "react-hot-toast";
 import reviewConfig from "@/data/ui/reviewManagerConfig.json";
 
-// Helper aman untuk mendeteksi berbagai struktur ekspor Supabase klien/auth
-const getSupabaseSession = async () => {
+// Helper aman untuk mendeteksi berbagai struktur ekspor klien/auth
+const getAuthSession = async () => {
   try {
-    if (supabase?.auth?.getSession) {
-      const res = await supabase.auth.getSession();
+    if (mamekoClient?.auth?.getSession) {
+      const res = await mamekoClient.auth.getSession();
       return res?.data?.session || null;
     }
     if (auth?.getSession) {
       const res = await auth.getSession();
       return res?.data?.session || null;
     }
-    if (supabase?.getSession) {
-      const res = await supabase.getSession();
+    if (mamekoClient?.getSession) {
+      const res = await mamekoClient.getSession();
       return res?.data?.session || null;
     }
     return null;
@@ -30,10 +30,10 @@ const getSupabaseSession = async () => {
   }
 };
 
-const getSupabaseAuthInstance = () => {
-  if (supabase?.auth) return supabase.auth;
+const getAuthInstance = () => {
+  if (mamekoClient?.auth) return mamekoClient.auth;
   if (auth?.onAuthStateChange) return auth;
-  return supabase;
+  return mamekoClient;
 };
 
 export default function ReviewManager() {
@@ -76,7 +76,7 @@ export default function ReviewManager() {
     let subscription = null;
 
     const initAuth = async () => {
-      const session = await getSupabaseSession();
+      const session = await getAuthSession();
       
       if (session) {
         await fetchReviews(session);
@@ -84,7 +84,7 @@ export default function ReviewManager() {
         setLoading(false);
       }
 
-      const clientAuth = getSupabaseAuthInstance();
+      const clientAuth = getAuthInstance();
       if (clientAuth?.onAuthStateChange) {
         const { data } = clientAuth.onAuthStateChange((_event, session: any) => {
           if (session) {
@@ -110,7 +110,7 @@ export default function ReviewManager() {
   const handleToggleApprove = async (reviewId: any, newStatus: any) => {
     setUpdatingId(reviewId);
     try {
-      const session = await getSupabaseSession();
+      const session = await getAuthSession();
       const token = session?.access_token;
       if (!token) throw new Error(reviewConfig.toasts.authRequired);
 
@@ -145,7 +145,7 @@ export default function ReviewManager() {
     const toastId = toast.loading(newStatus ? "Menyetujui ulasan terpilih..." : "Membatalkan persetujuan...");
 
     try {
-      const session = await getSupabaseSession();
+      const session = await getAuthSession();
       const token = session?.access_token;
       if (!token) throw new Error(reviewConfig.toasts.authRequired);
 
@@ -185,7 +185,7 @@ export default function ReviewManager() {
     const toastId = toast.loading("Menghapus ulasan terpilih...");
 
     try {
-      const session = await getSupabaseSession();
+      const session = await getAuthSession();
       const token = session?.access_token;
       if (!token) throw new Error(reviewConfig.toasts.authRequired);
 
@@ -223,7 +223,7 @@ export default function ReviewManager() {
     setUpdatingId(reviewId);
     setDeleteReviewId(null);
     try {
-      const session = await getSupabaseSession();
+      const session = await getAuthSession();
       const token = session?.access_token;
       if (!token) throw new Error(reviewConfig.toasts.authRequired);
 

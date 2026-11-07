@@ -787,7 +787,8 @@
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.cartQuantityBadge {
+.cartQuantityBadge,
+.chatBadgeNavbar {
   position: absolute;
   top: -5px;
   right: -5px;

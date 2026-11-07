@@ -8,8 +8,8 @@ import { getApiBaseUrl } from "@/lib/apiClient";
  * Semua komponen (landing publik maupun dashboard admin) HARUS memakai service ini
  * untuk membaca/menyimpan konfigurasi. Dengan begitu:
  *   1. Halaman landing publik memakai getPublicSettings() → TANPA token (bisa diakses siapa saja).
- *   2. Dashboard admin memakai getAdminSettings(session) → wajib bearer token admin (Supabase session).
- *   3. Penyimpanan memakai saveSettings(payload, session) → wajib bearer token admin (Supabase session).
+ *   2. Dashboard admin memakai getAdminSettings(session) → wajib bearer token admin (auth session).
+ *   3. Penyimpanan memakai saveSettings(payload, session) → wajib bearer token admin (auth session).
  */
 
 export interface StoreSettings {
@@ -103,8 +103,8 @@ export async function getPublicSettings({ force = false } = {}): Promise<StoreSe
 }
 
 /**
- * GET admin settings — wajib auth admin. Memakai Supabase session (access_token).
- * @param tokenOrSession - access_token string atau Supabase session object
+ * GET admin settings — wajib auth admin. Memakai auth session (access_token).
+ * @param tokenOrSession - access_token string atau auth session object
  */
 export async function getAdminSettings(tokenOrSession: any): Promise<StoreSettings> {
   const token = await resolveTokenAsync(tokenOrSession);
@@ -129,7 +129,7 @@ export async function getAdminSettings(tokenOrSession: any): Promise<StoreSettin
 /**
  * POST /api/admin/settings — simpan pengaturan (store + landing + promo + payment).
  * @param payload - object settings lengkap
- * @param tokenOrSession - access_token string atau Supabase session object
+ * @param tokenOrSession - access_token string atau auth session object
  */
 export async function saveSettings(payload: any, tokenOrSession: any): Promise<StoreSettings> {
   const token = await resolveTokenAsync(tokenOrSession);
@@ -165,13 +165,13 @@ export async function saveSettings(payload: any, tokenOrSession: any): Promise<S
  * Helper async untuk resolve token dari berbagai bentuk input.
  * Mendukung:
  *   - string token langsung
- *   - Supabase session object → { access_token, user, ... }
+ *   - auth session object → { access_token, user, ... }
  */
 export async function resolveTokenAsync(tokenOrUser: any): Promise<string> {
   if (!tokenOrUser) return "";
   if (typeof tokenOrUser === "string") return tokenOrUser;
 
-  // Supabase session object: { access_token, user, ... }
+  // auth session object: { access_token, user, ... }
   if (tokenOrUser.access_token) {
     return tokenOrUser.access_token;
   }

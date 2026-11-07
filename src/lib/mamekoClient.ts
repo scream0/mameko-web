@@ -84,7 +84,6 @@ export class NativeAuthClient {
     try {
       if (session) {
         localStorage.setItem("mameko_access_token", session.access_token);
-        localStorage.setItem("sb-access-token", session.access_token);
         if (session.refresh_token) {
           localStorage.setItem("mameko_refresh_token", session.refresh_token);
         }
@@ -92,8 +91,8 @@ export class NativeAuthClient {
 
         // Set document cookie untuk kompatibilitas SSR / Middleware
         const maxAge = 60 * 60 * 24 * 7; // 7 hari
-        document.cookie = `sb-access-token=${session.access_token}; path=/; max-age=${maxAge}; SameSite=Lax`;
         document.cookie = `mameko_access_token=${session.access_token}; path=/; max-age=${maxAge}; SameSite=Lax`;
+        SharedRealtimeSocket.getInstance().reconnectWithToken(session.access_token);
       } else {
         localStorage.removeItem("mameko_access_token");
         localStorage.removeItem("sb-access-token");
@@ -103,6 +102,7 @@ export class NativeAuthClient {
         // Clear cookies
         document.cookie = "sb-access-token=; path=/; max-age=0";
         document.cookie = "mameko_access_token=; path=/; max-age=0";
+        SharedRealtimeSocket.getInstance().disconnect();
       }
     } catch (e) {
       console.warn("[AuthClient] Storage write warning:", e);
@@ -375,8 +375,8 @@ export class NativeAuthClient {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ refresh_token: session.refresh_token }),
-        }).catch(() => {});
-      } catch (e) {}
+        }).catch(() => { });
+      } catch (e) { }
     }
 
     this.saveSession(null);
@@ -551,20 +551,43 @@ class SharedRealtimeSocket {
     }
   }
 
-  private ensureConnected() {
+  public reconnectWithToken(token?: string) {
+    this.disconnect();
+    this.ensureConnected(token);
+  }
+
+  public disconnect() {
+    clearInterval(this.pingTimer);
+    clearTimeout(this.reconnectTimer);
+    if (this.ws) {
+      try {
+        this.ws.close();
+      } catch (e) { }
+      this.ws = null;
+    }
+    this.isConnecting = false;
+  }
+
+  private ensureConnected(providedToken?: string) {
     if (typeof window === "undefined") return;
     if (this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) {
       return;
     }
     if (this.isConnecting) return;
 
+    const token =
+      providedToken ||
+      localStorage.getItem("mameko_access_token") ||
+      localStorage.getItem("sb-access-token") ||
+      "";
+
+    // Jangan coba buka koneksi jika token belum tersedia (cegah HTTP 401 loop)
+    if (!token) {
+      return;
+    }
+
     this.isConnecting = true;
     try {
-      const token =
-        localStorage.getItem("mameko_access_token") ||
-        localStorage.getItem("sb-access-token") ||
-        "";
-
       const baseUrl = getApiBaseUrl();
       const wsProto = baseUrl.startsWith("https") ? "wss:" : "ws:";
       const host = baseUrl.replace(/^https?:\/\//, "");
@@ -579,13 +602,13 @@ class SharedRealtimeSocket {
           if (this.ws && this.ws.readyState === WebSocket.OPEN) {
             try {
               this.ws.send("ping");
-            } catch (e) {}
+            } catch (e) { }
           }
         }, 30000);
 
         try {
           this.ws?.send("ping");
-        } catch (e) {}
+        } catch (e) { }
 
         this.channels.forEach((ch) => ch.notifySubscribed());
       };
@@ -617,22 +640,10 @@ class SharedRealtimeSocket {
       console.warn("[SharedWS] Connect exception:", err);
     }
   }
-
-  private disconnect() {
-    clearInterval(this.pingTimer);
-    clearTimeout(this.reconnectTimer);
-    if (this.ws) {
-      try {
-        this.ws.close();
-      } catch (e) {}
-      this.ws = null;
-    }
-    this.isConnecting = false;
-  }
 }
 
 // ==========================================
-// REALTIME CHANNEL (Supabase Realtime Compatible)
+// REALTIME CHANNEL (Native Realtime WebSocket)
 // ==========================================
 
 export class NativeRealtimeChannel {
@@ -656,13 +667,13 @@ export class NativeRealtimeChannel {
     optionalCallback?: (payload: any) => void
   ): NativeRealtimeChannel {
     let filter: Record<string, any> = {};
-    let callback: (payload: any) => void = () => {};
+    let callback: (payload: any) => void = () => { };
 
     if (typeof filterOrCallback === "function") {
       callback = filterOrCallback as (payload: any) => void;
     } else {
       filter = (filterOrCallback as Record<string, any>) || {};
-      callback = optionalCallback || (() => {});
+      callback = optionalCallback || (() => { });
     }
 
     this.listeners.push({ type, filter, callback });
@@ -699,6 +710,10 @@ export class NativeRealtimeChannel {
 
       this.listeners.forEach((l) => {
         if (l.type === "postgres_changes" || l.type === "*") {
+          // If a table filter is defined and is NOT 'chats', do not dispatch chat messages to it
+          if (l.filter?.table && l.filter.table !== "chats") {
+            return;
+          }
           l.callback(payload);
         }
       });
@@ -713,6 +728,10 @@ export class NativeRealtimeChannel {
 
       this.listeners.forEach((l) => {
         if (l.type === "postgres_changes" || l.type === "*") {
+          // If a table filter is defined and is NOT 'chats', do not dispatch chat updates to it
+          if (l.filter?.table && l.filter.table !== "chats") {
+            return;
+          }
           l.callback(payload);
         }
       });
@@ -842,7 +861,5 @@ export const mameko = mamekoClient;
 export const auth = mamekoClient.auth;
 export const db = mamekoClient;
 
-// Backward-compatibility alias
-export const supabase = mamekoClient;
 export default mamekoClient;
 

@@ -4,7 +4,7 @@ import React, { useState, useMemo } from "react";
 import styles from "./MyVouchers.module.css";
 import VoucherCard from "@/components/Voucher/VoucherCard";
 import toast from "react-hot-toast";
-import { auth } from "@/lib/supabaseClient";
+import { auth } from "@/lib/mamekoClient";
 import vouchersConfig from "@/data/ui/vouchersConfig.json";
 import { getApiBaseUrl } from "@/lib/apiClient";
 

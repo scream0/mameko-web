@@ -2,7 +2,7 @@
 "use client";
 import { useEffect, useMemo, useState, useRef } from "react";
 import { useRouter, usePathname, useSearchParams, useParams } from "next/navigation";
-import { auth, db } from "@/lib/supabaseClient";
+import { auth, db } from "@/lib/mamekoClient";
 import { shouldSkipAuthEvent } from "@/utils/authHelpers";
 import toast from "react-hot-toast";
 import { formatAddressDisplay } from "@/utils/address";
@@ -16,14 +16,13 @@ import { loadMidtransSnap } from "@/lib/midtrans";
 import { convertToWebP } from "@/utils/imageConverter";
 
 const STATUS_INFO = orderDetailConfig.status;
-const RETURN_STATUS_INFO = orderDetailConfig.returnStatus;
 
 function getStatusInfo(rawStatus: any) {
   const key = (rawStatus || "pending").toLowerCase();
   return STATUS_INFO[key] || { label: (rawStatus || "PENDING").toUpperCase(), badgeClass: "statusProcessing", icon: "package" };
 }
 
-function resolveHistoryEvent(event: any, index, order: any) {
+function resolveHistoryEvent(event: any, index, _order: any) {
   const statusValue = (event?.status_to || event?.status || event?.statusTo || "pending").toLowerCase();
   const info = getStatusInfo(statusValue);
   const changedAt = event?.created_at || event?.createdAt || event?.timestamp || event?.updated_at;
@@ -58,12 +57,6 @@ function resolveHistoryEvent(event: any, index, order: any) {
     } else if (actor === "admin") {
       customLabel = orderDetailConfig.historyActors.paidAdmin;
     }
-  } else if (statusValue === "returned") {
-    customLabel = orderDetailConfig.historyActors.returnedApproved;
-  } else if (statusValue === "return_requested") {
-    customLabel = orderDetailConfig.historyActors.returnRequested;
-  } else if (statusValue === "delivered" && order?.return_status === "rejected") {
-    customLabel = orderDetailConfig.historyActors.returnRejectedCompleted;
   }
 
   return {
@@ -318,7 +311,7 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
           filter: `id=eq.${resolvedOrderId}`
         },
         (payload) => {
-          console.log('[Supabase Realtime] Perubahan terdeteksi:', payload);
+          console.log('[Realtime] Perubahan terdeteksi:', payload);
           if (payload.new) {
             const updated = payload.new;
             // Update state lokal (Anti-DDOS) tanpa perlu melakukan fetch ulang
@@ -1164,11 +1157,7 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
     );
   }
 
-  let statusInfo = getStatusInfo(order.status);
-  if (order.return_status) {
-    const rs = order.return_status.toLowerCase();
-    statusInfo = RETURN_STATUS_INFO[rs] || statusInfo;
-  }
+  const statusInfo = getStatusInfo(order.status);
 
   return (
     <div className={styles.pageContainer}>
@@ -1231,26 +1220,6 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
             </button>
           </div>
         </div>
-
-        {/* ─── RETURN STATUS ADMIN NOTE BANNER ─── */}
-        {order.return_status && order.return_admin_note && (
-          <div className={`${styles.bannerReturnNotes} ${
-            order.return_status === 'approved'
-              ? styles.bannerReturnNotesApproved
-              : order.return_status === 'rejected'
-              ? styles.bannerReturnNotesRejected
-              : styles.bannerReturnNotesPending
-          }`}>
-            <strong className={styles.bannerReturnNotesTitle}>
-              {order.return_status === 'approved'
-                ? (orderDetailConfig.statusNotes?.returnApproved || 'Catatan Retur (Disetujui):')
-                : order.return_status === 'rejected'
-                ? (orderDetailConfig.statusNotes?.returnRejected || 'Catatan Retur (Ditolak):')
-                : (orderDetailConfig.statusNotes?.returnPending || 'Catatan Retur (Pending):')}
-            </strong>
-            {order.return_admin_note}
-          </div>
-        )}
 
         {/* ─── 24-HOUR PAYMENT COUNTDOWN BANNER (PENDING) ─── */}
         {isPendingStatus && (

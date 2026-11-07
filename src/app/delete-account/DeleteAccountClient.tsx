@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { AppIcon } from "@/components/UI/Icon/AppIcon";
-import { supabase } from "@/lib/supabaseClient";
+import { mamekoClient } from "@/lib/mamekoClient";
 import { getApiBaseUrl } from "@/lib/apiClient";
 import toast from "react-hot-toast";
 import styles from "./DeleteAccount.module.css";
@@ -27,12 +27,12 @@ export function DeleteAccountClient() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        const { data: { session: currentSession } } = await mamekoClient.auth.getSession();
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
 
         if (currentSession?.user?.id) {
-          const { data: prof } = await supabase
+          const { data: prof } = await mamekoClient
             .from("profiles")
             .select("full_name, username, email, phone")
             .eq("id", currentSession.user.id)
@@ -70,7 +70,7 @@ export function DeleteAccountClient() {
       }
 
       toast.success(deleteConfig.toasts.success, { id: toastId });
-      await supabase.auth.signOut();
+      await mamekoClient.auth.signOut();
       window.location.href = "/";
     } catch (err: any) {
       toast.error(err.message || deleteConfig.toasts.generalError, { id: toastId });

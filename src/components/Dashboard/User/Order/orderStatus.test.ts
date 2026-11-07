@@ -7,9 +7,8 @@ function calculateOrderStats(orders: any) {
   const processing = orders.filter((o: any) => ['paid', 'success', 'processing', 'settlement', 'capture'].includes(o.status)).length;
   const shipping = orders.filter((o: any) => ['shipping', 'shipped'].includes(o.status)).length;
   const history = orders.filter((o: any) => ['completed', 'delivered', 'cancelled', 'canceled'].includes(o.status)).length;
-  const returnCount = orders.filter((o: any) => ['return_requested', 'returning', 'returned'].includes(o.status)).length;
 
-  return { total, pending, processing, shipping, history, return: returnCount };
+  return { total, pending, processing, shipping, history };
 }
 
 test('calculateOrderStats accurately counts paid and settlement orders as Sedang Dikemas', () => {
@@ -22,15 +21,13 @@ test('calculateOrderStats accurately counts paid and settlement orders as Sedang
     { id: 'ORD-6', status: 'shipping' },
     { id: 'ORD-7', status: 'completed' },
     { id: 'ORD-8', status: 'cancelled' },
-    { id: 'ORD-9', status: 'return_requested' },
   ];
 
   const stats = calculateOrderStats(orders);
 
-  assert.equal(stats.total, 9);
+  assert.equal(stats.total, 8);
   assert.equal(stats.pending, 1);
   assert.equal(stats.processing, 4); // paid, settlement, success, processing
   assert.equal(stats.shipping, 1);
   assert.equal(stats.history, 2); // completed, cancelled
-  assert.equal(stats.return, 1);
 });

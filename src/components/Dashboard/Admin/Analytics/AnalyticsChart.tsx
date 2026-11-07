@@ -14,7 +14,7 @@ import styles from "./AnalyticsChart.module.css";
 
 // Import Konfigurasi JSON
 import analyticsConfig from "@/data/ui/analyticsConfig.json";
-import { auth } from "@/lib/supabaseClient";
+import { auth } from "@/lib/mamekoClient";
 
 export default function AnalyticsChart() {
   const [rawTransactions, setRawTransactions] = useState<any[]>([]);

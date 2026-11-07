@@ -36,6 +36,10 @@ Never use generic or jarring primaries. Adhere to our curated palette:
   - `containerColor = MaterialTheme.colorScheme.secondary` WAJIB dipasangkan dengan `contentColor = MaterialTheme.colorScheme.onSecondary`.
   - `containerColor = MaterialTheme.colorScheme.error` WAJIB dipasangkan dengan `contentColor = MaterialTheme.colorScheme.onError`.
   - **Larangan Keras**: Jangan pernah memasangkan `containerColor = primary` dengan `Color.White` karena di Dark Mode `primary` adalah slate terang (`#F1F5F9`) sehingga teks putih menjadi 100% invisible!
+- **Mandat Kontras Action Button & Refresh Icon pada Colored Header**:
+  - Dilarang keras me-reuse styling toolbar umum (seperti `.attachBtn` untuk input bar terang) ke dalam header berwarna (`--primary-accent` / tinted surface).
+  - Tombol aksi/refresh pada header berwarna WAJIB menggunakan warna dasar `var(--primary-accent-text)` (atau `onPrimary` di Android).
+  - Efek hover pada header berwarna WAJIB menggunakan translucent tint berbasis token RGB (`background: rgba(var(--surface-primary-rgb), 0.15)`) bukan warna hex statis (`#f1f5f9`), agar menghasilkan kontras dinamis yang tajam di Light Mode (> 7:1) maupun Dark Mode (> 4.5:1), memenuhi standar WCAG 2.1 AAA.
 
 ### Pillar 2: Curated Editorial Typography
 Typography is the voice of the brand.

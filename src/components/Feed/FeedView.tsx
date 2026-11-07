@@ -7,7 +7,7 @@ import styles from "./FeedView.module.css";
 import FeedCard from "./FeedCard";
 import { AppIcon } from "@/components/UI/Icon/AppIcon";
 import { getApiBaseUrl } from "@/lib/apiClient";
-import { auth } from "@/lib/supabaseClient";
+import { auth } from "@/lib/mamekoClient";
 import feedConfig from "@/data/ui/feedConfig.json";
 
 export default function FeedView() {

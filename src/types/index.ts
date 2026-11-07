@@ -1,5 +1,5 @@
 // src/types/index.ts
-// Unified TypeScript Data Contracts matching Supabase Migrations (0001-0014) and Go Backend Models
+// Unified TypeScript Data Contracts matching Postgres Migrations (0001-0014) and Go Backend Models
 
 export interface User {
   id: string;
@@ -108,8 +108,6 @@ export interface Order {
   items?: OrderItem[];
   created_at: string;
   updated_at?: string;
-  return_status?: string;
-  return_admin_note?: string;
 }
 
 export interface Voucher {

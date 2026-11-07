@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { getApiBaseUrl } from "@/lib/apiClient";
 import { useEffect, useState, useMemo, useRef } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { mamekoClient } from "@/lib/mamekoClient";
 import toast from "react-hot-toast";
 import styles from "./UserManagement.module.css";
 import { shouldSkipAuthEvent } from "@/utils/authHelpers";
@@ -47,7 +47,7 @@ export default function UserManagement() {
   const loadUsers = async () => {
     try {
       setLoading(true);
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await mamekoClient.auth.getSession();
       const token = session?.access_token;
 
       if (!token) throw new Error("No active session found.");
@@ -76,7 +76,7 @@ export default function UserManagement() {
 
   useEffect(() => {
     async function checkAuthAndLoad() {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await mamekoClient.auth.getSession();
       lastUserIdRef.current = session?.user?.id || null;
       if (session) {
         await loadUsers();
@@ -87,7 +87,7 @@ export default function UserManagement() {
 
     checkAuthAndLoad();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = mamekoClient.auth.onAuthStateChange(async (event, session) => {
       if (shouldSkipAuthEvent(event, session, lastUserIdRef.current)) return;
       lastUserIdRef.current = session?.user?.id || null;
       
@@ -110,7 +110,7 @@ export default function UserManagement() {
   const updateUser = async (userId, payload: any) => {
     try {
       setUpdatingId(userId);
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await mamekoClient.auth.getSession();
       const token = session?.access_token;
 
       const res = await fetch(getApiBaseUrl() + "/api/admin/team", {
@@ -176,7 +176,7 @@ export default function UserManagement() {
     const targetUserId = deleteTarget.id;
     try {
       setDeletingId(targetUserId);
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await mamekoClient.auth.getSession();
       const token = session?.access_token;
 
       let deletionSucceeded = false;
@@ -203,7 +203,7 @@ export default function UserManagement() {
           console.info("[DeleteUser] Go API ok (mungkin soft-delete). Melanjutkan RPC hard delete...");
           // ⚠️ Go API mungkin hanya melakukan soft-delete (status=inactive)
           // Selalu jalankan RPC untuk memastikan hard delete dari auth.users
-          const { data: rpcData, error: rpcError } = await supabase.rpc("delete_user_by_admin", {
+          const { data: rpcData, error: rpcError } = await mamekoClient.rpc("delete_user_by_admin", {
             target_user_id: targetUserId,
           });
           if (!rpcError) {
@@ -232,7 +232,7 @@ export default function UserManagement() {
       // 2. Fallback via Supabase RPC jika Go API gagal atau belum menghandle auth.users
       if (!deletionSucceeded) {
         console.info("[DeleteUser] Mencoba RPC delete_user_by_admin...");
-        const { data: rpcData, error: rpcError } = await supabase.rpc("delete_user_by_admin", {
+        const { data: rpcData, error: rpcError } = await mamekoClient.rpc("delete_user_by_admin", {
           target_user_id: targetUserId,
         });
         if (!rpcError) {
@@ -248,7 +248,7 @@ export default function UserManagement() {
         } else {
           console.warn("[DeleteUser] RPC gagal:", rpcError.message, "- mencoba hapus profiles langsung...");
           // Fallback: hapus dari public.profiles saja (auth.users tetap ada, tapi user tidak muncul di list)
-          const { error: profileDelError } = await supabase
+          const { error: profileDelError } = await mamekoClient
             .from("profiles")
             .delete()
             .eq("id", targetUserId);

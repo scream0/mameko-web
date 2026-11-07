@@ -7,7 +7,7 @@ import { getDiscountedPrice } from "@/utils/promo";
 import { getPublicSettings } from "@/services/settingsService";
 import styles from "./Shop.module.css";
 import { AppIcon } from "@/components/UI/Icon/AppIcon";
-import { supabase } from "@/lib/supabaseClient";
+import { mamekoClient } from "@/lib/mamekoClient";
 import { ShopSkeleton } from "@/components/UI/Skeleton/ShopSkeleton";
 import shopConfig from "@/data/ui/shopConfig.json";
 import { optimizeCloudinaryUrl, IMAGE_PRESETS } from "@/utils/imageOptimizer";
@@ -250,7 +250,7 @@ export default function Shop({ searchQuery = "", onBukaDetail, initialData }) {
     let channel: any;
     const timer = setTimeout(() => {
       const refreshCatalog = () => fetchShopData(true);
-      channel = supabase
+      channel = mamekoClient
         .channel("storefront-catalog")
         .on(
           "postgres_changes",
@@ -268,7 +268,7 @@ export default function Shop({ searchQuery = "", onBukaDetail, initialData }) {
     return () => {
       clearTimeout(timer);
       if (channel) {
-        supabase.removeChannel(channel);
+        mamekoClient.removeChannel(channel);
       }
     };
   }, [fetchShopData]);

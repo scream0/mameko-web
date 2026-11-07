@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { auth } from "@/lib/supabaseClient";
+import { auth } from "@/lib/mamekoClient";
 import userConfig from "@/data/ui/userDashboardConfig.json";
 import { shouldSkipAuthEvent } from "@/utils/authHelpers";
 import { getApiBaseUrl } from "@/lib/apiClient";

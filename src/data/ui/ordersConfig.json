@@ -9,8 +9,7 @@
     { "key": "pending", "label": "Belum Bayar", "icon": "wallet" },
     { "key": "processing", "label": "Sedang Dikemas", "icon": "package" },
     { "key": "shipping", "label": "Dikirim", "icon": "truck" },
-    { "key": "history", "label": "Riwayat Pesanan", "icon": "clock" },
-    { "key": "return", "label": "Retur", "icon": "rotate-ccw" }
+    { "key": "history", "label": "Riwayat Pesanan", "icon": "clock" }
   ],
   "status": {
     "pending": { "label": "Menunggu Pembayaran", "badgeClass": "statusPending" },
@@ -52,14 +51,11 @@
     "cancel": "Batalkan",
     "confirmReceived": "Konfirmasi Diterima",
     "processingConfirm": "Memproses...",
-    "applyReturn": "Ajukan Return",
-    "trackReturn": "Pantau Retur",
     "reorder": "Pesan Lagi",
     "loadMore": "Muat Lebih Banyak",
     "reviewedItem": "✓ {name} sudah diulas",
     "reviewItem": "Ulas {name}"
   },
-  "returnPeriodDays": 7,
   "labels": {
     "orderId": "ID Transaksi",
     "product": "Produk",
