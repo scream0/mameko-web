@@ -153,9 +153,9 @@
 .btnPrimary {
   height: 34px;
   padding: 0 1rem;
-  background: var(--secondary);
-  color: #ffffff;
-  border: none;
+  background: var(--primary-accent);
+  color: var(--primary-accent-text);
+  border: 1px solid transparent;
   border-radius: 10px;
   font-family: var(--font-sans);
   font-size: 0.76rem;
@@ -166,11 +166,11 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(var(--secondary-rgb), 0.25);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .btnPrimary:hover {
-  filter: brightness(1.08);
+  filter: brightness(1.15);
   transform: translateY(-1px);
 }
 

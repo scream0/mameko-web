@@ -193,7 +193,8 @@
 }
 
 .productCard.outOfStock {
-  opacity: 0.78;
+  opacity: 0.92;
+  filter: grayscale(0.2);
 }
 
 /* --- Card Visual Showcase Frame --- */
@@ -401,7 +402,7 @@
   padding: 2px 6px;
   border-radius: 4px;
   background: var(--surface-secondary);
-  color: var(--text-secondary);
+  color: var(--text-primary);
   border: 1px solid var(--border-color);
 }
 
@@ -458,8 +459,9 @@
 }
 
 .noReviewText {
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   font-size: 0.7rem;
+  font-weight: 500;
 }
 
 /* Footer / Stock Meta */
