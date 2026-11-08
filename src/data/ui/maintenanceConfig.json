@@ -16,10 +16,8 @@
     "title": "Butuh bantuan mengenai pesanan Anda?",
     "desc": "Tim customer care kami tetap siap melayani Anda melalui saluran resmi:",
     "whatsappLabel": "WhatsApp Customer Service",
-    "whatsappNumber": "+62 822-4171-8745",
-    "whatsappUrl": "https://wa.me/6282241718745?text=Halo%20MAMEKO,%20saya%20ingin%20bertanya%20mengenai%20status%20pesanan%20saya.",
-    "instagramLabel": "Instagram @makemekool",
-    "instagramUrl": "https://instagram.com/makemekool"
+    "whatsappMessageTemplate": "Halo MAMEKO, saya ingin bertanya mengenai status pesanan saya.",
+    "instagramLabel": "Instagram Resmi"
   },
   "adminPortal": {
     "trigger": "Akses Pengelola Toko",

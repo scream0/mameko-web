@@ -8,10 +8,16 @@ import styles from "./MaintenanceView.module.css";
 import { mamekoClient } from "@/lib/mamekoClient";
 import toast from "react-hot-toast";
 
+export interface MaintenanceSupportDetails {
+  whatsappNumber?: string;
+  instagramUrl?: string;
+}
+
 export interface MaintenanceServerDetails {
   title?: string;
   message?: string;
   estimatedEndTime?: string;
+  support?: MaintenanceSupportDetails;
 }
 
 interface MaintenanceViewProps {
@@ -233,32 +239,48 @@ export function MaintenanceView({
         </div>
 
         {/* Customer Support & Emergency Contact */}
-        <div className={styles.supportSection}>
-          <p className={styles.supportTitle}>{maintenanceConfig.support.title}</p>
-          <div className={styles.supportLinksRow}>
-            <a
-              href={maintenanceConfig.support.whatsappUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.supportPill}
-              aria-label={maintenanceConfig.support.whatsappLabel}
-            >
-              <AppIcon name="message-circle" size={15} />
-              <span>{maintenanceConfig.support.whatsappNumber}</span>
-            </a>
+        {(() => {
+          const rawWa = details?.support?.whatsappNumber?.trim() || "";
+          const cleanWa = rawWa.replace(/[^0-9]/g, "");
+          const waNumber = cleanWa ? (cleanWa.startsWith("0") ? "62" + cleanWa.slice(1) : cleanWa) : "";
+          const waUrl = waNumber ? `https://wa.me/${waNumber}?text=${encodeURIComponent(maintenanceConfig.support.whatsappMessageTemplate || "Halo MAMEKO, saya ingin bertanya mengenai status pesanan saya.")}` : "";
+          const igUrl = details?.support?.instagramUrl?.trim() || "";
 
-            <a
-              href={maintenanceConfig.support.instagramUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.supportPill}
-              aria-label={maintenanceConfig.support.instagramLabel}
-            >
-              <AppIcon name="instagram" size={15} />
-              <span>{maintenanceConfig.support.instagramLabel}</span>
-            </a>
-          </div>
-        </div>
+          if (!waUrl && !igUrl) return null;
+
+          return (
+            <div className={styles.supportSection}>
+              <p className={styles.supportTitle}>{maintenanceConfig.support.title}</p>
+              <div className={styles.supportLinksRow}>
+                {waUrl && (
+                  <a
+                    href={waUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.supportPill}
+                    aria-label={maintenanceConfig.support.whatsappLabel}
+                  >
+                    <AppIcon name="message-circle" size={15} />
+                    <span>{"+" + waNumber}</span>
+                  </a>
+                )}
+
+                {igUrl && (
+                  <a
+                    href={igUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.supportPill}
+                    aria-label={maintenanceConfig.support.instagramLabel}
+                  >
+                    <AppIcon name="instagram" size={15} />
+                    <span>{maintenanceConfig.support.instagramLabel}</span>
+                  </a>
+                )}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Footer */}
         <p className={styles.footerNote}>{maintenanceConfig.footer}</p>

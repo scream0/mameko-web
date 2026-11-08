@@ -167,7 +167,8 @@ export default function NotificationsSection({ onUnreadCountChange }: any) {
       setNotifications(mappedNotifications);
     } catch (err) {
       console.error("Gagal memuat notifikasi:", err);
-      toast.error(notificationsConfig.toasts.fetchError);
+      // Dedup toast: jangan spam error toast jika user berpindah tab atau server sedang retry
+      toast.error(notificationsConfig.toasts.fetchError, { id: "notifications-fetch-error" });
     } finally {
       setLoading(false);
     }

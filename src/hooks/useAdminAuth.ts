@@ -37,12 +37,27 @@ export function useAdminAuth() {
         const userId = currentUser.id || currentUser.uid;
         const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : {};
 
+        const sessionRole = String(currentUser.role || "").toLowerCase();
+        if (sessionRole === "admin" || sessionRole === "superadmin") {
+          setIsAdmin(true);
+          setRole(sessionRole);
+        }
+
         const res = await fetch(getApiBaseUrl() + `/api/user/profile`, {
           headers,
           signal: abortController.signal,
         });
 
         if (!res.ok) {
+          // If profile fetch fails but token already claims admin role, don't lock out
+          if (sessionRole === "admin" || sessionRole === "superadmin") {
+            if (!isDisposed) {
+              setRole(sessionRole);
+              setIsAdmin(true);
+              setAccessError("");
+            }
+            return;
+          }
           throw new Error("Gagal memverifikasi akses admin.");
         }
 

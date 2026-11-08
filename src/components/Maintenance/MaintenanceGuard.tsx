@@ -33,12 +33,8 @@ export function MaintenanceGuard({ children }: MaintenanceGuardProps) {
     if (typeof window === "undefined") return;
 
     try {
-      const urlParams = new URLSearchParams(window.location.search);
-      const bypassParam = urlParams.get("admin_bypass") || urlParams.get("bypass");
       const savedBypass = window.sessionStorage.getItem("mameko_admin_bypass");
-
-      if (bypassParam === "true" || bypassParam === "1" || savedBypass === "true") {
-        window.sessionStorage.setItem("mameko_admin_bypass", "true");
+      if (savedBypass === "true") {
         setIsBypassed(true);
         return;
       }
@@ -55,6 +51,7 @@ export function MaintenanceGuard({ children }: MaintenanceGuardProps) {
             user?.app_metadata?.role ||
             user?.user_metadata?.role;
           if (role === "admin" || role === "superadmin") {
+            window.sessionStorage.setItem("mameko_admin_bypass", "true");
             setIsBypassed(true);
             return;
           }
