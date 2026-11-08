@@ -5,17 +5,29 @@ import { AppIcon } from "@/components/UI/Icon/AppIcon";
 import maintenanceConfig from "@/data/ui/maintenanceConfig.json";
 import styles from "./MaintenanceView.module.css";
 
+export interface MaintenanceServerDetails {
+  title?: string;
+  message?: string;
+  estimatedEndTime?: string;
+}
+
 interface MaintenanceViewProps {
   countdown: number;
   isChecking: boolean;
   onCheckNow: () => void;
+  details?: MaintenanceServerDetails | null;
 }
 
 export function MaintenanceView({
   countdown,
   isChecking,
   onCheckNow,
+  details,
 }: MaintenanceViewProps) {
+  const displayTitle = details?.title?.trim() || maintenanceConfig.title;
+  const displayDesc = details?.message?.trim() || maintenanceConfig.description;
+  const estimatedEndTime = details?.estimatedEndTime?.trim();
+
   const countdownText = isChecking
     ? maintenanceConfig.timer.checkingText
     : maintenanceConfig.timer.countdownTemplate.replace(
@@ -45,12 +57,21 @@ export function MaintenanceView({
 
         {/* Headings & Description */}
         <h1 id="maintenance-title" className={styles.title}>
-          {maintenanceConfig.title}
+          {displayTitle}
         </h1>
         <p className={styles.subtitle}>{maintenanceConfig.subtitle}</p>
         <p id="maintenance-desc" className={styles.description}>
-          {maintenanceConfig.description}
+          {displayDesc}
         </p>
+
+        {estimatedEndTime && (
+          <div className={styles.estimatedBox}>
+            <span className={styles.estimatedIcon} aria-hidden="true">
+              <AppIcon name="clock" size={14} />
+            </span>
+            <span>Estimasi Selesai: {estimatedEndTime}</span>
+          </div>
+        )}
 
         {/* Telemetry / Auto-Recovery Card */}
         <div className={styles.telemetryBox}>

@@ -42,6 +42,10 @@ export interface StoreSettings {
   promoTargetType?: string;
   promoTargetVariants?: any;
   activeCouriers?: any;
+  maintenanceMode?: boolean;
+  maintenanceTitle?: string;
+  maintenanceMessage?: string;
+  maintenanceEstimatedEndTime?: string;
 }
 
 const CACHE_TTL = 5 * 60 * 1000; // 5 menit

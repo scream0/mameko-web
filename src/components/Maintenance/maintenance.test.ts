@@ -10,6 +10,13 @@ const maintenanceConfig = JSON.parse(
   )
 );
 
+const settingsConfig = JSON.parse(
+  fs.readFileSync(
+    path.resolve(process.cwd(), "src/data/ui/settingsConfig.json"),
+    "utf-8"
+  )
+);
+
 describe("Maintenance Module Integrity", () => {
   it("maintenanceConfig has all mandatory fields", () => {
     assert.ok(maintenanceConfig.badge, "Badge is required");
@@ -20,6 +27,17 @@ describe("Maintenance Module Integrity", () => {
     assert.ok(maintenanceConfig.buttons.checkStatus, "Check status button label is required");
     assert.ok(maintenanceConfig.support.whatsappUrl, "WhatsApp support URL is required");
     assert.ok(maintenanceConfig.support.whatsappNumber, "WhatsApp support number is required");
+  });
+
+  it("settingsConfig has all store maintenance fields", () => {
+    const store = settingsConfig.store;
+    assert.ok(store.maintenanceSectionTitle, "Store maintenance section title is required");
+    assert.ok(store.maintenanceToggleLabel, "Store maintenance toggle label is required");
+    assert.ok(store.maintenanceStatusActive, "Store maintenance active status badge is required");
+    assert.ok(store.maintenanceStatusInactive, "Store maintenance inactive status badge is required");
+    assert.ok(store.maintenanceTitleLabel, "Store maintenance title label is required");
+    assert.ok(store.maintenanceMessageLabel, "Store maintenance message label is required");
+    assert.ok(store.maintenanceAdminBypassNotice, "Store maintenance admin bypass notice is required");
   });
 
   it("evaluates health status codes correctly", () => {

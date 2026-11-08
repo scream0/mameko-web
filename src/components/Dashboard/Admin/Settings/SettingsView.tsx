@@ -29,6 +29,10 @@ const EMPTY: any = {
     enableMidtrans: true,
     enableManualTransfer: false,
     midtransIsProduction: false,
+    maintenanceMode: false,
+    maintenanceTitle: "",
+    maintenanceMessage: "",
+    maintenanceEstimatedEndTime: "",
   },
   couriers: {
     activeCouriers: ["jne", "jnt", "sicepat", "anteraja"],
@@ -182,6 +186,10 @@ export default function SettingsView() {
         enableMidtrans: data?.enableMidtrans ?? raw?.enableMidtrans ?? true,
         enableManualTransfer: data?.enableManualTransfer ?? raw?.enableManualTransfer ?? false,
         midtransIsProduction: data?.midtransIsProduction ?? raw?.midtransIsProduction ?? false,
+        maintenanceMode: Boolean(data?.maintenanceMode ?? raw?.maintenanceMode ?? false),
+        maintenanceTitle: pick(data?.maintenanceTitle, raw?.maintenanceTitle),
+        maintenanceMessage: pick(data?.maintenanceMessage, raw?.maintenanceMessage),
+        maintenanceEstimatedEndTime: pick(data?.maintenanceEstimatedEndTime, raw?.maintenanceEstimatedEndTime),
       },
       couriers: {
         activeCouriers: data?.activeCouriers || raw?.activeCouriers || ["jne", "jnt", "sicepat", "anteraja"],
@@ -589,6 +597,10 @@ export default function SettingsView() {
       enableMidtrans: Boolean(s.store.enableMidtrans ?? r.enableMidtrans),
       enableManualTransfer: Boolean(s.store.enableManualTransfer ?? r.enableManualTransfer),
       midtransIsProduction: Boolean(s.store.midtransIsProduction ?? r.midtransIsProduction),
+      maintenanceMode: Boolean(s.store.maintenanceMode ?? r.maintenanceMode),
+      maintenanceTitle: strictValue(s.store.maintenanceTitle, r.maintenanceTitle, rawVal.maintenanceTitle),
+      maintenanceMessage: strictValue(s.store.maintenanceMessage, r.maintenanceMessage, rawVal.maintenanceMessage),
+      maintenanceEstimatedEndTime: strictValue(s.store.maintenanceEstimatedEndTime, r.maintenanceEstimatedEndTime, rawVal.maintenanceEstimatedEndTime),
       activeCouriers:
         s.couriers.activeCouriers && s.couriers.activeCouriers.length > 0
           ? s.couriers.activeCouriers
@@ -1170,6 +1182,115 @@ function StoreTab({ settings, handleInputChange, cfg }) {
             {cfg.store?.areaSyncNotice || "Data wilayah ini tersinkronisasi otomatis dengan Biteship"} (Area ID: {settings.storeCityId || (cfg.store?.notSelected || "Belum dipilih")}).
           </small>
         </div>
+      </div>
+
+      <div className={styles.formSection}>
+        <div className={styles.sectionHeaderRow}>
+          <h4 className={styles.sectionTitle}>
+            {cfg.store?.maintenanceSectionTitle || "Mode Pemeliharaan Sistem"}
+          </h4>
+          <span
+            className={`${styles.statusBadge} ${
+              settings.maintenanceMode
+                ? styles.statusBadgeActive
+                : styles.statusBadgeInactive
+            }`}
+          >
+            {settings.maintenanceMode
+              ? cfg.store?.maintenanceStatusActive || "PEMELIHARAAN AKTIF"
+              : cfg.store?.maintenanceStatusInactive || "SISTEM NORMAL (ONLINE)"}
+          </span>
+        </div>
+        <p className={styles.sectionNoticeDesc}>
+          {cfg.store?.maintenanceSectionDesc ||
+            "Aktifkan mode pemeliharaan saat sedang melakukan pembaruan sistem atau perbaikan database. Selama aktif, pengunjung umum akan diarahkan ke layar pemeliharaan, sementara akun Administrator yang login tetap memiliki akses penuh ke dashboard."}
+        </p>
+
+        <div className={styles.inputGroup}>
+          <label className={styles.checkboxLabel}>
+            <input
+              type="checkbox"
+              name="maintenanceMode"
+              checked={Boolean(settings.maintenanceMode)}
+              onChange={(e) =>
+                handleInputChange({
+                  target: { name: "maintenanceMode", value: e.target.checked },
+                })
+              }
+              className={styles.checkboxInput}
+            />
+            <span>
+              {cfg.store?.maintenanceToggleLabel ||
+                "Aktifkan Mode Pemeliharaan Toko"}
+            </span>
+          </label>
+        </div>
+
+        {Boolean(settings.maintenanceMode) && (
+          <>
+            <div className={styles.inputGroup}>
+              <label className={styles.fieldLabel}>
+                {cfg.store?.maintenanceTitleLabel || "Judul Pengumuman Pemeliharaan"}
+              </label>
+              <input
+                type="text"
+                name="maintenanceTitle"
+                value={settings.maintenanceTitle || ""}
+                onChange={handleInputChange}
+                className={styles.inputField}
+                placeholder={
+                  cfg.store?.maintenanceTitlePlaceholder ||
+                  "Sistem Sedang Ditingkatkan"
+                }
+              />
+            </div>
+
+            <div className={styles.inputGroup}>
+              <label className={styles.fieldLabel}>
+                {cfg.store?.maintenanceMessageLabel ||
+                  "Pesan Pengumuman untuk Pengunjung"}
+              </label>
+              <textarea
+                name="maintenanceMessage"
+                value={settings.maintenanceMessage || ""}
+                onChange={handleInputChange}
+                className={styles.textareaField}
+                rows={3}
+                placeholder={
+                  cfg.store?.maintenanceMessagePlaceholder ||
+                  "Kami sedang melakukan pemeliharaan rutin..."
+                }
+              />
+            </div>
+
+            <div className={styles.inputGroup}>
+              <label className={styles.fieldLabel}>
+                {cfg.store?.maintenanceEndTimeLabel || "Estimasi Selesai (Opsional)"}
+              </label>
+              <input
+                type="text"
+                name="maintenanceEstimatedEndTime"
+                value={settings.maintenanceEstimatedEndTime || ""}
+                onChange={handleInputChange}
+                className={styles.inputField}
+                placeholder={
+                  cfg.store?.maintenanceEndTimePlaceholder ||
+                  "Contoh: 15:00 WIB atau 10 November 2026, 18:00 WIB"
+                }
+              />
+            </div>
+
+            <div className={styles.adminNoticeBox} role="note">
+              <span className={styles.adminNoticeIcon} aria-hidden="true">
+                ℹ️
+              </span>
+              <p className={styles.adminNoticeText}>
+                {cfg.store?.maintenanceAdminBypassNotice ||
+                  "Catatan Akses Admin: Akun Administrator yang login akan otomatis melewati layar pemeliharaan sehingga Anda tetap dapat mengelola toko, produk, pesanan, dan pengaturan kapan saja."}
+              </p>
+            </div>
+          </>
+        )}
       </div>
     </>
   );

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef, type ReactNode } from "react";
 import { getApiBaseUrl } from "@/lib/apiClient";
-import { MaintenanceView } from "./MaintenanceView";
+import { MaintenanceView, type MaintenanceServerDetails } from "./MaintenanceView";
 import toast from "react-hot-toast";
 import maintenanceConfig from "@/data/ui/maintenanceConfig.json";
 
@@ -22,6 +22,8 @@ export function MaintenanceGuard({ children }: MaintenanceGuardProps) {
   const [isChecking, setIsChecking] = useState<boolean>(false);
   const [countdown, setCountdown] = useState<number>(DEFAULT_POLL_INTERVAL);
   const [isBypassed, setIsBypassed] = useState<boolean>(false);
+  const [maintenanceDetails, setMaintenanceDetails] =
+    useState<MaintenanceServerDetails | null>(null);
 
   // Simpan ref ke interval countdown
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -38,6 +40,27 @@ export function MaintenanceGuard({ children }: MaintenanceGuardProps) {
       if (bypassParam === "true" || bypassParam === "1" || savedBypass === "true") {
         window.sessionStorage.setItem("mameko_admin_bypass", "true");
         setIsBypassed(true);
+        return;
+      }
+
+      // Auto-bypass untuk Administrator yang sudah login
+      const rawUser =
+        window.sessionStorage.getItem("mameko_user") ||
+        window.localStorage.getItem("mameko_user");
+      if (rawUser) {
+        try {
+          const user = JSON.parse(rawUser);
+          const role =
+            user?.role ||
+            user?.app_metadata?.role ||
+            user?.user_metadata?.role;
+          if (role === "admin" || role === "superadmin") {
+            setIsBypassed(true);
+            return;
+          }
+        } catch {
+          // Abaikan kesalahan parse JSON
+        }
       }
     } catch (e) {
       console.warn("Unable to check admin bypass token:", e);
@@ -81,7 +104,15 @@ export function MaintenanceGuard({ children }: MaintenanceGuardProps) {
           data.database === "healthy" || data.status === "success";
         const isServerMaintenance = Boolean(data.maintenance);
 
-        if (!isServerMaintenance && isDbHealthy) {
+        if (isServerMaintenance) {
+          if (data.maintenance_details) {
+            setMaintenanceDetails(data.maintenance_details);
+          }
+          return false;
+        }
+
+        if (isDbHealthy) {
+          setMaintenanceDetails(null);
           return true;
         }
       }
@@ -187,6 +218,7 @@ export function MaintenanceGuard({ children }: MaintenanceGuardProps) {
         countdown={countdown}
         isChecking={isChecking}
         onCheckNow={handleCheckNow}
+        details={maintenanceDetails}
       />
     );
   }

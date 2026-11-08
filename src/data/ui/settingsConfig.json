@@ -62,7 +62,19 @@
     "postalCodePrefix": "Kode Pos: ",
     "biteshipSyncDesc": "Data wilayah ini tersinkronisasi otomatis dengan Biteship",
     "areaSyncNotice": "Data wilayah ini tersinkronisasi otomatis dengan Biteship",
-    "notSelected": "Belum dipilih"
+    "notSelected": "Belum dipilih",
+    "maintenanceSectionTitle": "Mode Pemeliharaan Sistem",
+    "maintenanceSectionDesc": "Aktifkan mode pemeliharaan saat sedang melakukan pembaruan sistem atau perbaikan database. Selama aktif, pengunjung umum akan diarahkan ke layar pemeliharaan, sementara akun Administrator yang login tetap memiliki akses penuh ke dashboard.",
+    "maintenanceToggleLabel": "Aktifkan Mode Pemeliharaan Toko",
+    "maintenanceStatusActive": "PEMELIHARAAN AKTIF",
+    "maintenanceStatusInactive": "SISTEM NORMAL (ONLINE)",
+    "maintenanceTitleLabel": "Judul Pengumuman Pemeliharaan",
+    "maintenanceTitlePlaceholder": "Sistem Sedang Ditingkatkan",
+    "maintenanceMessageLabel": "Pesan Pengumuman untuk Pengunjung",
+    "maintenanceMessagePlaceholder": "Kami sedang melakukan pemeliharaan rutin untuk meningkatkan performa dan keamanan layanan. Mohon tunggu beberapa saat.",
+    "maintenanceEndTimeLabel": "Estimasi Selesai (Opsional)",
+    "maintenanceEndTimePlaceholder": "Contoh: 15:00 WIB atau 10 November 2026, 18:00 WIB",
+    "maintenanceAdminBypassNotice": "Catatan Akses Admin: Akun Administrator yang login akan otomatis melewati layar pemeliharaan sehingga Anda tetap dapat mengelola toko, produk, pesanan, dan pengaturan kapan saja."
   },
   "hero": {
     "sectionTitle": "Hero Section (Tipografi Utama Rata Tengah)",
