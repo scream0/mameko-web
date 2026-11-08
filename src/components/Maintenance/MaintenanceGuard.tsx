@@ -219,6 +219,7 @@ export function MaintenanceGuard({ children }: MaintenanceGuardProps) {
         isChecking={isChecking}
         onCheckNow={handleCheckNow}
         details={maintenanceDetails}
+        onAdminBypassSuccess={() => setIsBypassed(true)}
       />
     );
   }

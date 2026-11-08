@@ -21,6 +21,20 @@
     "instagramLabel": "Instagram @makemekool",
     "instagramUrl": "https://instagram.com/makemekool"
   },
+  "adminPortal": {
+    "trigger": "Akses Pengelola Toko",
+    "modalTitle": "Login Administrator",
+    "modalSubtitle": "Masuk untuk mengelola sistem dan menonaktifkan mode pemeliharaan.",
+    "emailLabel": "Email Administrator",
+    "emailPlaceholder": "admin@mameko.my.id",
+    "passwordLabel": "Kata Sandi",
+    "passwordPlaceholder": "Masukkan kata sandi...",
+    "submitBtn": "Masuk & Akses Dashboard",
+    "submitting": "Memverifikasi...",
+    "cancelBtn": "Batal",
+    "notAdminError": "Akses ditolak. Akun ini tidak memiliki hak akses Administrator toko.",
+    "loginSuccess": "Login Administrator berhasil. Akses sistem dibuka."
+  },
   "footer": "© 2026 MAKE ME KOOL. Seluruh Hak Cipta Dilindungi."
 }
 
