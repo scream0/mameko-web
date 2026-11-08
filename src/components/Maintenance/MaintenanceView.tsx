@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Logo } from "@/components/UI/Logo/logo";
 import { AppIcon } from "@/components/UI/Icon/AppIcon";
 import maintenanceConfig from "@/data/ui/maintenanceConfig.json";
@@ -30,44 +30,99 @@ export function MaintenanceView({
   onAdminBypassSuccess,
 }: MaintenanceViewProps) {
   const [showAdminModal, setShowAdminModal] = useState(false);
+  const [adminStep, setAdminStep] = useState<"email" | "otp">("email");
   const [adminEmail, setAdminEmail] = useState("");
-  const [adminPassword, setAdminPassword] = useState("");
+  const [adminOtp, setAdminOtp] = useState("");
+  const [resendTimer, setResendTimer] = useState(0);
   const [isSubmittingAdmin, setIsSubmittingAdmin] = useState(false);
   const [adminError, setAdminError] = useState("");
 
   const cfgAdmin = (maintenanceConfig as any).adminPortal || {
     trigger: "Akses Pengelola Toko",
     modalTitle: "Login Administrator",
-    modalSubtitle: "Masuk untuk mengelola sistem dan menonaktifkan mode pemeliharaan.",
+    modalSubtitle: "Masuk menggunakan verifikasi email OTP resmi untuk mengelola toko.",
     emailLabel: "Email Administrator",
     emailPlaceholder: "admin@mameko.my.id",
-    passwordLabel: "Kata Sandi",
-    passwordPlaceholder: "Masukkan kata sandi...",
-    submitBtn: "Masuk & Akses Dashboard",
-    submitting: "Memverifikasi...",
+    sendOtpBtn: "Kirim Kode OTP Masuk",
+    sendingOtp: "Mengirim kode OTP...",
+    otpLabel: "Kode Verifikasi OTP (6-Digit)",
+    otpPlaceholder: "Masukkan 6 digit angka...",
+    verifyBtn: "Verifikasi & Akses Dashboard",
+    verifying: "Memverifikasi kode...",
+    resendBtn: "Kirim Ulang Kode",
+    resendCooldown: "Kirim ulang dalam {seconds}d",
+    changeEmailBtn: "Ganti Email",
     cancelBtn: "Batal",
-    notAdminError: "Akses ditolak. Akun ini tidak memiliki hak akses Administrator toko.",
+    otpSentSuccess: "Kode OTP 6-digit telah dikirim ke {email}. Silakan periksa inbox email Anda.",
+    notAdminError: "Akses ditolak. Email ini tidak memiliki hak akses Administrator toko.",
     loginSuccess: "Login Administrator berhasil. Akses sistem dibuka.",
   };
 
-  const handleAdminLoginSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Resend Countdown Timer
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null;
+    if (resendTimer > 0) {
+      interval = setInterval(() => {
+        setResendTimer((prev) => prev - 1);
+      }, 1000);
+    } else if (resendTimer === 0 && interval) {
+      clearInterval(interval);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [resendTimer]);
+
+  // Step 1: Request Email OTP
+  const handleSendOtp = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setAdminError("");
 
-    if (!adminEmail.trim() || !adminPassword.trim()) {
-      setAdminError("Silakan isi email dan kata sandi administrator.");
+    const cleanEmail = adminEmail.trim();
+    if (!cleanEmail || !cleanEmail.includes("@") || !cleanEmail.includes(".")) {
+      setAdminError("Silakan masukkan alamat email administrator yang valid.");
       return;
     }
 
     try {
       setIsSubmittingAdmin(true);
-      const { data, error } = await mamekoClient.auth.signInWithPassword({
-        email: adminEmail.trim(),
-        password: adminPassword,
-      });
+      const { error } = await mamekoClient.auth.signInWithOtp({ email: cleanEmail });
 
       if (error) {
-        setAdminError(error.message || "Gagal masuk. Periksa kembali kredensial Anda.");
+        setAdminError(error.message || "Gagal mengirim kode OTP ke email administrator.");
+        return;
+      }
+
+      setAdminStep("otp");
+      setResendTimer(120);
+      toast.success(cfgAdmin.otpSentSuccess.replace("{email}", cleanEmail));
+    } catch (err: any) {
+      setAdminError(err?.message || "Terjadi kesalahan saat mengirim OTP.");
+    } finally {
+      setIsSubmittingAdmin(false);
+    }
+  };
+
+  // Step 2: Verify OTP
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAdminError("");
+
+    const cleanOtp = adminOtp.trim();
+    if (!cleanOtp || cleanOtp.length < 6) {
+      setAdminError("Silakan masukkan 6 digit kode OTP yang diterima di email.");
+      return;
+    }
+
+    try {
+      setIsSubmittingAdmin(true);
+      const { data, error } = await mamekoClient.auth.verifyOtp({
+        email: adminEmail.trim(),
+        token: cleanOtp,
+      });
+
+      if (error || !data.user) {
+        setAdminError(error?.message || "Kode OTP tidak valid atau telah kedaluwarsa.");
         return;
       }
 
@@ -93,7 +148,7 @@ export function MaintenanceView({
         setAdminError(cfgAdmin.notAdminError);
       }
     } catch (err: any) {
-      setAdminError(err?.message || "Terjadi kesalahan saat memverifikasi akses.");
+      setAdminError(err?.message || "Terjadi kesalahan saat memverifikasi kode OTP.");
     } finally {
       setIsSubmittingAdmin(false);
     }
@@ -244,75 +299,153 @@ export function MaintenanceView({
               <p className={styles.adminModalSubtitle}>{cfgAdmin.modalSubtitle}</p>
             </div>
 
-            <form onSubmit={handleAdminLoginSubmit} className={styles.adminForm}>
-              {adminError && (
-                <div className={styles.errorBanner} role="alert">
-                  {adminError}
+            {adminStep === "email" ? (
+              <form onSubmit={handleSendOtp} className={styles.adminForm}>
+                {adminError && (
+                  <div className={styles.errorBanner} role="alert">
+                    {adminError}
+                  </div>
+                )}
+
+                <div className={styles.formGroup}>
+                  <label className={styles.inputLabel} htmlFor="admin-email">
+                    {cfgAdmin.emailLabel}
+                  </label>
+                  <input
+                    id="admin-email"
+                    type="email"
+                    required
+                    value={adminEmail}
+                    onChange={(e) => setAdminEmail(e.target.value)}
+                    placeholder={cfgAdmin.emailPlaceholder}
+                    className={styles.textInput}
+                    disabled={isSubmittingAdmin}
+                    autoComplete="email"
+                    autoFocus
+                  />
                 </div>
-              )}
 
-              <div className={styles.formGroup}>
-                <label className={styles.inputLabel} htmlFor="admin-email">
-                  {cfgAdmin.emailLabel}
-                </label>
-                <input
-                  id="admin-email"
-                  type="email"
-                  required
-                  value={adminEmail}
-                  onChange={(e) => setAdminEmail(e.target.value)}
-                  placeholder={cfgAdmin.emailPlaceholder}
-                  className={styles.textInput}
-                  disabled={isSubmittingAdmin}
-                  autoComplete="email"
-                />
-              </div>
+                <div className={styles.adminModalActions}>
+                  <button
+                    type="button"
+                    className={styles.cancelModalBtn}
+                    onClick={() => setShowAdminModal(false)}
+                    disabled={isSubmittingAdmin}
+                  >
+                    {cfgAdmin.cancelBtn}
+                  </button>
+                  <button
+                    type="submit"
+                    className={styles.submitModalBtn}
+                    disabled={isSubmittingAdmin}
+                  >
+                    {isSubmittingAdmin ? (
+                      <>
+                        <span className={styles.spinner} aria-hidden="true" />
+                        <span>{cfgAdmin.sendingOtp}</span>
+                      </>
+                    ) : (
+                      <>
+                        <AppIcon name="send" size={14} />
+                        <span>{cfgAdmin.sendOtpBtn}</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <form onSubmit={handleVerifyOtp} className={styles.adminForm}>
+                {adminError && (
+                  <div className={styles.errorBanner} role="alert">
+                    {adminError}
+                  </div>
+                )}
 
-              <div className={styles.formGroup}>
-                <label className={styles.inputLabel} htmlFor="admin-password">
-                  {cfgAdmin.passwordLabel}
-                </label>
-                <input
-                  id="admin-password"
-                  type="password"
-                  required
-                  value={adminPassword}
-                  onChange={(e) => setAdminPassword(e.target.value)}
-                  placeholder={cfgAdmin.passwordPlaceholder}
-                  className={styles.textInput}
-                  disabled={isSubmittingAdmin}
-                  autoComplete="current-password"
-                />
-              </div>
+                <div className={styles.otpNotice}>
+                  Kode OTP 6-digit telah dikirim ke <strong>{adminEmail}</strong>.
+                </div>
 
-              <div className={styles.adminModalActions}>
-                <button
-                  type="button"
-                  className={styles.cancelModalBtn}
-                  onClick={() => setShowAdminModal(false)}
-                  disabled={isSubmittingAdmin}
-                >
-                  {cfgAdmin.cancelBtn}
-                </button>
-                <button
-                  type="submit"
-                  className={styles.submitModalBtn}
-                  disabled={isSubmittingAdmin}
-                >
-                  {isSubmittingAdmin ? (
-                    <>
-                      <span className={styles.spinner} aria-hidden="true" />
-                      <span>{cfgAdmin.submitting}</span>
-                    </>
-                  ) : (
-                    <>
-                      <AppIcon name="log-in" size={15} />
-                      <span>{cfgAdmin.submitBtn}</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </form>
+                <div className={styles.formGroup}>
+                  <label className={styles.inputLabel} htmlFor="admin-otp">
+                    {cfgAdmin.otpLabel}
+                  </label>
+                  <input
+                    id="admin-otp"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={6}
+                    required
+                    value={adminOtp}
+                    onChange={(e) => setAdminOtp(e.target.value.replace(/\D/g, ""))}
+                    placeholder="••••••"
+                    className={`${styles.textInput} ${styles.otpInput}`}
+                    disabled={isSubmittingAdmin}
+                    autoComplete="one-time-code"
+                    autoFocus
+                  />
+                </div>
+
+                <div className={styles.resendRow}>
+                  <button
+                    type="button"
+                    className={styles.backEmailBtn}
+                    onClick={() => {
+                      setAdminStep("email");
+                      setAdminOtp("");
+                      setAdminError("");
+                    }}
+                    disabled={isSubmittingAdmin}
+                  >
+                    <AppIcon name="arrow-left" size={13} />
+                    <span>{cfgAdmin.changeEmailBtn}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className={styles.resendLinkBtn}
+                    onClick={() => handleSendOtp()}
+                    disabled={isSubmittingAdmin || resendTimer > 0}
+                  >
+                    {resendTimer > 0
+                      ? cfgAdmin.resendCooldown.replace("{seconds}", String(resendTimer))
+                      : cfgAdmin.resendBtn}
+                  </button>
+                </div>
+
+                <div className={styles.adminModalActions}>
+                  <button
+                    type="button"
+                    className={styles.cancelModalBtn}
+                    onClick={() => {
+                      setShowAdminModal(false);
+                      setAdminStep("email");
+                      setAdminOtp("");
+                    }}
+                    disabled={isSubmittingAdmin}
+                  >
+                    {cfgAdmin.cancelBtn}
+                  </button>
+                  <button
+                    type="submit"
+                    className={styles.submitModalBtn}
+                    disabled={isSubmittingAdmin || adminOtp.length < 6}
+                  >
+                    {isSubmittingAdmin ? (
+                      <>
+                        <span className={styles.spinner} aria-hidden="true" />
+                        <span>{cfgAdmin.verifying}</span>
+                      </>
+                    ) : (
+                      <>
+                        <AppIcon name="check-circle" size={15} />
+                        <span>{cfgAdmin.verifyBtn}</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}

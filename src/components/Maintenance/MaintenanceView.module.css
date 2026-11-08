@@ -413,6 +413,71 @@
   box-shadow: 0 0 0 3px rgba(var(--primary-accent-rgb), 0.15);
 }
 
+.otpInput {
+  text-align: center;
+  font-size: 1.5rem;
+  letter-spacing: 0.35em;
+  font-weight: 700;
+  font-family: monospace;
+}
+
+.otpNotice {
+  background: rgba(var(--primary-accent-rgb), 0.08);
+  border: 1px solid rgba(var(--primary-accent-rgb), 0.2);
+  color: var(--text-primary);
+  padding: 0.75rem 0.95rem;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.otpNotice strong {
+  color: var(--primary-accent);
+}
+
+.resendRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+  font-size: 0.78rem;
+}
+
+.resendLinkBtn {
+  background: none;
+  border: none;
+  color: var(--primary-accent);
+  font-weight: 600;
+  font-size: 0.78rem;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  transition: opacity 0.2s ease;
+}
+
+.resendLinkBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  text-decoration: none;
+}
+
+.backEmailBtn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.backEmailBtn:hover {
+  color: var(--text-primary);
+}
+
 .errorBanner {
   background: rgba(var(--danger-rgb, 239, 68, 68), 0.1);
   border: 1px solid rgba(var(--danger-rgb, 239, 68, 68), 0.3);
