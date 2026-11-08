@@ -67,7 +67,7 @@
   position: relative;
   z-index: 3;
   width: 100%;
-  max-width: 1180px;
+  max-width: 1360px;
   margin: 0 auto;
   padding: 0 2rem;
   display: flex;
@@ -83,25 +83,27 @@
   align-items: center;
   text-align: center;
   width: 100%;
-  max-width: 1040px;
+  max-width: 1280px;
   will-change: transform;
 }
 
-/* Monumental Single-Color Display Headline */
+/* Monumental Single-Color Display Headline — 2 Crisp Unbroken Lines */
 .heroTitle {
   font-family: var(--font-serif);
-  font-size: clamp(2.85rem, 6.8vw, 6.2rem);
-  line-height: 1.04;
+  font-size: clamp(1.6rem, 4.8vw, 5rem);
+  line-height: 1.1;
   font-weight: 400;
-  letter-spacing: -0.015em;
+  letter-spacing: 0.02em;
   color: var(--text-primary);
   margin: 0 0 2rem;
   text-transform: uppercase;
-  text-wrap: balance;
-  max-width: 16ch;
+  width: 100%;
 }
 
+.titleMain,
 .titleAccent {
+  display: block;
+  white-space: nowrap;
   color: inherit;
   font-weight: 400;
 }
@@ -398,8 +400,8 @@
   }
 
   .heroTitle {
-    font-size: clamp(2.35rem, 9.5vw, 3.4rem);
-    line-height: 1.08;
+    font-size: clamp(1.35rem, 5.8vw, 2.5rem);
+    line-height: 1.12;
     margin-bottom: 1.4rem;
   }
 

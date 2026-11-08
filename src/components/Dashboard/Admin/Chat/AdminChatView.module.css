@@ -132,12 +132,12 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #9ca3af;
+  background: var(--text-secondary);
   flex-shrink: 0;
 }
 
 .statusDotOnline {
-  background: #4ade80;
+  background: var(--success-color);
 }
 
 .userLastMessage {
@@ -151,8 +151,8 @@
 }
 
 .unreadBadge {
-  background: var(--danger-color, #dc2626);
-  color: #fff;
+  background: var(--danger-color);
+  color: var(--primary-accent-text);
   font-size: 11px;
   font-weight: 700;
   padding: 2px 8px;
@@ -264,13 +264,13 @@
   font-size: 10px;
   border-radius: 10px;
   background: rgba(var(--text-secondary-rgb), 0.2);
-  color: #9ca3af;
+  color: var(--text-secondary);
   flex-shrink: 0;
 }
 
 .statusBadgeOnline {
   background: rgba(var(--success-color-rgb), 0.2);
-  color: #4ade80;
+  color: var(--success-color);
 }
 
 .messagesList {
@@ -302,9 +302,9 @@
 
 /* Quoted Reply inside Message Bubble */
 .quotedReply {
-  border-left: 3px solid rgba(255, 255, 255, 0.95);
+  border-left: 3px solid rgba(var(--primary-accent-text-rgb, 255, 255, 255), 0.95);
   background: rgba(0, 0, 0, 0.22);
-  color: #ffffff;
+  color: var(--primary-accent-text);
   padding: 6px 10px;
   border-radius: 4px;
   margin-bottom: 8px;
@@ -314,7 +314,7 @@
 
 .messageBubble.user .quotedReply {
   border-left: 3px solid var(--primary-accent);
-  background: var(--surface-secondary, #f1f5f9);
+  background: var(--surface-secondary);
   color: var(--text-primary);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
@@ -701,8 +701,8 @@
   align-items: center;
   gap: 0.625rem;
   padding: 0.5rem;
-  background: var(--surface-card, #ffffff);
-  border: 1px solid var(--border-color, #e2e8f0);
+  background: var(--surface-card);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   margin-bottom: 0.5rem;
   text-decoration: none;
@@ -711,8 +711,8 @@
 }
 
 :global([data-theme="dark"]) .attachedProductCard {
-  background: #1e293b;
-  border-color: #334155;
+  background: var(--surface-secondary);
+  border-color: var(--border-color);
 }
 
 .attachedProductCard:hover {
@@ -737,18 +737,18 @@
 .attachedProductTitle {
   font-size: 0.8125rem;
   font-weight: 600;
-  color: var(--text-primary, #0f172a);
+  color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 :global([data-theme="dark"]) .attachedProductTitle {
-  color: #f8fafc;
+  color: var(--text-primary);
 }
 
 .attachedProductPrice {
   font-size: 0.75rem;
   font-weight: 700;
-  color: var(--primary, #059669);
+  color: var(--primary-accent);
 }

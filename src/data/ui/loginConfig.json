@@ -1,11 +1,10 @@
 {
   "brand": {
     "name": "MAKE ME KOOL",
-    "subtitle": "ANTARA AROMA DAN RASA",
-    "themeColor": "#0a0a0a"
+    "subtitle": "ANTARA AROMA DAN RASA"
   },
   "content": {
-    "backLinkLabel": "Back to Home",
+    "backLinkLabel": "Kembali ke Beranda",
     "backLinkHref": "/"
   },
   "form": {

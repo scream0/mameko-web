@@ -1,0 +1,26 @@
+{
+  "badge": "PEMELIHARAAN SISTEM BERKALA",
+  "title": "Sistem Sedang Ditingkatkan",
+  "subtitle": "Kenyamanan dan keamanan berbelanja Anda adalah prioritas utama kami.",
+  "description": "Kami sedang melakukan pembaruan infrastruktur dan sinkronisasi server untuk memberikan performa transaksi yang lebih cepat, aman, dan sempurna. Selama proses ini berlangsung, akses transaksi dan akun dibatasi sementara.",
+  "timer": {
+    "checkingText": "Memeriksa status sistem...",
+    "countdownTemplate": "Pemeriksaan otomatis dalam {seconds} detik",
+    "healthySuccess": "Sistem telah aktif kembali! Mengarahkan Anda..."
+  },
+  "buttons": {
+    "checkStatus": "Periksa Status Server",
+    "checking": "Memeriksa..."
+  },
+  "support": {
+    "title": "Butuh bantuan mengenai pesanan Anda?",
+    "desc": "Tim customer care kami tetap siap melayani Anda melalui saluran resmi:",
+    "whatsappLabel": "WhatsApp Customer Service",
+    "whatsappNumber": "+62 822-4171-8745",
+    "whatsappUrl": "https://wa.me/6282241718745?text=Halo%20MAMEKO,%20saya%20ingin%20bertanya%20mengenai%20status%20pesanan%20saya.",
+    "instagramLabel": "Instagram @makemekool",
+    "instagramUrl": "https://instagram.com/makemekool"
+  },
+  "footer": "© 2026 MAKE ME KOOL. Seluruh Hak Cipta Dilindungi."
+}
+

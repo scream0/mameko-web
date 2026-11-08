@@ -1,13 +1,29 @@
-// src/components/ui/Logo.jsx
-export const Logo = ({ className }: { className?: string } = {}) => {
+// src/components/ui/Logo.tsx
+export const Logo = ({
+  className,
+  width = 30,
+  height = 21,
+}: {
+  className?: string;
+  width?: number | string;
+  height?: number | string;
+} = {}) => {
   return (
     <svg
       id="Layer_1"
       data-name="Layer 1"
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 458.47 321.05"
+      width={width}
+      height={height}
       className={className}
       fill="currentColor"
+      aria-hidden="true"
+      style={{
+        display: "inline-block",
+        flexShrink: 0,
+        maxWidth: "100%",
+      }}
     >
       <defs>
         <style>
@@ -30,3 +46,4 @@ export const Logo = ({ className }: { className?: string } = {}) => {
     </svg>
   );
 };
+

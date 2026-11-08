@@ -9,14 +9,20 @@ import { getSafeAuthRedirect } from "@/utils/authRedirect";
 import { sanitizeUserError } from "@/utils/errorSanitizer";
 import Script from "next/script";
 
+declare global {
+  interface Window {
+    google?: any;
+  }
+}
+
 export default function LoginForm() {
   const { setCustomer } = useStore();
   const searchParams = useSearchParams();
-  const callbackUrl = getSafeAuthRedirect(searchParams.get("callbackUrl"));
+  const callbackUrl = getSafeAuthRedirect(searchParams?.get("callbackUrl"));
 
   const { form } = loginConfig || {};
   const {
-    settings = {},
+    settings = { resendCooldownSeconds: 120, otpLength: 6 },
     labels = {},
     buttons = {},
     validation = {},
@@ -24,16 +30,18 @@ export default function LoginForm() {
     defaults = {},
     googleAuth = {},
     fields = [],
-  } = form || {};
+  } = (form as any) || {};
 
-  const cooldownSeconds = Number(settings.resendCooldownSeconds) || 120;
-  const otpLength = Number(settings.otpLength) || 6;
+  const cooldownSeconds = Number(settings?.resendCooldownSeconds) || 120;
+  const otpLength = Number(settings?.otpLength) || 6;
 
   const [email, setEmail] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  const isMountedRef = useRef(true);
 
   useEffect(() => {
+    isMountedRef.current = true;
     setIsClient(true);
     try {
       const savedEmail = localStorage.getItem("rememberedEmail");
@@ -44,12 +52,15 @@ export default function LoginForm() {
     } catch (e) {
       console.error("Gagal membaca rememberedEmail:", e);
     }
+    return () => {
+      isMountedRef.current = false;
+    };
   }, []);
 
   // OTP State
   const [otpSent, setOtpSent] = useState(false);
-  const [otpArray, setOtpArray] = useState(Array(otpLength).fill(""));
-  const inputRefs = useRef([]);
+  const [otpArray, setOtpArray] = useState<string[]>(Array(otpLength).fill(""));
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const isVerifyingRef = useRef(false);
 
   // Timer State
@@ -61,92 +72,138 @@ export default function LoginForm() {
 
   // Resend Timer Logic
   useEffect(() => {
-    let interval = null;
+    let interval: NodeJS.Timeout | null = null;
     if (resendTimer > 0) {
       interval = setInterval(() => {
         setResendTimer((prev) => prev - 1);
       }, 1000);
-    } else if (resendTimer === 0) {
+    } else if (resendTimer === 0 && interval) {
       clearInterval(interval);
     }
-    return () => clearInterval(interval);
+    return () => {
+      if (interval) clearInterval(interval);
+    };
   }, [resendTimer]);
 
-  const formatTime = (timeInSeconds) => {
-    const m = Math.floor(timeInSeconds / 60).toString().padStart(2, "0");
+  const formatTime = (timeInSeconds: number) => {
+    const m = Math.floor(timeInSeconds / 60)
+      .toString()
+      .padStart(2, "0");
     const s = (timeInSeconds % 60).toString().padStart(2, "0");
     return `${m}:${s}`;
   };
 
   // Helper untuk mengecek role di database dan melakukan redirect yang sesuai
-  const handlePostLoginRedirect = useCallback(async (userId) => {
-    try {
-      const { data: profile, error: profileError } = await mamekoClient
-        .from("profiles")
-        .select("role")
-        .eq("id", userId)
-        .single();
+  const handlePostLoginRedirect = useCallback(
+    async (userId: string) => {
+      try {
+        let isAdmin = false;
 
-      let isAdmin = false;
-      if (!profileError && profile?.role) {
-        isAdmin = ["admin", "superadmin"].includes(String(profile.role).toLowerCase());
-      }
-      
-      if (!isAdmin) {
-        const { data: { session } } = await mamekoClient.auth.getSession();
-        const metaRole = session?.user?.user_metadata?.role;
-        if (metaRole) {
-          isAdmin = ["admin", "superadmin"].includes(String(metaRole).toLowerCase());
+        if (userId) {
+          const { data: profile, error: profileError } = await mamekoClient
+            .from("profiles")
+            .select("role")
+            .eq("id", userId)
+            .single();
+
+          if (!profileError && profile?.role) {
+            isAdmin = ["admin", "superadmin"].includes(
+              String(profile.role).toLowerCase()
+            );
+          }
+        }
+
+        if (!isAdmin) {
+          const {
+            data: { session },
+          } = await mamekoClient.auth.getSession();
+          const metaRole =
+            session?.user?.user_metadata?.role || session?.user?.role;
+          if (metaRole) {
+            isAdmin = ["admin", "superadmin"].includes(
+              String(metaRole).toLowerCase()
+            );
+          }
+        }
+
+        const targetUrl = isAdmin ? "/dashboard" : callbackUrl;
+
+        if (typeof window !== "undefined") {
+          window.location.replace(targetUrl);
+          // Fallback navigasi jika replace ditahan oleh browser
+          setTimeout(() => {
+            if (window.location.pathname !== targetUrl) {
+              window.location.href = targetUrl;
+            }
+          }, 350);
+        }
+      } catch (err) {
+        console.error("Gagal memeriksa role:", err);
+        if (typeof window !== "undefined") {
+          window.location.replace(callbackUrl);
         }
       }
-
-      if (isAdmin) {
-        window.location.replace("/dashboard");
-      } else {
-        window.location.replace(callbackUrl);
-      }
-    } catch (err) {
-      console.error("Gagal memeriksa role:", err);
-      window.location.replace(callbackUrl);
-    }
-  }, [callbackUrl]);
+    },
+    [callbackUrl]
+  );
 
   // ==========================================
   // GOOGLE CREDENTIAL RESPONSE HANDLER (POPUP)
   // ==========================================
-  const handleGoogleCredentialResponse = useCallback(async (response) => {
-    setError("");
-    setSuccessMessage("");
-    setIsLoading(true);
+  const handleGoogleCredentialResponse = useCallback(
+    async (response: any) => {
+      setError("");
+      setSuccessMessage("");
+      setIsLoading(true);
 
-    try {
-      const idToken = response?.credential;
-      if (!idToken) {
-        throw new Error(messages.googleAuthFailed || "Token Google tidak ditemukan.");
+      try {
+        const idToken = response?.credential;
+        if (!idToken) {
+          throw new Error(
+            messages?.googleAuthFailed || "Token Google tidak ditemukan."
+          );
+        }
+
+        const { data, error: signInError } =
+          await mamekoClient.auth.signInWithIdToken({
+            provider: "google",
+            token: idToken,
+          });
+
+        if (signInError) throw signInError;
+
+        if (data?.user) {
+          const userId = data.user.id || "";
+          setCustomer({
+            name:
+              data.user?.user_metadata?.name ||
+              data.user?.full_name ||
+              defaults?.googleFallbackName ||
+              "User Google",
+            email: data.user?.email || "",
+            phone: data.user?.user_metadata?.phone || data.user?.phone || "",
+          });
+
+          await handlePostLoginRedirect(userId);
+        }
+      } catch (err: any) {
+        const safeError = sanitizeUserError(
+          err,
+          messages?.googleAuthFailed || "Gagal masuk menggunakan Google."
+        );
+        if (isMountedRef.current) {
+          setError(safeError);
+          setIsLoading(false);
+        }
       }
-
-      const { data, error: signInError } = await mamekoClient.auth.signInWithIdToken({
-        provider: "google",
-        token: idToken,
-      });
-
-      if (signInError) throw signInError;
-
-      if (data?.user) {
-        setCustomer({
-          name: data.user?.user_metadata?.name || data.user?.full_name || defaults.googleFallbackName || "User Google",
-          email: data.user?.email,
-          phone: data.user?.user_metadata?.phone || "",
-        });
-
-        await handlePostLoginRedirect(data.user.id);
-      }
-    } catch (err) {
-      const safeError = sanitizeUserError(err, messages.googleAuthFailed || "Gagal masuk menggunakan Google.");
-      setError(safeError);
-      setIsLoading(false);
-    }
-  }, [handlePostLoginRedirect, setCustomer, defaults.googleFallbackName, messages.googleAuthFailed]);
+    },
+    [
+      handlePostLoginRedirect,
+      setCustomer,
+      defaults?.googleFallbackName,
+      messages?.googleAuthFailed,
+    ]
+  );
 
   const initGoogleButton = useCallback(() => {
     const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
@@ -159,14 +216,17 @@ export default function LoginForm() {
       const buttonElement = document.getElementById("googleButtonDiv");
       if (buttonElement) {
         buttonElement.innerHTML = "";
-        const isDark = document.documentElement.getAttribute("data-theme") === "dark";
-        const theme = isDark ? "filled_black" : (googleAuth.theme || "outline");
-        
+        const isDark =
+          document.documentElement.getAttribute("data-theme") === "dark";
+        const theme = isDark
+          ? "filled_black"
+          : googleAuth?.theme || "outline";
+
         window.google.accounts.id.renderButton(buttonElement, {
           theme,
-          size: googleAuth.size || "large",
-          text: googleAuth.text || "continue_with",
-          shape: googleAuth.shape || "rectangular",
+          size: googleAuth?.size || "large",
+          text: googleAuth?.text || "continue_with",
+          shape: googleAuth?.shape || "rectangular",
           width: Math.min(buttonElement.offsetWidth || 340, 360),
         });
       }
@@ -183,57 +243,89 @@ export default function LoginForm() {
   // ==========================================
   // OTP BOX HANDLERS & AUTO-SUBMIT
   // ==========================================
-  const handleVerifyOtp = useCallback(async (codeToVerify) => {
-    if (isVerifyingRef.current) return;
+  const handleVerifyOtp = useCallback(
+    async (codeToVerify?: string) => {
+      if (isVerifyingRef.current) return;
 
-    const otpCode = codeToVerify || otpArray.join("");
-    if (otpCode.length < otpLength) {
-      setError(validation.otpLengthRequired || `Silakan masukkan kode OTP ${otpLength} digit.`);
-      return;
-    }
-
-    isVerifyingRef.current = true;
-    setError("");
-    setIsLoading(true);
-
-    try {
-      const { data, error: verifyError } = await mamekoClient.auth.verifyOtp({
-        email: email.trim().toLowerCase(),
-        token: otpCode,
-        type: "email",
-      });
-
-      if (verifyError) throw verifyError;
-
-      const userName = data.user?.user_metadata?.name || data.user?.full_name || email.split("@")[0] || "User";
-
-      setCustomer({
-        name: userName,
-        email: data.user?.email,
-        phone: data.user?.user_metadata?.phone || "",
-      });
-
-      try {
-        if (rememberMe) {
-          localStorage.setItem("rememberedEmail", email);
-        } else {
-          localStorage.removeItem("rememberedEmail");
-        }
-      } catch (e) {
-        console.error("Gagal memperbarui rememberedEmail:", e);
+      const otpCode = codeToVerify || otpArray.join("");
+      if (otpCode.length < otpLength) {
+        setError(
+          validation?.otpLengthRequired ||
+            `Silakan masukkan kode OTP ${otpLength} digit.`
+        );
+        return;
       }
 
-      setSuccessMessage(messages.loginSuccess || "Berhasil masuk! Mengalihkan...");
-      await handlePostLoginRedirect(data.user.id);
-    } catch (err) {
-      const safeError = sanitizeUserError(err, messages.otpFailed || "Kode OTP salah atau gagal diverifikasi.");
-      setError(safeError);
-      setIsLoading(false);
-      isVerifyingRef.current = false;
-    }
-  }, [email, otpArray, otpLength, rememberMe, setCustomer, handlePostLoginRedirect, validation.otpLengthRequired, messages.otpFailed, messages.loginSuccess]);
+      isVerifyingRef.current = true;
+      setError("");
+      setIsLoading(true);
 
-  const handleOtpChange = (index, value) => {
+      try {
+        const { data, error: verifyError } = await mamekoClient.auth.verifyOtp({
+          email: email.trim().toLowerCase(),
+          token: otpCode,
+          type: "email",
+        });
+
+        if (verifyError) throw verifyError;
+
+        const userId =
+          data?.user?.id ||
+          data?.session?.user?.id ||
+          "";
+
+        const userName =
+          data?.user?.user_metadata?.name ||
+          data?.user?.full_name ||
+          email.split("@")[0] ||
+          "User";
+
+        setCustomer({
+          name: userName,
+          email: data?.user?.email || email,
+          phone: data?.user?.user_metadata?.phone || data?.user?.phone || "",
+        });
+
+        try {
+          if (rememberMe) {
+            localStorage.setItem("rememberedEmail", email);
+          } else {
+            localStorage.removeItem("rememberedEmail");
+          }
+        } catch (e) {
+          console.error("Gagal memperbarui rememberedEmail:", e);
+        }
+
+        setSuccessMessage(
+          messages?.loginSuccess || "Berhasil masuk! Mengalihkan..."
+        );
+        await handlePostLoginRedirect(userId);
+      } catch (err: any) {
+        const safeError = sanitizeUserError(
+          err,
+          messages?.otpFailed || "Kode OTP salah atau gagal diverifikasi."
+        );
+        if (isMountedRef.current) {
+          setError(safeError);
+          setIsLoading(false);
+        }
+        isVerifyingRef.current = false;
+      }
+    },
+    [
+      email,
+      otpArray,
+      otpLength,
+      rememberMe,
+      setCustomer,
+      handlePostLoginRedirect,
+      validation?.otpLengthRequired,
+      messages?.otpFailed,
+      messages?.loginSuccess,
+    ]
+  );
+
+  const handleOtpChange = (index: number, value: string) => {
     const digit = value.replace(/\D/g, "").slice(-1);
     const newOtpArray = [...otpArray];
     newOtpArray[index] = digit;
@@ -248,15 +340,22 @@ export default function LoginForm() {
     }
   };
 
-  const handleOtpKeyDown = (index, e) => {
+  const handleOtpKeyDown = (
+    index: number,
+    e: React.KeyboardEvent<HTMLInputElement>
+  ) => {
     if (e.key === "Backspace" && !otpArray[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
     }
   };
 
-  const handleOtpPaste = (e) => {
+  const handleOtpPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault();
-    const pasteData = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, otpLength).split("");
+    const pasteData = e.clipboardData
+      .getData("text")
+      .replace(/\D/g, "")
+      .slice(0, otpLength)
+      .split("");
     if (pasteData.length > 0) {
       const newOtpArray = [...otpArray];
       pasteData.forEach((char, i) => {
@@ -282,7 +381,7 @@ export default function LoginForm() {
   const requestOtpCode = async () => {
     const cleanEmail = email.trim().toLowerCase();
     if (!cleanEmail || !cleanEmail.includes("@")) {
-      setError(validation.invalidEmail || "Masukkan alamat email yang valid.");
+      setError(validation?.invalidEmail || "Masukkan alamat email yang valid.");
       return;
     }
 
@@ -291,7 +390,10 @@ export default function LoginForm() {
     setIsLoading(true);
 
     try {
-      const redirectUrl = typeof window !== "undefined" ? `${window.location.origin}/auth/callback` : undefined;
+      const redirectUrl =
+        typeof window !== "undefined"
+          ? `${window.location.origin}/auth/callback`
+          : undefined;
       const { error: signInError } = await mamekoClient.auth.signInWithOtp({
         email: cleanEmail,
         options: {
@@ -299,12 +401,19 @@ export default function LoginForm() {
         },
       });
       if (signInError) throw signInError;
-      
-      setSuccessMessage(messages.otpSentSuccess || "Kode OTP telah dikirim ke email Anda. Silakan periksa kotak masuk (atau spam).");
+
+      setSuccessMessage(
+        messages?.otpSentSuccess ||
+          "Kode OTP telah dikirim ke email Anda. Silakan periksa kotak masuk (atau spam)."
+      );
       setOtpSent(true);
       setResendTimer(cooldownSeconds);
-    } catch (err) {
-      const safeError = sanitizeUserError(err, messages.otpRequestFailed || "Gagal mengirim kode OTP. Pastikan email valid.");
+    } catch (err: any) {
+      const safeError = sanitizeUserError(
+        err,
+        messages?.otpRequestFailed ||
+          "Gagal mengirim kode OTP. Pastikan email valid."
+      );
       setError(safeError);
     } finally {
       setIsLoading(false);
@@ -314,11 +423,11 @@ export default function LoginForm() {
   // ==========================================
   // MAIN SUBMIT HANDLER
   // ==========================================
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!email) {
-      setError(validation.emailRequired || "Email wajib diisi.");
+      setError(validation?.emailRequired || "Email wajib diisi.");
       return;
     }
 
@@ -329,7 +438,10 @@ export default function LoginForm() {
     }
   };
 
-  const emailPlaceholder = fields.find((f) => f.name === "email")?.placeholder || form?.emailPlaceholder || "EMAIL ADDRESS";
+  const emailPlaceholder =
+    fields?.find((f: any) => f.name === "email")?.placeholder ||
+    form?.emailPlaceholder ||
+    "EMAIL ADDRESS";
 
   return (
     <div className={styles.formWrapper}>
@@ -345,18 +457,25 @@ export default function LoginForm() {
         {!otpSent && (
           <>
             <div className={styles.socialWrapper}>
-              <div id="googleButtonDiv" className={styles.googleBtnWrapper}></div>
+              <div
+                id="googleButtonDiv"
+                className={styles.googleBtnWrapper}
+              ></div>
             </div>
 
             <div className={styles.divider}>
-              <span>{labels.oauthDivider || "ATAU LANJUTKAN DENGAN EMAIL"}</span>
+              <span>
+                {labels?.oauthDivider || "ATAU LANJUTKAN DENGAN EMAIL"}
+              </span>
             </div>
           </>
         )}
 
         <form onSubmit={handleSubmit} className={styles.loginForm}>
           {error && <div className={styles.errorMessage}>{error}</div>}
-          {successMessage && <div className={styles.successMessage}>{successMessage}</div>}
+          {successMessage && (
+            <div className={styles.successMessage}>{successMessage}</div>
+          )}
 
           {/* Email Field */}
           {!otpSent && (
@@ -376,10 +495,15 @@ export default function LoginForm() {
           )}
 
           {/* OTP Field */}
-          <div className={`${styles.inputWrapper} ${otpSent ? styles.fieldVisible : styles.fieldHidden}`}>
+          <div
+            className={`${styles.inputWrapper} ${
+              otpSent ? styles.fieldVisible : styles.fieldHidden
+            }`}
+          >
             {otpSent && (
               <p className={styles.otpNoticeText}>
-                {labels.otpNoticePrefix || "Masukkan kode yang dikirim ke"} <br />
+                {labels?.otpNoticePrefix || "Masukkan kode yang dikirim ke"}{" "}
+                <br />
                 <strong className={styles.otpNoticeEmail}>{email}</strong>
               </p>
             )}
@@ -392,7 +516,9 @@ export default function LoginForm() {
                   pattern="[0-9]*"
                   maxLength={1}
                   value={digit}
-                  ref={(el) => (inputRefs.current[index] = el)}
+                  ref={(el) => {
+                    inputRefs.current[index] = el;
+                  }}
                   onChange={(e) => handleOtpChange(index, e.target.value)}
                   onKeyDown={(e) => handleOtpKeyDown(index, e)}
                   onPaste={handleOtpPaste}
@@ -415,22 +541,26 @@ export default function LoginForm() {
                   disabled={isLoading}
                 />
                 <span className={styles.customCheckmark}></span>
-                {labels.rememberMe || "Remember Me"}
+                {labels?.rememberMe || "Remember Me"}
               </label>
             </div>
           )}
 
           <button
             type="submit"
-            className={`${styles.btnLogin} ${isLoading ? styles.btnLoading : ""}`}
-            disabled={isLoading || (otpSent && otpArray.join("").length < otpLength)}
+            className={`${styles.btnLogin} ${
+              isLoading ? styles.btnLoading : ""
+            }`}
+            disabled={
+              isLoading || (otpSent && otpArray.join("").length < otpLength)
+            }
           >
             {isLoading ? (
               <span className={styles.spinner}></span>
             ) : !otpSent ? (
-              buttons.sendOtp || "KIRIM KODE OTP"
+              buttons?.sendOtp || "KIRIM KODE OTP"
             ) : (
-              buttons.verifyOtp || "VERIFIKASI OTP"
+              buttons?.verifyOtp || "VERIFIKASI OTP"
             )}
           </button>
 
@@ -438,8 +568,11 @@ export default function LoginForm() {
             <>
               {resendTimer > 0 ? (
                 <span className={styles.resendTimerText}>
-                  {labels.resendCountdown
-                    ? labels.resendCountdown.replace("{time}", formatTime(resendTimer))
+                  {labels?.resendCountdown
+                    ? labels.resendCountdown.replace(
+                        "{time}",
+                        formatTime(resendTimer)
+                      )
                     : `Kirim Ulang Kode (${formatTime(resendTimer)})`}
                 </span>
               ) : (
@@ -449,7 +582,7 @@ export default function LoginForm() {
                   onClick={requestOtpCode}
                   disabled={isLoading}
                 >
-                  {buttons.resendOtp || "Kirim Ulang Kode OTP"}
+                  {buttons?.resendOtp || "Kirim Ulang Kode OTP"}
                 </button>
               )}
 
@@ -465,7 +598,7 @@ export default function LoginForm() {
                 }}
                 disabled={isLoading}
               >
-                {buttons.changeEmail || "Ubah Alamat Email"}
+                {buttons?.changeEmail || "Ubah Alamat Email"}
               </button>
             </>
           )}
@@ -474,3 +607,4 @@ export default function LoginForm() {
     </div>
   );
 }
+

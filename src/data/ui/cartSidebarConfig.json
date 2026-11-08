@@ -8,7 +8,7 @@
   },
   "icons": {
     "close": "x",
-    "emptyCart": "shopping-cart",
+    "emptyCart": "shopping-bag",
     "trash": "trash-2",
     "tag": "tag"
   },
@@ -19,7 +19,7 @@
     "quantityPlus": "+",
     "subtotal": "Subtotal",
     "promoDiscount": "Diskon Promo Toko",
-    "total": "Total Pembayaran:",
+    "total": "Total Pembayaran",
     "checkout": "Bayar Sekarang",
     "processing": "Memproses...",
     "stockOut": "(Habis)",
@@ -34,11 +34,11 @@
   "emptyState": {
     "message": "Keranjang Anda Kosong",
     "buttonText": "Jelajahi Produk",
-    "buttonLink": "#product"
+    "buttonLink": "/#product"
   },
   "confirmModal": {
     "title": "Hapus Item",
-    "message": "Apakah Anda yakin ingin menghapus item ini dari keranjang?",
+    "message": "Apakah Anda yakin ingin menghapus item ini dari keranjang belanja?",
     "cancelBtn": "Batal",
     "confirmBtn": "Hapus"
   }

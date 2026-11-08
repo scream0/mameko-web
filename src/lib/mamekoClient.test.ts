@@ -111,4 +111,31 @@ test("mamekoClient: dispatchMessage enforces event type, table, and user_id filt
   mamekoClient.removeChannel(ch);
 });
 
+test("NativeAuthClient: notifyListeners catches both sync exceptions and async rejections safely", () => {
+  const client = new NativeAuthClient();
+
+  // Add an async listener that rejects
+  client.onAuthStateChange(async () => {
+    throw new Error("Simulated async listener error during login");
+  });
+
+  // Add a sync listener that throws
+  client.onAuthStateChange(() => {
+    throw new Error("Simulated sync listener error during login");
+  });
+
+  // Calling notifyListeners should NOT throw or trigger unhandled rejection
+  assert.doesNotThrow(() => {
+    (client as any).notifyListeners("SIGNED_IN", {
+      access_token: "test_token",
+      user: {
+        id: "u123",
+        email: "test@example.com",
+        user_metadata: { full_name: "Test User", role: "customer" },
+      },
+    });
+  });
+});
+
+
 

@@ -32,7 +32,7 @@
 
 .unreadBadge {
   background: var(--danger-color);
-  color: var(--primary-accent-text, #ffffff);
+  color: var(--primary-accent-text);
   font-size: 0.7rem;
   font-weight: 700;
   padding: 2px 8px;

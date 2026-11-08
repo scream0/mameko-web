@@ -7,6 +7,7 @@ import { StatsSkeleton } from "@/components/UI/Skeleton/SkeletonLayouts";
 import { calculateDashboardStats } from "@/utils/dashboardSummary";
 import { auth, mamekoClient } from "@/lib/mamekoClient";
 import { getApiBaseUrl } from "@/lib/apiClient";
+import { AppIcon } from "@/components/UI/Icon/AppIcon";
 
 export default function OverviewStats() {
   const [stats, setStats] = useState({
@@ -126,7 +127,7 @@ export default function OverviewStats() {
       <div className={styles.cardsGrid}>
         <div className={styles.statCard}>
           <div className={styles.statIcon} aria-hidden="true">
-            ↗
+            <AppIcon name="trending-up" size={18} />
           </div>
           <div className={styles.statContent}>
             <span className={styles.statLabel}>
@@ -142,7 +143,7 @@ export default function OverviewStats() {
         </div>
         <div className={styles.statCard}>
           <div className={styles.statIcon} aria-hidden="true">
-            ⌁
+            <AppIcon name="shopping-cart" size={18} />
           </div>
           <div className={styles.statContent}>
             <span className={styles.statLabel}>
@@ -158,7 +159,7 @@ export default function OverviewStats() {
         </div>
         <div className={styles.statCard}>
           <div className={styles.statIcon} aria-hidden="true">
-            ◌
+            <AppIcon name="package" size={18} />
           </div>
           <div className={styles.statContent}>
             <span className={styles.statLabel}>
@@ -174,7 +175,7 @@ export default function OverviewStats() {
         </div>
         <div className={`${styles.statCard} ${stats.lowStockCount > 0 ? styles.statCardWarning : ""}`}>
           <div className={styles.statIcon} aria-hidden="true">
-            !
+            <AppIcon name="alert-triangle" size={18} />
           </div>
           <div className={styles.statContent}>
             <span className={styles.statLabel}>

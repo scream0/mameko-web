@@ -208,8 +208,15 @@
 .actionBtnConfirm {
   background: var(--success-color);
   border-color: var(--success-color);
-  color: #ffffff;
+  color: var(--primary-accent-text);
   box-shadow: 0 4px 15px rgba(var(--success-color-rgb, 16, 185, 129), 0.2);
+}
+
+.exportBtn:active,
+.saveViewBtn:active,
+.loadMoreBtn:active,
+.actionBtn:active {
+  transform: scale(0.97);
 }
 
 @media (hover: hover) and (pointer: fine) {

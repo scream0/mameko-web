@@ -661,7 +661,7 @@ export default function AdminChatView({ onUnreadCountChange }: any) {
                       <span className={styles.messageTime}>
                         {new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                         {m.sender_role === "admin" && (
-                          <AppIcon name={m.is_read ? "check-check" : "check"} size={14} color={m.is_read ? "#3b82f6" : "currentColor"} />
+                          <AppIcon name={m.is_read ? "check-check" : "check"} size={14} color={m.is_read ? "var(--info-color, var(--primary-accent))" : "currentColor"} />
                         )}
                       </span>
                     </div>

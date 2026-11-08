@@ -1,160 +1,173 @@
 /* ====================================================
-   NAVBAR CSS (Minimalist Clean & Adaptive Theme)
+   NAVBAR CSS (Flush Top Modern Bar & Smart Hide/Reveal)
    ==================================================== */
 
 .navbar {
-  width: calc(100% - 40px);
-  max-width: 1400px;
-  margin: 0 auto;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 64px;
+  padding: 0 clamp(1.25rem, 4vw, 3rem);
   box-sizing: border-box;
-  backdrop-filter: blur(24px) saturate(150%);
-  -webkit-backdrop-filter: blur(24px) saturate(150%);
-  background-color: rgba(var(--surface-primary-rgb), 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.1);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.6rem 1.5rem;
-  height: 64px;
-  position: fixed;
-  top: 20px;
-  left: 0;
-  right: 0;
+  background-color: rgba(var(--surface-primary-rgb), 0.85);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid var(--border-color);
   z-index: 1000;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.3s ease,
+    height 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
 }
 
 .navbar.scrolled {
-  background-color: rgba(var(--background-rgb), 0.75);
-  height: 56px;
-  top: 15px;
-  padding: 0.4rem 1.5rem;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  background-color: rgba(var(--surface-primary-rgb), 0.94);
+  height: 58px;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Auto-hide saat scroll ke bawah, tampil kembali saat scroll ke atas */
+.navbar.navbarHidden {
+  transform: translateY(-100%);
+  pointer-events: none;
 }
 
 /* --- Brand Logo --- */
 .logo {
   font-family: var(--font-serif);
-  font-size: 1.5rem;
+  font-size: 1.45rem;
   color: var(--text-primary);
   letter-spacing: 3px;
   text-transform: uppercase;
-  font-weight: 300;
+  font-weight: 400;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 10px;
   text-decoration: none;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.25s ease;
+  flex-shrink: 0;
 }
 
 .logo:hover {
-  opacity: 0.8;
+  opacity: 0.82;
 }
 
 .logo span {
-  color: var(--primary-accent);
-  font-weight: 500;
+  color: var(--secondary);
+  font-weight: 600;
 }
 
 .logoSvg {
-  width: 32px;
-  height: auto;
+  width: 30px;
+  height: 21px;
+  max-width: 30px;
+  max-height: 21px;
   fill: currentColor;
-  transition: transform 0.3s ease;
+  flex-shrink: 0;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.mobileLogoSvg {
+  width: 28px;
+  height: 20px;
+  max-width: 28px;
+  max-height: 20px;
+  fill: currentColor;
+  flex-shrink: 0;
 }
 
 .logo:hover .logoSvg {
-  transform: scale(1.05);
+  transform: scale(1.06);
 }
 
-/* --- Desktop Navigation --- */
+/* --- Desktop Navigation (Single Clean Layer, Zero Extra Wrapper) --- */
 .navbarNav {
   display: flex;
   align-items: center;
-  position: relative;
-  gap: 4px;
+  gap: 0.25rem;
 }
 
-.navHoverPill {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  height: 36px;
-  background: rgba(var(--text-secondary-rgb), 0.1);
+.navLink {
+  position: relative;
+  padding: 0.5rem 1rem;
   border-radius: 8px;
-  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-  pointer-events: none;
-  z-index: 0;
-}
-
-.navbarNav a {
-  position: relative;
-  z-index: 1;
-  padding: 8px 16px;
-  color: var(--text-primary);
-  opacity: 0.75;
+  color: var(--text-secondary);
   font-family: var(--font-sans);
-  font-size: 0.78rem;
+  font-size: 0.8rem;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 1.5px;
-  transition: opacity 0.3s ease, color 0.3s ease;
+  letter-spacing: 1.25px;
   white-space: nowrap;
   text-decoration: none;
-  font-weight: 500;
+  transition: color 0.22s ease, background-color 0.22s ease;
 }
 
-.navbarNav a:hover {
-  opacity: 1;
-}
-
-/* --- Mobile-only elements hidden on desktop --- */
-.mobileDrawerHeader,
-.navLinkArrow {
-  display: none;
-}
-
-.mobileDrawerPane,
-.mobileNavList {
-  display: contents;
+.navLink:hover {
+  color: var(--text-primary);
+  background-color: var(--surface-secondary);
 }
 
 /* --- Active link (current page / current hash section) --- */
 .navLinkActive {
-  opacity: 1 !important;
   color: var(--primary-accent) !important;
+  background-color: var(--primary-accent-bg);
+}
+
+/* --- Mobile-only elements hidden on desktop --- */
+.mobileDrawerHeader,
+.mobileAuthSection,
+.arrowIconSvg {
+  display: none;
 }
 
 /* --- Navbar Extra Actions --- */
 .navbarExtra {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
-.navbarExtra>button {
+.navbarExtra > button,
+.iconActionBtn {
   background: transparent;
   border: 1px solid transparent;
   cursor: pointer;
-  padding: 8px;
+  padding: 0;
   position: relative;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 999px;
-  transition: background-color 0.3s ease, border-color 0.3s ease;
-  min-width: 38px;
-  min-height: 38px;
+  border-radius: 50%;
+  transition: background-color 0.25s ease, border-color 0.25s ease, transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  min-height: 40px;
+  box-sizing: border-box;
+  flex-shrink: 0;
 }
 
-.navbarExtra>button:hover {
+.navbarExtra > button:hover,
+.iconActionBtn:hover,
+.iconActionBtnActive {
   background-color: var(--surface-secondary);
   border-color: var(--border-color);
 }
 
-.navbarExtra button:hover .svgIcon {
+.navbarExtra > button:active,
+.iconActionBtn:active {
+  transform: scale(0.94);
+}
+
+.navbarExtra button:hover .svgIcon,
+.iconActionBtnActive .svgIcon {
   stroke: var(--primary-accent);
 }
 
@@ -162,40 +175,10 @@
   width: 18px;
   height: 18px;
   stroke: var(--text-primary);
-  stroke-width: 1.6;
+  stroke-width: 1.8;
   fill: none;
-  transition: stroke 0.3s ease;
-}
-
-/* --- Theme Toggle Switch --- */
-.themeToggleMask {
-  height: 18px;
-  width: 18px;
-  overflow: hidden;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-}
-
-.themeIconWrapper {
-  display: flex;
-  flex-direction: column;
-  transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
-
-.themeIconWrapper.dark {
-  transform: translateY(0);
-}
-
-.themeIconWrapper.light {
-  transform: translateY(-18px);
-  /* height of one icon */
-}
-
-.themeIconWrapper>* {
+  transition: stroke 0.25s ease;
   flex-shrink: 0;
-  width: 18px;
-  height: 18px;
 }
 
 /* --- Cart & Badge --- */
@@ -205,18 +188,49 @@
 
 .quantityBadge {
   position: absolute;
-  top: 0;
-  right: 0;
-  background-color: var(--primary-accent);
-  color: var(--primary-accent-text);
-  font-size: 0.6rem;
+  top: 2px;
+  right: 2px;
+  background-color: var(--secondary);
+  color: var(--on-secondary);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.625rem;
   font-weight: 700;
-  width: 16px;
-  height: 16px;
+  width: 17px;
+  height: 17px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  line-height: 1;
+  animation: badgeFadeIn 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.quantityPulse {
+  animation: badgePulse 0.42s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes badgeFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes badgePulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.22);
+  }
 }
 
 .cartBounce {
@@ -224,7 +238,6 @@
 }
 
 @keyframes cartBounce {
-
   0%,
   100% {
     transform: scale(1);
@@ -235,12 +248,11 @@
   }
 }
 
-/* Pulse ring yang mekar sekali dari badge tiap quantity berubah */
 .pulseRing {
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  border: 1.5px solid var(--primary-accent);
+  border: 1.5px solid var(--secondary);
   animation: pulseRingExpand 0.6s cubic-bezier(0.16, 1, 0.3, 1);
   pointer-events: none;
 }
@@ -262,33 +274,29 @@
   z-index: 1001;
 }
 
-/* --- Authentication Section (Desktop & Mobile Unified Stable Button) --- */
-.authContainer {
-  display: flex;
-  align-items: center;
-  margin-left: 0.5rem;
-}
-
-/* Tombol Login Stabil & Terbaca Jelas (Desktop & Mobile) */
+/* --- Authentication Buttons (Desktop & Mobile) --- */
 .loginBtn,
 .mobileLoginBtn {
   background-color: var(--primary-accent) !important;
   color: var(--primary-accent-text) !important;
-  padding: 0.6rem 1.4rem;
-  border-radius: 6px;
+  padding: 0 1.25rem;
+  min-height: 40px;
+  border-radius: 8px;
   border: 1px solid var(--primary-accent);
   text-decoration: none;
   font-family: var(--font-sans);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 600;
-  letter-spacing: 1.5px;
+  letter-spacing: 1.25px;
   text-transform: uppercase;
   white-space: nowrap;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: filter 0.25s ease, transform 0.25s ease, opacity 0.25s ease;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  margin-left: 0.25rem;
+  box-sizing: border-box;
+  transition: filter 0.25s ease, transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease;
+  box-shadow: var(--shadow-sm);
   z-index: 1;
 }
 
@@ -303,32 +311,40 @@
 
 .loginBtn:active,
 .mobileLoginBtn:active {
-  transform: translateY(0) scale(0.98);
+  transform: translateY(0) scale(0.97);
   filter: brightness(0.95);
 }
 
 /* --- User Menu & Dropdown --- */
 .userMenu {
   position: relative;
+  margin-left: 0.25rem;
 }
 
 .userAvatarBtn {
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  min-height: 40px;
   border-radius: 50%;
   border: 1px solid var(--border-color);
   background: var(--surface-secondary);
   cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 0;
   overflow: hidden;
-  transition: border-color 0.3s ease;
+  box-sizing: border-box;
+  transition: border-color 0.25s ease, transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .userAvatarBtn:hover {
   border-color: var(--primary-accent);
+}
+
+.userAvatarBtn:active {
+  transform: scale(0.94);
 }
 
 .avatarImg {
@@ -338,8 +354,8 @@
 }
 
 .userAvatarBtn .svgIcon {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   stroke: var(--text-primary);
 }
 
@@ -349,30 +365,30 @@
   right: 0;
   background: var(--surface-primary);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
-  min-width: 180px;
+  border-radius: 12px;
+  min-width: 200px;
   z-index: 1001;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   box-shadow: var(--shadow-md);
-  animation: fadeIn 0.25s ease;
+  animation: fadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(-6px);
+    transform: translateY(-6px) scale(0.98);
   }
 
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
 .dropdownHeader {
-  padding: 0.75rem 1rem;
+  padding: 0.85rem 1rem;
   border-bottom: 1px solid var(--border-color);
   background-color: var(--surface-secondary);
 }
@@ -395,15 +411,15 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   font-weight: 400;
-  opacity: 0.85;
 }
 
 .dropdownItem {
   padding: 0.75rem 1rem;
   color: var(--text-primary);
   font-family: var(--font-sans);
-  font-size: 0.8rem;
-  letter-spacing: 0.5px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.4px;
   text-decoration: none;
   display: block;
   text-align: left;
@@ -425,55 +441,53 @@
 }
 
 .logoutBtn:hover {
-  background: var(--surface-secondary);
+  background: var(--danger-bg);
   color: var(--danger-color);
-  opacity: 0.8;
-}
-
-.mobileAuthSection {
-  display: none;
 }
 
 /* ====================================================
    RESPONSIVE MEDIA QUERIES (Clean Mobile Layout)
    ==================================================== */
 @media (max-width: 768px) {
+  .userMenu,
+  .loginBtn {
+    display: none;
+  }
+
   .hamburger {
     display: inline-flex !important;
   }
 
   .navbar {
-    top: 0;
-    left: 0;
-    right: 0;
-    width: 100%;
-    max-width: 100%;
-    margin: 0;
-    border-radius: 0;
-    border-top: none;
-    border-left: none;
-    border-right: none;
     height: 64px;
     padding: 0 1.25rem;
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
     background-color: var(--surface-primary);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-sm);
   }
 
   .navbar.scrolled {
-    top: 0;
-    height: 60px;
-    background-color: var(--background);
-    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.2);
+    height: 64px;
+    padding: 0 1.25rem;
+    background-color: var(--surface-primary);
+    box-shadow: var(--shadow-md);
   }
 
   .logo {
     font-size: 1.2rem;
     letter-spacing: 2px;
+    gap: 8px;
   }
 
-  /* Mobile Fullscreen Slide Drawer */
+  .logoSvg {
+    width: 28px;
+    height: 20px;
+    max-width: 28px;
+    max-height: 20px;
+  }
+
+  /* --- Single-Layer Fullscreen Slide Drawer (Zero Nested Pane Wrappers) --- */
   .navbarNav {
     position: fixed;
     top: 0;
@@ -482,54 +496,17 @@
     bottom: 0;
     width: 100vw;
     height: 100dvh;
-    background-color: transparent;
-    display: flex;
-    flex-direction: row;
-    justify-content: flex-end;
-    align-items: stretch;
-    padding: 0;
-    margin: 0;
-    box-sizing: border-box;
-    overflow: hidden;
-    border: none;
-    border-radius: 0;
-    z-index: 9999;
-
-    /* Animation base */
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-      visibility 0.35s;
-  }
-
-  .navbarNav.active {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-  }
-
-  .navHoverPill {
-    display: none;
-    /* Nonaktif di mobile */
-  }
-
-  /* --- Mobile Drawer Pane (Full 100vw Width, Edge-to-Edge) --- */
-  .mobileDrawerPane {
-    width: 100vw;
-    max-width: 100%;
-    height: 100dvh;
     background: var(--surface-primary);
-    border: none;
-    box-shadow: none;
     display: flex;
     flex-direction: column;
     align-items: stretch;
     justify-content: flex-start;
-    padding-top: max(0.5rem, env(safe-area-inset-top));
-    padding-right: max(1.5rem, env(safe-area-inset-right));
-    padding-bottom: max(2.5rem, env(safe-area-inset-bottom));
-    padding-left: max(1.5rem, env(safe-area-inset-left));
+    gap: 0.625rem;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-right: max(1.25rem, env(safe-area-inset-right));
+    padding-bottom: max(2rem, env(safe-area-inset-bottom));
+    padding-left: max(1.25rem, env(safe-area-inset-left));
+    margin: 0;
     box-sizing: border-box;
     overflow-y: auto;
     overflow-x: hidden;
@@ -537,75 +514,106 @@
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     -ms-overflow-style: none;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
     transform: translate3d(100%, 0, 0);
-    transition: transform 0.38s cubic-bezier(0.16, 1, 0.3, 1);
-    will-change: transform;
+    transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 0.3s ease,
+      visibility 0.38s;
   }
 
-  .mobileDrawerPane::-webkit-scrollbar {
+  .navbarNav::-webkit-scrollbar {
     display: none;
   }
 
-  .navbarNav.active .mobileDrawerPane {
+  .navbarNav.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
     transform: translate3d(0, 0, 0);
   }
 
-  /* --- Mobile Drawer Header (Logo + Close Button) --- */
+  /* --- Mobile Drawer Header (Aligned 1:1 with Top Navbar) --- */
   .mobileDrawerHeader {
     display: flex;
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    min-height: 70px;
-    padding: 0.75rem 0;
+    height: 64px;
+    min-height: 64px;
+    padding: 0;
+    margin-bottom: 0.625rem;
     border-bottom: 1px solid var(--border-color);
     flex-shrink: 0;
     box-sizing: border-box;
   }
 
-  .navbarNav a.mobileDrawerLogo {
+  .mobileDrawerLogo {
     display: flex;
     align-items: center;
-    gap: 0.6rem;
+    gap: 8px;
     font-family: var(--font-serif);
-    font-size: 1.15rem;
-    font-weight: 700;
+    font-size: 1.2rem;
+    font-weight: 400;
     letter-spacing: 2px;
     color: var(--text-primary);
     text-decoration: none;
     padding: 0;
     opacity: 1;
+    background: transparent;
+  }
+
+  .mobileDrawerLogo span {
+    color: var(--secondary);
+    font-weight: 600;
   }
 
   .mobileLogoSvg {
     width: 28px;
-    height: auto;
+    height: 20px;
+    max-width: 28px;
+    max-height: 20px;
     fill: currentColor;
-  }
-
-  /* --- Animated Mobile Close Button --- */
-  .mobileCloseBtn {
-    width: 42px;
-    height: 42px;
-    margin-right: 4px;
-    border-radius: 50%;
-    background: var(--surface-secondary, rgba(255, 255, 255, 0.06));
-    border: 1px solid var(--border-color);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--text-primary);
-    cursor: pointer;
-    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
-      background 0.2s ease,
-      border-color 0.2s ease,
-      color 0.2s ease,
-      box-shadow 0.2s ease;
     flex-shrink: 0;
   }
 
+  /* --- Unified Mobile Header Icon Buttons (Search, Cart, Hamburger, Close) --- */
+  .navbarExtra {
+    gap: 0.375rem;
+  }
+
+  .navbarExtra > button,
+  .iconActionBtn,
+  .mobileCloseBtn {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    min-height: 42px;
+    padding: 0;
+    margin: 0;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    flex-shrink: 0;
+  }
+
+  .mobileCloseBtn {
+    background: var(--surface-secondary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+      background-color 0.2s ease,
+      border-color 0.2s ease,
+      color 0.2s ease;
+  }
+
   .navbarNav.active .mobileCloseBtn {
-    animation: closeBtnEnter 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 0.15s both;
+    animation: closeBtnEnter 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 0.12s both;
   }
 
   .mobileCloseBtn:hover {
@@ -613,107 +621,109 @@
     background: var(--surface-primary);
     border-color: var(--primary-accent);
     color: var(--primary-accent);
-    box-shadow: 0 0 16px rgba(var(--primary-accent-rgb), 0.25);
   }
 
   .mobileCloseBtn:active {
-    transform: rotate(90deg) scale(0.92);
+    transform: rotate(90deg) scale(0.94);
   }
 
+  .svgIcon,
   .closeIconSvg {
     width: 20px;
     height: 20px;
     stroke: currentColor;
-    stroke-width: 2.2;
-  }
-
-  /* --- Mobile Navigation Link List --- */
-  .mobileNavList {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    padding: 1.5rem 0 1rem;
-    width: 100%;
-    box-sizing: border-box;
+    stroke-width: 1.9;
     flex-shrink: 0;
   }
 
-  .navbarNav a.mobileNavLink {
+  /* --- Unified Mobile Drawer Interactive Buttons (Nav Links, Dashboard, Logout, Login) --- */
+  .navLink,
+  .mobileAuthLink,
+  .mobileLogoutBtn,
+  .mobileLoginBtn {
+    width: 100%;
+    height: 48px;
+    min-height: 48px;
+    padding: 0 1.25rem;
+    margin: 0;
+    border-radius: 12px;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: 0.5px;
+    text-decoration: none;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    padding: 0.95rem 1.25rem;
-    border-radius: 12px;
-    background: var(--surface-secondary, rgba(255, 255, 255, 0.02));
-    border: 1px solid var(--border-color);
-    text-decoration: none;
-    color: var(--text-primary);
-    font-family: var(--font-sans);
-    font-size: 1rem;
-    font-weight: 500;
-    letter-spacing: 1px;
-    text-transform: none;
-    transition: all 0.2s ease;
     box-sizing: border-box;
-    opacity: 0.9;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+    flex-shrink: 0;
   }
 
-  .navbarNav a.mobileNavLink:active,
-  .navbarNav a.mobileNavLink:hover {
+  .navLink {
+    justify-content: space-between;
+    background: var(--surface-secondary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    font-weight: 500;
+    text-transform: none;
+    opacity: 0.96;
+  }
+
+  .navLink:active,
+  .navLink:hover {
     background: var(--surface-primary);
     border-color: var(--primary-accent);
     color: var(--primary-accent);
     opacity: 1;
   }
 
-  .navbarNav a.mobileNavLink.navLinkActive {
-    background: rgba(var(--info-color-rgb), 0.08);
-    border-color: var(--primary-accent);
+  .navLink.navLinkActive {
+    background: var(--primary-accent-bg);
+    border: 1px solid var(--primary-accent);
     color: var(--primary-accent);
     font-weight: 600;
     opacity: 1;
   }
 
-  /* Staggered entrance for links when drawer opens */
-  .navbarNav.active .mobileNavList a.mobileNavLink {
+  /* Staggered entrance for all 5 links when drawer opens */
+  .navbarNav.active .navLink {
     animation: slideInLink 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
-  .navbarNav.active .mobileNavList a.mobileNavLink:nth-child(1) {
-    animation-delay: 0.08s;
+  .navbarNav.active .navLink:nth-of-type(1) {
+    animation-delay: 0.05s;
   }
 
-  .navbarNav.active .mobileNavList a.mobileNavLink:nth-child(2) {
-    animation-delay: 0.14s;
+  .navbarNav.active .navLink:nth-of-type(2) {
+    animation-delay: 0.1s;
   }
 
-  .navbarNav.active .mobileNavList a.mobileNavLink:nth-child(3) {
-    animation-delay: 0.20s;
+  .navbarNav.active .navLink:nth-of-type(3) {
+    animation-delay: 0.15s;
   }
 
-  .navbarNav.active .mobileNavList a.mobileNavLink:nth-child(4) {
-    animation-delay: 0.26s;
+  .navbarNav.active .navLink:nth-of-type(4) {
+    animation-delay: 0.2s;
+  }
+
+  .navbarNav.active .navLink:nth-of-type(5) {
+    animation-delay: 0.25s;
   }
 
   /* --- Arrow Icon & Hover Animation --- */
-  .navLinkArrow {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 4px;
-  }
-
   .arrowIconSvg {
+    display: block;
     width: 18px;
     height: 18px;
     stroke: currentColor;
     stroke-width: 2;
+    flex-shrink: 0;
     transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.25s ease;
   }
 
-  .navbarNav a.mobileNavLink:hover .arrowIconSvg,
-  .navbarNav a.mobileNavLink:active .arrowIconSvg {
+  .navLink:hover .arrowIconSvg,
+  .navLink:active .arrowIconSvg {
     transform: translateX(4px);
     stroke: var(--primary-accent);
   }
@@ -743,33 +753,14 @@
     }
   }
 
-  .navbarExtra {
-    gap: 0.25rem;
-  }
-
-  .navbarExtra>button {
-    min-width: 34px;
-    min-height: 34px;
-    padding: 6px;
-  }
-
-  .authContainer {
-    display: none;
-  }
-
-  .themeToggleBtn {
-    border-left: 1px solid var(--border-color);
-    padding-left: 0.4rem !important;
-  }
-
   /* --- Mobile Auth Section inside Drawer --- */
   .mobileAuthSection {
     margin-top: auto;
-    padding: 1.25rem 0 2rem;
+    padding: 1.25rem 0 1rem;
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 0.85rem;
+    gap: 0.625rem;
     border-top: 1px solid var(--border-color);
     flex-shrink: 0;
   }
@@ -778,21 +769,24 @@
     display: flex;
     align-items: center;
     gap: 0.85rem;
+    min-height: 56px;
     padding: 0.75rem 1rem;
     border-radius: 12px;
-    background: var(--surface-secondary, rgba(255, 255, 255, 0.03));
+    background: var(--surface-secondary);
     border: 1px solid var(--border-color);
+    box-sizing: border-box;
   }
 
   .mobileUserDetails {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    gap: 2px;
   }
 
   .avatarImgMobile {
-    width: 42px;
-    height: 42px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     object-fit: cover;
     border: 1px solid var(--border-color);
@@ -800,10 +794,10 @@
   }
 
   .avatarPlaceholderMobile {
-    width: 42px;
-    height: 42px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
-    background-color: var(--surface-secondary);
+    background-color: var(--surface-primary);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -813,9 +807,10 @@
 
   .mobileUserName {
     font-family: var(--font-sans);
-    font-size: 0.95rem;
+    font-size: 14px;
     color: var(--text-primary);
     font-weight: 600;
+    line-height: 1.25;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -823,77 +818,50 @@
 
   .mobileUserEmail {
     font-family: var(--font-sans);
-    font-size: 0.78rem;
-    color: var(--text-primary);
-    opacity: 0.65;
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.25;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
-  .mobileAuthActions {
-    display: flex;
-    gap: 0.65rem;
-    width: 100%;
-  }
-
   .mobileAuthLink {
-    flex: 1;
+    justify-content: center;
     text-align: center;
-    padding: 0.75rem 0.5rem;
-    border-radius: 10px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    text-decoration: none;
     border: 1px solid var(--border-color);
-    background: var(--surface-secondary, transparent);
+    background: var(--surface-secondary);
     color: var(--text-primary);
-    transition: all 0.2s ease;
   }
 
   .mobileAuthLink:active {
     background: var(--surface-primary);
     color: var(--primary-accent);
+    transform: scale(0.98);
   }
 
   .mobileLogoutBtn {
-    flex: 1;
+    justify-content: center;
     text-align: center;
-    padding: 0.75rem 0.5rem;
-    border-radius: 10px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    border: 1px solid rgba(var(--danger-color-rgb), 0.35);
-    background: rgba(var(--danger-color-rgb), 0.08);
-    color: #ef4444;
+    border: 1px solid var(--danger-border);
+    background: var(--danger-bg);
+    color: var(--danger-color);
     cursor: pointer;
-    transition: all 0.2s ease;
   }
 
   .mobileLogoutBtn:active {
-    background: rgba(var(--danger-color-rgb), 0.15);
+    color: var(--danger-color);
+    transform: scale(0.98);
   }
 
   .mobileLoginBtn {
-    width: 100%;
+    justify-content: center;
     text-align: center;
     background-color: var(--primary-accent) !important;
     color: var(--primary-accent-text) !important;
-    padding: 0.9rem 1.2rem;
-    font-size: 0.9rem;
-    font-weight: 600;
     letter-spacing: 1.5px;
     text-transform: uppercase;
-    text-decoration: none;
-    border-radius: 12px;
-    box-sizing: border-box;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.2s ease, filter 0.2s ease;
+    box-shadow: var(--shadow-sm);
   }
 
   .mobileLoginBtn:active {
@@ -904,18 +872,13 @@
 
 /* --- Hormati preferensi reduced motion di semua breakpoint --- */
 @media (prefers-reduced-motion: reduce) {
-
+  .navbar,
   .navbarNav,
-  .navbarNav a,
+  .navLink,
   .pulseRing,
   .cartBounce,
   .userDropdown {
     transition: none !important;
     animation: none !important;
-  }
-
-  .navbarNav.active a {
-    opacity: 0.9;
-    transform: none;
   }
 }

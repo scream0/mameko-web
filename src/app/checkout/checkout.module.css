@@ -806,17 +806,21 @@
   filter: brightness(1.08);
 }
 
+.promoApplyBtn:active {
+  transform: scale(0.97);
+}
+
 .promoApplied {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.6rem;
   padding: 0.7rem 1rem;
-  background: rgba(var(--success-color-rgb), 0.1);
-  border: 1px solid rgba(var(--success-color-rgb), 0.3);
-  border-radius: 6px;
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
+  border-radius: 8px;
   font-size: 0.8rem;
-  color: var(--success-color);
+  color: var(--success-text);
 }
 
 .promoRemoveBtn {
@@ -829,6 +833,21 @@
   font-weight: 600;
   white-space: nowrap;
   flex-shrink: 0;
+  padding: 0.35rem 0.6rem;
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.promoRemoveBtn:hover {
+  background: var(--danger-bg);
+}
+
+.promoRemoveBtn:active {
+  transform: scale(0.96);
 }
 
 /* Fitur 2-voucher: 1 slot diskon + 1 slot gratis ongkir */
@@ -1169,9 +1188,9 @@
   gap: 0.25rem;
   font-size: 0.7rem;
   font-weight: 600;
-  color: #dc2626;
-  background: rgba(var(--danger-color-rgb), 0.09);
-  border: 1px solid rgba(var(--danger-color-rgb), 0.24);
+  color: var(--danger-color);
+  background: var(--danger-bg);
+  border: 1px solid var(--danger-border);
   padding: 0.18rem 0.5rem;
   border-radius: 6px;
   margin-top: 0.3rem;
@@ -1179,9 +1198,9 @@
 }
 
 [data-theme="dark"] .stockExceededBadge {
-  color: #f87171;
-  background: rgba(var(--danger-color-rgb), 0.16);
-  border-color: rgba(var(--danger-color-rgb), 0.35);
+  color: var(--danger-color);
+  background: var(--danger-bg);
+  border-color: var(--danger-border);
 }
 
 .stockAlertBanner {
@@ -1191,13 +1210,13 @@
   padding: 0.9rem 1rem;
   margin-top: 1rem;
   border-radius: 12px;
-  background: rgba(var(--danger-color-rgb), 0.08);
-  border: 1px solid rgba(var(--danger-color-rgb), 0.28);
+  background: var(--danger-bg);
+  border: 1px solid var(--danger-border);
 }
 
 [data-theme="dark"] .stockAlertBanner {
-  background: rgba(var(--danger-color-rgb), 0.12);
-  border-color: rgba(var(--danger-color-rgb), 0.36);
+  background: var(--danger-bg);
+  border-color: var(--danger-border);
 }
 
 .stockAlertHeader {
@@ -1206,11 +1225,11 @@
   gap: 0.45rem;
   font-size: 0.82rem;
   font-weight: 700;
-  color: #dc2626;
+  color: var(--danger-color);
 }
 
 [data-theme="dark"] .stockAlertHeader {
-  color: #f87171;
+  color: var(--danger-color);
 }
 
 .stockAlertIcon {
@@ -1247,9 +1266,9 @@
   margin-top: 1rem;
   padding: 0.65rem 0.95rem;
   border-radius: 8px;
-  background: rgba(var(--secondary-rgb), 0.08);
-  border: 1px solid rgba(var(--secondary-rgb), 0.25);
-  color: #b45309;
+  background: var(--warning-bg);
+  border: 1px solid var(--warning-border);
+  color: var(--warning-text);
   font-size: 0.76rem;
   font-weight: 600;
   text-align: center;
@@ -1257,9 +1276,9 @@
 }
 
 [data-theme="dark"] .nonRefundableNotice {
-  background: rgba(var(--secondary-rgb), 0.12);
-  border-color: rgba(var(--secondary-rgb), 0.32);
-  color: #fbbf24;
+  background: var(--warning-bg);
+  border-color: var(--warning-border);
+  color: var(--warning-text);
 }
 
 .payButton {
@@ -1295,6 +1314,11 @@
   transform: translateY(-2px);
   filter: brightness(1.03);
   box-shadow: 0 10px 28px rgba(var(--primary-accent-rgb), 0.34);
+}
+
+.payButton:active:not(:disabled) {
+  transform: scale(0.985);
+  box-shadow: 0 4px 14px rgba(var(--primary-accent-rgb), 0.2);
 }
 
 .payButton:hover:not(:disabled)::before {
@@ -1502,16 +1526,26 @@
   background: transparent;
   border: 1px solid var(--border-color);
   color: var(--text-primary);
-  font-size: 0.72rem;
-  padding: 3px 9px;
-  border-radius: 4px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  min-height: 30px;
+  border-radius: 6px;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   transition: all 0.2s ease;
 }
 
 .addressEditBtn:hover {
   background: var(--surface-secondary);
   border-color: var(--primary-accent);
+  color: var(--primary-accent);
+}
+
+.addressEditBtn:active {
+  transform: scale(0.96);
 }
 
 .addressNotesText {
@@ -1536,6 +1570,28 @@
 .addressLoadingText {
   color: var(--text-secondary);
   font-size: 0.85rem;
+}
+
+.addAddressNowBtn {
+  display: inline-block;
+}
+
+.courierSpinner {
+  width: 24px;
+  height: 24px;
+  margin: 0 auto 0.5rem;
+}
+
+.changeVoucherBtn {
+  margin-top: 4px;
+  font-size: 0.8rem;
+}
+
+.summaryPromoLabel,
+.summaryDiscountLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
 }
 
 /* ============ VOUCHER MODAL HELPERS ============ */

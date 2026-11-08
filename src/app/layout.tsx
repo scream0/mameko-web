@@ -21,6 +21,7 @@ const lato = Lato({
 });
 
 import { CookieConsent } from "@/components/CookieConsent/CookieConsent";
+import { MaintenanceGuard } from "@/components/Maintenance/MaintenanceGuard";
 
 export const metadata = {
   title: "mameko",
@@ -39,7 +40,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body className="font-lato antialiased">
         <ThemeProvider>
           <StoreProvider>
-            {children}
+            <MaintenanceGuard>
+              {children}
+            </MaintenanceGuard>
             <CookieConsent />
             <Toaster
               position="bottom-left"

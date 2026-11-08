@@ -1,8 +1,6 @@
 {
   "header": {
-    "title": "Koleksi Eksklusif MAMEKO",
-    "subtitle": "Temukan aroma signature mewah yang diracik khusus untuk kepribadian Anda",
-    "fallbackTagline": "our curated collection",
+    "title": "Produk Kami",
     "fallbackTitleMain": "Produk",
     "fallbackTitleHighlight": "Kami"
   },
@@ -34,16 +32,17 @@
     "defaultVariant": "Standard",
     "variantLabel": "Pilih Varian Ukuran & Konsentrasi:",
     "soldOutBadge": "Habis",
-    "viewDetail": "Detail",
+    "viewDetail": "Lihat Detail",
     "addToCartTitle": "Tambah ke Keranjang",
     "outOfStockTitle": "Stok Habis",
     "savingsPrefix": "Hemat ",
     "soldPrefix": "Terjual ",
     "stockRemainingPrefix": "Sisa ",
-    "stockRemainingSuffix": " lagi!"
+    "stockRemainingSuffix": " lagi!",
+    "reviewsPrefix": "Ulasan"
   },
   "buttons": {
-    "loadMore": "Lihat Lebih Banyak",
+    "loadMore": "Jelajahi Lebih Banyak",
     "addToCart": "Tambah ke Keranjang",
     "outOfStock": "Stok Varian Habis"
   },

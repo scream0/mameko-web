@@ -4,7 +4,6 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { useStore } from "@/context/StoreContext";
-import { useTheme } from "@/context/ThemeContext";
 import { SearchForm } from "./SearchForm";
 import styles from "./Navbar.module.css";
 import config from "@/data/ui/navbarConfig.json";
@@ -31,12 +30,11 @@ export function Navbar() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isHidden, setIsHidden] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const [activeHash, setActiveHash] = useState("");
-  const [hoverStyle, setHoverStyle] = useState<any>({});
-  const [hoveredLink, setHoveredLink] = useState<any>(null);
 
   const {
     products,
@@ -49,33 +47,62 @@ export function Navbar() {
     setIsCartOpen,
   } = useStore();
 
-  const { isThemeReady } = useTheme();
   const pathname = usePathname();
 
   const authItems = config?.authSection?.auth?.authenticated || [];
   const unauthItem = config?.authSection?.auth?.unauthenticated?.[0];
 
   const userMenuRef = useRef<any>(null);
+  const lastScrollY = useRef<number>(0);
 
   useScrollLock(
     activePanel === "navbar" || activePanel === "search" || isCartOpen
   );
 
+  // Pastikan navbar selalu terlihat saat ada panel/menu yang sedang terbuka
   useEffect(() => {
-    let rafId = null;
+    if (activePanel || isUserMenuOpen || isCartOpen) {
+      setIsHidden(false);
+    }
+  }, [activePanel, isUserMenuOpen, isCartOpen]);
+
+  // Smart Scroll Listener: Sembunyikan saat scroll ke bawah, tampilkan saat scroll ke atas
+  useEffect(() => {
+    let rafId: number | null = null;
+    lastScrollY.current = Math.max(0, window.scrollY);
+
     const handleScroll = () => {
-      if (rafId) return; // sudah ada frame pending, skip
+      if (rafId) return;
       rafId = requestAnimationFrame(() => {
-        setIsScrolled(window.scrollY > 50);
+        const currentScrollY = Math.max(0, window.scrollY);
+        const delta = currentScrollY - lastScrollY.current;
+
+        setIsScrolled(currentScrollY > 24);
+
+        if (currentScrollY <= 64) {
+          setIsHidden(false);
+          lastScrollY.current = currentScrollY;
+        } else if (Math.abs(delta) >= 6) {
+          if (delta > 0 && currentScrollY > 80) {
+            if (!activePanel && !isUserMenuOpen && !isCartOpen) {
+              setIsHidden(true);
+            }
+          } else if (delta < 0) {
+            setIsHidden(false);
+          }
+          lastScrollY.current = currentScrollY;
+        }
+
         rafId = null;
       });
     };
+
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => {
       window.removeEventListener("scroll", handleScroll);
       if (rafId) cancelAnimationFrame(rafId);
     };
-  }, []);
+  }, [activePanel, isUserMenuOpen, isCartOpen]);
 
   useEffect(() => {
     const handleClickOutside = (event: any) => {
@@ -99,7 +126,6 @@ export function Navbar() {
     }
   }, [cartQuantity]);
 
-  // Tutup dropdown/panel yang lagi terbuka pas user pencet Escape
   useEffect(() => {
     const handleKeyDown = (event: any) => {
       if (event.key !== "Escape") return;
@@ -111,7 +137,6 @@ export function Navbar() {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [isUserMenuOpen, activePanel, isCartOpen, setIsCartOpen]);
 
-  // Lacak hash aktif di URL (buat active link indicator pada anchor menu)
   useEffect(() => {
     const updateHash = () => setActiveHash(window.location.hash);
     updateHash();
@@ -119,38 +144,33 @@ export function Navbar() {
     return () => window.removeEventListener("hashchange", updateHash);
   }, []);
 
-// Handler navigasi cerdas untuk Anchor Link / Hash (#)
-  const handleNavClick = (e, href: any) => {
+  const handleNavClick = (e: any, href: any) => {
     setActivePanel(null);
 
     if (href && href.includes("#")) {
       e.preventDefault();
 
-      // Ambil bagian hash-nya saja (contoh: "product" dari "/#product" atau "#product")
       const hashPart = href.split("#")[1];
       const isHome = window.location.pathname === "/";
 
       if (isHome) {
-        // Cari elemen berdasarkan ID section produk Anda
-        const targetElement = document.getElementById(hashPart) || document.querySelector(`#${hashPart}`);
+        const targetElement =
+          document.getElementById(hashPart) ||
+          document.querySelector(`#${hashPart}`);
 
         if (targetElement) {
           targetElement.scrollIntoView({ behavior: "smooth", block: "start" });
-          // Perbarui URL hash di browser tanpa memuat ulang halaman
           window.history.pushState(null, "", `#${hashPart}`);
           setActiveHash(`#${hashPart}`);
         } else {
-          // Fallback jika elemen belum terpanggil
           window.location.hash = hashPart;
         }
       } else {
-        // Jika sedang berada di halaman lain, arahkan kembali ke beranda beserta hash-nya
         window.location.href = `/#${hashPart}`;
       }
     }
   };
 
-  // Cek apakah sebuah menu item sedang "aktif" (match pathname penuh, atau match hash)
   const isLinkActive = (href: any) => {
     if (!href) return false;
     if (href.includes("#")) {
@@ -162,38 +182,21 @@ export function Navbar() {
 
   const productList = Array.isArray(products) ? products : products?.data || [];
 
-  // Cuma dihitung ulang kalau produk/queries berubah, dan cuma kalau panel search
-  // sedang aktif — hindari filter jalan sia-sia tiap render (scroll, toggle theme, dll).
   const filtered = useMemo(() => {
     if (activePanel !== "search") return [];
     return productList.filter((p: any) =>
-      p?.name?.toLowerCase().includes(searchQuery.toLowerCase()),
+      p?.name?.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [productList, searchQuery, activePanel]);
 
   const togglePanel = (panelName: any) => {
-    setActivePanel((prev) => (prev === panelName ? null : panelName));
-    setIsCartOpen(false); // pastikan cart nggak numpuk sama panel lain
+    setActivePanel((prev: any) => (prev === panelName ? null : panelName));
+    setIsCartOpen(false);
   };
 
   const handleToggleCart = () => {
     setIsCartOpen((prev: any) => !prev);
-    setActivePanel(null); // pastikan panel lain nggak numpuk sama cart
-  };
-
-  const handleMouseEnter = (e, index: any) => {
-    const el = e.currentTarget;
-    setHoverStyle({
-      width: el.offsetWidth,
-      left: el.offsetLeft,
-      opacity: 1,
-    });
-    setHoveredLink(index);
-  };
-
-  const handleMouseLeave = () => {
-    setHoverStyle((prev) => ({ ...prev, opacity: 0 }));
-    setHoveredLink(null);
+    setActivePanel(null);
   };
 
   const userAvatar = user?.photoURL || user?.photo_url;
@@ -202,136 +205,138 @@ export function Navbar() {
     user?.username ||
     user?.displayName ||
     user?.email?.split("@")[0] ||
-    "User";
+    config.authSection.defaultUserName;
+
+  const isDrawerOpen = activePanel === "navbar";
+  const isSearchOpen = activePanel === "search";
 
   return (
     <>
       <PromoBannerBar />
-      <nav className={`${styles.navbar} ${isScrolled ? styles.scrolled : ""}`}>
+      <nav
+        className={`${styles.navbar} ${isScrolled ? styles.scrolled : ""} ${
+          isHidden && !isDrawerOpen && !isSearchOpen ? styles.navbarHidden : ""
+        }`}
+      >
         <Link href={config.logo.href} className={styles.logo}>
-          <Logo className={styles.logoSvg} />
+          <Logo className={styles.logoSvg} width={30} height={21} />
           {config.logo.text}
           <span>{config.logo.subtext}</span>.
         </Link>
 
         <div
-          className={`${styles.navbarNav} ${activePanel === "navbar" ? styles.active : ""}`}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) {
-              setActivePanel(null);
-            }
-          }}
-          onMouseLeave={handleMouseLeave}
+          className={`${styles.navbarNav} ${isDrawerOpen ? styles.active : ""}`}
         >
-          <div
-            className={styles.mobileDrawerPane}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Header Drawer Khusus Mobile (Logo + Tombol Close) */}
-            <div className={styles.mobileDrawerHeader}>
-              <Link
-                href={config.logo.href}
-                className={styles.mobileDrawerLogo}
-                onClick={() => setActivePanel(null)}
-              >
-                <Logo className={styles.mobileLogoSvg} />
-                {config.logo.text}
-                <span>{config.logo.subtext}</span>.
-              </Link>
-              <button
-                className={styles.mobileCloseBtn}
-                onClick={() => setActivePanel(null)}
-                aria-label={config?.features?.mobileDrawer?.closeAriaLabel || "Tutup Menu Navigasi"}
-              >
-                <AppIcon
-                  name={config?.features?.mobileDrawer?.iconClose || "x"}
-                  className={styles.closeIconSvg}
-                />
-              </button>
-            </div>
+          <div className={styles.mobileDrawerHeader}>
+            <Link
+              href={config.logo.href}
+              className={styles.mobileDrawerLogo}
+              onClick={() => setActivePanel(null)}
+            >
+              <Logo className={styles.mobileLogoSvg} width={28} height={20} />
+              {config.logo.text}
+              <span>{config.logo.subtext}</span>.
+            </Link>
+            <button
+              type="button"
+              className={styles.mobileCloseBtn}
+              onClick={() => setActivePanel(null)}
+              aria-label={config.features.mobileDrawer.closeAriaLabel}
+            >
+              <AppIcon
+                name={config.features.mobileDrawer.iconClose}
+                className={styles.closeIconSvg}
+              />
+            </button>
+          </div>
 
-            <div className={styles.navHoverPill} style={hoverStyle} />
+          {config.menuItems.map((item, index) => (
+            <Link
+              key={index}
+              href={item.href}
+              onClick={(e) => handleNavClick(e, item.href)}
+              className={`${styles.navLink} ${
+                isLinkActive(item.href) ? styles.navLinkActive : ""
+              }`}
+              aria-current={isLinkActive(item.href) ? "page" : undefined}
+            >
+              <span>{item.label}</span>
+              <AppIcon
+                name={config.features.mobileDrawer.navLinkIcon}
+                className={styles.arrowIconSvg}
+              />
+            </Link>
+          ))}
 
-            <div className={styles.mobileNavList}>
-              {config.menuItems.map((item, index) => (
-                <Link
-                  key={index}
-                  href={item.href}
-                  onClick={(e) => handleNavClick(e, item.href)}
-                  onMouseEnter={(e) => handleMouseEnter(e, index)}
-                  className={`${styles.mobileNavLink} ${isLinkActive(item.href) ? styles.navLinkActive : ""}`}
-                  aria-current={isLinkActive(item.href) ? "page" : undefined}
-                >
-                  <span>{item.label}</span>
-                  <span className={styles.navLinkArrow}>
-                    <AppIcon
-                      name={config?.features?.mobileDrawer?.navLinkIcon || "chevron-right"}
-                      className={styles.arrowIconSvg}
+          <div className={styles.mobileAuthSection}>
+            {user ? (
+              <>
+                <div className={styles.mobileUserInfo}>
+                  {userAvatar && !imageError ? (
+                    <img
+                      src={optimizeCloudinaryUrl(
+                        userAvatar,
+                        IMAGE_PRESETS.THUMBNAIL_SM
+                      )}
+                      alt={config.authSection.avatarAlt}
+                      className={styles.avatarImgMobile}
+                      onError={() => setImageError(true)}
                     />
-                  </span>
-                </Link>
-              ))}
-            </div>
-
-            <div className={styles.mobileAuthSection}>
-              {user ? (
-                <>
-                  <div className={styles.mobileUserInfo}>
-                    {userAvatar && !imageError ? (
-                      <img
-                        src={optimizeCloudinaryUrl(userAvatar, IMAGE_PRESETS.THUMBNAIL_SM)}
-                        alt="User Avatar"
-                        className={styles.avatarImgMobile}
-                        onError={() => setImageError(true)}
-                      />
-                    ) : (
-                      <div className={styles.avatarPlaceholderMobile}>
-                        <AppIcon name="user" className={styles.svgIcon} />
-                      </div>
-                    )}
-                    <span className={styles.mobileUserName}>{userName}</span>
-                  </div>
-                  {authItems.map((item, index) =>
-                    item.type === "link" ? (
-                      <Link
-                        key={index}
-                        href={item.href}
-                        className={styles.mobileAuthLink}
-                        onClick={() => setActivePanel(null)}
-                      >
-                        {item.label}
-                      </Link>
-                    ) : (
-                      <button
-                        key={index}
-                        onClick={() => {
-                          logout();
-                          setActivePanel(null);
-                        }}
-                        className={`${styles.mobileAuthLink} ${styles.mobileLogoutBtn}`}
-                      >
-                        {item.label}
-                      </button>
-                    ),
+                  ) : (
+                    <div className={styles.avatarPlaceholderMobile}>
+                      <AppIcon name="user" className={styles.svgIcon} />
+                    </div>
                   )}
-                </>
-              ) : (
-                unauthItem && (
-                  <Link
-                    href={unauthItem.href}
-                    className={styles.mobileLoginBtn}
-                    onClick={() => setActivePanel(null)}
-                  >
-                    {unauthItem.label}
-                  </Link>
-                )
-              )}
-            </div>
+                  <div className={styles.mobileUserDetails}>
+                    <span className={styles.mobileUserName}>{userName}</span>
+                    {user.email && (
+                      <span className={styles.mobileUserEmail}>
+                        {user.email}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                {authItems.map((item, index) =>
+                  item.type === "link" ? (
+                    <Link
+                      key={index}
+                      href={item.href}
+                      className={styles.mobileAuthLink}
+                      onClick={() => setActivePanel(null)}
+                    >
+                      {item.label}
+                    </Link>
+                  ) : (
+                    <button
+                      key={index}
+                      type="button"
+                      onClick={() => {
+                        logout();
+                        setActivePanel(null);
+                      }}
+                      className={`${styles.mobileAuthLink} ${styles.mobileLogoutBtn}`}
+                    >
+                      {item.label}
+                    </button>
+                  )
+                )}
+              </>
+            ) : (
+              unauthItem && (
+                <Link
+                  href={unauthItem.href}
+                  className={styles.mobileLoginBtn}
+                  onClick={() => setActivePanel(null)}
+                >
+                  {unauthItem.label}
+                </Link>
+              )
+            )}
           </div>
         </div>
 
         <SearchForm
-          isActive={activePanel === "search"}
+          isActive={isSearchOpen}
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
           filteredProdukItems={filtered}
@@ -344,27 +349,37 @@ export function Navbar() {
           }}
         />
 
-
         <div className={styles.navbarExtra}>
           <button
+            type="button"
+            className={`${styles.iconActionBtn} ${
+              isSearchOpen ? styles.iconActionBtnActive : ""
+            }`}
             onClick={() => togglePanel("search")}
-            aria-label="Cari Produk"
+            aria-label={config.features.search.ariaLabel}
+            aria-expanded={isSearchOpen}
           >
-            <AppIcon name={config?.features?.search?.icon} className={styles.svgIcon} />
+            <AppIcon
+              name={config.features.search.icon}
+              className={styles.svgIcon}
+            />
           </button>
 
           <button
-            className={styles.cartButton}
+            type="button"
+            className={`${styles.iconActionBtn} ${styles.cartButton}`}
             onClick={handleToggleCart}
-            aria-label={config?.features?.cart?.ariaLabel}
+            aria-label={config.features.cart.ariaLabel}
           >
             <AppIcon
-              name={config?.features?.cart?.icon}
+              name={config.features.cart.icon}
               className={`${styles.svgIcon} ${animate ? styles.cartBounce : ""}`}
             />
             {isClient && cartQuantity > 0 && (
               <span
-                className={`${styles.quantityBadge} ${animate ? styles.quantityPulse : ""}`}
+                className={`${styles.quantityBadge} ${
+                  animate ? styles.quantityPulse : ""
+                }`}
               >
                 {cartQuantity}
                 {animate && (
@@ -374,86 +389,92 @@ export function Navbar() {
             )}
           </button>
 
-
-
-          <div className={styles.authContainer}>
-            {user ? (
-              <div className={styles.userMenu} ref={userMenuRef}>
-                <button
-                  className={styles.userAvatarBtn}
-                  onClick={() => setIsUserMenuOpen((prev) => !prev)}
-                  aria-label="Menu Pengguna"
-                >
-                  {userAvatar && !imageError ? (
-                    <img
-                      src={optimizeCloudinaryUrl(userAvatar, IMAGE_PRESETS.THUMBNAIL_SM)}
-                      alt="User Avatar"
-                      className={styles.avatarImg}
-                      onError={() => setImageError(true)}
-                    />
-                  ) : (
-                    <AppIcon name="user" className={styles.svgIcon} />
-                  )}
-                </button>
-                {isUserMenuOpen && (
-                  <div className={styles.userDropdown}>
-                    <div className={styles.dropdownHeader}>
-                      <span className={styles.dropdownUserName}>
-                        {userName}
-                      </span>
-                      <span className={styles.dropdownUserEmail}>
-                        {user.email}
-                      </span>
-                    </div>
-                    {authItems.map((item, index) =>
-                      item.type === "link" ? (
-                        <Link
-                          key={index}
-                          href={item.href}
-                          className={styles.dropdownItem}
-                          onClick={() => setIsUserMenuOpen(false)}
-                        >
-                          {item.label}
-                        </Link>
-                      ) : (
-                        <button
-                          key={index}
-                          onClick={() => {
-                            logout();
-                            setIsUserMenuOpen(false);
-                          }}
-                          className={`${styles.dropdownItem} ${styles.logoutBtn}`}
-                        >
-                          {item.label}
-                        </button>
-                      ),
+          {user ? (
+            <div className={styles.userMenu} ref={userMenuRef}>
+              <button
+                type="button"
+                className={styles.userAvatarBtn}
+                onClick={() => setIsUserMenuOpen((prev) => !prev)}
+                aria-label={config.authSection.userMenuAriaLabel}
+                aria-expanded={isUserMenuOpen}
+              >
+                {userAvatar && !imageError ? (
+                  <img
+                    src={optimizeCloudinaryUrl(
+                      userAvatar,
+                      IMAGE_PRESETS.THUMBNAIL_SM
                     )}
-                  </div>
+                    alt={config.authSection.avatarAlt}
+                    className={styles.avatarImg}
+                    onError={() => setImageError(true)}
+                  />
+                ) : (
+                  <AppIcon name="user" className={styles.svgIcon} />
                 )}
-              </div>
-            ) : (
-              unauthItem && (
-                <Link href={unauthItem.href} className={styles.loginBtn}>
-                  {unauthItem.label}
-                </Link>
-              )
-            )}
-          </div>
+              </button>
+              {isUserMenuOpen && (
+                <div className={styles.userDropdown}>
+                  <div className={styles.dropdownHeader}>
+                    <span className={styles.dropdownUserName}>{userName}</span>
+                    <span className={styles.dropdownUserEmail}>
+                      {user.email}
+                    </span>
+                  </div>
+                  {authItems.map((item, index) =>
+                    item.type === "link" ? (
+                      <Link
+                        key={index}
+                        href={item.href}
+                        className={styles.dropdownItem}
+                        onClick={() => setIsUserMenuOpen(false)}
+                      >
+                        {item.label}
+                      </Link>
+                    ) : (
+                      <button
+                        key={index}
+                        type="button"
+                        onClick={() => {
+                          logout();
+                          setIsUserMenuOpen(false);
+                        }}
+                        className={`${styles.dropdownItem} ${styles.logoutBtn}`}
+                      >
+                        {item.label}
+                      </button>
+                    )
+                  )}
+                </div>
+              )}
+            </div>
+          ) : (
+            unauthItem && (
+              <Link href={unauthItem.href} className={styles.loginBtn}>
+                {unauthItem.label}
+              </Link>
+            )
+          )}
 
           <button
+            type="button"
             onClick={() => togglePanel("navbar")}
-            className={styles.hamburger}
-            aria-label="Menu Navigasi"
+            className={`${styles.iconActionBtn} ${styles.hamburger}`}
+            aria-label={config.features.hamburger.ariaLabel}
+            aria-expanded={isDrawerOpen}
           >
             <AppIcon
-              name={activePanel === "navbar" ? config?.features?.hamburger?.iconClose : config?.features?.hamburger?.iconOpen}
+              name={
+                isDrawerOpen
+                  ? config.features.hamburger.iconClose
+                  : config.features.hamburger.iconOpen
+              }
               className={styles.svgIcon}
             />
           </button>
         </div>
       </nav>
 
-      {isCartOpen && <CartSidebar />}
+      <CartSidebar />
 
       {isModalOpen && selectedProduct && (
         <Modal
@@ -461,7 +482,7 @@ export function Navbar() {
           item={selectedProduct}
           rupiah={rupiah}
           onClose={() => setIsModalOpen(false)}
-          onAddToCart={(product, variant: any, quantity: any) => {
+          onAddToCart={(product: any, variant: any, quantity: any) => {
             addToCart(product, variant, quantity);
             setIsModalOpen(false);
           }}

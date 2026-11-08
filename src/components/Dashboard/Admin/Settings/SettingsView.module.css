@@ -104,7 +104,7 @@
 .logoutTabBtn {
   background: rgba(var(--danger-color-rgb, 220, 38, 38), 0.08);
   border: 1px solid rgba(var(--danger-color-rgb, 220, 38, 38), 0.4);
-  color: var(--danger-color, #dc2626);
+  color: var(--danger-color);
   padding: 0.55rem 1.15rem;
   border-radius: 999px;
   font-family: var(--font-sans);
@@ -120,11 +120,15 @@
 }
 
 .logoutTabBtn:hover {
-  background: var(--danger-color, #dc2626) !important;
-  border-color: var(--danger-color, #dc2626) !important;
-  color: #ffffff !important;
+  background: var(--danger-color) !important;
+  border-color: var(--danger-color) !important;
+  color: var(--primary-accent-text) !important;
   transform: translateY(-1px);
   box-shadow: 0 4px 14px rgba(var(--danger-color-rgb, 220, 38, 38), 0.35);
+}
+
+.logoutTabBtn:active {
+  transform: scale(0.97);
 }
 
 /* ---- Form Sections ---- */
@@ -529,8 +533,8 @@
 
 .removeBtn {
   background: transparent;
-  border: 1px solid var(--danger-color, #ef4444);
-  color: var(--danger-color, #ef4444);
+  border: 1px solid var(--danger-color);
+  color: var(--danger-color);
   border-radius: 999px;
   padding: 0.4rem 0.85rem;
   font-size: 0.72rem;
@@ -542,9 +546,14 @@
 
 @media (hover: hover) and (pointer: fine) {
   .removeBtn:hover {
-    background: var(--danger-color, #ef4444);
-    color: var(--primary-accent-text, #ffffff);
+    background: var(--danger-color);
+    color: var(--primary-accent-text);
   }
+}
+
+.removeBtn:active,
+.addRowBtn:active {
+  transform: scale(0.97);
 }
 
 .addRowBtn {
@@ -839,7 +848,7 @@
   font-size: 12px;
   font-weight: 600;
   background: rgba(var(--danger-color-rgb, 239, 68, 68), 0.15);
-  color: var(--danger-color, #ef4444);
+  color: var(--danger-color);
   border: 1px solid rgba(var(--danger-color-rgb, 239, 68, 68), 0.35);
   border-radius: 6px;
   cursor: pointer;
@@ -847,8 +856,12 @@
 }
 
 .bankAccountDeleteBtn:hover {
-  background: var(--danger-color, #ef4444);
-  color: var(--primary-accent-text, #ffffff);
+  background: var(--danger-color);
+  color: var(--primary-accent-text);
+}
+
+.bankAccountDeleteBtn:active {
+  transform: scale(0.97);
 }
 
 /* ---- Couriers Tab: Biteship & Courier Grid ---- */
@@ -896,15 +909,19 @@
 
 .courierClearBtn {
   border-color: rgba(var(--danger-color-rgb, 239, 68, 68), 0.5) !important;
-  color: var(--danger-color, #ef4444) !important;
+  color: var(--danger-color) !important;
   background: rgba(var(--danger-color-rgb, 239, 68, 68), 0.08) !important;
 }
 
 .courierClearBtn:hover {
-  background: var(--danger-color, #ef4444) !important;
-  color: #ffffff !important;
-  border-color: var(--danger-color, #ef4444) !important;
+  background: var(--danger-color) !important;
+  color: var(--primary-accent-text) !important;
+  border-color: var(--danger-color) !important;
   transform: translateY(-1px);
+}
+
+.courierClearBtn:active {
+  transform: scale(0.97);
 }
 
 .couriersGrid {
@@ -932,7 +949,7 @@
 }
 
 .courierErrorBadge {
-  color: var(--danger-color, #ef4444);
+  color: var(--danger-color);
   margin-left: 0.5rem;
 }
 
@@ -984,6 +1001,187 @@
   color: var(--primary-accent);
 }
 
+/* ---- About Tab: Clean Editorial Preview ---- */
+.aboutPreviewBox {
+  margin-bottom: 1.5rem;
+  padding: 1.25rem;
+  background: var(--surface-secondary);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+}
+
+.aboutPreviewInner {
+  padding: 1.25rem 0.75rem;
+  background: transparent;
+  border-radius: 0;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.aboutPreviewHeading {
+  font-family: var(--font-serif);
+  font-size: clamp(1.2rem, 2.2vw, 1.65rem);
+  font-weight: 400;
+  line-height: 1.22;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.aboutPreviewLead {
+  font-family: var(--font-sans);
+  font-size: 0.92rem;
+  font-weight: 500;
+  line-height: 1.65;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.aboutPreviewBody {
+  font-family: var(--font-sans);
+  font-size: 0.86rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.aboutPreviewFeatures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.75rem;
+  margin-top: 0.4rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.aboutPreviewFeatureItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+
+.aboutPreviewFeatureNum {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--secondary);
+  background: var(--secondary-container);
+  padding: 0.2rem 0.45rem;
+  border-radius: 4px;
+  line-height: 1.2;
+}
+
+.aboutPreviewFeatureTitle {
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 0.2rem 0;
+  letter-spacing: 0.02em;
+}
+
+.aboutPreviewFeatureDesc {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ---- Hero Tab: Monumental Typography Preview & Stats Row ---- */
+.heroSectionDesc {
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  line-height: 1.55;
+  margin: -0.6rem 0 1.4rem 0;
+}
+
+.heroPreviewBox {
+  margin-bottom: 1.5rem;
+  padding: 1.25rem;
+  background: var(--surface-secondary);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+}
+
+.heroPreviewInner {
+  text-align: center;
+  padding: 2rem 1.5rem;
+  background: var(--surface-primary);
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.heroPreviewTitle {
+  font-family: var(--font-serif);
+  font-size: clamp(1.3rem, 2.5vw, 1.9rem);
+  font-weight: 400;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.heroPreviewLine {
+  display: block;
+  text-transform: uppercase;
+}
+
+.heroPreviewDesc {
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  line-height: 1.65;
+  color: var(--text-secondary);
+  max-width: 54ch;
+  margin: 0;
+}
+
+.heroPreviewDesc em {
+  font-style: italic;
+  color: var(--text-secondary);
+}
+
+.statRowItem {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 0.85rem;
+  align-items: flex-end;
+  margin-bottom: 0.75rem;
+}
+
+.inputGroupCompact {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 640px) {
+  .statRowItem {
+    grid-template-columns: 1fr;
+    gap: 0.65rem;
+    padding: 0.85rem;
+    background: rgba(var(--surface-secondary-rgb), 0.55);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+  }
+}
+
 /* ---- Account Tab ---- */
 .accountSectionHeader {
   margin-bottom: 2rem;
@@ -1019,7 +1217,7 @@
   align-items: center;
   gap: 0.4rem;
   background: rgba(var(--success-color-rgb), 0.15);
-  color: #10b981;
+  color: var(--success-color);
   border: 1px solid rgba(var(--success-color-rgb), 0.3);
   padding: 0.35rem 0.8rem;
   border-radius: 999px;
@@ -1032,7 +1230,7 @@
   align-items: center;
   gap: 0.4rem;
   background: rgba(var(--danger-color-rgb), 0.15);
-  color: #ef4444;
+  color: var(--danger-color);
   border: 1px solid rgba(var(--danger-color-rgb), 0.3);
   padding: 0.35rem 0.8rem;
   border-radius: 999px;
@@ -1191,9 +1389,49 @@
 }
 
 .removeSectionBtn:hover {
-  border-color: #ef4444;
-  color: #ef4444;
+  border-color: var(--danger-color);
+  color: var(--danger-color);
   background: rgba(var(--danger-color-rgb), 0.1);
+}
+
+.removeSectionBtn:active {
+  transform: scale(0.97);
+}
+
+.waWarningDesc {
+  display: block;
+  margin-top: 0.5rem;
+  color: var(--warning-color);
+}
+
+.waErrorDesc {
+  color: var(--danger-color);
+}
+
+.qrModalTitleSpacing {
+  margin: 0 0 0.5rem 0;
+}
+
+.qrModalDescSpacing {
+  margin-bottom: 1rem;
+}
+
+.qrModalSpinnerWrap {
+  padding: 3rem 0;
+}
+
+.qrModalSpinner {
+  margin: 0 auto 1rem auto;
+}
+
+.qrModalActionsRow {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.retryQrBtn {
+  margin-top: 1rem;
 }
 
 .emptySectionsNotice {

@@ -30,13 +30,15 @@
   "features": {
     "search": {
       "placeholder": "Cari produk...",
+      "ariaLabel": "Cari Produk",
       "icon": "search"
     },
     "cart": {
-      "ariaLabel": "Open Cart",
+      "ariaLabel": "Buka Keranjang Belanja",
       "icon": "shopping-cart"
     },
     "hamburger": {
+      "ariaLabel": "Menu Navigasi",
       "iconOpen": "menu",
       "iconClose": "x"
     },
@@ -47,6 +49,9 @@
     }
   },
   "authSection": {
+    "userMenuAriaLabel": "Menu Pengguna",
+    "avatarAlt": "Avatar Pengguna",
+    "defaultUserName": "Pengguna",
     "styles": {
       "container": "authSection",
       "link": "authLink",

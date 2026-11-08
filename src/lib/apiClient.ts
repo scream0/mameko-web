@@ -52,5 +52,29 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
     }
   };
 
-  return fetch(url, finalOptions);
+  try {
+    const res = await fetch(url, finalOptions);
+
+    if (
+      typeof window !== "undefined" &&
+      (res.status === 502 || res.status === 503 || res.status === 504)
+    ) {
+      window.dispatchEvent(
+        new CustomEvent("mameko-server-maintenance", {
+          detail: { statusCode: res.status },
+        })
+      );
+    }
+
+    return res;
+  } catch (error) {
+    if (typeof window !== "undefined" && url.includes("/api/")) {
+      window.dispatchEvent(
+        new CustomEvent("mameko-server-maintenance", {
+          detail: { statusCode: 503 },
+        })
+      );
+    }
+    throw error;
+  }
 }

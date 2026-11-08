@@ -68,6 +68,11 @@ export function Hero() {
               },
             },
             stats: Array.isArray(h.stats) && h.stats.length > 0 ? h.stats : heroData.stats,
+            scrollIndicator: {
+              label: h.scrollIndicator?.label?.trim()
+                ? h.scrollIndicator.label
+                : heroData.scrollIndicator.label,
+            },
           });
         }
       } catch (error) {
@@ -148,7 +153,7 @@ export function Hero() {
           <h1
             className={`${styles.heroTitle} ${styles.reveal} ${styles.delay0} ${isRevealed ? styles.revealed : ""}`}
           >
-            {resolvedHero?.title?.main}{" "}
+            <span className={styles.titleMain}>{resolvedHero?.title?.main}</span>
             <span className={styles.titleAccent}>{resolvedHero?.title?.highlight}</span>
           </h1>
 
@@ -200,7 +205,7 @@ export function Hero() {
         aria-hidden="true"
       >
         <span className={styles.scrollLabel}>
-          {heroData.scrollIndicator?.label}
+          {resolvedHero?.scrollIndicator?.label || heroData.scrollIndicator?.label}
         </span>
         <span className={styles.scrollLine} />
       </div>

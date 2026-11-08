@@ -34,7 +34,6 @@ export default function Shop({ searchQuery = "", onBukaDetail, initialData }: { 
   // Settings from DB / Config fallback
   const [resolvedHeader, setResolvedHeader] = useState(
     initialData?.publicSettings?.product?.header || {
-      tagline: shopConfig.header?.fallbackTagline || "our curated collection",
       title: {
         main: shopConfig.header?.fallbackTitleMain || "Produk",
         highlight: shopConfig.header?.fallbackTitleHighlight || "Kami",
@@ -63,10 +62,15 @@ export default function Shop({ searchQuery = "", onBukaDetail, initialData }: { 
         if (!data || !isMounted) return;
         if (data?.product?.header) {
           setResolvedHeader({
-            tagline: data.product.header.tagline || shopConfig.header?.fallbackTagline || "our curated collection",
             title: {
-              main: data.product.header.title?.main || shopConfig.header?.fallbackTitleMain || "Produk",
-              highlight: data.product.header.title?.highlight || shopConfig.header?.fallbackTitleHighlight || "Kami",
+              main:
+                data.product.header.title?.main ||
+                shopConfig.header?.fallbackTitleMain ||
+                "Produk",
+              highlight:
+                data.product.header.title?.highlight ||
+                shopConfig.header?.fallbackTitleHighlight ||
+                "Kami",
             },
           });
         }
@@ -316,271 +320,322 @@ export default function Shop({ searchQuery = "", onBukaDetail, initialData }: { 
     { id: "name", label: "Nama (A-Z)" },
   ];
 
+  const productSectionTitle = useMemo(() => {
+    const main = resolvedHeader?.title?.main?.trim();
+    const highlight = resolvedHeader?.title?.highlight?.trim();
+    if (main && highlight) {
+      return `${main} ${highlight}`;
+    }
+    if (main) return main;
+    if (highlight) return highlight;
+    return shopConfig.header?.title || "Produk Kami";
+  }, [resolvedHeader]);
+
   return (
-    <div
-      className={`${styles.shopContainer} ${isVisible ? styles.visible : ""}`}
+    <section
+      id="product"
+      className={`${styles.shopSection} ${isVisible ? styles.visible : ""}`}
       ref={shopRef}
+      aria-label={productSectionTitle}
     >
-      {/* Header */}
-      <header className={styles.shopHeader}>
-        <p className={styles.shopTagline}>{resolvedHeader.tagline}</p>
-        <h2>
-          {resolvedHeader.title?.main}{" "}
-          <span>{resolvedHeader.title?.highlight}</span>
-        </h2>
-      </header>
+      <div className={styles.shopContainer}>
+        {/* Header (Single Solid Color, Clean Minimalist) */}
+        <header className={styles.shopHeader}>
+          <h2 className={styles.shopTitle}>
+            {productSectionTitle}
+          </h2>
+        </header>
 
-      {/* Filter Tabs (Pill Buttons) */}
-      <nav
-        className={styles.filterTabsWrapper}
-        role="tablist"
-        aria-label="Filter Urutan Produk"
-      >
-        {sortOptions.map((option) => (
-          <button
-            key={option.id}
-            role="tab"
-            aria-selected={sortBy === option.id}
-            onClick={() => {
-              setSortBy(option.id);
-              setCurrentPage(1);
-            }}
-            className={`${styles.filterTabBtn} ${
-              sortBy === option.id ? styles.activeFilterTab : ""
-            }`}
-          >
-            {option.label}
-          </button>
-        ))}
-      </nav>
+        {/* Filter Tabs (Pill Buttons) */}
+        <nav
+          className={styles.filterTabsWrapper}
+          role="tablist"
+          aria-label={shopConfig.filters?.allLabel || "Filter Urutan Produk"}
+        >
+          <div className={styles.filterPillTrack}>
+            {sortOptions.map((option) => (
+              <button
+                key={option.id}
+                role="tab"
+                type="button"
+                aria-selected={sortBy === option.id}
+                onClick={() => {
+                  setSortBy(option.id);
+                  setCurrentPage(1);
+                }}
+                className={`${styles.filterTabBtn} ${
+                  sortBy === option.id ? styles.activeFilterTab : ""
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </nav>
 
-      {/* Product List */}
-      {loading ? (
-        <ShopSkeleton count={PRODUCTS_PER_PAGE} />
-      ) : products.length === 0 && !isFetchingMore ? (
-        <div className={styles.stateContainer}>
-          <p>{shopConfig.messages?.empty || "Belum ada produk yang tersedia."}</p>
-        </div>
-      ) : (
-        <>
-          <div className={styles.productGrid}>
-            {products.map((product: any) => {
-              const pId = String(product.id || product._id || "");
-              const totalSold =
-                orderItemsMap[pId] || Number(product.total_sold || 0);
+        {/* Product List */}
+        {loading ? (
+          <ShopSkeleton count={PRODUCTS_PER_PAGE} />
+        ) : products.length === 0 && !isFetchingMore ? (
+          <div className={styles.stateContainer}>
+            <p>{shopConfig.messages?.empty || "Belum ada produk yang tersedia."}</p>
+          </div>
+        ) : (
+          <>
+            <div className={styles.productGrid}>
+              {products.map((product: any) => {
+                const pId = String(product.id || product._id || "");
+                const totalSold =
+                  orderItemsMap[pId] || Number(product.total_sold || 0);
 
-              const availableVariantIdx = getFirstAvailableVariantIndex(product);
-              const activeVariant =
-                product.variants?.[availableVariantIdx] || product.variants?.[0];
+                const availableVariantIdx = getFirstAvailableVariantIndex(product);
+                const activeVariant =
+                  product.variants?.[availableVariantIdx] || product.variants?.[0];
 
-              // Base price correctly derived from active variant or product
-              const displayPrice = Number(
-                activeVariant?.price ?? product.price ?? 0
-              );
-              const priceFormatted = displayPrice
-                ? `Rp ${displayPrice.toLocaleString("id-ID")}`
-                : shopConfig.card?.fallbackPrice || "Rp 0";
+                // Base price correctly derived from active variant or product
+                const displayPrice = Number(
+                  activeVariant?.price ?? product.price ?? 0
+                );
+                const priceFormatted = displayPrice
+                  ? `Rp ${displayPrice.toLocaleString("id-ID")}`
+                  : shopConfig.card?.fallbackPrice || "Rp 0";
 
-              const outOfStock = isProductOutOfStock(product);
-              const totalStockLeft = getProductTotalStock(product);
-              const isWishlisted = wishlist.includes(pId);
+                const outOfStock = isProductOutOfStock(product);
+                const totalStockLeft = getProductTotalStock(product);
+                const isWishlisted = wishlist.includes(pId);
 
-              // Reviews match safely with productId or product_id
-              const productReviews = allReviews.filter(
-                (review: any) =>
-                  String(review.productId || review.product_id) === pId
-              );
-              const averageRating = productReviews.length
-                ? (
-                    productReviews.reduce(
-                      (sum, review: any) => sum + Number(review.rating || 0),
-                      0
-                    ) / productReviews.length
-                  ).toFixed(1)
-                : null;
+                // Reviews match safely with productId or product_id
+                const productReviews = allReviews.filter(
+                  (review: any) =>
+                    String(review.productId || review.product_id) === pId
+                );
+                const averageRating = productReviews.length
+                  ? (
+                      productReviews.reduce(
+                        (sum, review: any) => sum + Number(review.rating || 0),
+                        0
+                      ) / productReviews.length
+                    ).toFixed(1)
+                  : null;
 
-              const productImg =
-                product.image_url || product.imageUrl || product.image;
+                const productImg =
+                  product.image_url || product.imageUrl || product.image;
 
-              // Calculate discount based on active variant
-              const discounted = getDiscountedPrice(displayPrice, activePromo, {
-                productId: pId,
-                size: activeVariant?.size,
-              });
+                // Calculate discount based on active variant
+                const discounted = getDiscountedPrice(displayPrice, activePromo, {
+                  productId: pId,
+                  size: activeVariant?.size,
+                });
 
-              return (
-                <article
-                  key={pId}
-                  className={`${styles.productCard} ${
-                    outOfStock ? styles.outOfStock : ""
-                  }`}
-                  onClick={() => onBukaDetail(product)}
-                >
-                  {/* Image Section */}
-                  <div className={styles.productCardImageWrapper}>
-                    {productImg && !failedImages[pId] ? (
-                      <Image
-                        src={optimizeCloudinaryUrl(productImg, IMAGE_PRESETS.PRODUCT_CARD)}
-                        alt={product.name}
-                        className={styles.productCardImg}
-                        width={320}
-                        height={320}
-                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                        onError={() => setFailedImages((prev) => ({ ...prev, [pId]: true }))}
-                      />
-                    ) : (
-                      <Image
-                        src="/placeholder.jpg"
-                        alt={product.name || "MAMEKO PARFUM"}
-                        className={styles.productCardImg}
-                        width={320}
-                        height={320}
-                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                      />
-                    )}
-
-                    <span className={styles.cardCategoryBadge}>
-                      {product.category ||
-                        shopConfig.card?.defaultCategory ||
-                        "Parfum"}
-                    </span>
-
-                    <button
-                      className={`${styles.wishlistBtn} ${
-                        isWishlisted ? styles.wishlistActive : ""
-                      }`}
-                      onClick={(e) => toggleWishlist(pId, e)}
-                      aria-label={shopConfig.aria?.wishlist || "Wishlist"}
-                    >
-                      <svg viewBox="0 0 24 24">
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+                return (
+                  <article
+                    key={pId}
+                    className={`${styles.productCard} ${
+                      outOfStock ? styles.outOfStock : ""
+                    }`}
+                    onClick={() => onBukaDetail(product)}
+                  >
+                    {/* Image Section */}
+                    <div className={styles.productCardImageWrapper}>
+                      {productImg && !failedImages[pId] ? (
+                        <Image
+                          src={optimizeCloudinaryUrl(productImg, IMAGE_PRESETS.PRODUCT_CARD)}
+                          alt={product.name}
+                          className={styles.productCardImg}
+                          width={320}
+                          height={320}
+                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                          onError={() => setFailedImages((prev) => ({ ...prev, [pId]: true }))}
                         />
-                      </svg>
-                    </button>
-
-                    {outOfStock && (
-                      <span className={styles.outOfStockBadge}>
-                        {shopConfig.card?.soldOutBadge || "Habis"}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Body Section */}
-                  <div className={styles.productCardBody}>
-                    <div className={styles.cardTopInfo}>
-                      <h3 className={styles.productName}>{product.name}</h3>
-                      <button
-                        className={`${styles.cartIconBtn} ${
-                          outOfStock ? styles.cartIconBtnDisabled : ""
-                        }`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (!outOfStock) {
-                            const variantToAdd = activeVariant || {
-                              size:
-                                shopConfig.card?.defaultVariant || "Standard",
-                              price: displayPrice,
-                              stock: 10,
-                            };
-                            addToCart(product, variantToAdd, 1);
-                          }
-                        }}
-                        disabled={outOfStock}
-                        aria-label={
-                          shopConfig.card?.addToCartTitle ||
-                          shopConfig.aria?.addToCart ||
-                          "Tambah ke keranjang"
-                        }
-                      >
-                        <AppIcon name="shopping-cart" />
-                      </button>
-                    </div>
-
-                    {/* Price & Discounts */}
-                    <div className={styles.cardPriceRow}>
-                      {outOfStock ? (
-                        <span className={styles.cardPrice}>
-                          {shopConfig.card?.outOfStockTitle || "Stok Habis"}
-                        </span>
                       ) : (
-                        <>
-                          {discounted.hasDiscount && (
-                            <span className={styles.cardOriginalPrice}>
-                              {priceFormatted}
-                            </span>
-                          )}
-                          <span className={styles.cardPrice}>
-                            {`Rp ${Number(discounted.price).toLocaleString(
-                              "id-ID"
-                            )}`}
-                          </span>
-                          {discounted.hasDiscount && (
-                            <span className={styles.cardDiscountBadge}>
-                              {shopConfig.card?.savingsPrefix || "Hemat "}
-                              {`Rp ${Number(discounted.savings).toLocaleString(
-                                "id-ID"
-                              )}`}
-                            </span>
-                          )}
-                        </>
+                        <Image
+                          src="/placeholder.jpg"
+                          alt={product.name || "MAMEKO PARFUM"}
+                          className={styles.productCardImg}
+                          width={320}
+                          height={320}
+                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                        />
+                      )}
+
+                      <span className={styles.cardCategoryBadge}>
+                        {product.category ||
+                          shopConfig.card?.defaultCategory ||
+                          "Parfum"}
+                      </span>
+
+                      <button
+                        type="button"
+                        className={`${styles.wishlistBtn} ${
+                          isWishlisted ? styles.wishlistActive : ""
+                        }`}
+                        onClick={(e) => toggleWishlist(pId, e)}
+                        aria-label={shopConfig.aria?.wishlist || "Wishlist"}
+                      >
+                        <AppIcon
+                          name="heart"
+                          size={17}
+                          className={styles.wishlistIcon}
+                        />
+                      </button>
+
+                      {outOfStock && (
+                        <span className={styles.outOfStockBadge}>
+                          {shopConfig.card?.soldOutBadge || "Habis"}
+                        </span>
                       )}
                     </div>
 
-                    {/* Review Summary */}
-                    <div className={styles.reviewSummary}>
-                      {averageRating
-                        ? `★ ${averageRating} (${productReviews.length})`
-                        : shopConfig.reviews?.noReviewsYet || "Belum ada ulasan"}
-                    </div>
+                    {/* Body Section */}
+                    <div className={styles.productCardBody}>
+                      <div className={styles.cardTopInfo}>
+                        <h3 className={styles.productName}>{product.name}</h3>
+                        <button
+                          type="button"
+                          className={`${styles.cartIconBtn} ${
+                            outOfStock ? styles.cartIconBtnDisabled : ""
+                          }`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (!outOfStock) {
+                              const variantToAdd = activeVariant || {
+                                size:
+                                  shopConfig.card?.defaultVariant || "Standard",
+                                price: displayPrice,
+                                stock: 10,
+                              };
+                              addToCart(product, variantToAdd, 1);
+                            }
+                          }}
+                          disabled={outOfStock}
+                          aria-label={
+                            shopConfig.card?.addToCartTitle ||
+                            shopConfig.aria?.addToCart ||
+                            "Tambah ke keranjang"
+                          }
+                        >
+                          <AppIcon name="shopping-bag" size={16} />
+                        </button>
+                      </div>
 
-                    {/* Footer / Stock Indicator */}
-                    <div className={styles.cardFooterInfo}>
-                      <span
-                        className={
-                          outOfStock
-                            ? styles.soldCount
-                            : totalStockLeft <= 5
-                            ? styles.stockIndicatorLow
-                            : styles.stockIndicator
-                        }
-                      >
-                        {outOfStock
-                          ? `${shopConfig.card?.soldPrefix || "Terjual "}${totalSold}`
-                          : `${
-                              shopConfig.card?.stockRemainingPrefix || "Sisa "
-                            }${totalStockLeft}${
-                              shopConfig.card?.stockRemainingSuffix || " lagi!"
-                            }`}
-                      </span>
-                      <span className={styles.viewDetailText}>
-                        {shopConfig.card?.viewDetail || "Detail"}
-                      </span>
-                    </div>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
+                      {/* Variant Badges Cue */}
+                      {Array.isArray(product.variants) && product.variants.length > 0 && (
+                        <div className={styles.variantBadgesList}>
+                          {product.variants.map((v: any, vIdx: number) => (
+                            <span
+                              key={v.id || v.size || vIdx}
+                              className={styles.variantBadgeItem}
+                            >
+                              {v.size || v.name}
+                            </span>
+                          ))}
+                        </div>
+                      )}
 
-          {/* Pagination Load More */}
-          {products.length < totalProducts &&
-            currentPage * PRODUCTS_PER_PAGE < totalProducts && (
-              <div className={styles.paginationWrapper}>
-                <button
-                  onClick={handleLoadMore}
-                  disabled={isFetchingMore}
-                  className={styles.loadMoreBtn}
-                >
-                  {shopConfig.buttons?.loadMore || "Lihat Lebih Banyak"}
-                </button>
-              </div>
-            )}
-        </>
-      )}
-    </div>
+                      {/* Price & Discounts */}
+                      <div className={styles.cardPriceRow}>
+                        {outOfStock ? (
+                          <span className={styles.cardPrice}>
+                            {shopConfig.card?.outOfStockTitle || "Stok Habis"}
+                          </span>
+                        ) : (
+                          <>
+                            {discounted.hasDiscount && (
+                              <span className={styles.cardOriginalPrice}>
+                                {priceFormatted}
+                              </span>
+                            )}
+                            <span className={styles.cardPrice}>
+                              {`Rp ${Number(discounted.price).toLocaleString(
+                                "id-ID"
+                              )}`}
+                            </span>
+                            {discounted.hasDiscount && (
+                              <span className={styles.cardDiscountBadge}>
+                                {shopConfig.card?.savingsPrefix || "Hemat "}
+                                {`Rp ${Number(discounted.savings).toLocaleString(
+                                  "id-ID"
+                                )}`}
+                              </span>
+                            )}
+                          </>
+                        )}
+                      </div>
+
+                      {/* Review Summary */}
+                      <div className={styles.reviewSummary}>
+                        {averageRating ? (
+                          <span className={styles.starRatingPill}>
+                            ★ {averageRating} ({productReviews.length})
+                          </span>
+                        ) : (
+                          <span className={styles.noReviewText}>
+                            {shopConfig.reviews?.noReviewsYet || "Belum ada ulasan"}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Footer / Stock Indicator */}
+                      <div className={styles.cardFooterInfo}>
+                        <span
+                          className={
+                            outOfStock
+                              ? styles.soldCount
+                              : totalStockLeft <= 5
+                              ? styles.stockIndicatorLow
+                              : styles.stockIndicator
+                          }
+                        >
+                          {outOfStock
+                            ? `${shopConfig.card?.soldPrefix || "Terjual "}${totalSold}`
+                            : `${
+                                shopConfig.card?.stockRemainingPrefix || "Sisa "
+                              }${totalStockLeft}${
+                                shopConfig.card?.stockRemainingSuffix || " lagi!"
+                              }`}
+                        </span>
+                        <span className={styles.viewDetailText}>
+                          {shopConfig.card?.viewDetail || "Detail"}
+                        </span>
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+
+            {/* Pagination Load More */}
+            {products.length < totalProducts &&
+              currentPage * PRODUCTS_PER_PAGE < totalProducts && (
+                <div className={styles.paginationWrapper}>
+                  <button
+                    type="button"
+                    onClick={handleLoadMore}
+                    disabled={isFetchingMore}
+                    className={styles.loadMoreBtn}
+                  >
+                    <span>
+                      {shopConfig.buttons?.loadMore || "Lihat Lebih Banyak"}
+                    </span>
+                    {isFetchingMore ? (
+                      <AppIcon
+                        name="loader"
+                        size={16}
+                        className={styles.loadingSpinner}
+                      />
+                    ) : (
+                      <AppIcon
+                        name="arrow-right"
+                        size={16}
+                        className={styles.arrowMoreIcon}
+                      />
+                    )}
+                  </button>
+                </div>
+              )}
+          </>
+        )}
+      </div>
+    </section>
   );
 }

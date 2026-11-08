@@ -15,6 +15,7 @@ import { convertToWebP } from "@/utils/imageConverter";
 import UserManagement from "./UserManagement";
 import privacyConfig from "@/data/ui/privacyConfig.json";
 import termsConfig from "@/data/ui/termsConfig.json";
+import heroConfig from "@/data/ui/heroConfig.json";
 
 const EMPTY: any = {
   store: {
@@ -39,30 +40,40 @@ const EMPTY: any = {
     imagePublicId: "",
     tagline: "",
     badge: "",
-    title: { main: "", highlight: "" },
-    description: { prefix: "", italic: "", suffix: "" },
-    buttons: {
-      primary: { label: "", href: "" },
-      secondary: { label: "", href: "" },
+    title: {
+      main: heroConfig.title.main,
+      highlight: heroConfig.title.highlight,
     },
-    trustPills: [
-      { icon: "shield-check", label: "Garansi Keaslian" },
-      { icon: "package", label: "Free Ongkir >500rb" },
-      { icon: "flask-conical", label: "Extrait de Parfum" },
-      { icon: "leaf", label: "Natural Ingredients" },
-    ],
-    stats: [
+    description: {
+      prefix: heroConfig.description.prefix,
+      italic: heroConfig.description.italic,
+      suffix: heroConfig.description.suffix,
+    },
+    buttons: {
+      primary: {
+        label: heroConfig.buttons.primary.label,
+        href: heroConfig.buttons.primary.href,
+      },
+      secondary: {
+        label: heroConfig.buttons.secondary.label,
+        href: heroConfig.buttons.secondary.href,
+      },
+    },
+    trustPills: [],
+    stats: heroConfig.stats || [
       { value: "500+", label: "Pelanggan Puas" },
       { value: "30+", label: "Varian Aroma" },
       { value: "4.9★", label: "Rating Produk" },
     ],
-    scrollIndicator: { label: "Gulir untuk Jelajahi" },
+    scrollIndicator: {
+      label: heroConfig.scrollIndicator?.label || "Gulir",
+    },
   },
   about: {
     image: "",
     imageAlt: "",
     imagePublicId: "",
-    content: { tagline: "", heading: "", leadText: "", bodyText: "" },
+    content: { heading: "", leadText: "", bodyText: "" },
     features: [{ number: "01", title: "", desc: "" }],
   },
   product: {
@@ -86,6 +97,7 @@ const EMPTY: any = {
       socials: [{ href: "", icon: "", label: "" }],
     },
     navigation: { title: "", links: [{ label: "", href: "" }] },
+    legal: { title: "", links: [{ label: "", href: "" }] },
     payment: { title: "", subtitle: "", methods: [""] },
     copyright: { text: "" },
   },
@@ -183,22 +195,22 @@ export default function SettingsView() {
         tagline: pick(data?.hero?.tagline, raw?.hero?.tagline),
         badge: pick(data?.hero?.badge, raw?.hero?.badge),
         title: {
-          main: pick(data?.hero?.title?.main, raw?.hero?.title?.main),
-          highlight: pick(data?.hero?.title?.highlight, raw?.hero?.title?.highlight),
+          main: pick(data?.hero?.title?.main, raw?.hero?.title?.main, heroConfig.title.main),
+          highlight: pick(data?.hero?.title?.highlight, raw?.hero?.title?.highlight, heroConfig.title.highlight),
         },
         description: {
-          prefix: pick(data?.hero?.description?.prefix, raw?.hero?.description?.prefix),
-          italic: pick(data?.hero?.description?.italic, raw?.hero?.description?.italic),
-          suffix: pick(data?.hero?.description?.suffix, raw?.hero?.description?.suffix),
+          prefix: pick(data?.hero?.description?.prefix, raw?.hero?.description?.prefix, heroConfig.description.prefix),
+          italic: pick(data?.hero?.description?.italic, raw?.hero?.description?.italic, heroConfig.description.italic),
+          suffix: pick(data?.hero?.description?.suffix, raw?.hero?.description?.suffix, heroConfig.description.suffix),
         },
         buttons: {
           primary: {
-            label: pick(data?.hero?.buttons?.primary?.label, raw?.hero?.buttons?.primary?.label),
-            href: pick(data?.hero?.buttons?.primary?.href, raw?.hero?.buttons?.primary?.href),
+            label: pick(data?.hero?.buttons?.primary?.label, raw?.hero?.buttons?.primary?.label, heroConfig.buttons.primary.label),
+            href: pick(data?.hero?.buttons?.primary?.href, raw?.hero?.buttons?.primary?.href, heroConfig.buttons.primary.href),
           },
           secondary: {
-            label: pick(data?.hero?.buttons?.secondary?.label, raw?.hero?.buttons?.secondary?.label),
-            href: pick(data?.hero?.buttons?.secondary?.href, raw?.hero?.buttons?.secondary?.href),
+            label: pick(data?.hero?.buttons?.secondary?.label, raw?.hero?.buttons?.secondary?.label, heroConfig.buttons.secondary.label),
+            href: pick(data?.hero?.buttons?.secondary?.href, raw?.hero?.buttons?.secondary?.href, heroConfig.buttons.secondary.href),
           },
         },
         trustPills:
@@ -206,18 +218,13 @@ export default function SettingsView() {
             ? data.hero.trustPills
             : Array.isArray(raw?.hero?.trustPills) && raw.hero.trustPills.length > 0
             ? raw.hero.trustPills
-            : [
-                { icon: "shield-check", label: "Garansi Keaslian" },
-                { icon: "package", label: "Free Ongkir >500rb" },
-                { icon: "flask-conical", label: "Extrait de Parfum" },
-                { icon: "leaf", label: "Natural Ingredients" },
-              ],
+            : [],
         stats:
           Array.isArray(data?.hero?.stats) && data.hero.stats.length > 0
             ? data.hero.stats
             : Array.isArray(raw?.hero?.stats) && raw.hero.stats.length > 0
             ? raw.hero.stats
-            : [
+            : heroConfig.stats || [
                 { value: "500+", label: "Pelanggan Puas" },
                 { value: "30+", label: "Varian Aroma" },
                 { value: "4.9★", label: "Rating Produk" },
@@ -226,7 +233,7 @@ export default function SettingsView() {
           label: pick(
             data?.hero?.scrollIndicator?.label,
             raw?.hero?.scrollIndicator?.label,
-            "Gulir untuk Jelajahi",
+            heroConfig.scrollIndicator?.label || "Gulir",
           ),
         },
       },
@@ -235,7 +242,6 @@ export default function SettingsView() {
         imageAlt: pick(data?.about?.imageAlt, raw?.about?.imageAlt),
         imagePublicId: pick(data?.about?.imagePublicId, raw?.about?.imagePublicId),
         content: {
-          tagline: pick(data?.about?.content?.tagline, raw?.about?.content?.tagline),
           heading: pick(data?.about?.content?.heading, raw?.about?.content?.heading),
           leadText: pick(data?.about?.content?.leadText, raw?.about?.content?.leadText),
           bodyText: pick(data?.about?.content?.bodyText, raw?.about?.content?.bodyText),
@@ -318,10 +324,23 @@ export default function SettingsView() {
               : Array.isArray(raw?.footer?.navigation?.links) && raw.footer.navigation.links.length > 0 && raw.footer.navigation.links.some((l: any) => l.label?.trim() || l.href?.trim())
               ? raw.footer.navigation.links
               : [
-                  { label: "Home", href: "#home" },
-                  { label: "Tentang Kami", href: "#about" },
-                  { label: "Produk", href: "#product" },
-                  { label: "Kontak", href: "#contact" },
+                  { label: "Beranda", href: "/#home" },
+                  { label: "Tentang Kami", href: "/#about" },
+                  { label: "Katalog Produk", href: "/#product" },
+                  { label: "Hubungi Kami", href: "/#contact" },
+                ],
+        },
+        legal: {
+          title: pick(data?.footer?.legal?.title, raw?.footer?.legal?.title) || "Legalitas",
+          links:
+            Array.isArray(data?.footer?.legal?.links) && data.footer.legal.links.length > 0 && data.footer.legal.links.some((l: any) => l.label?.trim() || l.href?.trim())
+              ? data.footer.legal.links
+              : Array.isArray(raw?.footer?.legal?.links) && raw.footer.legal.links.length > 0 && raw.footer.legal.links.some((l: any) => l.label?.trim() || l.href?.trim())
+              ? raw.footer.legal.links
+              : [
+                  { label: "Kebijakan Privasi", href: "/privacy" },
+                  { label: "Syarat & Ketentuan", href: "/terms" },
+                  { label: "Hapus Akun & Data", href: "/delete-account" },
                 ],
         },
         payment: {
@@ -626,7 +645,6 @@ export default function SettingsView() {
         imageAlt: strictValue(s.about.imageAlt, r.about?.imageAlt, rawVal.about?.imageAlt),
         imagePublicId: strictValue(s.about.imagePublicId, r.about?.imagePublicId, rawVal.about?.imagePublicId),
         content: {
-          tagline: strictValue(s.about.content?.tagline, r.about?.content?.tagline, rawVal.about?.content?.tagline),
           heading: strictValue(s.about.content?.heading, r.about?.content?.heading, rawVal.about?.content?.heading),
           leadText: strictValue(s.about.content?.leadText, r.about?.content?.leadText, rawVal.about?.content?.leadText),
           bodyText: strictValue(s.about.content?.bodyText, r.about?.content?.bodyText, rawVal.about?.content?.bodyText),
@@ -697,10 +715,21 @@ export default function SettingsView() {
             Array.isArray(s.footer.navigation?.links) && s.footer.navigation.links.length > 0 && s.footer.navigation.links.some((l: any) => l.label?.trim() || l.href?.trim())
               ? s.footer.navigation.links.filter((l: any) => l.label?.trim() || l.href?.trim())
               : r.footer?.navigation?.links || rawVal.footer?.navigation?.links || [
-                  { label: "Home", href: "#home" },
-                  { label: "Tentang Kami", href: "#about" },
-                  { label: "Produk", href: "#product" },
-                  { label: "Kontak", href: "#contact" },
+                  { label: "Beranda", href: "/#home" },
+                  { label: "Tentang Kami", href: "/#about" },
+                  { label: "Katalog Produk", href: "/#product" },
+                  { label: "Hubungi Kami", href: "/#contact" },
+                ],
+        },
+        legal: {
+          title: strictValue(s.footer.legal?.title, r.footer?.legal?.title, rawVal.footer?.legal?.title) || "Legalitas",
+          links:
+            Array.isArray(s.footer.legal?.links) && s.footer.legal.links.length > 0 && s.footer.legal.links.some((l: any) => l.label?.trim() || l.href?.trim())
+              ? s.footer.legal.links.filter((l: any) => l.label?.trim() || l.href?.trim())
+              : r.footer?.legal?.links || rawVal.footer?.legal?.links || [
+                  { label: "Kebijakan Privasi", href: "/privacy" },
+                  { label: "Syarat & Ketentuan", href: "/terms" },
+                  { label: "Hapus Akun & Data", href: "/delete-account" },
                 ],
         },
         payment: {
@@ -835,8 +864,6 @@ export default function SettingsView() {
           <HeroTab
             settings={settings.hero}
             updateTab={updateTab}
-            handleHeroImageSelect={handleHeroImageSelect}
-            heroImagePreviewUrl={heroImagePreviewUrl}
             cfg={cfg}
           />
         )}
@@ -1151,7 +1178,7 @@ function StoreTab({ settings, handleInputChange, cfg }) {
 /* ============================================================
    TAB: HERO
    ============================================================ */
-function HeroTab({ settings, updateTab, handleHeroImageSelect, heroImagePreviewUrl, cfg }) {
+function HeroTab({ settings, updateTab, cfg }) {
   const s = settings;
   const set = (patch: any) => updateTab("hero", { ...s, ...patch });
 
@@ -1160,121 +1187,100 @@ function HeroTab({ settings, updateTab, handleHeroImageSelect, heroImagePreviewU
       <h4 className={styles.sectionTitle}>
         {cfg.hero?.sectionTitle || cfg.sections?.hero || "Hero Section"}
       </h4>
-
-      {/* Bagian Upload Gambar Hero */}
-      <div className={styles.row2}>
-        <div className={styles.inputGroup}>
-          <label className={styles.fieldLabel}>{cfg.hero?.imageUrlLabel || "Hero Gambar URL"}</label>
-          <input
-            className={styles.inputField}
-            value={s.image}
-            onChange={(e) => set({ image: e.target.value })}
-            placeholder={cfg.hero?.imageUrlPlaceholder || "https://..."}
-          />
-        </div>
-        <div className={styles.inputGroup}>
-          <label className={styles.fieldLabel}>{cfg.hero?.imageAltLabel || "Alt Gambar Hero"}</label>
-          <input
-            className={styles.inputField}
-            value={s.imageAlt}
-            onChange={(e) => set({ imageAlt: e.target.value })}
-            placeholder={cfg.hero?.imageAltPlaceholder || "Deskripsi gambar..."}
-          />
-        </div>
-      </div>
-
-      <div className={styles.inputGroup}>
-        <label className={styles.fieldLabel}>
-          {cfg.hero?.fileUploadLabel || "Unggah File Gambar Hero"}
-        </label>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={handleHeroImageSelect}
-          className={styles.fileInput}
-        />
-        <small className={styles.fieldDesc}>
-          {cfg.hero?.fileUploadDesc || "Unggah gambar atau ilustrasi utama untuk Hero Section landing page."}
-        </small>
-      </div>
-
-      {(heroImagePreviewUrl || s.image) && (
-        <div className={styles.previewCard}>
-          {/* eslint-disable-next-line @next/next/no-img-element -- Dynamic blob & Cloudinary preview URLs require a plain <img>. */}
-          <img
-            src={heroImagePreviewUrl || s.image}
-            alt={s.imageAlt || "Hero Preview"}
-            className={styles.previewImage}
-          />
-        </div>
+      {cfg.hero?.sectionDesc && (
+        <p className={styles.heroSectionDesc}>{cfg.hero.sectionDesc}</p>
       )}
 
-      <div className={styles.inputGroup}>
-        <label className={styles.fieldLabel}>{cfg.hero?.taglineLabel || "Tagline"}</label>
-        <input
-          className={styles.inputField}
-          value={s.tagline}
-          onChange={(e) => set({ tagline: e.target.value })}
-        />
+      {/* ── Live Typography Preview (Monumental Centered Hero) ── */}
+      <div className={styles.heroPreviewBox}>
+        <span className={styles.previewHeaderNotice}>
+          {cfg.hero?.previewNotice}
+        </span>
+        <div className={styles.heroPreviewInner}>
+          <h2 className={styles.heroPreviewTitle}>
+            <span className={styles.heroPreviewLine}>
+              {s.title?.main || heroConfig.title.main}
+            </span>
+            <span className={styles.heroPreviewLine}>
+              {s.title?.highlight || heroConfig.title.highlight}
+            </span>
+          </h2>
+          <p className={styles.heroPreviewDesc}>
+            {s.description?.prefix || heroConfig.description.prefix}
+            <em>{s.description?.italic || heroConfig.description.italic}</em>
+            {s.description?.suffix || heroConfig.description.suffix}
+          </p>
+        </div>
       </div>
+
+      {/* ── Judul Monumental 2 Baris ── */}
       <div className={styles.row2}>
         <div className={styles.inputGroup}>
-          <label className={styles.fieldLabel}>{cfg.hero?.mainTitleLabel || "Judul Utama"}</label>
+          <label className={styles.fieldLabel}>{cfg.hero?.mainTitleLabel}</label>
           <input
             className={styles.inputField}
-            value={s.title?.main}
+            value={s.title?.main || ""}
             onChange={(e) =>
               set({ title: { ...s.title, main: e.target.value } })
             }
+            placeholder={cfg.hero?.mainTitlePlaceholder}
           />
         </div>
         <div className={styles.inputGroup}>
-          <label className={styles.fieldLabel}>{cfg.hero?.highlightTitleLabel || "Judul Sorotan"}</label>
+          <label className={styles.fieldLabel}>{cfg.hero?.highlightTitleLabel}</label>
           <input
             className={styles.inputField}
-            value={s.title?.highlight}
+            value={s.title?.highlight || ""}
             onChange={(e) =>
               set({ title: { ...s.title, highlight: e.target.value } })
             }
+            placeholder={cfg.hero?.highlightTitlePlaceholder}
           />
         </div>
       </div>
+
+      {/* ── Narasi Deskripsi ── */}
       <div className={styles.inputGroup}>
-        <label className={styles.fieldLabel}>{cfg.hero?.descPrefixLabel || "Deskripsi Awal"}</label>
+        <label className={styles.fieldLabel}>{cfg.hero?.descPrefixLabel}</label>
         <input
           className={styles.inputField}
-          value={s.description?.prefix}
+          value={s.description?.prefix || ""}
           onChange={(e) =>
             set({ description: { ...s.description, prefix: e.target.value } })
           }
+          placeholder={cfg.hero?.descPrefixPlaceholder}
         />
       </div>
       <div className={styles.inputGroup}>
-        <label className={styles.fieldLabel}>{cfg.hero?.descItalicLabel || "Kata Miring"}</label>
+        <label className={styles.fieldLabel}>{cfg.hero?.descItalicLabel}</label>
         <input
           className={styles.inputField}
-          value={s.description?.italic}
+          value={s.description?.italic || ""}
           onChange={(e) =>
             set({ description: { ...s.description, italic: e.target.value } })
           }
+          placeholder={cfg.hero?.descItalicPlaceholder}
         />
       </div>
       <div className={styles.inputGroup}>
-        <label className={styles.fieldLabel}>{cfg.hero?.descSuffixLabel || "Deskripsi Akhir"}</label>
+        <label className={styles.fieldLabel}>{cfg.hero?.descSuffixLabel}</label>
         <input
           className={styles.inputField}
-          value={s.description?.suffix}
+          value={s.description?.suffix || ""}
           onChange={(e) =>
             set({ description: { ...s.description, suffix: e.target.value } })
           }
+          placeholder={cfg.hero?.descSuffixPlaceholder}
         />
       </div>
+
+      {/* ── Tombol Aksi Utama & Kedua ── */}
       <div className={styles.row2}>
         <div className={styles.inputGroup}>
-          <label className={styles.fieldLabel}>{cfg.hero?.btnPrimaryLabel || "Tombol Utama Label"}</label>
+          <label className={styles.fieldLabel}>{cfg.hero?.btnPrimaryLabel}</label>
           <input
             className={styles.inputField}
-            value={s.buttons?.primary?.label}
+            value={s.buttons?.primary?.label || ""}
             onChange={(e) =>
               set({
                 buttons: {
@@ -1283,13 +1289,14 @@ function HeroTab({ settings, updateTab, handleHeroImageSelect, heroImagePreviewU
                 },
               })
             }
+            placeholder={cfg.hero?.btnPrimaryPlaceholder}
           />
         </div>
         <div className={styles.inputGroup}>
-          <label className={styles.fieldLabel}>{cfg.hero?.btnPrimaryHref || "Tombol Utama Href"}</label>
+          <label className={styles.fieldLabel}>{cfg.hero?.btnPrimaryHref}</label>
           <input
             className={styles.inputField}
-            value={s.buttons?.primary?.href}
+            value={s.buttons?.primary?.href || ""}
             onChange={(e) =>
               set({
                 buttons: {
@@ -1298,15 +1305,16 @@ function HeroTab({ settings, updateTab, handleHeroImageSelect, heroImagePreviewU
                 },
               })
             }
+            placeholder={cfg.hero?.btnPrimaryHrefPlaceholder}
           />
         </div>
       </div>
       <div className={styles.row2}>
         <div className={styles.inputGroup}>
-          <label className={styles.fieldLabel}>{cfg.hero?.btnSecondaryLabel || "Tombol Kedua Label"}</label>
+          <label className={styles.fieldLabel}>{cfg.hero?.btnSecondaryLabel}</label>
           <input
             className={styles.inputField}
-            value={s.buttons?.secondary?.label}
+            value={s.buttons?.secondary?.label || ""}
             onChange={(e) =>
               set({
                 buttons: {
@@ -1315,13 +1323,14 @@ function HeroTab({ settings, updateTab, handleHeroImageSelect, heroImagePreviewU
                 },
               })
             }
+            placeholder={cfg.hero?.btnSecondaryPlaceholder}
           />
         </div>
         <div className={styles.inputGroup}>
-          <label className={styles.fieldLabel}>{cfg.hero?.btnSecondaryHref || "Tombol Kedua Href"}</label>
+          <label className={styles.fieldLabel}>{cfg.hero?.btnSecondaryHref}</label>
           <input
             className={styles.inputField}
-            value={s.buttons?.secondary?.href}
+            value={s.buttons?.secondary?.href || ""}
             onChange={(e) =>
               set({
                 buttons: {
@@ -1330,99 +1339,21 @@ function HeroTab({ settings, updateTab, handleHeroImageSelect, heroImagePreviewU
                 },
               })
             }
+            placeholder={cfg.hero?.btnSecondaryHrefPlaceholder}
           />
         </div>
       </div>
 
-      {/* ── Badge Urgency Pill ── */}
+      {/* ── Statistik Brand ── */}
       <div className={styles.inputGroup}>
         <label className={styles.fieldLabel}>
-          {cfg.hero?.badgeLabel || "Badge Urgency (Pill Atas)"}
-        </label>
-        <input
-          className={styles.inputField}
-          value={s.badge || ""}
-          onChange={(e) => set({ badge: e.target.value })}
-          placeholder={cfg.hero?.badgePlaceholder || "✦ Limited Edition — Stok Terbatas"}
-        />
-        <small className={styles.fieldDesc}>
-          {cfg.hero?.badgeDesc || "Teks singkat pada pill di atas tagline. Kosongkan untuk menyembunyikan."}
-        </small>
-      </div>
-
-      {/* ── Trust Pills ── */}
-      <div className={styles.inputGroup}>
-        <label className={styles.fieldLabel}>
-          {cfg.hero?.trustPillsTitle || "Trust Pills (Keunggulan Produk)"}
-        </label>
-        <small className={styles.fieldDesc} style={{ display: "block", marginBottom: "0.75rem" }}>
-          {cfg.hero?.trustPillIconDesc || "Nama ikon Lucide (misal: shield-check, package, leaf, flask-conical)"}
-        </small>
-        {(s.trustPills || []).map((pill: any, i: number) => (
-          <div key={i} className={styles.row2} style={{ marginBottom: "0.5rem", alignItems: "flex-end" }}>
-            <div className={styles.inputGroup} style={{ margin: 0 }}>
-              <label className={styles.fieldLabel}>
-                {cfg.hero?.trustPillIconLabel || "Nama Ikon"}
-              </label>
-              <input
-                className={styles.inputField}
-                value={pill.icon || ""}
-                onChange={(e) => {
-                  const updated = [...(s.trustPills || [])];
-                  updated[i] = { ...updated[i], icon: e.target.value };
-                  set({ trustPills: updated });
-                }}
-                placeholder={cfg.hero?.trustPillIconPlaceholder || "shield-check"}
-              />
-            </div>
-            <div className={styles.inputGroup} style={{ margin: 0 }}>
-              <label className={styles.fieldLabel}>
-                {cfg.hero?.trustPillLabelLabel || "Label Teks"}
-              </label>
-              <input
-                className={styles.inputField}
-                value={pill.label || ""}
-                onChange={(e) => {
-                  const updated = [...(s.trustPills || [])];
-                  updated[i] = { ...updated[i], label: e.target.value };
-                  set({ trustPills: updated });
-                }}
-                placeholder={cfg.hero?.trustPillLabelPlaceholder || "Garansi Keaslian"}
-              />
-            </div>
-            <button
-              type="button"
-              className={styles.removeFeatureBtn}
-              onClick={() => {
-                const updated = (s.trustPills || []).filter((_: any, idx: number) => idx !== i);
-                set({ trustPills: updated });
-              }}
-            >
-              {cfg.hero?.removeTrustPillBtn || "Hapus"}
-            </button>
-          </div>
-        ))}
-        <button
-          type="button"
-          className={styles.addFeatureBtn}
-          onClick={() =>
-            set({ trustPills: [...(s.trustPills || []), { icon: "", label: "" }] })
-          }
-        >
-          {cfg.hero?.addTrustPillBtn || "+ Tambah Pill"}
-        </button>
-      </div>
-
-      {/* ── Stats Brand ── */}
-      <div className={styles.inputGroup}>
-        <label className={styles.fieldLabel}>
-          {cfg.hero?.statsTitle || "Statistik Brand"}
+          {cfg.hero?.statsTitle}
         </label>
         {(s.stats || []).map((stat: any, i: number) => (
-          <div key={i} className={styles.row2} style={{ marginBottom: "0.5rem", alignItems: "flex-end" }}>
-            <div className={styles.inputGroup} style={{ margin: 0 }}>
+          <div key={i} className={styles.statRowItem}>
+            <div className={styles.inputGroupCompact}>
               <label className={styles.fieldLabel}>
-                {cfg.hero?.statValueLabel || "Angka / Nilai"}
+                {cfg.hero?.statValueLabel}
               </label>
               <input
                 className={styles.inputField}
@@ -1432,12 +1363,12 @@ function HeroTab({ settings, updateTab, handleHeroImageSelect, heroImagePreviewU
                   updated[i] = { ...updated[i], value: e.target.value };
                   set({ stats: updated });
                 }}
-                placeholder={cfg.hero?.statValuePlaceholder || "500+"}
+                placeholder={cfg.hero?.statValuePlaceholder}
               />
             </div>
-            <div className={styles.inputGroup} style={{ margin: 0 }}>
+            <div className={styles.inputGroupCompact}>
               <label className={styles.fieldLabel}>
-                {cfg.hero?.statLabelLabel || "Label Statistik"}
+                {cfg.hero?.statLabelLabel}
               </label>
               <input
                 className={styles.inputField}
@@ -1447,36 +1378,36 @@ function HeroTab({ settings, updateTab, handleHeroImageSelect, heroImagePreviewU
                   updated[i] = { ...updated[i], label: e.target.value };
                   set({ stats: updated });
                 }}
-                placeholder={cfg.hero?.statLabelPlaceholder || "Pelanggan Puas"}
+                placeholder={cfg.hero?.statLabelPlaceholder}
               />
             </div>
             <button
               type="button"
-              className={styles.removeFeatureBtn}
+              className={styles.removeBtn}
               onClick={() => {
                 const updated = (s.stats || []).filter((_: any, idx: number) => idx !== i);
                 set({ stats: updated });
               }}
             >
-              {cfg.hero?.removeStatBtn || "Hapus"}
+              {cfg.hero?.removeStatBtn}
             </button>
           </div>
         ))}
         <button
           type="button"
-          className={styles.addFeatureBtn}
+          className={styles.addRowBtn}
           onClick={() =>
             set({ stats: [...(s.stats || []), { value: "", label: "" }] })
           }
         >
-          {cfg.hero?.addStatBtn || "+ Tambah Statistik"}
+          {cfg.hero?.addStatBtn}
         </button>
       </div>
 
       {/* ── Scroll Indicator Label ── */}
       <div className={styles.inputGroup}>
         <label className={styles.fieldLabel}>
-          {cfg.hero?.scrollIndicatorLabel || "Label Scroll Indicator"}
+          {cfg.hero?.scrollIndicatorLabel}
         </label>
         <input
           className={styles.inputField}
@@ -1484,10 +1415,10 @@ function HeroTab({ settings, updateTab, handleHeroImageSelect, heroImagePreviewU
           onChange={(e) =>
             set({ scrollIndicator: { ...s.scrollIndicator, label: e.target.value } })
           }
-          placeholder={cfg.hero?.scrollIndicatorPlaceholder || "Gulir untuk Jelajahi"}
+          placeholder={cfg.hero?.scrollIndicatorPlaceholder}
         />
         <small className={styles.fieldDesc}>
-          {cfg.hero?.scrollIndicatorDesc || "Teks kecil di bawah panah scroll. Kosongkan untuk menggunakan default."}
+          {cfg.hero?.scrollIndicatorDesc}
         </small>
       </div>
     </div>
@@ -1507,24 +1438,85 @@ function AboutTab({ settings, updateTab, handleAboutImageSelect, aboutImagePrevi
         <h4 className={styles.sectionTitle}>
           {cfg.about?.sectionTitle || cfg.sections?.about || "About Section"}
         </h4>
-        <div className={styles.row2}>
-          <div className={styles.inputGroup}>
-            <label className={styles.fieldLabel}>{cfg.about?.imageUrlLabel || "Gambar URL"}</label>
-            <input
-              className={styles.inputField}
-              value={s.image}
-              onChange={(e) => set({ image: e.target.value })}
-            />
-          </div>
-          <div className={styles.inputGroup}>
-            <label className={styles.fieldLabel}>{cfg.about?.imageAltLabel || "Alt Gambar"}</label>
-            <input
-              className={styles.inputField}
-              value={s.imageAlt}
-              onChange={(e) => set({ imageAlt: e.target.value })}
-            />
+        {cfg.about?.sectionDesc && (
+          <p className={styles.heroSectionDesc}>{cfg.about.sectionDesc}</p>
+        )}
+
+        {/* ── Live Preview Tipografi About (Clean Editorial) ── */}
+        <div className={styles.aboutPreviewBox}>
+          <span className={styles.previewHeaderNotice}>
+            {cfg.about?.previewNotice}
+          </span>
+          <div className={styles.aboutPreviewInner}>
+            <h2 className={styles.aboutPreviewHeading}>
+              {s.content?.heading || cfg.about?.headingPlaceholder || "The Essence of Artisanal Perfection."}
+            </h2>
+            <p className={styles.aboutPreviewLead}>
+              {s.content?.leadText || cfg.about?.leadTextPlaceholder || "MAMEKO mendefinisikan ulang kemewahan..."}
+            </p>
+            <p className={styles.aboutPreviewBody}>
+              {s.content?.bodyText || cfg.about?.bodyTextPlaceholder || "Kami percaya bahwa apa yang Anda kenakan adalah representasi paling jujur dari identitas diri."}
+            </p>
+            {Array.isArray(s.features) && s.features.length > 0 && (
+              <div className={styles.aboutPreviewFeatures}>
+                {s.features.map((feat: any, idx: number) => (
+                  <div key={idx} className={styles.aboutPreviewFeatureItem}>
+                    <span className={styles.aboutPreviewFeatureNum}>
+                      {feat.number || String(idx + 1).padStart(2, "0")}
+                    </span>
+                    <div>
+                      <h4 className={styles.aboutPreviewFeatureTitle}>
+                        {feat.title || "-"}
+                      </h4>
+                      <p className={styles.aboutPreviewFeatureDesc}>
+                        {feat.desc || "-"}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
+
+        {/* ── Konten Teks Editorial About ── */}
+        <div className={styles.inputGroup}>
+          <label className={styles.fieldLabel}>{cfg.about?.headingLabel || "Judul Utama"}</label>
+          <input
+            className={styles.inputField}
+            value={s.content?.heading}
+            onChange={(e) =>
+              set({ content: { ...s.content, heading: e.target.value } })
+            }
+            placeholder={cfg.about?.headingPlaceholder}
+          />
+        </div>
+        <div className={styles.inputGroup}>
+          <label className={styles.fieldLabel}>{cfg.about?.leadTextLabel || "Narasi Pengantar"}</label>
+          <textarea
+            className={styles.textAreaField}
+            value={s.content?.leadText}
+            rows={2}
+            onChange={(e) =>
+              set({ content: { ...s.content, leadText: e.target.value } })
+            }
+            placeholder={cfg.about?.leadTextPlaceholder}
+          />
+        </div>
+        <div className={styles.inputGroup}>
+          <label className={styles.fieldLabel}>{cfg.about?.bodyTextLabel || "Deskripsi Filosofi"}</label>
+          <textarea
+            className={styles.textAreaField}
+            value={s.content?.bodyText}
+            rows={3}
+            onChange={(e) =>
+              set({ content: { ...s.content, bodyText: e.target.value } })
+            }
+            placeholder={cfg.about?.bodyTextPlaceholder}
+          />
+        </div>
+
+        {/* ── Visual Editorial (Foto Brand) ── */}
         <div className={styles.inputGroup}>
           <label className={styles.fieldLabel}>
             {cfg.about?.fileUploadLabel || "Gambar Section About"}
@@ -1549,52 +1541,33 @@ function AboutTab({ settings, updateTab, handleAboutImageSelect, aboutImagePrevi
             />
           </div>
         )}
-        <div className={styles.inputGroup}>
-          <label className={styles.fieldLabel}>{cfg.about?.taglineLabel || "Tagline"}</label>
-          <input
-            className={styles.inputField}
-            value={s.content?.tagline}
-            onChange={(e) =>
-              set({ content: { ...s.content, tagline: e.target.value } })
-            }
-          />
-        </div>
-        <div className={styles.inputGroup}>
-          <label className={styles.fieldLabel}>{cfg.about?.headingLabel || "Heading"}</label>
-          <input
-            className={styles.inputField}
-            value={s.content?.heading}
-            onChange={(e) =>
-              set({ content: { ...s.content, heading: e.target.value } })
-            }
-          />
-        </div>
-        <div className={styles.inputGroup}>
-          <label className={styles.fieldLabel}>{cfg.about?.leadTextLabel || "Lead Text"}</label>
-          <textarea
-            className={styles.textAreaField}
-            value={s.content?.leadText}
-            rows={2}
-            onChange={(e) =>
-              set({ content: { ...s.content, leadText: e.target.value } })
-            }
-          />
-        </div>
-        <div className={styles.inputGroup}>
-          <label className={styles.fieldLabel}>{cfg.about?.bodyTextLabel || "Body Text"}</label>
-          <textarea
-            className={styles.textAreaField}
-            value={s.content?.bodyText}
-            rows={3}
-            onChange={(e) =>
-              set({ content: { ...s.content, bodyText: e.target.value } })
-            }
-          />
+        <div className={styles.row2}>
+          <div className={styles.inputGroup}>
+            <label className={styles.fieldLabel}>{cfg.about?.imageUrlLabel || "Gambar URL"}</label>
+            <input
+              className={styles.inputField}
+              value={s.image}
+              onChange={(e) => set({ image: e.target.value })}
+              placeholder={cfg.about?.imageUrlPlaceholder}
+            />
+          </div>
+          <div className={styles.inputGroup}>
+            <label className={styles.fieldLabel}>{cfg.about?.imageAltLabel || "Alt Gambar"}</label>
+            <input
+              className={styles.inputField}
+              value={s.imageAlt}
+              onChange={(e) => set({ imageAlt: e.target.value })}
+              placeholder={cfg.about?.imageAltPlaceholder}
+            />
+          </div>
         </div>
       </div>
 
       <div className={styles.formSection}>
         <h4 className={styles.sectionTitle}>{cfg.about?.featuresTitle || "Fitur Unggulan"}</h4>
+        {cfg.about?.featuresDesc && (
+          <p className={styles.heroSectionDesc}>{cfg.about.featuresDesc}</p>
+        )}
         {s.features?.map((feat, idx: any) => (
           <div key={idx} className={styles.nestedCard}>
             <div className={styles.row2}>
@@ -1610,6 +1583,7 @@ function AboutTab({ settings, updateTab, handleAboutImageSelect, aboutImagePrevi
                       ),
                     })
                   }
+                  placeholder={cfg.about?.featureNumberPlaceholder}
                 />
               </div>
               <div className={styles.inputGroup}>
@@ -1624,6 +1598,7 @@ function AboutTab({ settings, updateTab, handleAboutImageSelect, aboutImagePrevi
                       ),
                     })
                   }
+                  placeholder={cfg.about?.featureTitlePlaceholder}
                 />
               </div>
             </div>
@@ -1639,6 +1614,7 @@ function AboutTab({ settings, updateTab, handleAboutImageSelect, aboutImagePrevi
                     ),
                   })
                 }
+                placeholder={cfg.about?.featureDescPlaceholder}
               />
             </div>
             <button
@@ -1697,18 +1673,6 @@ function ContactTab({ settings, updateTab, cfg }) {
             value={s.whatsappNumber}
             onChange={(e) => set({ whatsappNumber: e.target.value })}
           />
-        </div>
-        <div className={styles.row2}>
-          <div className={styles.inputGroup}>
-            <label className={styles.fieldLabel}>{cfg.contact?.headerTaglineLabel || "Header Tagline"}</label>
-            <input
-              className={styles.inputField}
-              value={s.header?.tagline}
-              onChange={(e) =>
-                set({ header: { ...s.header, tagline: e.target.value } })
-              }
-            />
-          </div>
         </div>
         <div className={styles.row2}>
           <div className={styles.inputGroup}>
@@ -2203,7 +2167,90 @@ function FooterTab({ settings, updateTab, cfg }) {
             })
           }
         >
-          {cfg.footer?.addNavBtn || "+ Tambah Link"}
+          {cfg.footer?.addNavBtn || "+ Tambah Link Navigasi"}
+        </button>
+      </div>
+
+      <div className={styles.formSection}>
+        <h4 className={styles.sectionTitle}>{cfg.footer?.legalSectionTitle || "Tautan Legalitas & Kebijakan (Kolom 3)"}</h4>
+        <div className={styles.inputGroup}>
+          <label className={styles.fieldLabel}>{cfg.footer?.legalTitleLabel || "Judul Kolom Legalitas"}</label>
+          <input
+            className={styles.inputField}
+            value={s.legal?.title}
+            onChange={(e) =>
+              set({ legal: { ...s.legal, title: e.target.value } })
+            }
+            placeholder="Legalitas"
+          />
+        </div>
+        {s.legal?.links?.map((link: any, idx: any) => (
+          <div key={idx} className={styles.nestedCard}>
+            <div className={styles.row2}>
+              <div className={styles.inputGroup}>
+                <label className={styles.fieldLabel}>{cfg.footer?.legalLinkLabel || "Label"}</label>
+                <input
+                  className={styles.inputField}
+                  value={link.label}
+                  onChange={(e) =>
+                    set({
+                      legal: {
+                        ...s.legal,
+                        links: s.legal.links.map((l: any, i: any) =>
+                          i === idx ? { ...l, label: e.target.value } : l,
+                        ),
+                      },
+                    })
+                  }
+                />
+              </div>
+              <div className={styles.inputGroup}>
+                <label className={styles.fieldLabel}>{cfg.footer?.legalLinkHref || "Href"}</label>
+                <input
+                  className={styles.inputField}
+                  value={link.href}
+                  onChange={(e) =>
+                    set({
+                      legal: {
+                        ...s.legal,
+                        links: s.legal.links.map((l: any, i: any) =>
+                          i === idx ? { ...l, href: e.target.value } : l,
+                        ),
+                      },
+                    })
+                  }
+                />
+              </div>
+            </div>
+            <button
+              type="button"
+              className={styles.removeBtn}
+              onClick={() =>
+                set({
+                  legal: {
+                    ...s.legal,
+                    links: s.legal.links.filter((_: any, i: any) => i !== idx),
+                  },
+                })
+              }
+            >
+              {cfg.footer?.removeLegalBtn || "Hapus Link"}
+            </button>
+          </div>
+        ))}
+        <button
+          type="button"
+          className={styles.addRowBtn}
+          onClick={() =>
+            set({
+              legal: {
+                ...s.legal,
+                links: [...(s.legal?.links || []), { label: "", href: "" }],
+              },
+            })
+          }
+        >
+          {cfg.footer?.addLegalBtn || "+ Tambah Link Legalitas"}
         </button>
       </div>
 
@@ -2583,79 +2630,56 @@ function ProductTab({ settings, updateTab, cfg }) {
   const s = settings || { header: { tagline: "", title: { main: "", highlight: "" } } };
   const set = (patch: any) => updateTab("product", { ...s, ...patch });
 
+  const currentTitle =
+    s.header?.title?.main !== undefined || s.header?.title?.highlight !== undefined
+      ? [s.header?.title?.main, s.header?.title?.highlight].filter(Boolean).join(" ")
+      : "Produk Kami";
+
+  const handleTitleChange = (val: string) => {
+    set({
+      header: {
+        ...s.header,
+        tagline: "",
+        title: {
+          main: val,
+          highlight: "",
+        },
+      },
+    });
+  };
+
   return (
     <div className={styles.formSection}>
       <h4 className={styles.sectionTitle}>
         {cfg.product?.sectionTitle || cfg.sections?.product || "Katalog Produk (Landing Page)"}
       </h4>
+      {cfg.product?.sectionDesc && (
+        <p className={styles.sectionDesc}>{cfg.product.sectionDesc}</p>
+      )}
 
       <div className={styles.inputGroup}>
         <label className={styles.fieldLabel}>
-          {cfg.product?.taglineLabel || "Tagline (Teks Kecil Atas)"}
+          {cfg.product?.titleLabel || "Judul Katalog Produk (Satu Warna Solid)"}
         </label>
         <input
           className={styles.inputField}
-          value={s.header?.tagline || ""}
-          onChange={(e) =>
-            set({ header: { ...s.header, tagline: e.target.value } })
-          }
-          placeholder={cfg.product?.taglinePlaceholder || "our curated collection"}
+          value={currentTitle}
+          onChange={(e) => handleTitleChange(e.target.value)}
+          placeholder={cfg.product?.titlePlaceholder || "Produk Kami"}
         />
-      </div>
-
-      <div className={styles.row2}>
-        <div className={styles.inputGroup}>
-          <label className={styles.fieldLabel}>
-            {cfg.product?.mainTitleLabel || "Judul Utama"}
-          </label>
-          <input
-            className={styles.inputField}
-            value={s.header?.title?.main || ""}
-            onChange={(e) =>
-              set({
-                header: {
-                  ...s.header,
-                  title: { ...s.header?.title, main: e.target.value },
-                },
-              })
-            }
-            placeholder={cfg.product?.mainTitlePlaceholder || "Produk"}
-          />
-        </div>
-        <div className={styles.inputGroup}>
-          <label className={styles.fieldLabel}>
-            {cfg.product?.highlightTitleLabel || "Judul Sorotan (Highlight)"}
-          </label>
-          <input
-            className={styles.inputField}
-            value={s.header?.title?.highlight || ""}
-            onChange={(e) =>
-              set({
-                header: {
-                  ...s.header,
-                  title: { ...s.header?.title, highlight: e.target.value },
-                },
-              })
-            }
-            placeholder={cfg.product?.highlightTitlePlaceholder || "Kami"}
-          />
-        </div>
+        {cfg.product?.titleDesc && (
+          <span className={styles.fieldDesc}>{cfg.product.titleDesc}</span>
+        )}
       </div>
 
       {/* Live Preview Box */}
       <div className={styles.previewContainer}>
         <span className={styles.previewHeaderNotice}>
-          {cfg.product?.previewNotice || "Preview Tampilan di Landing Page:"}
+          {cfg.product?.previewNotice || "Pratinjau Tipografi Produk (Landing Page):"}
         </span>
         <div className={styles.previewInnerBox}>
-          <p className={styles.previewTagline}>
-            {s.header?.tagline || "our curated collection"}
-          </p>
           <h2 className={styles.previewHeading}>
-            {s.header?.title?.main || "Produk"}{" "}
-            <span className={styles.previewHighlight}>
-              {s.header?.title?.highlight || "Kami"}
-            </span>
+            {currentTitle || "Produk Kami"}
           </h2>
         </div>
       </div>
@@ -2913,7 +2937,7 @@ function WhatsAppTab({ cfg }) {
           {isSendingTest ? "Mengirim..." : waCfg.testBtn || "Kirim Pesan Uji Coba"}
         </button>
         {(!status.connected || !status.loggedIn) && (
-          <small className={styles.fieldDesc} style={{ display: "block", marginTop: "0.5rem", color: "var(--warning-color, #f59e0b)" }}>
+          <small className={`${styles.fieldDesc} ${styles.waWarningDesc}`}>
             * Hubungkan WhatsApp terlebih dahulu sebelum dapat mengirim pesan uji coba.
           </small>
         )}
@@ -2923,16 +2947,16 @@ function WhatsAppTab({ cfg }) {
       {showQrModal && (
         <div className={styles.waQrModalOverlay} onClick={() => setShowQrModal(false)}>
           <div className={styles.waQrModalBox} onClick={(e) => e.stopPropagation()}>
-            <h3 className={styles.sectionTitle} style={{ margin: "0 0 0.5rem 0" }}>
+            <h3 className={`${styles.sectionTitle} ${styles.qrModalTitleSpacing}`}>
               {waCfg.qrModalTitle || "Scan QR Code WhatsApp"}
             </h3>
-            <p className={styles.fieldDesc} style={{ marginBottom: "1rem" }}>
+            <p className={`${styles.fieldDesc} ${styles.qrModalDescSpacing}`}>
               {waCfg.qrModalDesc || "Buka aplikasi WhatsApp di HP Anda > Perangkat Tertaut > Tautkan Perangkat, lalu arahkan kamera ke kode QR di bawah ini."}
             </p>
 
             {loadingQr ? (
-              <div style={{ padding: "3rem 0" }}>
-                <div className={styles.loadingSpinner} style={{ margin: "0 auto 1rem auto" }}></div>
+              <div className={styles.qrModalSpinnerWrap}>
+                <div className={`${styles.loadingSpinner} ${styles.qrModalSpinner}`}></div>
                 <p className={styles.fieldDesc}>Membuat kode QR WhatsApp...</p>
               </div>
             ) : qrData?.qr ? (
@@ -2949,7 +2973,7 @@ function WhatsAppTab({ cfg }) {
                   {waCfg.qrTimerNotice || "QR Code diperbarui otomatis dalam"}{" "}
                   <span className={styles.waTimerHighlight}>{qrCountdown}</span> {waCfg.seconds || "detik"}
                 </p>
-                <div style={{ display: "flex", gap: "0.5rem", justifyContent: "center" }}>
+                <div className={styles.qrModalActionsRow}>
                   <button
                     type="button"
                     onClick={handleOpenQR}
@@ -2968,14 +2992,13 @@ function WhatsAppTab({ cfg }) {
               </>
             ) : (
               <div>
-                <p className={styles.fieldDesc} style={{ color: "var(--danger-color, #ef4444)" }}>
+                <p className={`${styles.fieldDesc} ${styles.waErrorDesc}`}>
                   Gagal membuat QR Code WhatsApp. Pastikan server backend sedang aktif.
                 </p>
                 <button
                   type="button"
                   onClick={handleOpenQR}
-                  className={styles.addRowBtn}
-                  style={{ marginTop: "1rem" }}
+                  className={`${styles.addRowBtn} ${styles.retryQrBtn}`}
                 >
                   Coba Lagi
                 </button>

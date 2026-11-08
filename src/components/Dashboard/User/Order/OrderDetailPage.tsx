@@ -198,7 +198,12 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
         transactionStatus === "success" ||
         transactionStatus === "capture")
     ) {
-      toast.success(`Pembayaran untuk pesanan #${orderId} berhasil!`);
+      toast.success(
+        (orderDetailConfig.loadingAndError?.paymentSuccess || "Pembayaran untuk pesanan #{orderId} berhasil!").replace(
+          "{orderId}",
+          String(orderId)
+        )
+      );
 
       auth.getSession().then(({ data: { session } }: any) => {
         const token = session?.access_token;
@@ -281,8 +286,9 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
         setTrackingHistory(detailTrackingHistory);
       } catch (err) {
         console.error("Failed to load order detail page", err);
-        setError(err.message || "Gagal memuat detail pesanan.");
-        toast.error(err.message || "Gagal memuat detail pesanan.");
+        const errMsg = err.message || orderDetailConfig.loadingAndError?.fetchOrderError || "Gagal memuat detail pesanan.";
+        setError(errMsg);
+        toast.error(errMsg);
       } finally {
         if (isActive) {
           setLoading(false);
@@ -325,7 +331,7 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
             }
             
             // Tampilkan notifikasi toast untuk UX layaknya pesan masuk
-            toast.success("Terdapat pembaruan status pesanan!", { id: `rt-${resolvedOrderId}` });
+            toast.success(orderDetailConfig.loadingAndError?.realtimeUpdate || "Terdapat pembaruan status pesanan!", { id: `rt-${resolvedOrderId}` });
           }
         }
       )
@@ -552,126 +558,162 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
     if (!order) return;
 
     const toastId = toast.loading(orderDetailConfig.invoice.loading);
-    let invoiceElement: HTMLDivElement | null = null;
+    let invoiceHost: HTMLDivElement | null = null;
 
     try {
       // Dynamically import html2pdf to prevent SSR issues
       const html2pdfModule = await import("html2pdf.js");
       const html2pdf = html2pdfModule.default || html2pdfModule;
 
-      invoiceElement = document.createElement("div");
-      invoiceElement.style.position = "fixed";
-      invoiceElement.style.left = "-9999px";
-      invoiceElement.style.top = "0";
-      invoiceElement.style.width = "794px"; // Standard A4 width at 96 DPI
+      const invoiceItems = (items && items.length > 0)
+        ? items
+        : (Array.isArray(order.items) && order.items.length > 0)
+          ? order.items
+          : (Array.isArray(order.order_items) && order.order_items.length > 0)
+            ? order.order_items
+            : [];
+
+      // 1. Host container positioned offscreen so it never flickers in view
+      invoiceHost = document.createElement("div");
+      invoiceHost.style.position = "fixed";
+      invoiceHost.style.top = "-99999px";
+      invoiceHost.style.left = "-99999px";
+      invoiceHost.style.width = "720px";
+      invoiceHost.style.overflow = "hidden";
+      invoiceHost.style.zIndex = "-99999";
+
+      // 2. The invoice element itself (passed to html2pdf)
+      // Must NOT have negative left/top, so cloned element inside html2pdf container is positioned at 0,0!
+      const invoiceElement = document.createElement("div");
+      invoiceElement.setAttribute("data-theme", "light");
+      invoiceElement.style.width = "720px";
       invoiceElement.style.backgroundColor = "#ffffff";
-      invoiceElement.style.zIndex = "-9999";
+      invoiceElement.style.color = "#0f172a";
+      invoiceElement.style.boxSizing = "border-box";
 
       invoiceElement.innerHTML = `
-        <div style="padding: 40px; font-family: 'Inter', sans-serif; color: #111; background-color: #ffffff;">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #eaeaea; padding-bottom: 20px; margin-bottom: 20px;">
+        <div style="padding: 36px 32px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #0f172a; background-color: #ffffff; line-height: 1.5; -webkit-font-smoothing: antialiased; box-sizing: border-box;">
+          <!-- Header Bar -->
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2.5px solid #0f172a; padding-bottom: 20px; margin-bottom: 24px;">
             <div style="display: flex; align-items: center;">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 458.47 321.05" style="width: 45px; height: 45px; color: #000; margin-right: 15px;" fill="currentColor">
-                <polygon points="256.99 0 0 321.05 64.03 321.05 321.03 0 256.99 0" />
-                <polygon points="394.44 321.05 458.47 321.05 329.96 160.5 458.44 0 394.41 0 297.94 120.51 265.93 160.5 137.41 321.05 160.51 321.05 201.44 321.05 295.46 321.05 330.28 278.26 235.69 278.26 297.94 200.5 394.44 321.05" />
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 458.47 321.05" style="width: 44px; height: 44px; margin-right: 14px;" fill="#0f172a">
+                <polygon fill="#0f172a" points="256.99 0 0 321.05 64.03 321.05 321.03 0 256.99 0" />
+                <polygon fill="#0f172a" points="394.44 321.05 458.47 321.05 329.96 160.5 458.44 0 394.41 0 297.94 120.51 265.93 160.5 137.41 321.05 160.51 321.05 201.44 321.05 295.46 321.05 330.28 278.26 235.69 278.26 297.94 200.5 394.44 321.05" />
               </svg>
               <div>
-                <h1 style="margin: 0; font-size: 24px; color: #000; letter-spacing: 2px;">MAKE ME KOOL</h1>
-                <p style="margin: 5px 0 0 0; color: #666; font-size: 14px;">INVOICE TRANSAKSI</p>
+                <h1 style="margin: 0; font-size: 22px; font-weight: 900; color: #0f172a; letter-spacing: 2px;">${orderDetailConfig.invoice.brandName}</h1>
+                <p style="margin: 4px 0 0 0; color: #334155; font-size: 13px; font-weight: 800; letter-spacing: 1.5px;">${orderDetailConfig.invoice.title}</p>
               </div>
             </div>
             <div style="text-align: right;">
-              <p style="margin: 0; font-weight: bold; color: #333;">Order ID: ${order.order_number || order.id}</p>
-              <p style="margin: 5px 0 0 0; color: #666; font-size: 14px;">Tanggal: ${new Date(order.created_at || order.createdAt || Date.now()).toLocaleDateString("id-ID")}</p>
+              <p style="margin: 0; font-weight: 800; font-size: 15px; color: #0f172a;">${orderDetailConfig.invoice.orderIdPrefix}${order.order_number || resolvedOrderId}</p>
+              <p style="margin: 5px 0 0 0; color: #334155; font-size: 13px; font-weight: 600;">${orderDetailConfig.invoice.datePrefix}${new Date(order.created_at || order.createdAt || Date.now()).toLocaleDateString("id-ID")}</p>
             </div>
           </div>
           
-          <div style="display: flex; justify-content: space-between; margin-bottom: 30px;">
-            <div>
-              <p style="margin: 0; font-weight: bold; font-size: 14px; color: #888; text-transform: uppercase;">Ditagihkan Kepada</p>
-              <p style="margin: 5px 0 0 0; font-weight: 600;">${order.customer_name || "Pelanggan"}</p>
-              <p style="margin: 5px 0 0 0; font-size: 14px; color: #444;">${order.customer_phone || "-"}</p>
-              <p style="margin: 5px 0 0 0; font-size: 14px; color: #444; max-width: 250px; line-height: 1.4;">${shippingAddressText}</p>
+          <!-- Customer & Shipping Info -->
+          <div style="display: flex; justify-content: space-between; margin-bottom: 28px;">
+            <div style="max-width: 330px;">
+              <p style="margin: 0 0 6px 0; font-weight: 800; font-size: 11px; color: #0f172a; text-transform: uppercase; letter-spacing: 1px;">${orderDetailConfig.invoice.billTo}</p>
+              <p style="margin: 0 0 4px 0; font-weight: 800; font-size: 15px; color: #0f172a;">${order.customer_name || orderDetailConfig.invoice.defaultCustomer}</p>
+              <p style="margin: 0 0 4px 0; font-size: 13px; font-weight: 600; color: #334155;">${order.customer_phone || "-"}</p>
+              <p style="margin: 0; font-size: 13px; font-weight: 500; color: #334155; line-height: 1.45;">${shippingAddressText}</p>
             </div>
-            <div style="text-align: right;">
-              <p style="margin: 0; font-weight: bold; font-size: 14px; color: #888; text-transform: uppercase;">Informasi Pengiriman</p>
-              <p style="margin: 5px 0 0 0; font-weight: 600;">${effectiveCourier} - ${effectiveService}</p>
-              <p style="margin: 5px 0 0 0; font-size: 14px; color: #444;">Resi: ${effectiveResi || "Belum tersedia"}</p>
-              <p style="margin: 5px 0 0 0; font-size: 14px; color: #444;">Status: ${getStatusInfo(order.status).label}</p>
+            <div style="text-align: right; max-width: 320px;">
+              <p style="margin: 0 0 6px 0; font-weight: 800; font-size: 11px; color: #0f172a; text-transform: uppercase; letter-spacing: 1px;">${orderDetailConfig.invoice.shippingInfo}</p>
+              <p style="margin: 0 0 4px 0; font-weight: 800; font-size: 14px; color: #0f172a;">${effectiveCourier} - ${effectiveService}</p>
+              <p style="margin: 0 0 6px 0; font-size: 13px; font-weight: 600; color: #334155;">${orderDetailConfig.invoice.trackingPrefix}<span style="font-weight: 800; color: #0f172a; font-family: monospace;">${effectiveResi || orderDetailConfig.invoice.trackingPending}</span></p>
+              <div>
+                <span style="display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 800; background-color: #f1f5f9; color: #0f172a; border: 1.5px solid #0f172a;">
+                  ${orderDetailConfig.invoice.statusPrefix}${getStatusInfo(order.status).label}
+                </span>
+              </div>
             </div>
           </div>
 
-          <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
+          <!-- Items Table -->
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 26px;">
             <thead>
-              <tr style="background-color: #f9f9f9; border-bottom: 1px solid #ddd;">
-                <th style="padding: 12px; text-align: left; font-size: 13px; color: #666; text-transform: uppercase;">Produk</th>
-                <th style="padding: 12px; text-align: center; font-size: 13px; color: #666; text-transform: uppercase;">Qty</th>
-                <th style="padding: 12px; text-align: right; font-size: 13px; color: #666; text-transform: uppercase;">Harga Satuan</th>
-                <th style="padding: 12px; text-align: right; font-size: 13px; color: #666; text-transform: uppercase;">Total</th>
+              <tr style="background-color: #f1f5f9;">
+                <th style="padding: 12px 14px; text-align: left; font-size: 12px; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; border-top: 2px solid #0f172a; border-bottom: 2px solid #0f172a;">${orderDetailConfig.invoice.tableHeadProduct}</th>
+                <th style="padding: 12px 14px; text-align: center; font-size: 12px; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; border-top: 2px solid #0f172a; border-bottom: 2px solid #0f172a;">${orderDetailConfig.invoice.tableHeadQty}</th>
+                <th style="padding: 12px 14px; text-align: right; font-size: 12px; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; border-top: 2px solid #0f172a; border-bottom: 2px solid #0f172a;">${orderDetailConfig.invoice.tableHeadPrice}</th>
+                <th style="padding: 12px 14px; text-align: right; font-size: 12px; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; border-top: 2px solid #0f172a; border-bottom: 2px solid #0f172a;">${orderDetailConfig.invoice.tableHeadTotal}</th>
               </tr>
             </thead>
             <tbody>
-              ${items.map((item) => `
-                <tr style="border-bottom: 1px solid #eee;">
-                  <td style="padding: 12px;">
-                    <p style="margin: 0; font-weight: 600; font-size: 14px;">${item.name || item.product_name || "Produk MAMEKO"}</p>
-                    <p style="margin: 3px 0 0 0; font-size: 12px; color: #888;">Varian: ${item.size || item.variant_name || "Standard"}</p>
+              ${invoiceItems.map((item) => `
+                <tr style="border-bottom: 1.5px solid #e2e8f0;">
+                  <td style="padding: 14px; border-bottom: 1.5px solid #e2e8f0;">
+                    <p style="margin: 0; font-weight: 800; font-size: 14px; color: #0f172a;">${item.name || item.product_name || orderDetailConfig.invoice.defaultProductName}</p>
+                    <p style="margin: 3px 0 0 0; font-size: 12px; font-weight: 600; color: #475569;">${orderDetailConfig.invoice.variantPrefix}${item.size || item.variant_name || orderDetailConfig.invoice.defaultVariant}</p>
                   </td>
-                  <td style="padding: 12px; text-align: center; font-size: 14px;">${item.quantity || 1}</td>
-                  <td style="padding: 12px; text-align: right; font-size: 14px;">Rp ${Number(item.price || 0).toLocaleString("id-ID")}</td>
-                  <td style="padding: 12px; text-align: right; font-size: 14px; font-weight: 600;">Rp ${(Number(item.price || 0) * Number(item.quantity || 1)).toLocaleString("id-ID")}</td>
+                  <td style="padding: 14px; text-align: center; font-size: 14px; font-weight: 800; color: #0f172a; border-bottom: 1.5px solid #e2e8f0;">${item.quantity || 1}</td>
+                  <td style="padding: 14px; text-align: right; font-size: 14px; font-weight: 600; color: #334155; border-bottom: 1.5px solid #e2e8f0;">Rp ${Number(item.price || 0).toLocaleString("id-ID")}</td>
+                  <td style="padding: 14px; text-align: right; font-size: 14px; font-weight: 800; color: #0f172a; border-bottom: 1.5px solid #e2e8f0;">Rp ${(Number(item.price || 0) * Number(item.quantity || 1)).toLocaleString("id-ID")}</td>
                 </tr>
               `).join("")}
             </tbody>
           </table>
 
-          <div style="display: flex; justify-content: flex-end;">
-            <div style="width: 300px;">
-              <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px;">
-                <span style="color: #666;">Subtotal Produk:</span>
-                <span>Rp ${subtotalAmount.toLocaleString("id-ID")}</span>
+          <!-- Total Calculation Card -->
+          <div style="display: flex; justify-content: flex-end; margin-bottom: 24px;">
+            <div style="width: 320px; background-color: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 10px; padding: 18px 20px; box-sizing: border-box;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 13px;">
+                <span style="color: #334155; font-weight: 600;">${orderDetailConfig.invoice.subtotalLabel}</span>
+                <span style="color: #0f172a; font-weight: 800;">Rp ${subtotalAmount.toLocaleString("id-ID")}</span>
               </div>
-              <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px;">
-                <span style="color: #666;">Ongkos Kirim:</span>
-                <span>Rp ${shippingCost.toLocaleString("id-ID")}</span>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 13px;">
+                <span style="color: #334155; font-weight: 600;">${orderDetailConfig.invoice.shippingLabel}</span>
+                <span style="color: #0f172a; font-weight: 800;">Rp ${shippingCost.toLocaleString("id-ID")}</span>
               </div>
               ${promoDiscountAmount > 0 ? `
-              <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; color: #16a34a;">
-                <span>${orderDetailConfig.transactionSummary.storeDiscount}:</span>
-                <span>- Rp ${promoDiscountAmount.toLocaleString("id-ID")}</span>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 13px; color: #166534;">
+                <span style="font-weight: 700;">${orderDetailConfig.transactionSummary.storeDiscount}:</span>
+                <span style="font-weight: 800;">- Rp ${promoDiscountAmount.toLocaleString("id-ID")}</span>
               </div>
               ` : ""}
               ${discountAmount > 0 ? `
-              <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; color: #dc2626;">
-                <span>${orderDetailConfig.transactionSummary.voucherDiscount}:</span>
-                <span>- Rp ${discountAmount.toLocaleString("id-ID")}</span>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 13px; color: #991b1b;">
+                <span style="font-weight: 700;">${orderDetailConfig.transactionSummary.voucherDiscount}:</span>
+                <span style="font-weight: 800;">- Rp ${discountAmount.toLocaleString("id-ID")}</span>
               </div>
               ` : ""}
-              <div style="display: flex; justify-content: space-between; padding-top: 15px; margin-top: 10px; border-top: 2px solid #eee; font-weight: bold; font-size: 18px;">
-                <span>Total Pembayaran:</span>
-                <span>Rp ${totalAmount.toLocaleString("id-ID")}</span>
+              <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 14px; margin-top: 12px; border-top: 2px solid #0f172a;">
+                <span style="font-weight: 800; font-size: 15px; color: #0f172a;">${orderDetailConfig.invoice.totalPaymentLabel}</span>
+                <span style="font-weight: 900; font-size: 19px; color: #0f172a;">Rp ${totalAmount.toLocaleString("id-ID")}</span>
               </div>
             </div>
           </div>
 
-          <div style="margin-top: 50px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; color: #888; font-size: 12px;">
-            <p style="margin: 0;">Terima kasih telah berbelanja di MAKE ME KOOL.</p>
-            <p style="margin: 5px 0 0 0;">Jika ada pertanyaan mengenai pesanan Anda, silakan hubungi customer service kami.</p>
+          <!-- Footer -->
+          <div style="margin-top: 40px; padding-top: 20px; border-top: 1.5px solid #cbd5e1; text-align: center;">
+            <p style="margin: 0; font-weight: 700; font-size: 13px; color: #0f172a;">${orderDetailConfig.invoice.thankYou}</p>
+            <p style="margin: 5px 0 0 0; font-size: 12px; font-weight: 500; color: #475569;">${orderDetailConfig.invoice.footerNote}</p>
           </div>
         </div>
       `;
 
-      document.body.appendChild(invoiceElement);
+      invoiceHost.appendChild(invoiceElement);
+      document.body.appendChild(invoiceHost);
 
       const opt: any = {
-        margin: [0.4, 0.4, 0.4, 0.4],
+        margin: [10, 10, 10, 10], // 10mm margins on all sides
         filename: `${orderDetailConfig.invoice.filenamePrefix}${order.order_number || resolvedOrderId}.pdf`,
         image: { type: "jpeg", quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, logging: false },
-        jsPDF: { unit: "in", format: "a4", orientation: "portrait" }
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          backgroundColor: "#ffffff",
+          scrollX: 0,
+          scrollY: 0,
+          windowWidth: 720,
+        },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
       };
 
-      await (html2pdf as any)().from(invoiceElement).set(opt).save();
+      await (html2pdf as any)().set(opt).from(invoiceElement).save();
       toast.dismiss(toastId);
       toast.success(orderDetailConfig.invoice.success);
     } catch (error) {
@@ -679,8 +721,8 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
       toast.dismiss(toastId);
       toast.error(orderDetailConfig.invoice.error || "Gagal mengunduh invoice.");
     } finally {
-      if (invoiceElement && document.body.contains(invoiceElement)) {
-        document.body.removeChild(invoiceElement);
+      if (invoiceHost && document.body.contains(invoiceHost)) {
+        document.body.removeChild(invoiceHost);
       }
     }
   };
@@ -869,11 +911,11 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
     if (!file) return;
     const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
     if (!allowedTypes.includes(file.type)) {
-      toast.error("Format foto harus JPG, PNG, atau WebP.");
+      toast.error(orderDetailConfig.manualTransfer?.toasts?.invalidType || "Format foto harus JPG, PNG, atau WebP.");
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      toast.error("Ukuran foto maksimal 5 MB.");
+      toast.error(orderDetailConfig.manualTransfer?.toasts?.maxSize || "Ukuran foto maksimal 5 MB.");
       return;
     }
     setProofFile(file);
@@ -889,7 +931,7 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
   const handleUploadProof = async () => {
     if (!proofFile || !user) return;
     setIsSubmittingProof(true);
-    const toastId = toast.loading("Mengunggah bukti pembayaran...");
+    const toastId = toast.loading(orderDetailConfig.manualTransfer?.toasts?.uploadingProof || "Mengunggah bukti pembayaran...");
 
     try {
       const { data: { session } } = await auth.getSession();
@@ -916,7 +958,7 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
       if (!uploadRes.ok) {
         let errorMsg = uploadResult.error || "Gagal upload gambar.";
         if (errorMsg.toLowerCase().includes("cloudinary")) {
-          errorMsg = "Gagal mengunggah foto. Silakan coba lagi nanti.";
+          errorMsg = orderDetailConfig.reviewModal?.toasts?.uploadPhotoError || "Gagal mengunggah foto. Silakan coba lagi nanti.";
         }
         throw new Error(errorMsg);
       }
@@ -933,9 +975,9 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
       });
 
       const result = await res.json();
-      if (!res.ok) throw new Error(result.error || "Gagal menyimpan bukti pembayaran.");
+      if (!res.ok) throw new Error(result.error || orderDetailConfig.manualTransfer?.toasts?.uploadFailed || "Gagal menyimpan bukti pembayaran.");
 
-      toast.success("Bukti pembayaran berhasil diunggah!", { id: toastId });
+      toast.success(orderDetailConfig.manualTransfer?.toasts?.uploadSuccess || "Bukti pembayaran berhasil diunggah!", { id: toastId });
 
       // Update local state to reflect changes
       setOrder(prev => ({
@@ -1014,7 +1056,7 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
 
       snapInstance.pay(snapToken, {
         onSuccess: () => {
-          toast.success("Pembayaran berhasil!");
+          toast.success(orderDetailConfig.pendingActions?.paymentSuccessToast || "Pembayaran berhasil!");
           setOrder((prev: any) => ({ ...prev, status: "paid" }));
           auth.getSession().then(({ data: { session } }: any) => {
             const token = session?.access_token;
@@ -1032,22 +1074,22 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
           }
         },
         onPending: () => {
-          toast("Menunggu pembayaran Anda...");
+          toast(orderDetailConfig.banners?.countdown?.descActive || "Menunggu pembayaran Anda...");
           if (typeof window !== "undefined") {
             window.dispatchEvent(new Event("order-status-updated"));
           }
         },
         onError: (err: any) => {
           console.error("Snap error:", err);
-          toast.error("Pembayaran gagal. Silakan coba kembali.");
+          toast.error(orderDetailConfig.pendingActions?.paymentFailedToast || "Pembayaran gagal. Silakan coba kembali.");
         },
         onClose: () => {
-          toast("Pembayaran belum diselesaikan.");
+          toast(orderDetailConfig.pendingActions?.paymentErrorToast || "Pembayaran belum diselesaikan.");
         },
       });
     } catch (err: any) {
       console.error("Continue payment error:", err);
-      toast.error(err.message || "Gagal melanjutkan pembayaran.");
+      toast.error(err.message || orderDetailConfig.pendingActions?.paymentErrorToast || "Gagal melanjutkan pembayaran.");
     } finally {
       setIsPaying(false);
     }
@@ -1341,14 +1383,14 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
                   ) : (
                     <label className={styles.uploadProofLabel}>
                       {orderDetailConfig.manualTransfer.selectPhotoBtn}
-                      <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleProofChange} style={{ display: "none" }} />
+                      <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleProofChange} className={styles.fileInputHidden} />
                     </label>
                   )}
                 </div>
               ) : (
                 <div className={styles.proofVerifiedBox}>
                   <div className={styles.proofVerifiedStatus}>
-                    <AppIcon name="check-circle" size={16} style={{ color: "var(--success-color)" }} />
+                    <AppIcon name="check-circle" size={16} className={styles.proofVerifiedIcon} />
                     <span>{orderDetailConfig.manualTransfer.proofUploaded}</span>
                   </div>
 
@@ -1517,14 +1559,14 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
                         <strong className={styles.itemTotalPrice}>Rp {itemTotal.toLocaleString("id-ID")}</strong>
 
                         {["delivered", "completed"].includes((order.status || "").toLowerCase()) && (
-                          <div style={{ marginTop: "0.75rem", display: "flex", justifyContent: "flex-end" }}>
+                          <div className={styles.itemReviewActionRow}>
                             <button
                               onClick={() => !isItemReviewed(order, item) && openReviewModal(order, item)}
                               disabled={isItemReviewed(order, item)}
                               className={isItemReviewed(order, item) ? styles.reviewBtnDisabled : styles.reviewBtn}
                             >
                               <AppIcon name={isItemReviewed(order, item) ? "check-circle" : "star"} size={14} />
-                              {isItemReviewed(order, item) ? `Diulas` : `Ulas Produk`}
+                              {isItemReviewed(order, item) ? orderDetailConfig.items.reviewed : orderDetailConfig.items.reviewProduct}
                             </button>
                           </div>
                         )}
@@ -1555,8 +1597,7 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
                   <div key={item.key} className={styles.timelineItem}>
                     <div className={styles.timelineMarker}>
                       <span 
-                        className={styles.timelineDot} 
-                        style={item.isWebhook ? { background: '#3b82f6', borderColor: '#bfdbfe' } : undefined} 
+                        className={`${styles.timelineDot} ${item.isWebhook ? styles.timelineDotWebhook : ""}`} 
                       />
                     </div>
                     <div className={styles.timelineContent}>

@@ -180,9 +180,9 @@
 }
 
 .unapproveBtn {
-  background: rgba(var(--secondary-rgb), 0.12);
-  color: #eab308;
-  border-color: rgba(var(--secondary-rgb), 0.3);
+  background: rgba(var(--warning-rgb, 245, 158, 11), 0.12);
+  color: var(--warning-color);
+  border-color: rgba(var(--warning-rgb, 245, 158, 11), 0.3);
 }
 
 .deleteBtn {
@@ -210,17 +210,23 @@
   }
 
   .unapproveBtn:hover:not(:disabled) {
-    background-color: #eab308;
-    color: #000;
+    background-color: var(--warning-color);
+    color: var(--primary-accent-text);
     transform: translateY(-1px);
   }
 
   .deleteBtn:hover:not(:disabled) {
     background-color: var(--danger-color);
-    color: #ffffff;
+    color: var(--primary-accent-text);
     border-color: var(--danger-color);
     transform: translateY(-1px);
   }
+}
+
+.approveBtn:active:not(:disabled),
+.unapproveBtn:active:not(:disabled),
+.deleteBtn:active:not(:disabled) {
+  transform: scale(0.97);
 }
 
 .approveBtn:active:not(:disabled),
@@ -373,7 +379,7 @@
 
 .bulkApproveBtn {
   background: rgba(var(--success-color-rgb), 0.15);
-  color: #22c55e;
+  color: var(--success-color);
   border: 1px solid rgba(var(--success-color-rgb), 0.3);
   padding: 6px 14px;
   border-radius: 6px;
@@ -384,14 +390,14 @@
 }
 
 .bulkApproveBtn:hover {
-  background: #22c55e;
-  color: #fff;
+  background: var(--success-color);
+  color: var(--primary-accent-text);
 }
 
 .bulkRejectBtn {
-  background: rgba(var(--secondary-rgb), 0.15);
-  color: #eab308;
-  border: 1px solid rgba(var(--secondary-rgb), 0.3);
+  background: rgba(var(--warning-rgb, 245, 158, 11), 0.15);
+  color: var(--warning-color);
+  border: 1px solid rgba(var(--warning-rgb, 245, 158, 11), 0.3);
   padding: 6px 14px;
   border-radius: 6px;
   font-weight: 600;
@@ -401,13 +407,13 @@
 }
 
 .bulkRejectBtn:hover {
-  background: #eab308;
-  color: #000;
+  background: var(--warning-color);
+  color: var(--primary-accent-text);
 }
 
 .bulkDeleteBtn {
   background: rgba(var(--danger-color-rgb), 0.15);
-  color: #ef4444;
+  color: var(--danger-color);
   border: 1px solid rgba(var(--danger-color-rgb), 0.3);
   padding: 6px 14px;
   border-radius: 6px;
@@ -418,8 +424,14 @@
 }
 
 .bulkDeleteBtn:hover {
-  background: #ef4444;
-  color: #fff;
+  background: var(--danger-color);
+  color: var(--primary-accent-text);
+}
+
+.bulkApproveBtn:active,
+.bulkRejectBtn:active,
+.bulkDeleteBtn:active {
+  transform: scale(0.97);
 }
 
 .checkboxInput {

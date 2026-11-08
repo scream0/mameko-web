@@ -113,6 +113,7 @@ export default function CheckoutPage() {
   // ── Auth ──
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [pageLoading, setPageLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const lastUserIdRef = useRef<string | null>(null);
 
   // ── Voucher State ──
@@ -770,6 +771,7 @@ export default function CheckoutPage() {
 
   // ── Handle payment ──
   const handlePay = async () => {
+    if (isSubmitting || isStoreProcessing) return;
     if (stockValidation.hasInsufficient) {
       toast.error(checkoutConfig.stockValidation?.insufficientDesc || "Stok produk tidak mencukupi");
       return;
@@ -783,48 +785,53 @@ export default function CheckoutPage() {
       return;
     }
 
-    const selectedCourierInfo = courierOptions.find((c) => c.key === selectedCourierKey);
+    setIsSubmitting(true);
+    try {
+      const selectedCourierInfo = courierOptions.find((c) => c.key === selectedCourierKey);
 
-    localStorage.setItem(
-      "checkout_shipping",
-      JSON.stringify({
-        addressId: selectedAddress.id,
-        address: selectedAddress,
-        courierKey: selectedCourierKey,
-        courierName: selectedCourierInfo?.courierName || "",
-        courierService: selectedCourierInfo?.service || "",
-        courierEtd: selectedCourierInfo?.etd || "",
+      localStorage.setItem(
+        "checkout_shipping",
+        JSON.stringify({
+          addressId: selectedAddress.id,
+          address: selectedAddress,
+          courierKey: selectedCourierKey,
+          courierName: selectedCourierInfo?.courierName || "",
+          courierService: selectedCourierInfo?.service || "",
+          courierEtd: selectedCourierInfo?.etd || "",
+          shippingCost: finalShippingCost,
+          appliedVoucherId: discountVoucher?.id || shippingVoucher?.id || null,
+          voucherClaimId: discountVoucher?.claimId || shippingVoucher?.claimId || null,
+          appliedVouchers: appliedVouchers.map((v) => ({
+            voucherId: v.id,
+            claimId: v.claimId,
+            type: v.type,
+            code: v.code,
+          })),
+          voucherDiscount: totalVoucherDiscount,
+          shippingVoucherDiscount,
+          subtotalVoucherDiscount,
+        }),
+      );
+
+      await processPayment({
+        amount: subtotal,
+        discountAmount: finalSubtotalDiscount,
         shippingCost: finalShippingCost,
-        appliedVoucherId: discountVoucher?.id || shippingVoucher?.id || null,
-        voucherClaimId: discountVoucher?.claimId || shippingVoucher?.claimId || null,
-        appliedVouchers: appliedVouchers.map((v) => ({
-          voucherId: v.id,
-          claimId: v.claimId,
-          type: v.type,
-          code: v.code,
-        })),
-        voucherDiscount: totalVoucherDiscount,
-        shippingVoucherDiscount,
-        subtotalVoucherDiscount,
-      }),
-    );
-
-    await processPayment({
-      amount: subtotal,
-      discountAmount: finalSubtotalDiscount,
-      shippingCost: finalShippingCost,
-      shippingAddress: selectedAddress,
-      shippingDetail: {
-        courierName: selectedCourierInfo?.courierName || "",
-        courierService: selectedCourierInfo?.service || "",
-        courierEtd: selectedCourierInfo?.etd || "",
-      },
-      shippingVoucherId: shippingVoucher?.id || null,
-      shippingVoucherClaimId: shippingVoucher?.claimId || null,
-      discountVoucherId: discountVoucher?.id || null,
-      discountVoucherClaimId: discountVoucher?.claimId || null,
-      paymentMethod,
-    });
+        shippingAddress: selectedAddress,
+        shippingDetail: {
+          courierName: selectedCourierInfo?.courierName || "",
+          courierService: selectedCourierInfo?.service || "",
+          courierEtd: selectedCourierInfo?.etd || "",
+        },
+        shippingVoucherId: shippingVoucher?.id || null,
+        shippingVoucherClaimId: shippingVoucher?.claimId || null,
+        discountVoucherId: discountVoucher?.id || null,
+        discountVoucherClaimId: discountVoucher?.claimId || null,
+        paymentMethod,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const selectedCourierInfo = useMemo(
@@ -836,7 +843,9 @@ export default function CheckoutPage() {
     return (
       <div className={styles.checkoutPage}>
         <div className={styles.emptyCart}>
-          <div className={styles.emptyCartIcon}>🛒</div>
+          <div className={styles.emptyCartIcon}>
+            <AppIcon name="shopping-bag" size={48} />
+          </div>
           <h2 className={styles.emptyCartTitle}>{checkoutConfig.emptyCart.title}</h2>
           <p className={styles.emptyCartDesc}>
             {checkoutConfig.emptyCart.desc}
@@ -915,8 +924,7 @@ export default function CheckoutPage() {
                     setAddressForm(emptyAddressForm(currentUser?.user_metadata?.name || currentUser?.displayName, userProfilePhone));
                     setShowAddressModal(true);
                   }}
-                  className={styles.sectionAction}
-                  style={{ display: "inline-block" }}
+                  className={`${styles.sectionAction} ${styles.addAddressNowBtn}`}
                 >
                   {checkoutConfig.address.addNow}
                 </button>
@@ -1011,7 +1019,7 @@ export default function CheckoutPage() {
 
                 {courierLoading ? (
                   <div className={styles.courierLoading}>
-                    <div className={styles.loadingSpinner} style={{ width: 24, height: 24, margin: "0 auto 0.5rem" }}></div>
+                    <div className={`${styles.loadingSpinner} ${styles.courierSpinner}`}></div>
                     {checkoutConfig.courier.calculating}
                   </div>
                 ) : courierOptions.length === 0 ? (
@@ -1152,7 +1160,9 @@ export default function CheckoutPage() {
                 aria-label={checkoutConfig.voucher.pickerAria}
               >
                 <div className={styles.voucherPickerLabel}>
-                  <span className={styles.voucherPickerIcon}>🎟️</span>
+                  <span className={styles.voucherPickerIcon}>
+                    <AppIcon name="ticket" size={18} />
+                  </span>
                   <span>
                     {appliedVouchers.length === 0
                       ? checkoutConfig.voucher.selectBtn
@@ -1170,8 +1180,7 @@ export default function CheckoutPage() {
               <button
                 type="button"
                 onClick={() => setShowVoucherModal(true)}
-                className={styles.sectionAction}
-                style={{ marginTop: "4px", fontSize: "0.8rem" }}
+                className={`${styles.sectionAction} ${styles.changeVoucherBtn}`}
               >
                 {checkoutConfig.voucher.changeBtn}
               </button>
@@ -1261,9 +1270,12 @@ export default function CheckoutPage() {
                       if (!itemStock?.isExceeded) return null;
                       return (
                         <span className={styles.stockExceededBadge}>
-                          ⚠️ {itemStock.available <= 0
-                            ? checkoutConfig.stockValidation?.outOfStockBadge || "Stok Habis"
-                            : (checkoutConfig.stockValidation?.remainingStockTemplate || "Sisa stok: {count}").replace("{count}", String(itemStock.available))}
+                          <AppIcon name="alert-circle" size={12} />
+                          <span>
+                            {itemStock.available <= 0
+                              ? checkoutConfig.stockValidation?.outOfStockBadge || "Stok Habis"
+                              : (checkoutConfig.stockValidation?.remainingStockTemplate || "Sisa stok: {count}").replace("{count}", String(itemStock.available))}
+                          </span>
                         </span>
                       );
                     })()}
@@ -1290,8 +1302,9 @@ export default function CheckoutPage() {
 
           {activePromo && promoSavings > 0 && (
             <div className={`${styles.summaryLine} ${styles.summaryLineDiscount}`}>
-              <span style={{ display: "inline-flex", alignItems: "center" }}>
-                🏷️ {checkoutConfig.summary.storeDiscountLabel}
+              <span className={styles.summaryPromoLabel}>
+                <AppIcon name="tag" size={14} />
+                <span>{checkoutConfig.summary.storeDiscountLabel}</span>
                 {activePromo.promoName && (
                   <span className={styles.summaryPromoBadge}>
                     {activePromo.promoName}
@@ -1304,7 +1317,10 @@ export default function CheckoutPage() {
 
           {discountVoucher && subtotalVoucherDiscount > 0 && (
             <div className={`${styles.summaryLine} ${styles.summaryLineDiscount}`}>
-              <span>🎟️ {checkoutConfig.summary.discountLabel}</span>
+              <span className={styles.summaryDiscountLabel}>
+                <AppIcon name="ticket" size={14} />
+                <span>{checkoutConfig.summary.discountLabel}</span>
+              </span>
               <span>-{rupiah(subtotalVoucherDiscount)}</span>
             </div>
           )}
@@ -1335,7 +1351,9 @@ export default function CheckoutPage() {
           {stockValidation.hasInsufficient && (
             <div className={styles.stockAlertBanner}>
               <div className={styles.stockAlertHeader}>
-                <span className={styles.stockAlertIcon}>⚠️</span>
+                <span className={styles.stockAlertIcon}>
+                  <AppIcon name="alert-triangle" size={16} />
+                </span>
                 <strong>{checkoutConfig.stockValidation?.insufficientTitle || "Stok Tidak Mencukupi"}</strong>
               </div>
               <p className={styles.stockAlertDesc}>
@@ -1357,10 +1375,10 @@ export default function CheckoutPage() {
           <button
             className={styles.payButton}
             onClick={handlePay}
-            disabled={isStoreProcessing || !selectedAddress || !selectedCourierKey || stockValidation.hasInsufficient}
+            disabled={isStoreProcessing || isSubmitting || !selectedAddress || !selectedCourierKey || stockValidation.hasInsufficient}
           >
             <span className={styles.payButtonMain}>
-              {isStoreProcessing ? checkoutConfig.summary.processingBtn : `${checkoutConfig.summary.payNowPrefix}${rupiah(grandTotal)}`}
+              {isStoreProcessing || isSubmitting ? checkoutConfig.summary.processingBtn : `${checkoutConfig.summary.payNowPrefix}${rupiah(grandTotal)}`}
             </span>
             {(!selectedAddress || !selectedCourierKey || stockValidation.hasInsufficient) && (
               <span className={styles.payButtonSub}>

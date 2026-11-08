@@ -9,7 +9,7 @@
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
-  padding-bottom: 5.5rem; 
+  padding-bottom: 5.5rem;
 }
 
 @media (min-width: 768px) {
@@ -113,9 +113,9 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(var(--danger-color-rgb, 239, 68, 68), 0.1);
-  border: 1px solid rgba(var(--danger-color-rgb, 239, 68, 68), 0.25);
-  color: var(--danger-color, #ef4444);
+  background: var(--danger-bg);
+  border: 1px solid var(--danger-border);
+  color: var(--danger-color);
   padding: 0.6rem 1rem;
   border-radius: 10px;
   font-size: 0.78rem;
@@ -125,8 +125,9 @@
 }
 
 .clearAllBtn:hover {
-  background: rgba(var(--danger-color-rgb, 239, 68, 68), 0.18);
-  border-color: var(--danger-color, #ef4444);
+  background: var(--danger-color);
+  color: var(--primary-accent-text);
+  border-color: var(--danger-color);
 }
 
 /* --- EMPTY STATE CARD --- */
@@ -160,9 +161,17 @@
 }
 
 @keyframes pulseIcon {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.1);
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }
 
 .emptyTitle {
@@ -265,7 +274,7 @@
   top: 12px;
   left: 12px;
   background: rgba(0, 0, 0, 0.7);
-  color: #ffffff;
+  color: var(--primary-accent-text);
   font-size: 0.65rem;
   font-weight: 700;
   padding: 3px 8px;
@@ -286,7 +295,7 @@
   border-radius: 50%;
   background: rgba(0, 0, 0, 0.65);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #ffffff;
+  color: var(--primary-accent-text);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -297,8 +306,8 @@
 }
 
 .removeBtn:hover {
-  background: var(--danger-color, #ef4444);
-  border-color: var(--danger-color, #ef4444);
+  background: var(--danger-color);
+  border-color: var(--danger-color);
   transform: scale(1.08);
 }
 
@@ -306,8 +315,8 @@
   position: absolute;
   bottom: 10px;
   left: 10px;
-  background: rgba(var(--danger-color-rgb, 239, 68, 68), 0.15);
-  color: var(--danger-color, #ef4444);
+  background: var(--danger-bg);
+  color: var(--danger-color);
   font-size: 0.65rem;
   font-weight: 600;
   padding: 3px 8px;
@@ -356,18 +365,18 @@
 }
 
 .stock_available {
-  background: rgba(var(--success-color-rgb), 0.15);
-  color: var(--success-color, #10b981);
+  background: var(--success-bg);
+  color: var(--success-color);
 }
 
 .stock_lowStock {
-  background: rgba(var(--secondary-rgb), 0.15);
-  color: #f59e0b;
+  background: var(--warning-bg);
+  color: var(--warning-text);
 }
 
 .stock_outOfStock {
-  background: rgba(var(--danger-color-rgb), 0.15);
-  color: var(--danger-color, #ef4444);
+  background: var(--danger-bg);
+  color: var(--danger-color);
 }
 
 .addToCartBtn {
@@ -409,7 +418,7 @@
     align-items: stretch;
     gap: 1rem;
   }
-  
+
   .headerActions {
     width: 100%;
     flex-direction: column;

@@ -311,9 +311,9 @@
 }
 
 .btnActionSuccess {
-  background: #059669;
-  color: #ffffff;
-  border: 1px solid #059669;
+  background: var(--success-color);
+  color: var(--primary-accent-text);
+  border: 1px solid var(--success-color);
   border-radius: 8px;
   padding: 0.5rem 0.9rem;
   font-size: 0.82rem;
@@ -326,7 +326,12 @@
 }
 
 .btnActionSuccess:hover:not(:disabled) {
-  background: #047857;
+  background: var(--success-color);
+  filter: brightness(0.9);
+}
+
+.btnActionSuccess:active:not(:disabled) {
+  transform: scale(0.97);
 }
 
 .btnActionSuccess:disabled {
@@ -653,20 +658,20 @@
 }
 
 .pending {
-  background: rgba(var(--secondary-rgb), 0.15);
-  color: #ffc107;
-  border: 1px solid rgba(var(--secondary-rgb), 0.3);
+  background: rgba(var(--warning-rgb, 245, 158, 11), 0.15);
+  color: var(--warning-color);
+  border: 1px solid rgba(var(--warning-rgb, 245, 158, 11), 0.3);
 }
 
 .approved, .completed {
   background: rgba(var(--success-color-rgb), 0.15);
-  color: #28a745;
+  color: var(--success-color);
   border: 1px solid rgba(var(--success-color-rgb), 0.3);
 }
 
 .rejected, .failed {
   background: rgba(var(--danger-color-rgb), 0.15);
-  color: #dc3545;
+  color: var(--danger-color);
   border: 1px solid rgba(var(--danger-color-rgb), 0.3);
 }
 
@@ -687,7 +692,8 @@
 }
 
 .actionBtnPrimary:hover {
-  background: var(--primary-accent-hover, #0056b3);
+  background: var(--primary-accent);
+  filter: brightness(0.9);
 }
 
 .actionBtnPrimary:disabled, .actionBtnDanger:disabled {
@@ -697,13 +703,17 @@
 
 .actionBtnDanger {
   background: rgba(var(--danger-color-rgb), 0.1);
-  color: #dc3545;
+  color: var(--danger-color);
   border: 1px solid rgba(var(--danger-color-rgb), 0.2);
 }
 
 .actionBtnDanger:hover {
-  background: #dc3545;
-  color: white;
+  background: var(--danger-color);
+  color: var(--primary-accent-text);
+}
+
+.actionBtnPrimary:active, .actionBtnDanger:active {
+  transform: scale(0.97);
 }
 
 @keyframes fadeIn {
@@ -782,7 +792,7 @@
   display: inline-block;
   width: 8px;
   height: 8px;
-  background-color: #ef4444;
+  background-color: var(--danger-color);
   border-radius: 50%;
   margin-left: 6px;
   vertical-align: middle;
@@ -878,8 +888,8 @@
   position: absolute;
   top: -8px;
   right: -10px;
-  background-color: var(--danger-color, #ef4444);
-  color: white;
+  background-color: var(--danger-color);
+  color: var(--primary-accent-text);
   font-size: 0.7rem;
   font-weight: bold;
   padding: 2px 6px;
@@ -942,8 +952,8 @@
   top: 20px;
   right: 35%;
   transform: rotate(-15deg);
-  color: var(--success-color, #10b981);
-  border: 4px solid var(--success-color, #10b981);
+  color: var(--success-color);
+  border: 4px solid var(--success-color);
   border-radius: 8px;
   padding: 0.5rem 1.5rem;
   font-size: 2.5rem;
@@ -1031,7 +1041,7 @@
   display: flex;
   justify-content: space-between;
   margin-bottom: 0.4rem;
-  color: var(--danger-color, #ef4444);
+  color: var(--danger-color);
 }
 
 .printBillTotalRow {
@@ -1069,15 +1079,15 @@
 }
 
 .statusBannerCancelled {
-  color: var(--danger-color, #ef4444);
+  color: var(--danger-color);
 }
 
 .statusBannerSuccess {
-  color: var(--success-color, #10b981);
+  color: var(--success-color);
 }
 
 .statusBannerShipped {
-  color: #8b5cf6;
+  color: var(--primary-accent);
 }
 
 .statusBannerDefault {
@@ -1096,13 +1106,13 @@
 }
 
 .btnActionBlue {
-  background-color: rgba(var(--info-color-rgb), 0.1);
-  color: #3b82f6;
-  border-color: rgba(var(--info-color-rgb), 0.3);
+  background-color: rgba(var(--info-color-rgb, 14, 165, 233), 0.1);
+  color: var(--info-color, var(--primary-accent));
+  border-color: rgba(var(--info-color-rgb, 14, 165, 233), 0.3);
 }
 
 .btnActionBlue:hover {
-  background-color: rgba(var(--info-color-rgb), 0.2);
+  background-color: rgba(var(--info-color-rgb, 14, 165, 233), 0.2);
 }
 
 .actionGrid {
@@ -1259,7 +1269,7 @@
 .costRowDiscount {
   display: flex;
   justify-content: space-between;
-  color: var(--success-color, #10b981);
+  color: var(--success-color);
 }
 
 .costRowGrandTotal {
@@ -1293,8 +1303,8 @@
 }
 
 .timelineDotWebhook {
-  background: #3b82f6 !important;
-  border-color: #bfdbfe !important;
+  background: var(--info-color, var(--primary-accent)) !important;
+  border-color: rgba(var(--primary-accent-rgb), 0.4) !important;
 }
 
 .timelineTitleWebhook {

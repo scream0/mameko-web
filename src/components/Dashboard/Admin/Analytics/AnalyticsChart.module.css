@@ -214,7 +214,7 @@
 }
 
 .revenueCell {
-  color: var(--success-color, #10b981);
+  color: var(--success-color);
   font-weight: 600;
 }
 

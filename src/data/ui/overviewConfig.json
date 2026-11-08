@@ -1,9 +1,9 @@
 {
   "title": "OVERVIEW ANALYTICS",
   "subTabs": {
-    "stats": "📊 Statistik",
-    "reviews": "⭐ Ulasan",
-    "chat": "💬 Chat"
+    "stats": "Statistik",
+    "reviews": "Ulasan",
+    "chat": "Chat"
   },
   "cards": {
     "revenue": "Total Pendapatan",

@@ -492,7 +492,7 @@
 .dialogPrimaryBtn {
   border: 1px solid transparent;
   background: var(--danger-color);
-  color: #ffffff;
+  color: var(--primary-accent-text);
 }
 
 .dialogPrimaryBtn:hover {

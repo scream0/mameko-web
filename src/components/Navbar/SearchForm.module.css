@@ -3,8 +3,8 @@
    ==================================================== */
 .searchForm {
   position: absolute;
-  top: 90px;
-  right: 7%;
+  top: calc(100% + 8px);
+  right: clamp(1.25rem, 4vw, 3rem);
   background: rgba(var(--surface-primary-rgb), 0.98);
   backdrop-filter: blur(25px);
   -webkit-backdrop-filter: blur(25px);
@@ -17,7 +17,7 @@
   visibility: hidden;
   transform: translateY(-10px);
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--shadow-md);
 }
 
 .searchForm.active {
@@ -109,13 +109,13 @@
 }
 
 .resultInfo p.outOfStockText {
-  color: var(--text-muted, #999);
+  color: var(--text-tertiary);
   font-weight: 400;
 }
 
 .searchResultEmpty {
   padding: 1rem;
-  color: var(--text-secondary, #888);
+  color: var(--text-secondary);
   text-align: center;
   font-size: 0.85rem;
 }
@@ -123,9 +123,15 @@
 /* Penyesuaian Responsif untuk Mobile */
 @media (max-width: 768px) {
   .searchForm {
-    top: 75px;
-    right: 5%;
-    width: 90vw;
-    max-width: 360px;
+    top: calc(100% + 8px);
+    right: 1.25rem;
+    left: 1.25rem;
+    width: auto;
+    max-width: none;
+  }
+
+  .searchForm input {
+    min-height: 44px;
+    font-size: 14px;
   }
 }

@@ -393,9 +393,9 @@
 }
 
 .btnDeleteAddress {
-  background: rgba(var(--danger-color-rgb, 220, 38, 38), 0.1);
-  border: 1px solid rgba(var(--danger-color-rgb, 220, 38, 38), 0.3);
-  color: var(--danger-color, #ef4444);
+  background: var(--danger-bg);
+  border: 1px solid var(--danger-border);
+  color: var(--danger-color);
   font-size: 0.72rem;
   font-weight: 600;
   padding: 4px 10px;
@@ -405,7 +405,7 @@
 }
 
 .btnDeleteAddress:hover {
-  background: rgba(var(--danger-color-rgb, 220, 38, 38), 0.2);
+  background: rgba(var(--danger-color-rgb), 0.2);
 }
 
 .recipientDetails {
@@ -559,7 +559,7 @@
 
 .otpVerifiedTag {
   font-size: 0.75rem;
-  color: var(--success-color, #10b981);
+  color: var(--success-color);
   font-weight: 600;
 }
 
@@ -598,7 +598,7 @@
 .actionBtnPrimary {
   background: var(--primary-accent);
   border-color: var(--primary-accent);
-  color: var(--primary-accent-text, #ffffff);
+  color: var(--primary-accent-text);
   box-shadow: none;
   text-align: center;
 }
@@ -612,22 +612,22 @@
 .actionBtnDanger:disabled,
 .smallBtn:disabled,
 .smallBtnDanger:disabled {
-  background: var(--surface-tertiary, #374151);
-  color: var(--text-tertiary, #9ca3af);
+  background: var(--neutral-bg);
+  color: var(--text-tertiary);
   border-color: transparent;
   cursor: not-allowed;
   opacity: 0.8;
 }
 
 .actionBtnDanger {
-  background: rgba(var(--danger-color-rgb, 220, 38, 38), 0.08);
-  border: 1px solid rgba(var(--danger-color-rgb, 220, 38, 38), 0.2);
-  color: var(--danger-color, #ef4444);
+  background: var(--danger-bg);
+  border: 1px solid var(--danger-border);
+  color: var(--danger-color);
   text-align: center;
 }
 
 .actionBtnDanger:hover {
-  background: rgba(var(--danger-color-rgb, 220, 38, 38), 0.15);
+  background: rgba(var(--danger-color-rgb), 0.15);
 }
 
 .formGroup {
@@ -746,7 +746,7 @@
 
 .otpUnverifiedTag {
   font-size: 0.75rem;
-  color: var(--danger-color, #ef4444);
+  color: var(--danger-color);
 }
 
 .otpActionBtn {

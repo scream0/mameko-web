@@ -75,12 +75,12 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: #9ca3af;
+  background-color: var(--text-secondary);
   transition: background-color 0.3s ease;
 }
 
 .statusDot.online {
-  background-color: #22c55e;
+  background-color: var(--success-color);
   box-shadow: 0 0 8px rgba(var(--success-color-rgb), 0.6);
 }
 
@@ -287,8 +287,8 @@
   position: absolute;
   top: 2px;
   right: 2px;
-  background-color: rgba(0, 0, 0, 0.65);
-  color: #fff;
+  background-color: rgba(var(--surface-primary-rgb), 0.75);
+  color: var(--text-primary);
   border: none;
   border-radius: 50%;
   width: 18px;
@@ -408,9 +408,9 @@
   position: absolute;
   top: 20px;
   right: 20px;
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(var(--surface-primary-rgb), 0.3);
   border: none;
-  color: #fff;
+  color: var(--text-primary);
   width: 36px;
   height: 36px;
   border-radius: 50%;
@@ -472,9 +472,9 @@
 
 /* Quoted reply inside message bubble */
 .quotedMessageSnippet {
-  background: rgba(0, 0, 0, 0.22);
-  border-left: 3px solid rgba(255, 255, 255, 0.95);
-  color: #ffffff;
+  background: rgba(var(--surface-primary-rgb), 0.22);
+  border-left: 3px solid var(--primary-accent);
+  color: inherit;
   padding: 6px 10px;
   border-radius: 4px;
   margin-bottom: 6px;
@@ -487,20 +487,20 @@
 }
 
 .messageRow.admin .quotedMessageSnippet {
-  background: var(--surface-secondary, #f1f5f9);
+  background: var(--surface-secondary);
   border-left: 3px solid var(--primary-accent);
   color: var(--text-primary);
 }
 
 :global([data-theme="dark"]) .quotedMessageSnippet,
 :global(.dark) .quotedMessageSnippet {
-  background: rgba(255, 255, 255, 0.15);
-  color: #ffffff;
+  background: rgba(var(--surface-primary-rgb), 0.15);
+  color: inherit;
 }
 
 :global([data-theme="dark"]) .messageRow.admin .quotedMessageSnippet,
 :global(.dark) .messageRow.admin .quotedMessageSnippet {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(var(--surface-primary-rgb), 0.08);
   color: var(--text-primary);
 }
 
@@ -616,5 +616,5 @@
 }
 
 .cancelReplyBtn:hover {
-  color: var(--danger, #ef4444);
+  color: var(--danger-color);
 }

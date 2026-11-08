@@ -42,6 +42,9 @@ export class NativeAuthClient {
   }
 
   private loadSessionFromStorage(): Session | null {
+    if (typeof window === "undefined" || typeof sessionStorage === "undefined") {
+      return null;
+    }
     try {
       const sessionToken = sessionStorage.getItem("mameko_access_token");
       const sessionUser = sessionStorage.getItem("mameko_user");
@@ -142,7 +145,12 @@ export class NativeAuthClient {
   private notifyListeners(event: string, session: Session | null) {
     this.listeners.forEach((callback) => {
       try {
-        callback(event, session);
+        const result: any = callback(event, session);
+        if (result && typeof result.catch === "function") {
+          result.catch((err: any) => {
+            console.error("[AuthClient] Unhandled error in async auth listener:", err);
+          });
+        }
       } catch (err) {
         console.error("[AuthClient] Error in auth listener:", err);
       }
@@ -167,7 +175,16 @@ export class NativeAuthClient {
     // Kirim initial state ke listener
     const session = this.loadSessionFromStorage();
     setTimeout(() => {
-      callback(session ? "INITIAL_SESSION" : "SIGNED_OUT", session);
+      try {
+        const result: any = callback(session ? "INITIAL_SESSION" : "SIGNED_OUT", session);
+        if (result && typeof result.catch === "function") {
+          result.catch((err: any) => {
+            console.error("[AuthClient] Unhandled error in async initial auth listener:", err);
+          });
+        }
+      } catch (err) {
+        console.error("[AuthClient] Error in initial auth listener:", err);
+      }
     }, 0);
 
     return {
@@ -512,19 +529,43 @@ export class NativeAuthClient {
       }
 
       const tokenData = data.data;
-      const session = {
+      const rawUser = tokenData?.user || {};
+      const userProfile: UserProfile = {
+        id: rawUser.id,
+        email: rawUser.email,
+        full_name: rawUser.full_name || rawUser.name,
+        username: rawUser.username,
+        role: rawUser.role || "customer",
+        status: rawUser.status || "active",
+        avatar_url: rawUser.avatar_url,
+        phone: rawUser.phone,
+        user_metadata: {
+          full_name: rawUser.full_name || rawUser.name,
+          name: rawUser.full_name || rawUser.name,
+          avatar_url: rawUser.avatar_url,
+          role: rawUser.role || "customer",
+          phone: rawUser.phone,
+        },
+        app_metadata: {
+          role: rawUser.role || "customer",
+          provider: "native_otp",
+        },
+      };
+
+      const session: Session = {
         access_token: tokenData.access_token,
         refresh_token: tokenData.refresh_token,
-        token_type: tokenData.token_type,
-        expires_in: tokenData.expires_in,
-        user: tokenData.user,
+        expires_at: tokenData.expires_in
+          ? Math.floor(Date.now() / 1000) + Number(tokenData.expires_in)
+          : undefined,
+        user: userProfile,
       };
 
       this.saveSession(session);
       this.notifyListeners("SIGNED_IN", session);
 
       return {
-        data: { user: tokenData.user, session },
+        data: { user: userProfile, session },
         error: null,
       };
     } catch (err: any) {

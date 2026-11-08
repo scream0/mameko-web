@@ -1,11 +1,11 @@
 {
   "branding": {
     "logo": {
-      "text": "MAKE ",
-      "subtext": "ME KOOL",
-      "href": "#"
+      "text": "MAMEKO",
+      "subtext": "",
+      "href": "/"
     },
-    "description": "Meracik setiap produk dengan penuh perhatian untuk memberikan kualitas aroma dan rasa terbaik langsung ke tangan Anda.",
+    "description": "Meracik setiap rilisan parfum dengan keheningan aroma dan kedalaman karakter artisanal langsung ke tangan Anda.",
     "socials": [
       {
         "href": "https://www.instagram.com/xar.project/",
@@ -13,19 +13,19 @@
         "label": "Instagram"
       },
       {
-        "href": "#product",
+        "href": "/#product",
         "icon": "shopping-bag",
-        "label": "Shop"
+        "label": "Produk"
       }
     ]
   },
   "navigation": {
     "title": "Penjelajahan",
     "links": [
-      { "label": "Home", "href": "/#home" },
+      { "label": "Beranda", "href": "/#home" },
       { "label": "Tentang Kami", "href": "/#about" },
-      { "label": "Produk", "href": "/#product" },
-      { "label": "Kontak", "href": "/#contact" }
+      { "label": "Katalog Produk", "href": "/#product" },
+      { "label": "Hubungi Kami", "href": "/#contact" }
     ]
   },
   "legal": {
@@ -43,11 +43,11 @@
     ]
   },
   "payment": {
-    "title": "Pembayaran",
-    "subtitle": "Didukung secara aman oleh:",
-    "methods": ["Midtrans", "QRIS"]
+    "title": "Keamanan & Pembayaran",
+    "subtitle": "Didukung transaksi terenkripsi oleh:",
+    "methods": ["Midtrans", "QRIS", "BCA", "Mandiri"]
   },
   "copyright": {
-    "text": "Make Me Kool. All rights reserved."
+    "text": "MAMEKO. Hak Cipta Dilindungi."
   }
 }

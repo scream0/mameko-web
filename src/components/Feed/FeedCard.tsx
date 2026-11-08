@@ -69,7 +69,10 @@ export default function FeedCard({
   };
 
   const handleShare = async () => {
-    const url = typeof window !== "undefined" ? `${window.location.origin}/feed#post-${post.id}` : "";
+    const url =
+      typeof window !== "undefined"
+        ? `${window.location.origin}/feed#post-${post.id}`
+        : "";
     if (navigator.share) {
       try {
         await navigator.share({
@@ -78,7 +81,6 @@ export default function FeedCard({
           url,
         });
       } catch {
-        // Fallback to clipboard
         await navigator.clipboard.writeText(url);
         toast.success(feedConfig.toasts.shareCopied);
       }
@@ -111,7 +113,10 @@ export default function FeedCard({
   };
 
   const initial = String(post.author_name || "M")[0].toUpperCase();
-  const isOfficial = post.author_role === "admin" || post.author_role === "superadmin" || post.author_role === "official";
+  const isOfficial =
+    post.author_role === "admin" ||
+    post.author_role === "superadmin" ||
+    post.author_role === "official";
 
   const images = Array.isArray(post.image_urls) ? post.image_urls : [];
   const product = post.product;
@@ -126,17 +131,22 @@ export default function FeedCard({
             {post.author_avatar ? (
               /* eslint-disable-next-line @next/next/no-img-element */
               <img
-                src={optimizeCloudinaryUrl(post.author_avatar, IMAGE_PRESETS.AVATAR)}
-                alt={post.author_name}
+                src={optimizeCloudinaryUrl(
+                  post.author_avatar,
+                  IMAGE_PRESETS.AVATAR
+                )}
+                alt={post.author_name || "Author"}
                 className={styles.avatarImg}
               />
             ) : (
-              initial
+              <span className={styles.avatarInitial}>{initial}</span>
             )}
           </div>
           <div className={styles.authorDetails}>
             <div className={styles.nameRow}>
-              <span className={styles.authorName}>{post.author_name || "Mameko Member"}</span>
+              <span className={styles.authorName}>
+                {post.author_name || "Mameko Member"}
+              </span>
               <span
                 className={`${styles.roleBadge} ${
                   isOfficial ? styles.roleOfficial : styles.roleCollector
@@ -147,7 +157,9 @@ export default function FeedCard({
                   : feedConfig.card.authorCollector}
               </span>
             </div>
-            <span className={styles.postTime}>{formatRelativeTime(post.created_at)}</span>
+            <span className={styles.postTime}>
+              {formatRelativeTime(post.created_at)}
+            </span>
           </div>
         </div>
 
@@ -163,15 +175,25 @@ export default function FeedCard({
       {/* 3. Fragrance Notes Badge if applicable */}
       {(post.top_notes || post.mid_notes || post.base_notes) && (
         <div className={styles.notesRow}>
-          {post.top_notes && <span className={styles.notePill}>Top: {post.top_notes}</span>}
-          {post.mid_notes && <span className={styles.notePill}>Mid: {post.mid_notes}</span>}
-          {post.base_notes && <span className={styles.notePill}>Base: {post.base_notes}</span>}
+          {post.top_notes && (
+            <span className={styles.notePill}>Top: {post.top_notes}</span>
+          )}
+          {post.mid_notes && (
+            <span className={styles.notePill}>Mid: {post.mid_notes}</span>
+          )}
+          {post.base_notes && (
+            <span className={styles.notePill}>Base: {post.base_notes}</span>
+          )}
         </div>
       )}
 
       {/* 4. Gallery Images */}
       {images.length > 0 && (
-        <div className={styles.galleryGrid}>
+        <div
+          className={`${styles.galleryGrid} ${
+            images.length === 1 ? styles.gallerySingle : ""
+          }`}
+        >
           {images.map((imgUrl: string, idx: number) => (
             /* eslint-disable-next-line @next/next/no-img-element */
             <img
@@ -187,24 +209,35 @@ export default function FeedCard({
 
       {/* 5. Linked Product Card */}
       {product && product.id && (
-        <Link href={`/product?id=${product.id}`} className={styles.linkedProductCard}>
+        <Link
+          href={`/product?id=${product.id}`}
+          className={styles.linkedProductCard}
+        >
           <div className={styles.productThumbInfo}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={optimizeCloudinaryUrl(product.image_url || "/placeholder.jpg", IMAGE_PRESETS.THUMBNAIL)}
+              src={optimizeCloudinaryUrl(
+                product.image_url || "/placeholder.jpg",
+                IMAGE_PRESETS.THUMBNAIL
+              )}
               alt={product.name}
               className={styles.productThumb}
             />
             <div className={styles.productText}>
+              <span className={styles.productLabel}>
+                {feedConfig.card.linkedProductTitle}
+              </span>
               <span className={styles.productName}>{product.name}</span>
               {productPrice > 0 && (
-                <span className={styles.productPrice}>{formatRupiah(productPrice)}</span>
+                <span className={styles.productPrice}>
+                  {formatRupiah(productPrice)}
+                </span>
               )}
             </div>
           </div>
           <div className={styles.viewProductBtn}>
             <span>{feedConfig.card.viewProductBtn}</span>
-            <AppIcon name="arrow-right" size={14} />
+            <AppIcon name="arrow-right" className={styles.arrowIcon} />
           </div>
         </Link>
       )}
@@ -216,32 +249,47 @@ export default function FeedCard({
             type="button"
             onClick={handleLike}
             disabled={isLiking}
-            className={`${styles.actionBtn} ${isLiked ? styles.likedActive : ""}`}
+            className={`${styles.actionBtn} ${
+              isLiked ? styles.likedActive : ""
+            }`}
             aria-label={feedConfig.card.likeAria}
           >
-            <span>{isLiked ? "❤️" : "🤍"}</span>
-            <span>{likeCount}</span>
+            <AppIcon
+              name="heart"
+              className={`${styles.actionIcon} ${
+                isLiked ? styles.iconFilledHeart : ""
+              }`}
+            />
+            <span className={styles.actionCount}>{likeCount}</span>
           </button>
 
           <button
             type="button"
             onClick={handleBookmark}
             disabled={isSaving}
-            className={`${styles.actionBtn} ${isSaved ? styles.bookmarkedActive : ""}`}
+            className={`${styles.actionBtn} ${
+              isSaved ? styles.bookmarkedActive : ""
+            }`}
             aria-label={feedConfig.card.bookmarkAria}
           >
-            <span>{isSaved ? "🔖" : "🏷️"}</span>
-            <span>{saveCount}</span>
+            <AppIcon
+              name="bookmark"
+              className={`${styles.actionIcon} ${
+                isSaved ? styles.iconFilledBookmark : ""
+              }`}
+            />
+            <span className={styles.actionCount}>{saveCount}</span>
           </button>
         </div>
 
         <button
           type="button"
           onClick={handleShare}
-          className={styles.actionBtn}
+          className={styles.shareBtn}
           aria-label={feedConfig.card.shareAria}
+          title={feedConfig.card.shareAria}
         >
-          <AppIcon name="share-2" size={15} />
+          <AppIcon name="share-2" className={styles.shareIcon} />
         </button>
       </div>
     </article>

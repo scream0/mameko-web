@@ -1,9 +1,42 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { getPublicSettings } from "@/services/settingsService";
 import styles from "./Contact.module.css";
-import contactData from "@/data/ui/contactConfig.json"; // Fallback default JSON
+import contactData from "@/data/ui/contactConfig.json";
 import { AppIcon } from "@/components/UI/Icon/AppIcon";
+
+interface InfoItemData {
+  icon: string;
+  title: string;
+  value: string;
+}
+
+interface ContactConfigState {
+  whatsappNumber: string;
+  header: {
+    tagline: string;
+    title: {
+      main: string;
+      highlight: string;
+    };
+  };
+  infoItems: InfoItemData[];
+  headquarters: {
+    title: string;
+    address: string[];
+    coordinates: string;
+  };
+  form: {
+    title: string;
+    fields: {
+      name: string;
+      email: string;
+      phone: string;
+      message: string;
+    };
+    submitText: string;
+  };
+}
 
 export function Contact() {
   const [formData, setFormData] = useState({
@@ -13,10 +46,9 @@ export function Contact() {
     message: "",
   });
 
-  // State resolved dari DB (fallback ke JSON)
-  const [contactInfo, setContactInfo] = useState(contactData);
+  const [contactInfo, setContactInfo] = useState<ContactConfigState>(contactData);
 
-  const contactRef = useRef<any>(null);
+  const contactRef = useRef<HTMLElement | null>(null);
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -101,44 +133,50 @@ export function Contact() {
     };
   }, []);
 
-  const handleInputChange = (e: any) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
     setFormData((prev) => ({ ...prev, [id.replace("input-", "")]: value }));
   };
 
-  const kirimPesanKontak = (e: any) => {
+  const kirimPesanKontak = (e: React.FormEvent) => {
     e.preventDefault();
+    const cleanWa = (contactInfo?.whatsappNumber || contactData?.whatsappNumber || "6285171723607").replace(/[^0-9]/g, "");
     const teksPesan = `*📩 PESAN BARU - KONTAK KAMI*\n--------------------------------------------\n• *Nama* : ${formData.name}\n• *Email* : ${formData.email}\n• *No HP* : ${formData.phone}\n--------------------------------------------\n*💬 ISI PESAN:*\n"${formData.message}"`;
 
-    // Mengambil nomor WA dinamis dari settings DB / JSON
-    const waNumber =
-      contactInfo?.whatsappNumber || contactData?.whatsappNumber || "6281234567890";
-
     window.open(
-      `https://wa.me/${waNumber}?text=${encodeURIComponent(teksPesan)}`,
+      `https://wa.me/${cleanWa}?text=${encodeURIComponent(teksPesan)}`,
       "_blank",
+      "noopener,noreferrer"
     );
 
     setFormData({ name: "", email: "", phone: "", message: "" });
   };
 
+  const sectionHeading = [
+    contactInfo?.header?.title?.main,
+    contactInfo?.header?.title?.highlight,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .trim() || contactData.header.title.main;
+
   return (
-    <section id="contact" className={`${styles.contact} ${isVisible ? styles.visible : ""}`} ref={contactRef}>
+    <section
+      id="contact"
+      className={`${styles.contact} ${isVisible ? styles.visible : ""}`}
+      ref={contactRef}
+    >
       <div className={styles.contactContainer}>
         {/* Sisi Kiri: Informasi */}
         <div className={styles.contactInfoCard}>
           <div className={styles.infoHeader}>
-            <p className={styles.contactTagline}>{contactInfo?.header?.tagline}</p>
-            <h2>
-              {contactInfo?.header?.title?.main} <br />
-              <span>{contactInfo?.header?.title?.highlight}</span>
-            </h2>
+            <h2 className={styles.contactTitle}>{sectionHeading}</h2>
           </div>
 
           <div className={styles.infoDetailsList}>
             {contactInfo?.infoItems?.map((item, index) => (
               <InfoItem
-                key={index}
+                key={`${item.title}-${index}`}
                 icon={item.icon}
                 title={item.title}
                 value={item.value}
@@ -147,59 +185,75 @@ export function Contact() {
           </div>
 
           <div className={styles.addressBox}>
-            <h3>{contactInfo?.headquarters?.title}</h3>
-            <p>
+            <h3 className={styles.addressTitle}>{contactInfo?.headquarters?.title}</h3>
+            <p className={styles.addressText}>
               {contactInfo?.headquarters?.address?.[0]}
-              <br />
-              {contactInfo?.headquarters?.address?.[1]}
+              {contactInfo?.headquarters?.address?.[1] && (
+                <>
+                  <br />
+                  {contactInfo.headquarters.address[1]}
+                </>
+              )}
             </p>
-            <span className={styles.coordinates}>
-              {contactInfo?.headquarters?.coordinates}
-            </span>
+            {contactInfo?.headquarters?.coordinates && (
+              <span className={styles.coordinates}>
+                {contactInfo.headquarters.coordinates}
+              </span>
+            )}
           </div>
         </div>
 
-        {/* Sisi Kanan: Form */}
+        {/* Sisi Kanan: Form WhatsApp */}
         <div className={styles.contactFormWrapper}>
           <form onSubmit={kirimPesanKontak} className={styles.contactForm}>
-            <h3>{contactInfo?.form?.title}</h3>
+            <div className={styles.formHeader}>
+              <h3 className={styles.formTitle}>{contactInfo?.form?.title}</h3>
+            </div>
 
-            <InputBox
-              id="input-name"
-              label={contactInfo?.form?.fields?.name}
-              value={formData.name}
-              onChange={handleInputChange}
-            />
-            <InputBox
-              id="input-email"
-              label={contactInfo?.form?.fields?.email}
-              type="email"
-              value={formData.email}
-              onChange={handleInputChange}
-            />
-            <InputBox
-              id="input-phone"
-              label={contactInfo?.form?.fields?.phone}
-              type="tel"
-              value={formData.phone}
-              onChange={handleInputChange}
-            />
-
-            <div className={styles.inputBox}>
-              <textarea
-                required
-                value={formData.message}
+            <div className={styles.formFields}>
+              <InputBox
+                id="input-name"
+                label={contactInfo?.form?.fields?.name || "Nama Lengkap"}
+                value={formData.name}
                 onChange={handleInputChange}
-                placeholder=" "
-                id="input-message"
-              ></textarea>
-              <label htmlFor="input-message">
-                {contactInfo?.form?.fields?.message}
-              </label>
+                autoComplete="name"
+              />
+              <InputBox
+                id="input-email"
+                label={contactInfo?.form?.fields?.email || "Alamat Email"}
+                type="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                autoComplete="email"
+              />
+              <InputBox
+                id="input-phone"
+                label={contactInfo?.form?.fields?.phone || "Nomor WhatsApp"}
+                type="tel"
+                value={formData.phone}
+                onChange={handleInputChange}
+                autoComplete="tel"
+              />
+
+              <div className={styles.inputGroup}>
+                <label htmlFor="input-message" className={styles.inputLabel}>
+                  {contactInfo?.form?.fields?.message || "Pesan"}
+                </label>
+                <textarea
+                  required
+                  rows={4}
+                  value={formData.message}
+                  onChange={handleInputChange}
+                  placeholder={contactInfo?.form?.fields?.message || "Tulis Pesan Anda..."}
+                  id="input-message"
+                  className={styles.textAreaField}
+                />
+              </div>
             </div>
 
             <button type="submit" className={styles.btnSubmit}>
-              {contactInfo?.form?.submitText}
+              <AppIcon name="message-circle" className={styles.btnIcon} />
+              <span>{contactInfo?.form?.submitText || "Kirim via WhatsApp"}</span>
             </button>
           </form>
         </div>
@@ -208,33 +262,70 @@ export function Contact() {
   );
 }
 
-// Sub-komponen
-function InfoItem({ icon, title, value }) {
+// Sub-komponen Info Item
+function InfoItem({
+  icon,
+  title,
+  value,
+}: {
+  icon: string;
+  title: string;
+  value: string;
+}) {
+  const isEmail = icon === "mail" || value.includes("@");
+
   return (
     <div className={styles.infoItem}>
-      <div className={styles.infoIcon}>
-        <AppIcon name={icon} className={styles.feather} />
+      <div className={styles.infoIconWrapper}>
+        <AppIcon name={icon} className={styles.infoIcon} />
       </div>
       <div className={styles.infoText}>
         <span className={styles.infoTitle}>{title}</span>
-        <p>{value}</p>
+        {isEmail ? (
+          <a href={`mailto:${value}`} className={styles.infoLink}>
+            {value}
+          </a>
+        ) : (
+          <p className={styles.infoValue}>{value}</p>
+        )}
       </div>
     </div>
   );
 }
 
-function InputBox({ id, label, type = "text", value, onChange }) {
+// Sub-komponen Input Box
+interface InputBoxProps {
+  id: string;
+  label: string;
+  type?: string;
+  value: string;
+  autoComplete?: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}
+
+function InputBox({
+  id,
+  label,
+  type = "text",
+  value,
+  autoComplete,
+  onChange,
+}: InputBoxProps) {
   return (
-    <div className={styles.inputBox}>
+    <div className={styles.inputGroup}>
+      <label htmlFor={id} className={styles.inputLabel}>
+        {label}
+      </label>
       <input
         type={type}
         required
         value={value}
         onChange={onChange}
-        placeholder=" "
+        placeholder={label}
         id={id}
+        autoComplete={autoComplete}
+        className={styles.inputField}
       />
-      <label htmlFor={id}>{label}</label>
     </div>
   );
 }

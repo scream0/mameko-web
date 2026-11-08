@@ -30,11 +30,21 @@ import { mamekoClient } from "@/lib/mamekoClient";
 import { Logo } from "@/components/UI/Logo/logo";
 
 const AnalyticsChart = dynamic(() => import("@/components/Dashboard/Admin/Analytics/AnalyticsChart"), {
-  loading: () => <p>Loading chart...</p>,
+  loading: () => (
+    <div className={styles.chartSkeleton}>
+      <div className={styles.chartSkeletonHeader} />
+      <div className={styles.chartSkeletonBody} />
+    </div>
+  ),
   ssr: false
 });
 const AdvancedAnalytics = dynamic(() => import("@/components/Dashboard/Admin/Analytics/AdvancedAnalytics"), {
-  loading: () => <p>Loading analytics...</p>,
+  loading: () => (
+    <div className={styles.chartSkeleton}>
+      <div className={styles.chartSkeletonHeader} />
+      <div className={styles.chartSkeletonBody} />
+    </div>
+  ),
   ssr: false
 });
 import OverviewStats from "@/components/Dashboard/Admin/Overview/OverviewStats";
@@ -421,19 +431,22 @@ export default function AdminDashboard(_props: { user?: any } = {}) {
                 className={`${styles.overviewSubTab} ${overviewTab === "stats" ? styles.overviewSubTabActive : ""}`}
                 onClick={() => setOverviewTab("stats")}
               >
-                {overviewConfig.subTabs?.stats || "📊 Statistik"}
+                <Activity size={15} />
+                <span>{overviewConfig.subTabs?.stats || "Statistik"}</span>
               </button>
               <button
                 className={`${styles.overviewSubTab} ${overviewTab === "reviews" ? styles.overviewSubTabActive : ""}`}
                 onClick={() => setOverviewTab("reviews")}
               >
-                {overviewConfig.subTabs?.reviews || "⭐ Ulasan"}
+                <Star size={15} />
+                <span>{overviewConfig.subTabs?.reviews || "Ulasan"}</span>
               </button>
               <button
                 className={`${styles.overviewSubTab} ${overviewTab === "chat" ? styles.overviewSubTabActive : ""}`}
                 onClick={() => setOverviewTab("chat")}
               >
-                {overviewConfig.subTabs?.chat || "💬 Chat"}
+                <MessageSquare size={15} />
+                <span>{overviewConfig.subTabs?.chat || "Chat"}</span>
                 {unreadChatCount > 0 && (
                   <span className={styles.subTabBadge}>
                     {unreadChatCount > 99 ? "99+" : unreadChatCount}
@@ -672,7 +685,7 @@ export default function AdminDashboard(_props: { user?: any } = {}) {
           </div>
           <div className={styles.brandBadge}>{adminConfig.brand.badge}</div>
           <div className={styles.brandCaption}>
-            {(adminConfig.brand?.greetingPrefix || "Halo")}, {getGreetingName(user)} {(adminConfig.brand?.greetingSuffix || "👋")}
+            {(adminConfig.brand?.greetingPrefix || "Halo")}, {getGreetingName(user)}
           </div>
         </div>
 

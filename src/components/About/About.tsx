@@ -3,55 +3,69 @@ import React, { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import { getPublicSettings } from "@/services/settingsService";
 import styles from "./About.module.css";
-import aboutData from "@/data/ui/aboutConfig.json"; // Fallback default JSON
+import aboutData from "@/data/ui/aboutConfig.json";
 import { optimizeCloudinaryUrl, IMAGE_PRESETS } from "@/utils/imageOptimizer";
 
-// Komponen kecil untuk fitur
-const FeatureItem = ({ number, title, desc }) => (
+interface FeatureItemProps {
+  number: string;
+  title: string;
+  desc: string;
+}
+
+const FeatureItem = ({ number, title, desc }: FeatureItemProps) => (
   <div className={styles.featureItem}>
     <span className={styles.featureNumber}>{number}</span>
     <div className={styles.featureText}>
-      <h3>{title}</h3>
-      <p>{desc}</p>
+      <h3 className={styles.featureTitle}>{title}</h3>
+      <p className={styles.featureDesc}>{desc}</p>
     </div>
   </div>
 );
 
 export function About() {
-  // Gambar & konten dari settings DB (kosongkan jika tidak ada data dari DB)
   const [aboutImage, setAboutImage] = useState(aboutData?.image?.src || "");
   const [aboutImageAlt, setAboutImageAlt] = useState(
-    aboutData?.image?.alt || "About image",
+    aboutData?.image?.alt || ""
   );
-  const [aboutContent, setAboutContent] = useState<any>(aboutData?.content || {});
+  const [aboutContent, setAboutContent] = useState<any>(
+    aboutData?.content || {}
+  );
   const [aboutFeatures, setAboutFeatures] = useState(
-    aboutData?.features || [],
+    aboutData?.features || []
   );
   const [aboutImgSrc, setAboutImgSrc] = useState(
-    aboutData?.image?.src ? optimizeCloudinaryUrl(aboutData.image.src, IMAGE_PRESETS.ABOUT) : ""
+    aboutData?.image?.src
+      ? optimizeCloudinaryUrl(aboutData.image.src, IMAGE_PRESETS.ABOUT)
+      : ""
   );
 
   useEffect(() => {
     if (aboutImage && aboutImage.trim() !== "") {
-      setAboutImgSrc(optimizeCloudinaryUrl(aboutImage, IMAGE_PRESETS.ABOUT) || aboutImage);
+      setAboutImgSrc(
+        optimizeCloudinaryUrl(aboutImage, IMAGE_PRESETS.ABOUT) || aboutImage
+      );
     } else {
       setAboutImgSrc("");
     }
   }, [aboutImage]);
 
-  const aboutRef = useRef<any>(null);
+  const aboutRef = useRef<HTMLElement | null>(null);
   const [isVisible, setIsVisible] = useState(false);
 
-  // Intersection Observer untuk memicu animasi saat di-scroll
   useEffect(() => {
+    if (typeof IntersectionObserver === "undefined") {
+      setIsVisible(true);
+      return;
+    }
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           setIsVisible(true);
-          observer.disconnect(); // Hanya animasi sekali
+          observer.disconnect();
         }
       },
-      { threshold: 0.2 }
+      { threshold: 0.15 }
     );
 
     if (aboutRef.current) {
@@ -69,7 +83,6 @@ export function About() {
         const data = await getPublicSettings({ force: true });
         if (!data || !isMounted) return;
 
-        // Gambar About dari settings DB (kosongkan jika tidak ada di DB)
         if (data?.about?.image && data.about.image.trim() !== "") {
           setAboutImage(data.about.image);
         } else {
@@ -79,18 +92,21 @@ export function About() {
           setAboutImageAlt(data.about.imageAlt);
         }
 
-        // Konten About dari settings DB (fallback parsial ke JSON)
         if (data?.about?.content) {
           const c = data.about.content;
           setAboutContent({
-            tagline: c.tagline?.trim() ? c.tagline : (aboutData?.content?.tagline || ""),
-            heading: c.heading?.trim() ? c.heading : (aboutData?.content?.heading || ""),
-            leadText: c.leadText?.trim() ? c.leadText : (aboutData?.content?.leadText || ""),
-            bodyText: c.bodyText?.trim() ? c.bodyText : (aboutData?.content?.bodyText || ""),
+            heading: c.heading?.trim()
+              ? c.heading
+              : aboutData?.content?.heading || "",
+            leadText: c.leadText?.trim()
+              ? c.leadText
+              : aboutData?.content?.leadText || "",
+            bodyText: c.bodyText?.trim()
+              ? c.bodyText
+              : aboutData?.content?.bodyText || "",
           });
         }
 
-        // Fitur About dari settings DB
         if (
           Array.isArray(data?.about?.features) &&
           data.about.features.length > 0
@@ -111,52 +127,48 @@ export function About() {
 
     return () => {
       isMounted = false;
-      window.removeEventListener("store-settings-updated", handleSettingsUpdate);
+      window.removeEventListener(
+        "store-settings-updated",
+        handleSettingsUpdate
+      );
     };
   }, []);
 
   return (
-    <section id="about" className={`${styles.about} ${isVisible ? styles.visible : ""}`} ref={aboutRef}>
-      <div className={styles.aboutContainer}>
-        {/* Layout Utama */}
-        <div className={`${styles.aboutRow} ${!aboutImgSrc ? styles.noVisual : ""}`}>
-          {/* Sisi Kiri: Visual Editorial jika ada */}
-          {aboutImgSrc && (
-            <div className={styles.aboutImgWrapper}>
-              {/* Glowing Blob Decoration */}
-              <div className={styles.aboutGlowBlob}></div>
-
-              <div className={styles.imgFrame}></div>
-              {/* Kontainer Gambar + Shimmer */}
-              <div className={styles.imgContainer}>
-                <Image
-                  src={aboutImgSrc}
-                  alt={aboutImageAlt}
-                  className={styles.aboutImg}
-                  width={600}
-                  height={750}
-                  loading="lazy"
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  onError={() => setAboutImgSrc("")}
-                />
-              </div>
+    <section
+      id="about"
+      className={`${styles.about} ${isVisible ? styles.visible : ""}`}
+      ref={aboutRef}
+    >
+      <div
+        className={`${styles.aboutRow} ${!aboutImgSrc ? styles.noVisual : ""}`}
+      >
+        {aboutImgSrc && (
+          <div className={styles.aboutImgWrapper}>
+            <div className={styles.imgContainer}>
+              <Image
+                src={aboutImgSrc}
+                alt={aboutImageAlt}
+                className={styles.aboutImg}
+                width={600}
+                height={750}
+                loading="lazy"
+                sizes="(max-width: 768px) 100vw, 50vw"
+                onError={() => setAboutImgSrc("")}
+              />
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Sisi Kanan: Konten Luxury */}
-          <div className={styles.aboutContent}>
-            <p className={styles.aboutTagline}>
-              {aboutContent?.tagline}
-            </p>
-            <h2>{aboutContent?.heading}</h2>
+        <div className={styles.aboutContent}>
+          <h2 className={styles.aboutHeading}>{aboutContent?.heading}</h2>
 
-            <p className={styles.aboutLead}>{aboutContent?.leadText}</p>
+          <p className={styles.aboutLead}>{aboutContent?.leadText}</p>
+          <p className={styles.aboutBody}>{aboutContent?.bodyText}</p>
 
-            <p>{aboutContent?.bodyText}</p>
-
-            {/* List Fitur (Mapping dari JSON/Settings) */}
+          {aboutFeatures?.length > 0 && (
             <div className={styles.aboutFeatures}>
-              {aboutFeatures?.map((feature, index) => (
+              {aboutFeatures.map((feature: any, index: number) => (
                 <FeatureItem
                   key={index}
                   number={feature.number}
@@ -165,7 +177,7 @@ export function About() {
                 />
               ))}
             </div>
-          </div>
+          )}
         </div>
       </div>
     </section>

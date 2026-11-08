@@ -255,8 +255,8 @@
 }
 
 .navBadge {
-  background: var(--danger-color, #dc2626);
-  color: #ffffff;
+  background: var(--danger-color);
+  color: var(--primary-accent-text);
   font-size: 0.65rem;
   font-weight: 700;
   padding: 0.15rem 0.4rem;
@@ -267,6 +267,10 @@
   align-items: center;
   justify-content: center;
   box-shadow: 0 2px 4px rgba(var(--danger-color-rgb), 0.2);
+}
+
+.navItem:active {
+  transform: scale(0.98);
 }
 
 .navItemMeta {
@@ -372,9 +376,13 @@
 @media (hover: hover) and (pointer: fine) {
   .logoutBtn:hover {
     background: var(--danger-color);
-    color: #ffffff;
+    color: var(--primary-accent-text);
     border-color: var(--danger-color);
   }
+}
+
+.logoutBtn:active {
+  transform: scale(0.97);
 }
 
 /* --- Main Content --- */
@@ -1059,6 +1067,10 @@
   filter: brightness(1.1);
 }
 
+.overviewSubTab:active {
+  transform: scale(0.97);
+}
+
 .subTabBadge {
   display: inline-flex;
   align-items: center;
@@ -1067,8 +1079,8 @@
   height: 18px;
   padding: 0 5px;
   border-radius: 999px;
-  background: #dc2626;
-  color: #ffffff;
+  background: var(--danger-color);
+  color: var(--primary-accent-text);
   font-size: 0.65rem;
   font-weight: 700;
   letter-spacing: 0;
@@ -1080,4 +1092,45 @@
 @keyframes badgePop {
   from { transform: scale(0); opacity: 0; }
   to   { transform: scale(1); opacity: 1; }
+}
+
+/* --- Dynamic Chart Skeleton (Zero CLS) --- */
+.chartSkeleton {
+  width: 100%;
+  min-height: 360px;
+  background: rgba(var(--surface-primary-rgb), 0.4);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  box-sizing: border-box;
+}
+
+.chartSkeletonHeader {
+  width: 35%;
+  height: 24px;
+  border-radius: 6px;
+  background: var(--surface-secondary);
+}
+
+.chartSkeletonBody {
+  width: 100%;
+  flex: 1;
+  min-height: 260px;
+  border-radius: 12px;
+  background: linear-gradient(
+    90deg,
+    rgba(var(--surface-secondary-rgb), 0.35) 0%,
+    rgba(var(--surface-secondary-rgb), 0.7) 50%,
+    rgba(var(--surface-secondary-rgb), 0.35) 100%
+  );
+  background-size: 200% 100%;
+  animation: chartShimmer 1.5s infinite;
+}
+
+@keyframes chartShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }

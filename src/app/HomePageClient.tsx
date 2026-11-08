@@ -56,9 +56,7 @@ export function HomePageClient({ initialData }: { initialData: InitialDataType }
 
   return (
     <div>
-      <div id="product">
-        <Shop onBukaDetail={bukaDetail} initialData={initialData} />
-      </div>
+      <Shop onBukaDetail={bukaDetail} initialData={initialData} />
 
       {/* Modal Detail Produk */}
       {isModalOpen && selectedProduct && (

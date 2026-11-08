@@ -67,7 +67,10 @@
     "cancelConfirmBack": "Kembali",
     "cancelLoading": "Membatalkan pesanan...",
     "cancelSuccessToast": "Pesanan berhasil dibatalkan dan stok produk telah dikembalikan.",
-    "cancelErrorToast": "Gagal membatalkan pesanan."
+    "cancelErrorToast": "Gagal membatalkan pesanan.",
+    "paymentSuccessToast": "Pembayaran berhasil!",
+    "paymentFailedToast": "Pembayaran gagal. Silakan coba kembali.",
+    "paymentErrorToast": "Gagal melanjutkan pembayaran."
   },
   "manualTransfer": {
     "title": "Instruksi Transfer Manual",
@@ -83,7 +86,14 @@
     "submittingProof": "Mengunggah...",
     "proofUploaded": "Bukti pembayaran sudah diunggah dan sedang diverifikasi admin.",
     "whatsappCTA": "Kabari Admin via WhatsApp",
-    "whatsappTextTemplate": "Halo Admin, saya sudah mentransfer dan meng-upload bukti pembayaran untuk pesanan {orderNumber}. Tolong diverifikasi ya!"
+    "whatsappTextTemplate": "Halo Admin, saya sudah mentransfer dan meng-upload bukti pembayaran untuk pesanan {orderNumber}. Tolong diverifikasi ya!",
+    "toasts": {
+      "invalidType": "Format foto harus JPG, PNG, atau WebP.",
+      "maxSize": "Ukuran foto maksimal 5 MB.",
+      "uploadingProof": "Mengunggah bukti pembayaran...",
+      "uploadSuccess": "Bukti pembayaran berhasil diunggah!",
+      "uploadFailed": "Gagal mengunggah bukti pembayaran."
+    }
   },
   "transactionSummary": {
     "title": "Ringkasan Transaksi",
@@ -127,7 +137,29 @@
     "success": "Invoice PDF berhasil diunduh.",
     "error": "Terjadi kesalahan saat membuat PDF.",
     "moduleError": "Gagal memuat modul PDF.",
-    "filenamePrefix": "Invoice-MAMEKO-"
+    "filenamePrefix": "Invoice-MAMEKO-",
+    "brandName": "MAKE ME KOOL",
+    "title": "INVOICE TRANSAKSI",
+    "orderIdPrefix": "Order ID: ",
+    "datePrefix": "Tanggal: ",
+    "billTo": "Ditagihkan Kepada",
+    "defaultCustomer": "Pelanggan",
+    "shippingInfo": "Informasi Pengiriman",
+    "trackingPrefix": "Resi: ",
+    "trackingPending": "Belum tersedia",
+    "statusPrefix": "Status: ",
+    "tableHeadProduct": "Produk",
+    "tableHeadQty": "Qty",
+    "tableHeadPrice": "Harga Satuan",
+    "tableHeadTotal": "Total",
+    "defaultProductName": "Produk MAMEKO",
+    "variantPrefix": "Varian: ",
+    "defaultVariant": "Standard",
+    "subtotalLabel": "Subtotal Produk:",
+    "shippingLabel": "Ongkos Kirim:",
+    "totalPaymentLabel": "Total Pembayaran:",
+    "thankYou": "Terima kasih telah berbelanja di MAKE ME KOOL.",
+    "footerNote": "Jika ada pertanyaan mengenai pesanan Anda, silakan hubungi customer service kami."
   },
   "reviewModal": {
     "title": "Ulas Produk",
@@ -160,6 +192,9 @@
     "defaultErrorSubtitle": "Detail pesanan yang Anda cari tidak tersedia, memiliki format ID yang tidak sesuai, atau sudah dihapus.",
     "missingOrderId": "ID Pesanan tidak ditemukan di URL.",
     "orderNotFound404": "Pesanan \"{orderId}\" tidak ditemukan (404).",
+    "fetchOrderError": "Gagal memuat detail pesanan.",
+    "realtimeUpdate": "Terdapat pembaruan status pesanan!",
+    "paymentSuccess": "Pembayaran untuk pesanan #{orderId} berhasil!",
     "backToOrders": "Kembali ke Daftar Pesanan"
   }
 }

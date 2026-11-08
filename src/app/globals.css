@@ -145,6 +145,12 @@
   text-decoration: none;
 }
 
+/* --- Global SVG Defensive Hardening (Zero Overflow / Zero Runaway Scaling) --- */
+svg {
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
 /* --- Global Scrollbar Styling --- */
 ::-webkit-scrollbar {
   width: 6px;

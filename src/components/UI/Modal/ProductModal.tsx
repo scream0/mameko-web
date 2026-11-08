@@ -1,5 +1,6 @@
 "use client";
-import { useState, useEffect } from "react";
+
+import React, { useState, useEffect } from "react";
 import styles from "./ProductModal.module.css";
 import modalData from "@/data/ui/productModalConfig.json";
 import { AppIcon } from "@/components/UI/Icon/AppIcon";
@@ -18,7 +19,14 @@ export interface ModalProps {
   rupiah?: (val: number) => string;
 }
 
-export function Modal({ isOpen, item, onClose, onAddToCart, onTanyaProduk, rupiah }: ModalProps) {
+export function Modal({
+  isOpen,
+  item,
+  onClose,
+  onAddToCart,
+  onTanyaProduk,
+  rupiah,
+}: ModalProps) {
   useScrollLock(Boolean(isOpen && item));
   const { activePromo } = useStore();
   const [currentSize, setCurrentSize] = useState("");
@@ -39,7 +47,7 @@ export function Modal({ isOpen, item, onClose, onAddToCart, onTanyaProduk, rupia
 
     if (availableVariants.length > 0) {
       const currentIsStillAvailable = availableVariants.find(
-        (v: any) => v.size === currentSize,
+        (v: any) => v.size === currentSize
       );
 
       if (!currentIsStillAvailable) {
@@ -60,11 +68,15 @@ export function Modal({ isOpen, item, onClose, onAddToCart, onTanyaProduk, rupia
     setReviewsPage(1);
     setHasMoreReviews(true);
     fetchReviews(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [item?.id]);
 
-  const fetchReviews = (pageToFetch: any) => {
+  const fetchReviews = (pageToFetch: number) => {
     setLoadingReviews(true);
-    fetch(getApiBaseUrl() + `/api/reviews?productId=${item.id}&public=true&page=${pageToFetch}&limit=10`)
+    fetch(
+      getApiBaseUrl() +
+        `/api/reviews?productId=${item.id}&public=true&page=${pageToFetch}&limit=10`
+    )
       .then((res) => res.json())
       .then((data) => {
         const newReviews = data.reviews || [];
@@ -90,7 +102,7 @@ export function Modal({ isOpen, item, onClose, onAddToCart, onTanyaProduk, rupia
     setTimeout(() => {
       onClose();
       setIsClosing(false);
-    }, 400);
+    }, 300);
   };
 
   if (!isOpen || !item) return null;
@@ -103,14 +115,12 @@ export function Modal({ isOpen, item, onClose, onAddToCart, onTanyaProduk, rupia
   };
 
   const handleAddToCart = () => {
-    if (selectedVariant) {
+    if (selectedVariant && onAddToCart) {
       onAddToCart(item, selectedVariant, modalQty);
       onClose();
     }
   };
 
-  // LOGIKA GAMBAR DINAMIS TERPUSAT:
-  // Prioritaskan gambar dari varian, lalu image_url / imageUrl dari database/item utama.
   const displayedImage =
     selectedVariant?.image_url ||
     selectedVariant?.imageUrl ||
@@ -123,89 +133,110 @@ export function Modal({ isOpen, item, onClose, onAddToCart, onTanyaProduk, rupia
     return `Rp ${Number(val).toLocaleString("id-ID")}`;
   };
 
+  const rawPrice = selectedVariant
+    ? Number(selectedVariant.price)
+    : item.price
+    ? Number(item.price)
+    : 0;
+
+  const discounted = getDiscountedPrice(rawPrice, activePromo, {
+    productId: item.id || item._id,
+    size: selectedVariant?.size || item.size,
+  });
+
   return (
     <div
       className={`${styles.modalOverlay} ${
         isOpen && !isClosing ? styles.modalActive : ""
       } ${isClosing ? styles.modalClosing : ""}`}
       onClick={handleClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-product-title"
     >
       <div
         className={styles.modalContentWrapper}
         onClick={(e) => e.stopPropagation()}
       >
         <button
+          type="button"
           className={styles.modalCloseBtn}
           onClick={handleClose}
-          aria-label={modalData?.accessibility?.closeAriaLabel}
+          aria-label={modalData?.accessibility?.closeAriaLabel || "Tutup Modal"}
         >
-          <AppIcon name={modalData?.icons?.close} className={styles.feather} />
+          <AppIcon name="x" className={styles.closeIcon} />
         </button>
 
         <div className={styles.modalGrid}>
+          {/* Sisi Kiri: Gambar Produk */}
           <div className={styles.modalImageBox}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={optimizeCloudinaryUrl(displayedImage, IMAGE_PRESETS.PRODUCT_DETAIL)}
+              src={optimizeCloudinaryUrl(
+                displayedImage,
+                IMAGE_PRESETS.PRODUCT_DETAIL
+              )}
               alt={item.name}
               className={styles.modalMainImg}
             />
           </div>
 
+          {/* Sisi Kanan: Detail & Aksi */}
           <div className={styles.modalInfoBox}>
             <span className={styles.modalCategoryTag}>
-              {item.category || "Parfum"}
+              {item.category || "Artisanal Parfum"}
             </span>
-            <h2 className={styles.modalProductTitle}>{item.name}</h2>
+            <h2 id="modal-product-title" className={styles.modalProductTitle}>
+              {item.name}
+            </h2>
 
+            {/* Price Tag */}
             <div className={styles.modalPriceTag}>
-              {(() => {
-                const rawPrice = selectedVariant
-                  ? Number(selectedVariant.price)
-                  : item.price
-                    ? Number(item.price)
-                    : 0;
-                const discounted = getDiscountedPrice(rawPrice, activePromo, {
-                  productId: item.id || item._id,
-                  size: selectedVariant?.size || item.size,
-                });
-                if (rawPrice <= 0) return <span className={styles.modalPriceValue}>Stok Habis</span>;
-                return (
-                  <>
-                    {discounted.hasDiscount && (
-                      <span className={styles.modalOriginalPrice}>
-                        {formatRupiah(discounted.originalPrice)}
-                      </span>
-                    )}
-                    <span className={styles.modalPriceValue}>
-                      {formatRupiah(discounted.price)}
+              {rawPrice <= 0 ? (
+                <span className={styles.modalPriceValue}>
+                  {modalData?.labels?.outOfStock || "Stok Habis"}
+                </span>
+              ) : (
+                <div className={styles.priceRow}>
+                  {discounted.hasDiscount && (
+                    <span className={styles.modalOriginalPrice}>
+                      {formatRupiah(discounted.originalPrice)}
                     </span>
-                    {discounted.hasDiscount && (
-                      <span className={styles.modalDiscountBadge}>
-                        Hemat {formatRupiah(discounted.savings)}
-                      </span>
-                    )}
-                  </>
-                );
-              })()}
+                  )}
+                  <span className={styles.modalPriceValue}>
+                    {formatRupiah(discounted.price)}
+                  </span>
+                  {discounted.hasDiscount && (
+                    <span className={styles.modalDiscountBadge}>
+                      Hemat {formatRupiah(discounted.savings)}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
 
+            {/* Description */}
             <p className={styles.modalProductDesc}>
-              {item.description || "Deskripsi produk belum tersedia."}
+              {item.description || "Deskripsi produk kurasi Mameko."}
             </p>
 
             {/* Pilihan Varian */}
             {item.variants?.length > 0 && (
               <div className={styles.modalVariantSection}>
-                <span className={styles.variantSectionTitle}>{modalData?.labels?.variant || "Pilih Ukuran / Varian"}</span>
+                <span className={styles.variantSectionTitle}>
+                  {modalData?.labels?.variant || "Pilih Ukuran / Varian:"}
+                </span>
                 <div className={styles.variantPillGroup}>
                   {item.variants.map((v: any) => {
                     const stock = v.stock ?? 0;
                     const isOutOfStock = stock <= 0;
+                    const isActive = currentSize === v.size;
+
                     return (
                       <label
                         key={v.size}
                         className={`${styles.variantPill} ${
-                          currentSize === v.size ? styles.pillActive : ""
+                          isActive ? styles.pillActive : ""
                         } ${isOutOfStock ? styles.disabledPill : ""}`}
                       >
                         <input
@@ -213,17 +244,21 @@ export function Modal({ isOpen, item, onClose, onAddToCart, onTanyaProduk, rupia
                           name="modal-size"
                           value={v.size}
                           disabled={isOutOfStock}
-                          checked={currentSize === v.size}
+                          checked={isActive}
                           onChange={() => handleSizeChange(v)}
                           className={styles.hiddenInput}
                         />
                         <div className={styles.variantPillContent}>
-                          <span>{v.size}</span>
-                          <small className={styles.variantStockText}>
+                          <span className={styles.variantSizeLabel}>
+                            {v.size}
+                          </span>
+                          <span className={styles.variantStockText}>
                             {isOutOfStock
-                              ? (modalData?.labels?.soldOut || "Habis")
-                              : `${modalData?.labels?.stockPrefix || "Stok: "}${stock}`}
-                          </small>
+                              ? modalData?.labels?.soldOut || "Habis"
+                              : `${
+                                  modalData?.labels?.stockPrefix || "Stok: "
+                                }${stock}`}
+                          </span>
                         </div>
                       </label>
                     );
@@ -232,24 +267,25 @@ export function Modal({ isOpen, item, onClose, onAddToCart, onTanyaProduk, rupia
               </div>
             )}
 
-
-            {/* Qty & Add to Cart */}
+            {/* Action Row: Qty Controller & Buttons */}
             <div className={styles.modalActionRow}>
               <div className={styles.modalQtyBox}>
                 <button
+                  type="button"
                   className={styles.modalQtyBtn}
                   onClick={() => setModalQty(Math.max(1, modalQty - 1))}
                   disabled={!selectedVariant || modalQty <= 1}
                   aria-label="Kurangi jumlah pesanan"
                 >
-                  {modalData?.labels?.quantityMinus || "-"}
+                  <AppIcon name="minus" size={14} />
                 </button>
                 <span className={styles.modalQtyValue}>{modalQty}</span>
                 <button
+                  type="button"
                   className={styles.modalQtyBtn}
                   onClick={() =>
                     setModalQty(
-                      Math.min(selectedVariant?.stock ?? 1, modalQty + 1),
+                      Math.min(selectedVariant?.stock ?? 1, modalQty + 1)
                     )
                   }
                   disabled={
@@ -258,18 +294,22 @@ export function Modal({ isOpen, item, onClose, onAddToCart, onTanyaProduk, rupia
                   }
                   aria-label="Tambah jumlah pesanan"
                 >
-                  {modalData?.labels?.quantityPlus || "+"}
+                  <AppIcon name="plus" size={14} />
                 </button>
               </div>
 
               <button
+                type="button"
                 className={styles.modalAddToCartBtn}
                 onClick={handleAddToCart}
                 disabled={!selectedVariant}
               >
-                {selectedVariant
-                  ? modalData?.labels?.addToCart || "Tambah ke Keranjang"
-                  : (modalData?.labels?.outOfStock || "Stok Habis")}
+                <AppIcon name="shopping-bag" size={18} />
+                <span>
+                  {selectedVariant
+                    ? modalData?.labels?.addToCart || "Masukkan ke Keranjang"
+                    : modalData?.labels?.outOfStock || "Stok Habis"}
+                </span>
               </button>
 
               {onTanyaProduk && (
@@ -280,13 +320,13 @@ export function Modal({ isOpen, item, onClose, onAddToCart, onTanyaProduk, rupia
                   title={modalData?.labels?.chatSeller || "Tanya Produk"}
                   aria-label={modalData?.labels?.chatSeller || "Tanya Produk"}
                 >
-                  <AppIcon name="message-circle" size={16} />
-                  <span>{modalData?.labels?.chatSeller || "Tanya Produk"}</span>
+                  <AppIcon name="message-circle" size={17} />
+                  <span>{modalData?.labels?.chatSeller || "Tanya"}</span>
                 </button>
               )}
             </div>
 
-            {/* --- REVIEWS SECTION --- */}
+            {/* Reviews Section */}
             <div className={styles.reviewsSection}>
               <h3 className={styles.reviewsTitle}>
                 {modalData?.reviews?.title || "Ulasan Pembeli"}
@@ -301,7 +341,9 @@ export function Modal({ isOpen, item, onClose, onAddToCart, onTanyaProduk, rupia
                     <div key={rev.id} className={styles.reviewItem}>
                       <div className={styles.reviewHeader}>
                         <span className={styles.reviewUser}>
-                          {rev.userName || (modalData?.labels?.customer || "Pelanggan")}
+                          {rev.userName ||
+                            modalData?.labels?.customer ||
+                            "Pelanggan"}
                         </span>
                         <span className={styles.reviewDate}>
                           {new Date(rev.createdAt).toLocaleDateString("id-ID", {
@@ -316,9 +358,12 @@ export function Modal({ isOpen, item, onClose, onAddToCart, onTanyaProduk, rupia
                           <AppIcon
                             key={i}
                             name="star"
-                            size={12}
-                            strokeWidth={i < rev.rating ? 2.5 : 1}
-                            className={i < rev.rating ? styles.starFilled : styles.starEmpty}
+                            size={13}
+                            className={
+                              i < rev.rating
+                                ? styles.starFilled
+                                : styles.starEmpty
+                            }
                           />
                         ))}
                       </div>
@@ -326,8 +371,11 @@ export function Modal({ isOpen, item, onClose, onAddToCart, onTanyaProduk, rupia
                       {rev.reviewPhoto && (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
-                          src={optimizeCloudinaryUrl(rev.reviewPhoto, IMAGE_PRESETS.THUMBNAIL)}
-                          alt="Review"
+                          src={optimizeCloudinaryUrl(
+                            rev.reviewPhoto,
+                            IMAGE_PRESETS.THUMBNAIL
+                          )}
+                          alt="Foto Ulasan"
                           className={styles.reviewImage}
                         />
                       )}
@@ -335,23 +383,25 @@ export function Modal({ isOpen, item, onClose, onAddToCart, onTanyaProduk, rupia
                   ))}
                   {hasMoreReviews && (
                     <button
+                      type="button"
                       className={styles.loadMoreReviewsBtn}
                       onClick={handleLoadMoreReviews}
                       disabled={loadingReviews}
                     >
                       {loadingReviews
-                        ? (modalData?.reviews?.loadingMore || "Memuat...")
-                        : (modalData?.reviews?.loadMore || "Muat Lebih Banyak Ulasan")}
+                        ? modalData?.reviews?.loadingMore || "Memuat..."
+                        : modalData?.reviews?.loadMore ||
+                          "Muat Lebih Banyak Ulasan"}
                     </button>
                   )}
                 </div>
               ) : (
                 <p className={styles.noReviews}>
-                  {modalData?.reviews?.empty || "Belum ada ulasan untuk produk ini."}
+                  {modalData?.reviews?.empty ||
+                    "Belum ada ulasan untuk produk ini."}
                 </p>
               )}
             </div>
-
           </div>
         </div>
       </div>

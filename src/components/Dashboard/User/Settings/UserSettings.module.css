@@ -173,7 +173,7 @@
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 1.2px;
-  color: var(--danger-color, #ef4444);
+  color: var(--danger-color);
   font-weight: 700;
   margin: 0 0 2px 4px;
 }
@@ -339,27 +339,27 @@
 }
 
 .dangerCardBtn:hover {
-  background: rgba(var(--danger-color-rgb, 239, 68, 68), 0.05);
-  border-color: rgba(var(--danger-color-rgb, 239, 68, 68), 0.3);
-  color: var(--danger-color, #ef4444);
+  background: var(--danger-bg);
+  border-color: var(--danger-border);
+  color: var(--danger-color);
 }
 
 .dangerCardBtn:hover .dangerCardLeft {
-  color: var(--danger-color, #ef4444);
+  color: var(--danger-color);
 }
 
 .deleteCardBtn {
-  border-color: rgba(var(--danger-color-rgb, 239, 68, 68), 0.2);
-  color: var(--danger-color, #ef4444);
+  border-color: var(--danger-border);
+  color: var(--danger-color);
 }
 
 .deleteCardBtn .dangerCardLeft {
-  color: var(--danger-color, #ef4444);
+  color: var(--danger-color);
 }
 
 .deleteCardBtn:hover {
-  background: rgba(var(--danger-color-rgb, 239, 68, 68), 0.1);
-  border-color: var(--danger-color, #ef4444);
+  background: var(--danger-bg);
+  border-color: var(--danger-color);
 }
 
 /* Modal Konfirmasi Hapus Akun */
@@ -414,8 +414,8 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: rgba(var(--danger-color-rgb, 239, 68, 68), 0.12);
-  color: var(--danger-color, #ef4444);
+  background: var(--danger-bg);
+  color: var(--danger-color);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -474,9 +474,9 @@
   flex: 1;
   padding: 10px 16px;
   border-radius: 10px;
-  background: var(--danger-color, #ef4444);
-  border: 1px solid var(--danger-color, #ef4444);
-  color: #ffffff;
+  background: var(--danger-color);
+  border: 1px solid var(--danger-color);
+  color: var(--primary-accent-text);
   font-weight: 600;
   font-size: 0.85rem;
   cursor: pointer;

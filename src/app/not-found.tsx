@@ -3,82 +3,90 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { Particles } from "./404Particles";
+import { Logo } from "@/components/UI/Logo/logo";
+import { AppIcon } from "@/components/UI/Icon/AppIcon";
+import notFoundConfig from "@/data/ui/notFoundConfig.json";
 import styles from "./not-found.module.css";
-import notFoundData from "@/data/ui/notFoundConfig.json"; // Sesuaikan path ini
 
 export default function NotFound() {
-  // Inisialisasi null untuk mencegah hydration mismatch
-  const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(
-    null,
+  const [quote, setQuote] = useState(
+    notFoundConfig?.quotes?.[0] || "Aroma adalah kenangan yang tak bisa diucapkan."
   );
-  const [quote, setQuote] = useState("Aroma tidak ditemukan.");
 
   useEffect(() => {
-    const quotesArray = notFoundData?.quotes || [];
+    const quotesArray = notFoundConfig?.quotes || [];
     if (quotesArray.length > 0) {
-      const lastIndex = window.sessionStorage.getItem("lastQuoteIndex");
-      let randomIndex;
-      do {
-        randomIndex = Math.floor(Math.random() * quotesArray.length);
-      } while (
-        quotesArray.length > 1 &&
-        lastIndex !== null &&
-        randomIndex === Number.parseInt(lastIndex, 10)
-      );
+      try {
+        const lastIndex = window.sessionStorage.getItem("lastQuoteIndex");
+        let randomIndex = Math.floor(Math.random() * quotesArray.length);
 
-      window.sessionStorage.setItem("lastQuoteIndex", randomIndex.toString());
-      setQuote(quotesArray[randomIndex]);
+        if (quotesArray.length > 1 && lastIndex !== null) {
+          while (randomIndex === Number.parseInt(lastIndex, 10)) {
+            randomIndex = Math.floor(Math.random() * quotesArray.length);
+          }
+        }
+
+        window.sessionStorage.setItem("lastQuoteIndex", randomIndex.toString());
+        setQuote(quotesArray[randomIndex]);
+      } catch {
+        // Fallback jika sessionStorage dinonaktifkan
+        setQuote(quotesArray[0]);
+      }
     }
-  }, []); // Empty dependency array ensures this runs only once on the client
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePos({ x: e.clientX, y: e.clientY });
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
   return (
-    <div
-      className={styles.notFoundContainer}
-      style={{
-        // Menggunakan warna perak dari config
-        background: mousePos
-          ? `radial-gradient(800px circle at ${mousePos.x}px ${mousePos.y}px, ${notFoundData?.effects?.spotlightColor}, ${notFoundData?.effects?.backgroundColor} 70%)`
-          : notFoundData?.effects?.backgroundColor,
-      }}
-    >
+    <main className={styles.notFoundContainer}>
       <Particles />
 
-      {/* Gabungkan class container konten dan animasi fade in */}
-      <div className={`${styles.notFoundContent} ${styles.fadeContainer}`}>
-        <h1 className={`${styles.errorCode} ${styles.animate1}`}>
-          {notFoundData?.content?.errorCode}
+      <section className={styles.notFoundContent}>
+        {/* Brand Logo */}
+        <div className={styles.brandLogoWrap}>
+          <Logo />
+        </div>
+
+        {/* Status Badge */}
+        <div className={styles.badgePill}>
+          <span className={styles.pulseDot} aria-hidden="true" />
+          <span>{notFoundConfig.badge}</span>
+        </div>
+
+        {/* Error Code & Titles */}
+        <h1 className={styles.errorCode}>
+          {notFoundConfig.content.errorCode}
         </h1>
 
-        <h2 className={`${styles.errorTitle} ${styles.animate2}`}>
-          {notFoundData?.content?.title}
+        <h2 className={styles.errorTitle}>
+          {notFoundConfig.content.title}
         </h2>
 
-        <p className={`${styles.errorQuote} ${styles.animate3}`}>
-          <em>&quot;{quote}&quot;</em>
+        <p className={styles.errorQuote}>
+          <q>{quote}</q>
         </p>
 
-        <p className={`${styles.errorDesc} ${styles.animate4}`}>
-          {notFoundData?.content?.description}
+        <p className={styles.errorDesc}>
+          {notFoundConfig.content.description}
         </p>
 
-        <div className={`${styles.animate5}`}>
+        {/* Action CTAs */}
+        <div className={styles.actionGroup}>
           <Link
-            href={notFoundData?.button?.href || "/"}
-            className={styles.btnBackHome}
+            href={notFoundConfig.buttons.homeHref}
+            className={styles.btnPrimary}
           >
-            {notFoundData?.button?.label}
+            <AppIcon name="home" size={16} />
+            <span>{notFoundConfig.buttons.backHome}</span>
+          </Link>
+
+          <Link
+            href={notFoundConfig.buttons.exploreHref}
+            className={styles.btnSecondary}
+          >
+            <AppIcon name="shopping-bag" size={16} />
+            <span>{notFoundConfig.buttons.exploreProducts}</span>
           </Link>
         </div>
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }

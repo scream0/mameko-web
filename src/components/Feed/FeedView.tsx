@@ -118,97 +118,123 @@ export default function FeedView() {
   }, [posts, activeTab, searchQuery]);
 
   return (
-    <div className={styles.feedContainer}>
-      {/* 1. Header */}
-      <div className={styles.feedHeader}>
-        <span className={styles.tagline}>{feedConfig.header.tagline}</span>
-        <h1 className={styles.title}>{feedConfig.header.title}</h1>
-        <p className={styles.subtitle}>{feedConfig.header.subtitle}</p>
-      </div>
+    <div className={styles.feedWrapper}>
+      <div className={styles.feedContainer}>
+        {/* 1. Editorial Header */}
+        <header className={styles.feedHeader}>
+          <h1 className={styles.title}>{feedConfig.header.title}</h1>
+          <p className={styles.subtitle}>{feedConfig.header.subtitle}</p>
+        </header>
 
-      {/* 2. Control Bar */}
-      <div className={styles.controlBar}>
-        <div className={styles.tabsGroup}>
-          <button
-            type="button"
-            onClick={() => setActiveTab("all")}
-            className={`${styles.tabBtn} ${activeTab === "all" ? styles.tabBtnActive : ""}`}
-          >
-            {feedConfig.nav.allPosts}
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab("saved")}
-            className={`${styles.tabBtn} ${activeTab === "saved" ? styles.tabBtnActive : ""}`}
-          >
-            {feedConfig.nav.savedPosts}
-          </button>
-        </div>
-
-        <div className={styles.searchBox}>
-          <AppIcon name="search" size={17} color="var(--text-secondary)" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={feedConfig.search.placeholder}
-            className={styles.searchInput}
-          />
-          {searchQuery && (
+        {/* 3. Control Bar: Tabs & Search */}
+        <div className={styles.controlBar}>
+          <div className={styles.tabsGroup}>
             <button
               type="button"
-              onClick={() => setSearchQuery("")}
-              className={styles.clearSearchBtn}
-              aria-label={feedConfig.search.clearAria}
+              onClick={() => setActiveTab("all")}
+              className={`${styles.tabBtn} ${
+                activeTab === "all" ? styles.tabBtnActive : ""
+              }`}
             >
-              <AppIcon name="x" size={15} />
+              {feedConfig.nav.allPosts}
             </button>
-          )}
-        </div>
-      </div>
+            <button
+              type="button"
+              onClick={() => setActiveTab("saved")}
+              className={`${styles.tabBtn} ${
+                activeTab === "saved" ? styles.tabBtnActive : ""
+              }`}
+            >
+              {feedConfig.nav.savedPosts}
+            </button>
+          </div>
 
-      {/* 3. Feed List */}
-      {loading ? (
-        <div style={{ textAlign: "center", padding: "3rem", color: "var(--text-secondary)" }}>
-          Memuat cerita komunitas...
-        </div>
-      ) : filteredPosts.length === 0 ? (
-        <div className={styles.emptyCard}>
-          <div className={styles.emptyEmoji}>
-            {activeTab === "saved" ? "🔖" : "✨"}
-          </div>
-          <div className={styles.emptyTitle}>
-            {activeTab === "saved"
-              ? feedConfig.emptyState.savedTitle
-              : feedConfig.emptyState.allTitle}
-          </div>
-          <p className={styles.emptyDesc}>
-            {activeTab === "saved"
-              ? feedConfig.emptyState.savedDesc
-              : feedConfig.emptyState.allDesc}
-          </p>
-        </div>
-      ) : (
-        <div className={styles.feedList}>
-          {filteredPosts.map((post) => (
-            <FeedCard
-              key={post.id}
-              post={post}
-              onToggleLike={handleToggleLike}
-              onToggleBookmark={handleToggleBookmark}
-              onOpenZoom={(url) => setZoomedImage(url)}
+          <div className={styles.searchBox}>
+            <AppIcon name="search" className={styles.searchIcon} />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={feedConfig.search.placeholder}
+              className={styles.searchInput}
             />
-          ))}
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className={styles.clearSearchBtn}
+                aria-label={feedConfig.search.clearAria}
+              >
+                <AppIcon name="x" className={styles.clearIcon} />
+              </button>
+            )}
+          </div>
         </div>
-      )}
 
-      {/* Image Zoom Modal */}
-      {zoomedImage && (
-        <div className={styles.zoomOverlay} onClick={() => setZoomedImage(null)}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={zoomedImage} alt="Preview Foto" className={styles.zoomImg} />
-        </div>
-      )}
+        {/* 4. Feed Post List */}
+        {loading ? (
+          <div className={styles.loadingState}>
+            <div className={styles.loadingSpinner} />
+            <p>Memuat cerita komunitas...</p>
+          </div>
+        ) : filteredPosts.length === 0 ? (
+          <div className={styles.emptyCard}>
+            <div className={styles.emptyIconWrapper}>
+              <AppIcon
+                name={activeTab === "saved" ? "bookmark" : "sparkles"}
+                className={styles.emptyIcon}
+              />
+            </div>
+            <h3 className={styles.emptyTitle}>
+              {activeTab === "saved"
+                ? feedConfig.emptyState.savedTitle
+                : feedConfig.emptyState.allTitle}
+            </h3>
+            <p className={styles.emptyDesc}>
+              {activeTab === "saved"
+                ? feedConfig.emptyState.savedDesc
+                : feedConfig.emptyState.allDesc}
+            </p>
+          </div>
+        ) : (
+          <main className={styles.feedList}>
+            {filteredPosts.map((post) => (
+              <FeedCard
+                key={post.id}
+                post={post}
+                onToggleLike={handleToggleLike}
+                onToggleBookmark={handleToggleBookmark}
+                onOpenZoom={(url) => setZoomedImage(url)}
+              />
+            ))}
+          </main>
+        )}
+
+        {/* 5. Image Lightbox Modal */}
+        {zoomedImage && (
+          <div
+            className={styles.zoomOverlay}
+            onClick={() => setZoomedImage(null)}
+            role="dialog"
+            aria-modal="true"
+          >
+            <button
+              type="button"
+              className={styles.zoomCloseBtn}
+              onClick={() => setZoomedImage(null)}
+              aria-label="Tutup pratinjau"
+            >
+              <AppIcon name="x" className={styles.zoomCloseIcon} />
+            </button>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={zoomedImage}
+              alt="Pratinjau Foto Komunitas"
+              className={styles.zoomImg}
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 /* ====================================================
-   INTERACTIVE BACKGROUND CSS (Luxury Glow Beams)
+   INTERACTIVE BACKGROUND CSS (Luxury Ambient Beams)
    ==================================================== */
 
 .container {
@@ -21,7 +21,7 @@
   margin-left: -225px;
   width: 450px;
   height: 450px;
-  background: radial-gradient(circle, rgba(var(--primary-accent-rgb), 0.22) 0%, rgba(var(--primary-accent-rgb), 0) 70%);
+  background: radial-gradient(circle, rgba(var(--primary-accent-rgb), 0.18) 0%, transparent 70%);
   filter: blur(50px);
   border-radius: 50%;
   will-change: transform;
@@ -35,7 +35,7 @@
   margin-left: -175px;
   width: 350px;
   height: 350px;
-  background: radial-gradient(circle, rgba(var(--primary-accent-rgb), 0.35) 0%, rgba(255, 255, 255, 0) 60%);
+  background: radial-gradient(circle, rgba(var(--secondary-rgb), 0.16) 0%, transparent 60%);
   filter: blur(60px);
   border-radius: 50%;
   will-change: transform;

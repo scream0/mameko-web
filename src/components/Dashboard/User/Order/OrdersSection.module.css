@@ -316,74 +316,74 @@
 }
 
 .statusPending {
-  background: rgba(var(--secondary-rgb), 0.12);
-  color: #d97706;
-  border: 1px solid rgba(var(--secondary-rgb), 0.3);
+  background: var(--warning-bg);
+  color: var(--warning-text);
+  border: 1px solid var(--warning-border);
 }
 .statusPending::before {
-  background: #d97706;
+  background: var(--warning-color);
 }
 
 .statusSuccess {
-  background: rgba(var(--success-color-rgb), 0.12);
-  color: #059669;
-  border: 1px solid rgba(var(--success-color-rgb), 0.3);
+  background: var(--success-bg);
+  color: var(--success-text);
+  border: 1px solid var(--success-border);
 }
 .statusSuccess::before {
-  background: #059669;
+  background: var(--success-color);
 }
 
 .statusProcessing {
-  background: rgba(var(--info-color-rgb), 0.12);
-  color: #2563eb;
-  border: 1px solid rgba(var(--info-color-rgb), 0.3);
+  background: var(--info-bg);
+  color: var(--info-text);
+  border: 1px solid var(--info-border);
 }
 :global([data-theme="dark"]) .statusProcessing {
-  background: rgba(var(--info-color-rgb), 0.12);
-  color: #38bdf8;
-  border-color: rgba(var(--info-color-rgb), 0.3);
+  background: var(--info-bg);
+  color: var(--info-text);
+  border-color: var(--info-border);
 }
 .statusProcessing::before {
   background: currentColor;
 }
 
 .statusShipping {
-  background: rgba(var(--secondary-rgb), 0.12);
-  color: #ea580c;
-  border: 1px solid rgba(var(--secondary-rgb), 0.3);
+  background: var(--warning-bg);
+  color: var(--warning-text);
+  border: 1px solid var(--warning-border);
 }
 .statusShipping::before {
-  background: #ea580c;
+  background: var(--warning-color);
 }
 
 .statusCompleted {
-  background: rgba(var(--success-color-rgb, 2, 245, 161), 0.12);
-  color: #059669;
-  border: 1px solid rgba(var(--success-color-rgb, 2, 245, 161), 0.3);
+  background: var(--success-bg);
+  color: var(--success-text);
+  border: 1px solid var(--success-border);
 }
 :global([data-theme="dark"]) .statusCompleted {
-  color: var(--success-color);
+  color: var(--success-text);
 }
 .statusCompleted::before {
   background: currentColor;
 }
 
 .statusCancelled {
-  background: rgba(var(--danger-color-rgb), 0.12);
-  color: #dc2626;
-  border: 1px solid rgba(var(--danger-color-rgb), 0.3);
+  background: var(--danger-bg);
+  color: var(--danger-text);
+  border: 1px solid var(--danger-border);
 }
 .statusCancelled::before {
-  background: #dc2626;
+  background: var(--danger-color);
 }
 
 .statusReturn {
-  background: rgba(var(--secondary-rgb), 0.12);
-  color: #d97706;
-  border: 1px solid rgba(var(--secondary-rgb), 0.3);
+  background: var(--warning-bg);
+  color: var(--warning-text);
+  border: 1px solid var(--warning-border);
 }
 .statusReturn::before {
-  background: #d97706;
+  background: var(--warning-color);
 }
 
 .orderName {
@@ -541,19 +541,19 @@
   gap: 0.4rem;
   -webkit-tap-highlight-color: transparent;
   box-sizing: border-box;
-  background: rgba(var(--secondary-rgb), 0.12);
-  color: #d97706;
-  border: 1px solid rgba(var(--secondary-rgb), 0.3);
+  background: var(--warning-bg);
+  color: var(--warning-text);
+  border: 1px solid var(--warning-border);
 }
 
 :global([data-theme="dark"]) .trackReturnBtn {
-  color: #f59e0b;
+  color: var(--warning-text);
 }
 
 .trackReturnBtn:hover {
-  background: #f59e0b;
-  color: #000000;
-  border-color: #f59e0b;
+  background: var(--warning-color);
+  color: var(--primary-accent-text);
+  border-color: var(--warning-color);
 }
 
 .returnStatusBanner {
@@ -568,20 +568,20 @@
 }
 
 .returnStatusBannerPending {
-  background: rgba(var(--secondary-rgb), 0.08);
-  border-left: 3px solid #f59e0b;
+  background: var(--warning-bg);
+  border-left: 3px solid var(--warning-color);
   color: var(--text-primary);
 }
 
 .returnStatusBannerApproved {
-  background: rgba(var(--success-color-rgb), 0.08);
-  border-left: 3px solid #10b981;
+  background: var(--success-bg);
+  border-left: 3px solid var(--success-color);
   color: var(--text-primary);
 }
 
 .returnStatusBannerRejected {
-  background: rgba(var(--danger-color-rgb), 0.08);
-  border-left: 3px solid #ef4444;
+  background: var(--danger-bg);
+  border-left: 3px solid var(--danger-color);
   color: var(--text-primary);
 }
 
@@ -590,30 +590,30 @@
 }
 
 .cancelBtn {
-  background: rgba(var(--danger-color-rgb), 0.1);
-  color: #ef4444;
-  border: 1px solid rgba(var(--danger-color-rgb), 0.3);
+  background: var(--danger-bg);
+  color: var(--danger-text);
+  border: 1px solid var(--danger-border);
 }
 
 .cancelBtn:hover {
-  background: #ef4444;
-  color: #ffffff;
-  border-color: #ef4444;
+  background: var(--danger-color);
+  color: var(--primary-accent-text);
+  border-color: var(--danger-color);
 }
 
 .confirmBtn {
-  background: rgba(var(--success-color-rgb, 2, 245, 161), 0.12);
-  color: #059669;
-  border: 1px solid rgba(var(--success-color-rgb, 2, 245, 161), 0.3);
+  background: var(--success-bg);
+  color: var(--success-text);
+  border: 1px solid var(--success-border);
 }
 
 :global([data-theme="dark"]) .confirmBtn {
-  color: var(--success-color);
+  color: var(--success-text);
 }
 
 .confirmBtn:hover {
   background: var(--success-color);
-  color: #07191e;
+  color: var(--primary-accent-text);
   border-color: var(--success-color);
 }
 
@@ -774,16 +774,16 @@
 
 .starBtn:hover {
   transform: scale(1.15);
-  color: #eab308;
+  color: var(--secondary);
 }
 
 .starBtnActive {
-  color: #eab308 !important;
+  color: var(--secondary) !important;
 }
 
 .starBtnActive svg {
-  fill: #eab308;
-  stroke: #eab308;
+  fill: var(--secondary);
+  stroke: var(--secondary);
 }
 
 .ratingTextLabel {
@@ -924,7 +924,7 @@
 .removePhotoBtn {
   background: transparent;
   border: none;
-  color: var(--danger-color, #ef4444);
+  color: var(--danger-color);
   font-size: 0.75rem;
   font-weight: 700;
   display: inline-flex;
@@ -1217,18 +1217,18 @@
 }
 
 .returnStatusApproved {
-  background: rgba(var(--success-color-rgb), 0.08);
-  border-left: 3px solid #10b981;
+  background: var(--success-bg);
+  border-left: 3px solid var(--success-color);
 }
 
 .returnStatusRejected {
-  background: rgba(var(--danger-color-rgb), 0.08);
-  border-left: 3px solid #ef4444;
+  background: var(--danger-bg);
+  border-left: 3px solid var(--danger-color);
 }
 
 .returnStatusPending {
-  background: rgba(var(--secondary-rgb), 0.08);
-  border-left: 3px solid #f59e0b;
+  background: var(--warning-bg);
+  border-left: 3px solid var(--warning-color);
 }
 
 .returnStatusTitle {

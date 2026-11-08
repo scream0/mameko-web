@@ -1,0 +1,287 @@
+/* ====================================================
+   MAINTENANCE VIEW CSS (Editorial Luxury Theme)
+   ==================================================== */
+
+.maintenanceOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background:
+    radial-gradient(circle at 50% 20%, rgba(var(--primary-accent-rgb), 0.12), transparent 50%),
+    linear-gradient(180deg, rgba(var(--background-rgb), 0.95) 0%, rgba(var(--background-rgb), 1) 100%);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.maintenanceCard {
+  width: 100%;
+  max-width: 620px;
+  background: rgba(var(--surface-primary-rgb), 0.88);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1px solid var(--border-color);
+  border-radius: 24px;
+  padding: 2.75rem 2.25rem;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.brandLogoWrapper {
+  margin-bottom: 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.badgePill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 1rem;
+  border-radius: 999px;
+  background: rgba(var(--warning-rgb, 245, 158, 11), 0.12);
+  border: 1px solid rgba(var(--warning-rgb, 245, 158, 11), 0.28);
+  color: var(--warning-color);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 1.5rem;
+}
+
+.pulseDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--warning-color);
+  box-shadow: 0 0 0 0 rgba(var(--warning-rgb, 245, 158, 11), 0.6);
+  animation: pulse 1.8s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(var(--warning-rgb, 245, 158, 11), 0.7);
+  }
+  70% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 8px rgba(var(--warning-rgb, 245, 158, 11), 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(var(--warning-rgb, 245, 158, 11), 0);
+  }
+}
+
+.title {
+  margin: 0 0 0.75rem 0;
+  font-family: var(--font-serif);
+  font-size: 1.85rem;
+  font-weight: 400;
+  letter-spacing: 1.5px;
+  color: var(--text-primary);
+  line-height: 1.25;
+}
+
+.subtitle {
+  margin: 0 0 1rem 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--primary-accent);
+  line-height: 1.5;
+}
+
+.description {
+  margin: 0 0 2rem 0;
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.65;
+  max-width: 520px;
+}
+
+/* --- Countdown / Telemetry Card --- */
+.telemetryBox {
+  width: 100%;
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  box-sizing: border-box;
+}
+
+.telemetryInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.telemetryIcon {
+  color: var(--primary-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.retryBtn {
+  background: var(--primary-accent);
+  color: var(--primary-accent-text);
+  border: 1px solid var(--primary-accent);
+  padding: 0.55rem 1.15rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 12px rgba(var(--primary-accent-rgb), 0.2);
+  white-space: nowrap;
+}
+
+.retryBtn:hover:not(:disabled) {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(var(--primary-accent-rgb), 0.3);
+}
+
+.retryBtn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.retryBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(var(--primary-accent-text-rgb, 255, 255, 255), 0.3);
+  border-top-color: var(--primary-accent-text);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* --- Support Section --- */
+.supportSection {
+  width: 100%;
+  border-top: 1px solid var(--border-color);
+  padding-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.supportTitle {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 0.04em;
+}
+
+.supportLinksRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.supportPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.95rem;
+  border-radius: 999px;
+  background: rgba(var(--surface-secondary-rgb), 0.6);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.supportPill:hover {
+  border-color: var(--primary-accent);
+  color: var(--text-primary);
+  background: rgba(var(--primary-accent-rgb), 0.08);
+  transform: translateY(-1px);
+}
+
+.supportPill:active {
+  transform: scale(0.97);
+}
+
+.footerNote {
+  margin-top: 1.75rem;
+  font-size: 0.72rem;
+  color: var(--text-tertiary);
+  letter-spacing: 0.04em;
+}
+
+@media (max-width: 640px) {
+  .maintenanceCard {
+    padding: 2rem 1.25rem;
+    border-radius: 20px;
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+
+  .telemetryBox {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+
+  .telemetryInfo {
+    justify-content: center;
+  }
+
+  .retryBtn {
+    justify-content: center;
+    width: 100%;
+  }
+}
+

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useStore } from "@/context/StoreContext";
 import { getDiscountedPrice } from "@/utils/promo";
@@ -23,12 +23,12 @@ export function CartSidebar(_props: { isOpen?: boolean; onClose?: () => void } =
     cart,
     removeFromCart,
     addToCart,
+    increaseCartItem,
     cartTotal,
     rupiah,
     products,
     updateCartItemVariant,
     getAvailableVariants,
-    processPayment,
     isProcessing,
     user,
     activePromo,
@@ -39,7 +39,10 @@ export function CartSidebar(_props: { isOpen?: boolean; onClose?: () => void } =
 
   useScrollLock(isCartOpen);
 
-  const [confirmModal, setConfirmModal] = useState({ isOpen: false, cartId: null });
+  const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; cartId: string | null }>({
+    isOpen: false,
+    cartId: null,
+  });
 
   const closeSidebar = () => setIsCartOpen(false);
 
@@ -79,20 +82,34 @@ export function CartSidebar(_props: { isOpen?: boolean; onClose?: () => void } =
     setConfirmModal({ isOpen: false, cartId: null });
   };
 
+  const cartItemsCount = cart?.items?.reduce((sum: number, it: any) => sum + (it.quantity || 1), 0) || 0;
+
   return (
     <>
       <div
         className={`${styles.sidebarOverlay} ${isCartOpen ? styles.active : ""}`}
         onClick={closeSidebar}
-      ></div>
+        aria-hidden="true"
+      />
       <aside
         className={`${styles.cartSidebar} ${isCartOpen ? styles.active : ""}`}
+        role="dialog"
+        aria-modal="true"
+        aria-label={cartConfig?.labels?.title || "Keranjang Belanja"}
       >
         <header className={styles.cartHeader}>
-          <h3 className={styles.cartSidebarTitle}>
-            {cartConfig?.labels?.title || "Keranjang Belanja"}
-          </h3>
+          <div className={styles.headerTitleBox}>
+            <h3 className={styles.cartSidebarTitle}>
+              {cartConfig?.labels?.title || "Keranjang Belanja"}
+            </h3>
+            {cartItemsCount > 0 && (
+              <span className={styles.itemCountBadge}>
+                {cartItemsCount}
+              </span>
+            )}
+          </div>
           <button
+            type="button"
             className={styles.cartCloseBtn}
             onClick={closeSidebar}
             aria-label={cartConfig?.accessibility?.closeAriaLabel || "Tutup Keranjang"}
@@ -105,20 +122,19 @@ export function CartSidebar(_props: { isOpen?: boolean; onClose?: () => void } =
           <>
             <div className={styles.cartItemsWrapper}>
               {cart.items.map((item: any) => {
-                // Safety net: fallback key kalau cartId dari data lama kosong
                 const safeKey =
                   item.cartId || `${item.productId || item.id}-${item.size}`;
 
                 const originalProduct = productList.find(
-                  (p: any) => String(p.id) === String(item.id || item.productId),
+                  (p: any) => String(p.id) === String(item.id || item.productId)
                 );
                 const variantInfo = originalProduct?.variants?.find(
                   (v: any) =>
                     String(v.size || "").toLowerCase() ===
-                    String(item.size || "").toLowerCase(),
+                    String(item.size || "").toLowerCase()
                 );
                 const maxStock = Number(
-                  variantInfo?.stock ?? variantInfo?.stok ?? item.stock ?? 10,
+                  variantInfo?.stock ?? variantInfo?.stok ?? item.stock ?? 10
                 );
                 const isMaxReached = item.quantity >= maxStock;
 
@@ -144,18 +160,24 @@ export function CartSidebar(_props: { isOpen?: boolean; onClose?: () => void } =
                 return (
                   <div className={styles.cartItem} key={safeKey}>
                     <div className={styles.cartItemImg}>
-                      <img src={optimizeCloudinaryUrl(itemImageSrc, IMAGE_PRESETS.THUMBNAIL)} alt={item.name} />
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={optimizeCloudinaryUrl(itemImageSrc, IMAGE_PRESETS.THUMBNAIL)}
+                        alt={item.name}
+                        loading="lazy"
+                      />
                     </div>
                     <div className={styles.cartItemDetails}>
                       <div className={styles.itemHeader}>
                         <h4 className={styles.cartItemName}>{item.name}</h4>
                         <button
+                          type="button"
                           className={styles.removeItemBtn}
                           onClick={() => triggerRemove(item.cartId)}
                           aria-label={
                             cartConfig?.accessibility?.removeItemAria?.replace(
                               "{name}",
-                              item.name,
+                              item.name
                             ) || `Hapus ${item.name} dari keranjang`
                           }
                           title={
@@ -165,71 +187,81 @@ export function CartSidebar(_props: { isOpen?: boolean; onClose?: () => void } =
                         >
                           <AppIcon
                             name={cartConfig?.icons?.trash || "trash-2"}
-                            className={styles.svgIcon}
+                            className={styles.removeIcon}
                           />
                         </button>
                       </div>
 
                       <div className={styles.cartVariantSelector}>
-                        <span>{cartConfig?.labels?.variant || "Varian:"}</span>
-                        <select
-                          value={item.size}
-                          onChange={(e) =>
-                            updateCartItemVariant(item.cartId, e.target.value)
-                          }
-                        >
-                          {(() => {
-                            const variants = getAvailableVariants(item.productId || item.id, item);
-                            if (!variants || variants.length === 0) {
-                              return (
-                                <option value={item.size || "Standard"}>
-                                  {item.size || "Standard"}
-                                </option>
-                              );
+                        <span className={styles.variantLabel}>
+                          {cartConfig?.labels?.variant || "Varian:"}
+                        </span>
+                        <div className={styles.selectWrapper}>
+                          <select
+                            value={item.size}
+                            onChange={(e) =>
+                              updateCartItemVariant(item.cartId, e.target.value)
                             }
-                            return variants.map((v: any) => {
-                              const vStock = Number(v.stock ?? v.stok ?? 0);
-                              const isOutOfStock = vStock <= 0;
-                              return (
-                                <option
-                                  key={v.size}
-                                  value={v.size}
-                                  disabled={isOutOfStock}
-                                >
-                                  {v.size}{" "}
-                                  {isOutOfStock
-                                    ? cartConfig?.labels?.stockOut || "(Habis)"
-                                    : cartConfig?.labels?.stockRemaining?.replace(
-                                        "{stock}",
-                                        String(vStock),
-                                      ) || `(Sisa: ${vStock})`}
-                                </option>
+                            aria-label={`Pilih varian untuk ${item.name}`}
+                          >
+                            {(() => {
+                              const variants = getAvailableVariants(
+                                item.productId || item.id,
+                                item
                               );
-                            });
-                          })()}
-                        </select>
+                              if (!variants || variants.length === 0) {
+                                return (
+                                  <option value={item.size || "Standard"}>
+                                    {item.size || "Standard"}
+                                  </option>
+                                );
+                              }
+                              return variants.map((v: any) => {
+                                const vStock = Number(v.stock ?? v.stok ?? 0);
+                                const isOutOfStock = vStock <= 0;
+                                return (
+                                  <option
+                                    key={v.size}
+                                    value={v.size}
+                                    disabled={isOutOfStock}
+                                  >
+                                    {v.size}{" "}
+                                    {isOutOfStock
+                                      ? cartConfig?.labels?.stockOut || "(Habis)"
+                                      : cartConfig?.labels?.stockRemaining?.replace(
+                                          "{stock}",
+                                          String(vStock)
+                                        ) || `(Sisa: ${vStock})`}
+                                  </option>
+                                );
+                              });
+                            })()}
+                          </select>
+                        </div>
                       </div>
 
                       {hasDiscount && (
-                        <span className={styles.promoBadge}>
+                        <div className={styles.promoBadge}>
                           <AppIcon
                             name={cartConfig?.icons?.tag || "tag"}
                             className={styles.promoBadgeIcon}
                           />
-                          {cartConfig?.promo?.badge || "PROMO TOKO"}{" "}
-                          {activePromo?.promoDiscountType === "fixed"
-                            ? rupiah(activePromo.promoDiscountValue)
-                            : cartConfig?.promo?.percentageTemplate
-                            ? cartConfig.promo.percentageTemplate.replace(
-                                "{value}",
-                                String(activePromo?.promoDiscountValue || 0)
-                              )
-                            : `${activePromo?.promoDiscountValue}%`}
-                        </span>
+                          <span>
+                            {cartConfig?.promo?.badge || "PROMO TOKO"}{" "}
+                            {activePromo?.promoDiscountType === "fixed"
+                              ? rupiah(activePromo.promoDiscountValue)
+                              : cartConfig?.promo?.percentageTemplate
+                              ? cartConfig.promo.percentageTemplate.replace(
+                                  "{value}",
+                                  String(activePromo?.promoDiscountValue || 0)
+                                )
+                              : `${activePromo?.promoDiscountValue}%`}
+                          </span>
+                        </div>
                       )}
 
                       <div className={styles.cartItemPriceRow}>
-                        <span className={styles.cartPriceGroup}>
+                        <div className={styles.cartPriceGroup}>
                           {hasDiscount && (
                             <span className={styles.cartOriginalPrice}>
                               {rupiah(item.price)}
@@ -238,50 +270,61 @@ export function CartSidebar(_props: { isOpen?: boolean; onClose?: () => void } =
                           <span className={styles.cartCurrentPrice}>
                             {rupiah(hasDiscount ? disc.price : item.price)}
                           </span>
-                        </span>
+                        </div>
                         <div className={styles.cartQtyControl}>
                           <button
-                            className={`${styles.cartQtyBtn} ${item.quantity === 1 ? styles.disabled : ""}`}
+                            type="button"
+                            className={`${styles.cartQtyBtn} ${
+                              item.quantity === 1 ? styles.disabled : ""
+                            }`}
                             disabled={item.quantity === 1 || isProcessing}
                             onClick={() => removeFromCart(item.cartId)}
                             aria-label={
                               cartConfig?.accessibility?.decreaseQtyAria?.replace(
                                 "{name}",
-                                item.name,
+                                item.name
                               ) || `Kurangi jumlah ${item.name}`
                             }
                           >
-                            {cartConfig?.labels?.quantityMinus || "−"}
+                            <AppIcon name="minus" size={13} />
                           </button>
                           <span className={styles.cartQtyValue}>
                             {item.quantity}
                           </span>
                           <button
-                            className={`${styles.cartQtyBtn} ${isMaxReached ? styles.disabled : ""}`}
+                            type="button"
+                            className={`${styles.cartQtyBtn} ${
+                              isMaxReached ? styles.disabled : ""
+                            }`}
                             disabled={isMaxReached || isProcessing}
                             aria-label={
                               cartConfig?.accessibility?.increaseQtyAria?.replace(
                                 "{name}",
-                                item.name,
+                                item.name
                               ) || `Tambah jumlah ${item.name}`
                             }
                             onClick={() => {
                               if (!isMaxReached) {
-                                const productTarget = originalProduct || {
-                                  id: item.productId,
-                                  variants: [
-                                    {
-                                      size: item.size,
-                                      stock: maxStock,
-                                      price: item.price,
-                                    },
-                                  ],
-                                };
-                                addToCart(productTarget, item.size, 1);
+                                if (typeof increaseCartItem === "function") {
+                                  increaseCartItem(item.cartId, 1);
+                                } else {
+                                  const targetVariant = variantInfo || {
+                                    size: item.size,
+                                    stock: maxStock,
+                                    price: item.price,
+                                  };
+                                  const productTarget = originalProduct || {
+                                    id: item.productId || item.id,
+                                    name: item.name,
+                                    price: item.price,
+                                    variants: [targetVariant],
+                                  };
+                                  addToCart(productTarget, targetVariant, 1, true);
+                                }
                               }
                             }}
                           >
-                            {cartConfig?.labels?.quantityPlus || "+"}
+                            <AppIcon name="plus" size={13} />
                           </button>
                         </div>
                       </div>
@@ -318,19 +361,25 @@ export function CartSidebar(_props: { isOpen?: boolean; onClose?: () => void } =
               )}
 
               <div className={styles.cartTotalRow}>
-                <span className={styles.cartTotalLabel}>{cartConfig?.labels?.total || "Total Pembayaran:"}</span>
+                <span className={styles.cartTotalLabel}>
+                  {cartConfig?.labels?.total || "Total Pembayaran"}
+                </span>
                 <span className={styles.cartGrandTotal}>
                   {rupiah(activePromo ? discountedCartTotal : cartTotal)}
                 </span>
               </div>
               <button
+                type="button"
                 className={styles.cartCheckoutBtn}
                 onClick={handleCheckoutClick}
                 disabled={isProcessing}
               >
-                {isProcessing
-                  ? cartConfig?.labels?.processing || "Memproses..."
-                  : cartConfig?.labels?.checkout || "Bayar Sekarang"}
+                <span>
+                  {isProcessing
+                    ? cartConfig?.labels?.processing || "Memproses..."
+                    : cartConfig?.labels?.checkout || "Bayar Sekarang"}
+                </span>
+                <AppIcon name="arrow-right" size={16} />
               </button>
             </footer>
           </>
@@ -338,12 +387,15 @@ export function CartSidebar(_props: { isOpen?: boolean; onClose?: () => void } =
           <div className={styles.emptyCartStatus}>
             <div className={styles.emptyCartIcon}>
               <AppIcon
-                name={cartConfig?.icons?.emptyCart || "shopping-cart"}
-                className={styles.svgIcon}
+                name={cartConfig?.icons?.emptyCart || "shopping-bag"}
+                className={styles.emptyBagSvg}
               />
             </div>
-            <p>{cartConfig?.emptyState?.message || "Keranjang Anda Kosong"}</p>
+            <p className={styles.emptyCartTitle}>
+              {cartConfig?.emptyState?.message || "Keranjang Anda Kosong"}
+            </p>
             <button
+              type="button"
               className={styles.btnContinueShopping}
               onClick={handleExploreClick}
             >
@@ -353,20 +405,41 @@ export function CartSidebar(_props: { isOpen?: boolean; onClose?: () => void } =
         )}
       </aside>
 
-      {/* Custom Confirmation Modal */}
+      {/* Modern Confirmation Modal */}
       {confirmModal.isOpen && (
-        <div className={styles.confirmOverlay}>
-          <div className={styles.confirmModal}>
-            <h3 className={styles.confirmModalTitle}>{cartConfig?.confirmModal?.title || "Hapus Item"}</h3>
-            <p>
+        <div
+          className={styles.confirmOverlay}
+          onClick={cancelDelete}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div
+            className={styles.confirmModal}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className={styles.confirmIconBox}>
+              <AppIcon name="trash-2" size={24} className={styles.confirmIcon} />
+            </div>
+            <h3 className={styles.confirmModalTitle}>
+              {cartConfig?.confirmModal?.title || "Hapus Item"}
+            </h3>
+            <p className={styles.confirmModalDesc}>
               {cartConfig?.confirmModal?.message ||
-                "Apakah Anda yakin ingin menghapus item ini dari keranjang?"}
+                "Apakah Anda yakin ingin menghapus item ini dari keranjang belanja?"}
             </p>
             <div className={styles.confirmActions}>
-              <button className={styles.btnCancel} onClick={cancelDelete}>
+              <button
+                type="button"
+                className={styles.btnCancel}
+                onClick={cancelDelete}
+              >
                 {cartConfig?.confirmModal?.cancelBtn || "Batal"}
               </button>
-              <button className={styles.btnConfirm} onClick={confirmDelete}>
+              <button
+                type="button"
+                className={styles.btnConfirm}
+                onClick={confirmDelete}
+              >
                 {cartConfig?.confirmModal?.confirmBtn || "Hapus"}
               </button>
             </div>

@@ -56,13 +56,13 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: #64748b;
+  background-color: var(--text-secondary);
   display: inline-block;
   transition: background-color 0.3s;
 }
 
 .statusDot.online {
-  background-color: #10b981;
+  background-color: var(--success-color);
   box-shadow: 0 0 6px rgba(var(--success-color-rgb), 0.6);
 }
 
@@ -99,14 +99,14 @@
 
 /* Operational Hours Banner */
 .operationalNotice {
-  background: #f8fafc;
-  border-bottom: 1px solid #e2e8f0;
+  background: var(--surface-secondary);
+  border-bottom: 1px solid var(--border-color);
   padding: 0.6rem 1.25rem;
   display: flex;
   align-items: center;
   gap: 8px;
   font-size: 0.78rem;
-  color: #64748b;
+  color: var(--text-secondary);
   flex-shrink: 0;
 }
 
@@ -118,7 +118,7 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  background-color: var(--surface-secondary, #fafafa);
+  background-color: var(--surface-secondary);
 }
 
 .emptyChat {
@@ -169,9 +169,9 @@
 }
 
 .messageRow.admin .messageBubble {
-  background: var(--surface-primary, #ffffff);
+  background: var(--surface-primary);
   color: var(--text-primary);
-  border: 1px solid var(--border-color, #e2e8f0);
+  border: 1px solid var(--border-color);
   border-bottom-left-radius: 4px;
 }
 
@@ -235,9 +235,9 @@
 
 /* Quoted Reply inside Bubble */
 .quotedReply {
-  border-left: 3px solid rgba(255, 255, 255, 0.95);
-  background: rgba(0, 0, 0, 0.22);
-  color: #ffffff;
+  border-left: 3px solid var(--primary-accent-text);
+  background: rgba(var(--surface-primary-rgb), 0.22);
+  color: inherit;
   padding: 6px 10px;
   border-radius: 4px;
   margin-bottom: 6px;
@@ -247,14 +247,14 @@
 
 .messageRow.admin .quotedReply {
   border-left: 3px solid var(--primary-accent);
-  background: var(--surface-secondary, #f1f5f9);
+  background: var(--surface-secondary);
   color: var(--text-primary);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 :global([data-theme="dark"]) .messageRow.admin .quotedReply,
 :global(.dark) .messageRow.admin .quotedReply {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(var(--surface-primary-rgb), 0.08);
   color: var(--text-primary);
 }
 
@@ -313,7 +313,7 @@
   gap: 4px;
   padding: 6px 12px;
   font-size: 0.78rem;
-  color: #64748b;
+  color: var(--text-secondary);
   font-style: italic;
 }
 
@@ -326,7 +326,7 @@
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: #94a3b8;
+  background: var(--text-secondary);
   animation: typingBounce 1.2s infinite ease-in-out;
 }
 
@@ -350,7 +350,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #f1f5f9;
+  background: var(--surface-secondary);
   border-left: 3px solid var(--primary-accent);
   padding: 6px 10px;
   border-radius: 6px;
@@ -374,15 +374,19 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: #475569;
+  color: var(--text-secondary);
 }
 
 .cancelReplyBtn {
   background: none;
   border: none;
   cursor: pointer;
-  color: #64748b;
+  color: var(--text-secondary);
   padding: 2px;
+}
+
+.cancelReplyBtn:hover {
+  color: var(--danger-color);
 }
 
 .filePreviewCard {
@@ -396,15 +400,15 @@
   height: 64px;
   border-radius: 8px;
   object-fit: cover;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--border-color);
 }
 
 .removeFileBtn {
   position: absolute;
   top: -6px;
   right: -6px;
-  background: #ef4444;
-  color: #fff;
+  background: var(--danger-color);
+  color: var(--primary-accent-text);
   border: none;
   border-radius: 50%;
   width: 18px;
@@ -502,8 +506,8 @@
   position: absolute;
   top: 20px;
   right: 20px;
-  background: rgba(255, 255, 255, 0.2);
-  color: #fff;
+  background: rgba(var(--surface-primary-rgb), 0.3);
+  color: var(--text-primary);
   border: none;
   border-radius: 50%;
   width: 36px;
@@ -514,8 +518,6 @@
   justify-content: center;
 }
 
-
-
 /* --- Attached Product Preview in Composer --- */
 .productPreviewCard {
   position: relative;
@@ -523,15 +525,15 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.5rem 0.75rem;
-  background: var(--surface-card, #f8fafc);
-  border: 1px solid var(--border-color, #e2e8f0);
+  background: var(--surface-card, var(--surface-secondary));
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   margin-bottom: 8px;
 }
 
 :global([data-theme="dark"]) .productPreviewCard {
-  background: #1e293b;
-  border-color: #334155;
+  background: var(--surface-secondary);
+  border-color: var(--border-color);
 }
 
 .productPreviewThumb {
@@ -552,18 +554,18 @@
 .productPreviewTitle {
   font-size: 0.8125rem;
   font-weight: 600;
-  color: var(--text-primary, #0f172a);
+  color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 :global([data-theme="dark"]) .productPreviewTitle {
-  color: #f8fafc;
+  color: var(--text-primary);
 }
 
 .productPreviewPrice {
   font-size: 0.75rem;
   font-weight: 700;
-  color: var(--primary, #059669);
+  color: var(--primary-accent);
 }
