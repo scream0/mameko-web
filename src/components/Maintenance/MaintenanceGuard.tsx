@@ -1,10 +1,16 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef, type ReactNode } from "react";
+import dynamic from "next/dynamic";
 import { getApiBaseUrl } from "@/lib/apiClient";
-import { MaintenanceView, type MaintenanceServerDetails } from "./MaintenanceView";
+import type { MaintenanceServerDetails } from "./MaintenanceView";
 import toast from "react-hot-toast";
 import maintenanceConfig from "@/data/ui/maintenanceConfig.json";
+
+const MaintenanceView = dynamic(
+  () => import("./MaintenanceView").then((mod) => mod.MaintenanceView),
+  { ssr: false }
+);
 
 const DEFAULT_POLL_INTERVAL = 15; // Detik antar pengecekan status server
 

@@ -1,32 +1,32 @@
 {
   "banner": {
     "ariaLabel": "Pemberitahuan Persetujuan Cookie",
-    "title": "Privasi & Penggunaan Cookie",
-    "description": "Kami menggunakan cookie untuk memastikan keamanan transaksi, mengingat preferensi tema, dan mengoptimalkan performa platform Mameko. Baca selengkapnya di ",
+    "title": "Privasi & Cookie",
+    "description": "Kami menggunakan cookie esensial dan analitik untuk kenyamanan berbelanja Anda.",
     "privacyLinkText": "Kebijakan Privasi",
     "buttons": {
-      "preferences": "Atur Preferensi",
-      "necessaryOnly": "Hanya Wajib",
+      "preferences": "Atur",
+      "necessaryOnly": "Wajib Saja",
       "acceptAll": "Terima Semua"
     }
   },
   "modal": {
     "title": "Preferensi Cookie",
     "closeAriaLabel": "Tutup Pengaturan",
-    "intro": "Anda dapat memilih jenis cookie yang diizinkan untuk aktif saat menjelajahi platform Make Me Kool. Cookie wajib tidak dapat dimatikan karena diperlukan demi kelancaran fungsi dasar transaksi.",
+    "intro": "Pilih kategori cookie yang Anda izinkan. Cookie esensial selalu aktif demi keamanan dan kelancaran transaksi belanja.",
     "categories": {
       "necessary": {
-        "title": "Cookie Wajib (Esensial)",
+        "title": "Cookie Esensial",
         "badge": "Selalu Aktif",
-        "description": "Dibutuhkan untuk keamanan autentikasi akun Supabase, integritas keranjang belanja, dan kelancaran pembayaran Midtrans."
+        "description": "Dibutuhkan untuk autentikasi login Supabase, integritas keranjang belanja, dan pembayaran Midtrans."
       },
       "preferences": {
-        "title": "Preferensi & Fungsi",
-        "description": "Memungkinkan situs mengingat preferensi antarmuka Anda seperti mode tema Gelap/Terang dan status tampilan navigasi."
+        "title": "Preferensi & Tema",
+        "description": "Mengingat preferensi tema Gelap/Terang serta setelan antarmuka pengguna Anda."
       },
       "analytics": {
         "title": "Analisis Performa",
-        "description": "Membantu kami memahami interaksi pengunjung secara anonim untuk mempercepat pemuatan halaman dan meningkatkan kegunaan produk."
+        "description": "Membantu kami memahami performa sistem secara anonim untuk mempercepat waktu pemuatan halaman."
       }
     },
     "buttons": {

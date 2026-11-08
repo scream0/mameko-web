@@ -1,98 +1,85 @@
-/* Floating Banner Container */
+/* ==========================================================================
+   CookieConsent Modern Web Styles
+   Compliant with modern-web-guidance: content-first-noise-reduction (<15% vh)
+   ========================================================================== */
+
+/* Non-modal floating container pinned to bottom corner / thumb zone */
 .bannerOverlay {
   position: fixed;
-  bottom: 1.5rem;
-  left: 1.5rem;
-  right: 1.5rem;
+  bottom: 1.25rem;
+  right: 1.25rem;
   z-index: 9999;
-  display: flex;
-  justify-content: center;
+  max-width: 540px;
+  width: calc(100% - 2.5rem);
   pointer-events: none;
-  animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: bannerSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-@keyframes slideUp {
+@keyframes bannerSlideUp {
   from {
     opacity: 0;
-    transform: translateY(24px) scale(0.98);
+    transform: translateY(16px);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
 }
 
 .bannerCard {
   pointer-events: auto;
-  max-width: 860px;
   width: 100%;
-  background: var(--surface-primary);
-  border: 1px solid var(--border-color);
-  border-radius: 20px;
-  padding: 1.5rem 1.75rem;
-  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  background: rgba(var(--surface-primary-rgb), 0.94);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 0.75rem 1rem;
+  box-shadow: 0 16px 36px -6px rgba(0, 0, 0, 0.22), 0 0 0 1px rgba(255, 255, 255, 0.05);
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
-}
-
-@media (min-width: 768px) {
-  .bannerCard {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    gap: 2rem;
-  }
+  gap: 0.625rem;
+  box-sizing: border-box;
 }
 
 .bannerContent {
   display: flex;
   align-items: flex-start;
-  gap: 1rem;
-  flex: 1;
+  gap: 0.625rem;
 }
 
 .cookieIconWrapper {
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
   background: var(--secondary-container);
   color: var(--secondary);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  margin-top: 0.15rem;
+  margin-top: 2px;
 }
 
 .bannerText {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: var(--text-secondary);
+  margin: 0;
+  flex: 1;
 }
 
 .bannerTitle {
-  font-family: var(--font-serif);
-  font-size: 1.05rem;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-primary);
-  margin: 0;
-}
-
-.bannerDescription {
-  font-size: 0.84rem;
-  color: var(--text-secondary);
-  line-height: 1.55;
-  margin: 0;
 }
 
 .privacyLink {
   color: var(--secondary);
   text-decoration: underline;
-  text-underline-offset: 3px;
-  font-weight: 500;
+  text-underline-offset: 2px;
+  font-weight: 600;
   transition: opacity 0.2s ease;
 }
 
@@ -100,43 +87,58 @@
   opacity: 0.8;
 }
 
+/* Actions Bar */
 .bannerActions {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 0.65rem;
-  flex-shrink: 0;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
-.btnPrimary {
-  padding: 0.65rem 1.25rem;
-  background: var(--secondary);
-  color: #ffffff;
+.btnPreferences {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: transparent;
   border: none;
-  border-radius: 12px;
-  font-size: 0.84rem;
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
+  padding: 0.35rem 0.5rem;
+  border-radius: 6px;
   transition: all 0.2s ease;
-  white-space: nowrap;
 }
 
-.btnPrimary:hover {
-  filter: brightness(1.1);
-  transform: translateY(-1px);
+.btnPreferences:hover {
+  color: var(--text-primary);
+  background: var(--surface-secondary);
+}
+
+.mainButtonsGroup {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .btnSecondary {
-  padding: 0.65rem 1.15rem;
+  height: 34px;
+  padding: 0 0.85rem;
   background: var(--surface-secondary);
   color: var(--text-primary);
   border: 1px solid var(--border-color);
-  border-radius: 12px;
-  font-size: 0.84rem;
+  border-radius: 10px;
+  font-family: var(--font-sans);
+  font-size: 0.76rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btnSecondary:hover {
@@ -144,26 +146,89 @@
   transform: translateY(-1px);
 }
 
-.btnOutline {
-  padding: 0.65rem 1rem;
-  background: transparent;
-  color: var(--text-secondary);
-  border: 1px dashed var(--border-color);
-  border-radius: 12px;
-  font-size: 0.84rem;
-  font-weight: 500;
+.btnSecondary:active {
+  transform: scale(0.97);
+}
+
+.btnPrimary {
+  height: 34px;
+  padding: 0 1rem;
+  background: var(--secondary);
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  font-family: var(--font-sans);
+  font-size: 0.76rem;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(var(--secondary-rgb), 0.25);
 }
 
-.btnOutline:hover {
-  color: var(--text-primary);
-  border-color: var(--secondary);
-  background: var(--secondary-container);
+.btnPrimary:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
 }
 
-/* Modal Overlay & Card */
+.btnPrimary:active {
+  transform: scale(0.97);
+}
+
+/* ==========================================================================
+   Responsive Mobile Optimization (<15% viewport height guarantee)
+   ========================================================================== */
+@media (max-width: 640px) {
+  .bannerOverlay {
+    bottom: 0.75rem;
+    left: 0.75rem;
+    right: 0.75rem;
+    max-width: 440px;
+    margin: 0 auto;
+    width: auto;
+  }
+
+  .bannerCard {
+    padding: 0.65rem 0.8rem;
+    gap: 0.5rem;
+    border-radius: 14px;
+  }
+
+  .bannerText {
+    font-size: 0.72rem;
+    line-height: 1.35;
+  }
+
+  .cookieIconWrapper {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+  }
+
+  .bannerActions {
+    gap: 0.35rem;
+  }
+
+  .btnPreferences {
+    font-size: 0.72rem;
+    padding: 0.25rem 0.35rem;
+  }
+
+  .btnSecondary,
+  .btnPrimary {
+    height: 32px;
+    padding: 0 0.75rem;
+    font-size: 0.72rem;
+    border-radius: 8px;
+  }
+}
+
+/* ==========================================================================
+   Preferences Modal
+   ========================================================================== */
 .modalBackdrop {
   position: fixed;
   inset: 0;
@@ -174,11 +239,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1.25rem;
-  animation: fadeIn 0.25s ease forwards;
+  padding: 1rem;
+  animation: modalFadeIn 0.22s ease forwards;
 }
 
-@keyframes fadeIn {
+@keyframes modalFadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
 }
@@ -186,40 +251,40 @@
 .modalCard {
   background: var(--surface-primary);
   border: 1px solid var(--border-color);
-  border-radius: 24px;
-  max-width: 580px;
+  border-radius: 20px;
+  max-width: 520px;
   width: 100%;
-  max-height: 90vh;
+  max-height: 88vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
-  animation: zoomIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+  animation: modalZoomIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-@keyframes zoomIn {
+@keyframes modalZoomIn {
   from {
     opacity: 0;
-    transform: scale(0.95);
+    transform: scale(0.96) translateY(8px);
   }
   to {
     opacity: 1;
-    transform: scale(1);
+    transform: scale(1) translateY(0);
   }
 }
 
 .modalHeader {
-  padding: 1.5rem 1.75rem 1.25rem;
-  border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 1.15rem 1.35rem;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .modalHeaderLeft {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.65rem;
 }
 
 .modalHeaderIcon {
@@ -228,16 +293,16 @@
 
 .modalTitle {
   font-family: var(--font-serif);
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-weight: 600;
   color: var(--text-primary);
   margin: 0;
 }
 
 .closeButton {
-  background: none;
+  background: transparent;
   border: none;
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   cursor: pointer;
   padding: 0.35rem;
   border-radius: 8px;
@@ -248,81 +313,86 @@
 }
 
 .closeButton:hover {
-  color: var(--text-primary);
   background: var(--surface-secondary);
+  color: var(--text-primary);
 }
 
 .modalBody {
-  padding: 1.5rem 1.75rem;
+  padding: 1.25rem 1.35rem;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1rem;
 }
 
 .modalIntro {
-  font-size: 0.85rem;
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  line-height: 1.5;
   color: var(--text-secondary);
-  line-height: 1.55;
   margin: 0;
 }
 
-/* Category Item */
 .categoryCard {
   background: var(--surface-secondary);
   border: 1px solid var(--border-color);
-  border-radius: 16px;
-  padding: 1.15rem;
+  border-radius: 14px;
+  padding: 0.85rem 1rem;
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
+  gap: 0.4rem;
 }
 
 .categoryHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
 }
 
 .categoryTitleGroup {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
+  gap: 0.5rem;
+  color: var(--text-primary);
 }
 
 .categoryTitle {
-  font-size: 0.92rem;
-  font-weight: 700;
+  font-family: var(--font-sans);
+  font-size: 0.86rem;
+  font-weight: 600;
   color: var(--text-primary);
   margin: 0;
 }
 
-.alwaysActiveBadge {
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: var(--secondary);
-  background: var(--secondary-container);
-  padding: 0.2rem 0.55rem;
-  border-radius: 9999px;
-  letter-spacing: 0.04em;
-}
-
 .categoryDesc {
-  font-size: 0.8125rem;
+  font-family: var(--font-sans);
+  font-size: 0.76rem;
+  line-height: 1.45;
   color: var(--text-secondary);
-  line-height: 1.5;
   margin: 0;
 }
 
-/* Custom Switch Toggle */
+.alwaysActiveBadge {
+  font-family: var(--font-sans);
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0.2rem 0.55rem;
+  background: var(--success-bg);
+  color: var(--success-text);
+  border: 1px solid var(--success-border);
+  border-radius: 9999px;
+}
+
+/* Switch Toggle */
 .switchLabel {
   position: relative;
   display: inline-block;
-  width: 44px;
-  height: 24px;
+  width: 40px;
+  height: 22px;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
 .switchInput {
@@ -335,21 +405,21 @@
   position: absolute;
   inset: 0;
   background-color: var(--border-color);
-  transition: 0.25s;
-  border-radius: 24px;
+  border-radius: 9999px;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .switchSlider:before {
   position: absolute;
   content: "";
-  height: 18px;
-  width: 18px;
+  height: 16px;
+  width: 16px;
   left: 3px;
   bottom: 3px;
-  background-color: white;
-  transition: 0.25s;
+  background-color: #ffffff;
   border-radius: 50%;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .switchInput:checked + .switchSlider {
@@ -357,21 +427,15 @@
 }
 
 .switchInput:checked + .switchSlider:before {
-  transform: translateX(20px);
+  transform: translateX(18px);
 }
 
-.switchInput:disabled + .switchSlider {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* Modal Footer */
 .modalFooter {
-  padding: 1.25rem 1.75rem;
-  border-top: 1px solid var(--border-color);
-  background: var(--surface-primary);
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 0.75rem;
+  gap: 0.65rem;
+  padding: 1rem 1.35rem;
+  border-top: 1px solid var(--border-color);
+  background: var(--surface-primary);
 }

@@ -16,6 +16,8 @@
     "title": "Butuh bantuan mengenai pesanan Anda?",
     "desc": "Tim customer care kami tetap siap melayani Anda melalui saluran resmi:",
     "whatsappLabel": "WhatsApp Customer Service",
+    "whatsappNumber": "+6281234567890",
+    "whatsappUrl": "https://wa.me/6281234567890",
     "whatsappMessageTemplate": "Halo MAMEKO, saya ingin bertanya mengenai status pesanan saya.",
     "instagramLabel": "Instagram Resmi"
   },

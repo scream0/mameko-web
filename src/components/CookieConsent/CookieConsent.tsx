@@ -37,7 +37,7 @@ export function CookieConsent() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
     } catch {
-      // Ignore localStorage errors (e.g. private browsing restrictions)
+      // Abaikan error pada browser dengan private mode / disabled storage
     }
 
     setShowBanner(false);
@@ -55,21 +55,16 @@ export function CookieConsent() {
             analytics: parsed.analytics ?? true,
           });
           setShowBanner(false);
-        } else {
-          // Version updated, show banner again
-          setShowBanner(true);
+          return;
         }
-      } else {
-        // Delay showing banner slightly for smooth initial page load
-        const timer = setTimeout(() => setShowBanner(true), 1000);
-        return () => clearTimeout(timer);
       }
+      setShowBanner(true);
     } catch {
       setShowBanner(true);
     }
   }, []);
 
-  // Listen for open-cookie-settings event (from footer or elsewhere)
+  // Listen for open-cookie-settings event (from footer or legal links)
   useEffect(() => {
     const handleOpenSettings = () => {
       setShowModal(true);
@@ -80,6 +75,18 @@ export function CookieConsent() {
       window.removeEventListener("open-cookie-settings", handleOpenSettings);
     };
   }, []);
+
+  // Escape key handler for modal
+  useEffect(() => {
+    if (!showModal) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setShowModal(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [showModal]);
 
   const handleAcceptAll = () => {
     saveConsent({ preferences: true, analytics: true });
@@ -99,7 +106,7 @@ export function CookieConsent() {
 
   return (
     <>
-      {/* FLOATING BANNER */}
+      {/* MODERN FLOATING BANNER (< 15% viewport height on mobile, non-modal) */}
       {showBanner && !showModal && (
         <aside
           className={styles.bannerOverlay}
@@ -109,48 +116,49 @@ export function CookieConsent() {
           <div className={styles.bannerCard}>
             <div className={styles.bannerContent}>
               <div className={styles.cookieIconWrapper} aria-hidden="true">
-                <AppIcon name="shield-check" size={22} />
+                <AppIcon name="shield-check" size={16} />
               </div>
-              <div className={styles.bannerText}>
-                <h3 className={styles.bannerTitle}>{cookieConfig.banner.title}</h3>
-                <p className={styles.bannerDescription}>
-                  {cookieConfig.banner.description}
-                  <Link href="/privacy" className={styles.privacyLink}>
-                    {cookieConfig.banner.privacyLinkText}
-                  </Link>
-                  .
-                </p>
-              </div>
+              <p className={styles.bannerText}>
+                <span className={styles.bannerTitle}>{cookieConfig.banner.title} — </span>
+                {cookieConfig.banner.description}{" "}
+                <Link href="/privacy" className={styles.privacyLink}>
+                  {cookieConfig.banner.privacyLinkText}
+                </Link>
+              </p>
             </div>
 
             <div className={styles.bannerActions}>
               <button
                 type="button"
-                className={styles.btnOutline}
+                className={styles.btnPreferences}
                 onClick={() => setShowModal(true)}
+                aria-label={cookieConfig.banner.buttons.preferences}
               >
-                {cookieConfig.banner.buttons.preferences}
+                <AppIcon name="settings" size={13} />
+                <span>{cookieConfig.banner.buttons.preferences}</span>
               </button>
-              <button
-                type="button"
-                className={styles.btnSecondary}
-                onClick={handleAcceptNecessary}
-              >
-                {cookieConfig.banner.buttons.necessaryOnly}
-              </button>
-              <button
-                type="button"
-                className={styles.btnPrimary}
-                onClick={handleAcceptAll}
-              >
-                {cookieConfig.banner.buttons.acceptAll}
-              </button>
+              <div className={styles.mainButtonsGroup}>
+                <button
+                  type="button"
+                  className={styles.btnSecondary}
+                  onClick={handleAcceptNecessary}
+                >
+                  {cookieConfig.banner.buttons.necessaryOnly}
+                </button>
+                <button
+                  type="button"
+                  className={styles.btnPrimary}
+                  onClick={handleAcceptAll}
+                >
+                  {cookieConfig.banner.buttons.acceptAll}
+                </button>
+              </div>
             </div>
           </div>
         </aside>
       )}
 
-      {/* MODAL PREFERENSI */}
+      {/* PREFERENCES MODAL */}
       {showModal && (
         <div
           className={styles.modalBackdrop}
@@ -165,7 +173,7 @@ export function CookieConsent() {
           >
             <div className={styles.modalHeader}>
               <div className={styles.modalHeaderLeft}>
-                <AppIcon name="shield-check" size={20} className={styles.modalHeaderIcon} />
+                <AppIcon name="shield-check" size={18} className={styles.modalHeaderIcon} />
                 <h2 id="cookie-modal-title" className={styles.modalTitle}>
                   {cookieConfig.modal.title}
                 </h2>
@@ -176,7 +184,7 @@ export function CookieConsent() {
                 onClick={() => setShowModal(false)}
                 aria-label={cookieConfig.modal.closeAriaLabel}
               >
-                <AppIcon name="x" size={20} />
+                <AppIcon name="x" size={18} />
               </button>
             </div>
 
@@ -189,7 +197,7 @@ export function CookieConsent() {
               <div className={styles.categoryCard}>
                 <div className={styles.categoryHeader}>
                   <div className={styles.categoryTitleGroup}>
-                    <AppIcon name="shield-check" size={16} />
+                    <AppIcon name="shield-check" size={15} />
                     <h3 className={styles.categoryTitle}>
                       {cookieConfig.modal.categories.necessary.title}
                     </h3>
@@ -207,7 +215,7 @@ export function CookieConsent() {
               <div className={styles.categoryCard}>
                 <div className={styles.categoryHeader}>
                   <div className={styles.categoryTitleGroup}>
-                    <AppIcon name="settings" size={16} />
+                    <AppIcon name="settings" size={15} />
                     <h3 className={styles.categoryTitle}>
                       {cookieConfig.modal.categories.preferences.title}
                     </h3>
@@ -236,7 +244,7 @@ export function CookieConsent() {
               <div className={styles.categoryCard}>
                 <div className={styles.categoryHeader}>
                   <div className={styles.categoryTitleGroup}>
-                    <AppIcon name="trending-up" size={16} />
+                    <AppIcon name="trending-up" size={15} />
                     <h3 className={styles.categoryTitle}>
                       {cookieConfig.modal.categories.analytics.title}
                     </h3>
