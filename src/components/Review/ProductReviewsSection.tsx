@@ -1,26 +1,29 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
-import Image from "next/image";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import toast from "react-hot-toast";
 import styles from "./ProductReviewsSection.module.css";
-import { AppIcon } from "@/components/UI/Icon/AppIcon";
 import { getApiBaseUrl } from "@/lib/apiClient";
 import { auth } from "@/lib/mamekoClient";
 import reviewConfig from "@/data/ui/productReviewsConfig.json";
 import { optimizeCloudinaryUrl, IMAGE_PRESETS } from "@/utils/imageOptimizer";
+import {
+  normalizeProductReview,
+  extractHelpfulVoteResponse,
+  type NormalizedProductReview,
+} from "@/utils/reviewSync";
 
 interface ProductReviewsSectionProps {
   productId: string;
 }
 
 export default function ProductReviewsSection({ productId }: ProductReviewsSectionProps) {
-  const [reviews, setReviews] = useState<any[]>([]);
+  const [reviews, setReviews] = useState<NormalizedProductReview[]>([]);
   const [loading, setLoading] = useState(true);
   const [votingId, setVotingId] = useState<string | null>(null);
   const [zoomedImage, setZoomedImage] = useState<string | null>(null);
 
-  const fetchReviews = async () => {
+  const fetchReviews = useCallback(async () => {
     if (!productId) return;
     try {
       const { data: { session } } = await auth.getSession();
@@ -36,23 +39,36 @@ export default function ProductReviewsSection({ productId }: ProductReviewsSecti
 
       if (res.ok) {
         const json = await res.json();
-        const list = Array.isArray(json.reviews)
+        const rawList = Array.isArray(json.reviews)
           ? json.reviews
           : Array.isArray(json.data)
           ? json.data
           : [];
-        setReviews(list);
+        setReviews(rawList.map(normalizeProductReview));
       }
     } catch (err) {
       console.warn("Failed to load reviews:", err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [productId]);
 
   useEffect(() => {
     fetchReviews();
-  }, [productId]);
+
+    const handleVisibilityOrFocus = () => {
+      if (document.visibilityState === "visible") {
+        fetchReviews();
+      }
+    };
+
+    window.addEventListener("focus", handleVisibilityOrFocus);
+    document.addEventListener("visibilitychange", handleVisibilityOrFocus);
+    return () => {
+      window.removeEventListener("focus", handleVisibilityOrFocus);
+      document.removeEventListener("visibilitychange", handleVisibilityOrFocus);
+    };
+  }, [fetchReviews]);
 
   const stats = useMemo(() => {
     if (!reviews || reviews.length === 0) {
@@ -73,16 +89,16 @@ export default function ProductReviewsSection({ productId }: ProductReviewsSecti
 
       setVotingId(reviewId);
 
-      // Optimistic update
+      // Optimistic update synced with backend camelCase fields
       setReviews((prev) =>
         prev.map((r) => {
           if (String(r.id) === String(reviewId)) {
-            const wasHelpful = Boolean(r.is_helpful);
-            const currentCount = Number(r.helpful_count) || 0;
+            const wasHelpful = Boolean(r.isHelpful);
+            const currentCount = Number(r.helpfulCount) || 0;
             return {
               ...r,
-              is_helpful: !wasHelpful,
-              helpful_count: wasHelpful ? Math.max(0, currentCount - 1) : currentCount + 1,
+              isHelpful: !wasHelpful,
+              helpfulCount: wasHelpful ? Math.max(0, currentCount - 1) : currentCount + 1,
             };
           }
           return r;
@@ -99,13 +115,27 @@ export default function ProductReviewsSection({ productId }: ProductReviewsSecti
 
       if (res.ok) {
         const data = await res.json();
-        if (data.is_helpful) {
+        const serverVote = extractHelpfulVoteResponse(data);
+        setReviews((prev) =>
+          prev.map((r) =>
+            String(r.id) === String(reviewId)
+              ? {
+                  ...r,
+                  isHelpful: serverVote.isHelpful,
+                  helpfulCount:
+                    serverVote.helpfulCount !== null
+                      ? serverVote.helpfulCount
+                      : r.helpfulCount,
+                }
+              : r
+          )
+        );
+        if (serverVote.isHelpful) {
           toast.success(reviewConfig.helpful.votedSuccess);
         } else {
           toast.success(reviewConfig.helpful.unvotedSuccess);
         }
       } else {
-        // Revert on failure
         fetchReviews();
       }
     } catch (err) {
@@ -121,7 +151,7 @@ export default function ProductReviewsSection({ productId }: ProductReviewsSecti
     const num = Math.round(Number(rating) || 5);
     for (let i = 1; i <= 5; i++) {
       stars.push(
-        <span key={i} style={{ color: i <= num ? "#f59e0b" : "#d1d5db" }}>
+        <span key={i} className={i <= num ? styles.starFilled : styles.starMuted}>
           ★
         </span>
       );
@@ -132,7 +162,9 @@ export default function ProductReviewsSection({ productId }: ProductReviewsSecti
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return "";
     try {
-      return new Date(dateStr).toLocaleDateString("id-ID", {
+      const parsed = new Date(dateStr);
+      if (Number.isNaN(parsed.getTime())) return "";
+      return parsed.toLocaleDateString("id-ID", {
         day: "numeric",
         month: "long",
         year: "numeric",
@@ -166,8 +198,8 @@ export default function ProductReviewsSection({ productId }: ProductReviewsSecti
       </div>
 
       {loading ? (
-        <div style={{ textAlign: "center", padding: "2rem", color: "var(--text-secondary)" }}>
-          Memuat ulasan...
+        <div className={styles.loadingState}>
+          {reviewConfig.states?.loading}
         </div>
       ) : reviews.length === 0 ? (
         <div className={styles.emptyReviewsCard}>
@@ -177,10 +209,9 @@ export default function ProductReviewsSection({ productId }: ProductReviewsSecti
         </div>
       ) : (
         <div className={styles.reviewList}>
-          {reviews.map((r: any) => {
-            const initial = String(r.user_name || "U")[0].toUpperCase();
-            const isHelpful = Boolean(r.is_helpful);
-            const helpfulCount = Number(r.helpful_count) || 0;
+          {reviews.map((r) => {
+            const displayName = r.userName || reviewConfig.header.defaultReviewer;
+            const initial = displayName.charAt(0).toUpperCase();
 
             return (
               <div key={r.id} className={styles.reviewCard}>
@@ -188,8 +219,8 @@ export default function ProductReviewsSection({ productId }: ProductReviewsSecti
                   <div className={styles.userInfo}>
                     <div className={styles.userAvatar}>{initial}</div>
                     <div>
-                      <div className={styles.userName}>{r.user_name || "Pelanggan Mameko"}</div>
-                      <div className={styles.reviewDate}>{formatDate(r.created_at)}</div>
+                      <div className={styles.userName}>{displayName}</div>
+                      <div className={styles.reviewDate}>{formatDate(r.createdAt)}</div>
                     </div>
                   </div>
                   <div className={styles.reviewRatingRow}>
@@ -201,14 +232,14 @@ export default function ProductReviewsSection({ productId }: ProductReviewsSecti
                   <p className={styles.reviewComment}>{r.comment}</p>
                 )}
 
-                {r.review_photo && (
+                {r.reviewPhoto && (
                   <div>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={optimizeCloudinaryUrl(r.review_photo, IMAGE_PRESETS.THUMBNAIL)}
-                      alt="Foto Ulasan"
+                      src={optimizeCloudinaryUrl(r.reviewPhoto, IMAGE_PRESETS.THUMBNAIL)}
+                      alt={reviewConfig.states?.photoAlt}
                       className={styles.reviewPhotoThumb}
-                      onClick={() => setZoomedImage(r.review_photo)}
+                      onClick={() => setZoomedImage(r.reviewPhoto)}
                     />
                   </div>
                 )}
@@ -218,13 +249,13 @@ export default function ProductReviewsSection({ productId }: ProductReviewsSecti
                     type="button"
                     disabled={votingId === r.id}
                     onClick={() => handleToggleHelpful(r.id)}
-                    className={`${styles.helpfulBtn} ${isHelpful ? styles.helpfulBtnActive : ""}`}
+                    className={`${styles.helpfulBtn} ${r.isHelpful ? styles.helpfulBtnActive : ""}`}
                     aria-label={reviewConfig.helpful.buttonLabel}
                   >
                     <span>👍</span>
                     <span>
                       {reviewConfig.helpful.buttonLabel}
-                      {helpfulCount > 0 ? ` (${helpfulCount})` : ""}
+                      {r.helpfulCount > 0 ? ` (${r.helpfulCount})` : ""}
                     </span>
                   </button>
                 </div>
@@ -234,25 +265,13 @@ export default function ProductReviewsSection({ productId }: ProductReviewsSecti
         </div>
       )}
 
-      {/* Image Zoom Modal */}
       {zoomedImage && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.8)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 9999,
-          }}
-          onClick={() => setZoomedImage(null)}
-        >
+        <div className={styles.zoomOverlay} onClick={() => setZoomedImage(null)}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={zoomedImage}
-            alt="Preview"
-            style={{ maxWidth: "90vw", maxHeight: "90vh", borderRadius: "12px", objectFit: "contain" }}
+            alt={reviewConfig.states?.zoomAlt}
+            className={styles.zoomImage}
           />
         </div>
       )}

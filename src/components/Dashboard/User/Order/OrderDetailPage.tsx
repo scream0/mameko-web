@@ -13,6 +13,7 @@ import { getApiBaseUrl } from "@/lib/apiClient";
 import ConfirmationModal from "@/components/UI/Modal/ConfirmationModal";
 import { loadMidtransSnap } from "@/lib/midtrans";
 import { convertToWebP } from "@/utils/imageConverter";
+import { normalizeOrderReviewState } from "@/utils/reviewSync";
 
 const STATUS_INFO = orderDetailConfig.status;
 
@@ -297,8 +298,18 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
     };
 
     loadOrder();
+    const handleVisibilityRefresh = () => {
+      if (document.visibilityState === "visible") {
+        loadOrder();
+      }
+    };
+    window.addEventListener("focus", handleVisibilityRefresh);
+    document.addEventListener("visibilitychange", handleVisibilityRefresh);
+
     return () => {
       isActive = false;
+      window.removeEventListener("focus", handleVisibilityRefresh);
+      document.removeEventListener("visibilitychange", handleVisibilityRefresh);
     };
   }, [resolvedOrderId, user]);
 
@@ -764,11 +775,24 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
     router.push("/dashboard?tab=orders");
   };
 
-  const openReviewModal = (orderToReview, item: any) => {
+  const openReviewModal = (orderToReview: any, item?: any) => {
+    const revState = normalizeOrderReviewState(orderToReview);
+    if (revState.isReviewQuotaExhausted) return;
+    const fallbackItem =
+      item ||
+      (Array.isArray(items) && items.length > 0
+        ? items[0]
+        : {
+            id: orderToReview.id,
+            product_id: orderToReview.id,
+            name: orderToReview.name || orderDetailConfig.items.defaultProductName,
+            product_name: orderToReview.name || orderDetailConfig.items.defaultProductName,
+          });
+
     setReviewModalOrder(orderToReview);
-    setReviewTargetItem(item);
-    setRating(5);
-    setComment("");
+    setReviewTargetItem(fallbackItem);
+    setRating(revState.isReviewed && revState.reviewRating ? revState.reviewRating : 5);
+    setComment(revState.isReviewed && revState.reviewComment ? revState.reviewComment : "");
     setReviewPhotoFile(null);
     setReviewPhotoPreview(null);
   };
@@ -876,16 +900,23 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
         throw new Error(result.error || orderDetailConfig.reviewModal.toasts.error);
       }
 
-      toast.success(orderDetailConfig.reviewModal.toasts.success, { id: toastId });
+      const wasEditing = normalizeOrderReviewState(reviewModalOrder).isReviewed;
+      toast.success(
+        wasEditing
+          ? orderDetailConfig.reviewModal.toasts.editSuccess
+          : orderDetailConfig.reviewModal.toasts.success,
+        { id: toastId }
+      );
 
-      const targetItemId = String(reviewTargetItem.product_id || reviewTargetItem.productId || reviewTargetItem.id || "");
-
-      setOrder((prev) => {
-        const updatedReviewedIds = [...(prev.reviewedItemIds || []), targetItemId];
+      setOrder((prev: any) => {
+        const prevState = normalizeOrderReviewState(prev);
         return {
           ...prev,
-          reviewedItemIds: updatedReviewedIds,
           hasBeenReviewed: true,
+          is_reviewed: true,
+          review_edit_count: prevState.isReviewed ? prevState.reviewEditCount + 1 : 0,
+          review_rating: rating,
+          review_comment: comment,
         };
       });
 
@@ -896,14 +927,6 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
     } finally {
       setIsSubmittingReview(false);
     }
-  };
-
-  const isItemReviewed = (ord, item: any) => {
-    const itemId = String(item.product_id || item.productId || item.id || "");
-    if (ord.reviewedItemIds && ord.reviewedItemIds.length > 0) {
-      return ord.reviewedItemIds.includes(itemId);
-    }
-    return ord.hasBeenReviewed;
   };
 
   const handleProofChange = (e: any) => {
@@ -1558,18 +1581,51 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
                       <div className={styles.itemPriceCol}>
                         <strong className={styles.itemTotalPrice}>Rp {itemTotal.toLocaleString("id-ID")}</strong>
 
-                        {["delivered", "completed"].includes((order.status || "").toLowerCase()) && (
-                          <div className={styles.itemReviewActionRow}>
-                            <button
-                              onClick={() => !isItemReviewed(order, item) && openReviewModal(order, item)}
-                              disabled={isItemReviewed(order, item)}
-                              className={isItemReviewed(order, item) ? styles.reviewBtnDisabled : styles.reviewBtn}
-                            >
-                              <AppIcon name={isItemReviewed(order, item) ? "check-circle" : "star"} size={14} />
-                              {isItemReviewed(order, item) ? orderDetailConfig.items.reviewed : orderDetailConfig.items.reviewProduct}
-                            </button>
-                          </div>
-                        )}
+                        {["delivered", "completed"].includes((order.status || "").toLowerCase()) && (() => {
+                          const revState = normalizeOrderReviewState(order);
+                          return (
+                            <div className={styles.itemReviewActionRow}>
+                              {!revState.isReviewed ? (
+                                <button
+                                  type="button"
+                                  onClick={() => openReviewModal(order, item)}
+                                  className={styles.reviewBtn}
+                                >
+                                  <AppIcon name="star" size={14} />
+                                  <span>{orderDetailConfig.items.reviewProduct}</span>
+                                </button>
+                              ) : revState.canEditReview ? (
+                                <>
+                                  <button
+                                    type="button"
+                                    disabled
+                                    className={styles.reviewBtnDisabled}
+                                  >
+                                    <AppIcon name="check-circle" size={14} />
+                                    <span>{orderDetailConfig.items.reviewed}</span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => openReviewModal(order, item)}
+                                    className={styles.editReviewBtn}
+                                  >
+                                    <AppIcon name="edit" size={14} />
+                                    <span>{orderDetailConfig.items.editReview1x}</span>
+                                  </button>
+                                </>
+                              ) : (
+                                <button
+                                  type="button"
+                                  disabled
+                                  className={styles.reviewBtnDisabled}
+                                >
+                                  <AppIcon name="check-circle" size={14} />
+                                  <span>{orderDetailConfig.items.reviewedPermanent}</span>
+                                </button>
+                              )}
+                            </div>
+                          );
+                        })()}
                       </div>
                     </div>
                   );
@@ -1639,7 +1695,9 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
             >
               <div className={styles.modalHeader}>
                 <h3 className={styles.modalTitle}>
-                  {orderDetailConfig.reviewModal.title}
+                  {normalizeOrderReviewState(reviewModalOrder).isReviewed
+                    ? orderDetailConfig.reviewModal.editTitle
+                    : orderDetailConfig.reviewModal.title}
                 </h3>
                 <button
                   onClick={closeReviewModal}
@@ -1651,6 +1709,37 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
               </div>
 
               <form onSubmit={handleReviewSubmit} className={styles.modalBody}>
+                {normalizeOrderReviewState(reviewModalOrder).isReviewed && (
+                  <div className={styles.editWarningBanner}>
+                    {orderDetailConfig.reviewModal.editWarning}
+                  </div>
+                )}
+
+                {items.length > 1 && (
+                  <div>
+                    <span className={styles.modalFieldLabel}>
+                      {orderDetailConfig.reviewModal.selectProductLabel}
+                    </span>
+                    <div className={styles.productChipRow}>
+                      {items.map((item: any, idx: number) => {
+                        const itemKey = String(item.product_id || item.productId || item.id || idx);
+                        const targetKey = String(reviewTargetItem.product_id || reviewTargetItem.productId || reviewTargetItem.id || "");
+                        const isActiveChip = itemKey === targetKey;
+                        return (
+                          <button
+                            key={itemKey}
+                            type="button"
+                            onClick={() => setReviewTargetItem(item)}
+                            className={`${styles.productChip} ${isActiveChip ? styles.productChipActive : ""}`}
+                          >
+                            {item.product_name || item.name}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
                 <div className={styles.modalProductCard}>
                   <div className={styles.modalProductIconWrap}>
                     <AppIcon name="package" size={20} />
@@ -1774,7 +1863,11 @@ export default function OrderDetailPage({ orderId: propOrderId }) {
                     ) : (
                       <>
                         <AppIcon name="send" size={15} />
-                        <span>{orderDetailConfig.reviewModal.submitBtn}</span>
+                        <span>
+                          {normalizeOrderReviewState(reviewModalOrder).isReviewed
+                            ? orderDetailConfig.reviewModal.saveEditBtn
+                            : orderDetailConfig.reviewModal.submitBtn}
+                        </span>
                       </>
                     )}
                   </button>

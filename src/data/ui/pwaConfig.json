@@ -1,0 +1,15 @@
+{
+  "offlineBanner": {
+    "title": "Mode Offline",
+    "description": "Koneksi terputus. Menampilkan tampilan tersimpan hingga jaringan kembali."
+  },
+  "install": {
+    "buttonLabel": "Pasang Aplikasi",
+    "installingLabel": "Memasang...",
+    "sidebarSub": "Akses cepat seperti aplikasi",
+    "installedSuccess": "Aplikasi MAMEKO siap dibuka dari layar utama.",
+    "cancelled": "Pemasangan dibatalkan.",
+    "failed": "Pemasangan aplikasi belum dapat dimulai."
+  }
+}
+

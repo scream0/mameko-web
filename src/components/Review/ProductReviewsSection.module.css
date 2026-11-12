@@ -1,4 +1,4 @@
-﻿.reviewsWrapper {
+.reviewsWrapper {
   margin-top: 3.5rem;
   padding-top: 2.5rem;
   border-top: 1px solid var(--border-color);
@@ -206,4 +206,36 @@
   font-size: 1.1rem;
   color: var(--text-primary);
   margin-bottom: 0.25rem;
+}
+
+.loadingState {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-secondary);
+}
+
+.starFilled {
+  color: var(--warning-color, #D97706);
+}
+
+.starMuted {
+  color: var(--border-color);
+}
+
+.zoomOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 1rem;
+}
+
+.zoomImage {
+  max-width: 90vw;
+  max-height: 90vh;
+  border-radius: 12px;
+  object-fit: contain;
 }

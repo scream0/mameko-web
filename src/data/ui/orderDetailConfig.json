@@ -124,8 +124,10 @@
     "defaultProductName": "Parfum MAMEKO",
     "variantPrefix": "Varian: ",
     "defaultVariant": "Standard",
-    "reviewProduct": "Ulas Produk",
+    "reviewProduct": "Beri Ulasan",
     "reviewed": "Diulas",
+    "editReview1x": "Edit Ulasan (1x)",
+    "reviewedPermanent": "Sudah Diulas",
     "emptyItems": "Tidak ada rincian item tambahan."
   },
   "timeline": {
@@ -162,8 +164,11 @@
     "footerNote": "Jika ada pertanyaan mengenai pesanan Anda, silakan hubungi customer service kami."
   },
   "reviewModal": {
-    "title": "Ulas Produk",
+    "title": "Beri Ulasan Produk",
+    "editTitle": "Edit Ulasan (Kesempatan 1x)",
+    "editWarning": "Perhatian: Anda hanya dapat mengubah ulasan ini 1 kali lagi.",
     "productLabel": "Produk",
+    "selectProductLabel": "Pilih Produk yang Diulas",
     "ratingLabel": "Rating (1 - 5 Bintang)",
     "commentLabel": "Komentar Ulasan",
     "commentPlaceholder": "Bagaimana pengalaman Anda dengan aroma parfum ini?",
@@ -172,7 +177,8 @@
     "dropzoneSubText": "Format JPG, PNG, WebP (Maksimal 5 MB)",
     "removePhoto": "Hapus Foto",
     "cancelBtn": "Batal",
-    "submitBtn": "Kirim Ulasan & Foto",
+    "submitBtn": "Kirim Ulasan",
+    "saveEditBtn": "Simpan Perubahan Ulasan",
     "submittingBtn": "Mengirim Ulasan...",
     "toasts": {
       "invalidType": "Format foto harus JPG, PNG, atau WebP.",
@@ -182,6 +188,7 @@
       "uploadPhotoError": "Gagal mengunggah foto. Silakan coba lagi nanti.",
       "savingReview": "Menyimpan ulasan...",
       "success": "Terima kasih! Ulasan Anda berhasil dikirim.",
+      "editSuccess": "Ulasan berhasil diperbarui (Batas edit 1x telah digunakan).",
       "error": "Gagal mengirim ulasan."
     }
   },

@@ -2,7 +2,9 @@
 import { useEffect, useState } from "react";
 import { useStore } from "@/context/StoreContext";
 import { useTheme } from "@/context/ThemeContext";
+import { usePwa } from "@/context/PwaContext";
 import styles from "./UserDashboard.module.css";
+import pwaStyles from "@/components/PWA/PwaComponents.module.css";
 import { useUserDashboardData } from "@/hooks/useUserDashboardData";
 import { auth, mamekoClient } from "@/lib/mamekoClient";
 import { logoutUser } from "@/utils/authHelpers";
@@ -10,6 +12,7 @@ import toast from "react-hot-toast";
 import { getApiBaseUrl } from "@/lib/apiClient";
 
 import userConfig from "@/data/ui/userDashboardConfig.json";
+import pwaConfig from "@/data/ui/pwaConfig.json";
 
 import dynamic from "next/dynamic";
 
@@ -56,7 +59,9 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 const DEFAULT_TAB = "shop";
 const ALLOWED_TABS = ["shop", "feed", "overview", "orders", "notifications", "profile", "chat"];
+const MOBILE_BOTTOM_TABS = ["shop", "feed", "orders", "notifications", "profile"];
 const filteredNav = userConfig.nav.filter((item) => ALLOWED_TABS.includes(item.id));
+const mobileNavItems = userConfig.nav.filter((item) => MOBILE_BOTTOM_TABS.includes(item.id));
 const VALID_TABS = filteredNav.map((item) => item.id);
 
 function getGreetingName(userName: any) {
@@ -71,6 +76,7 @@ export default function UserDashboard({ user }) {
   const [notificationCount, setNotificationCount] = useState(0);
   const [unreadChatCount, setUnreadChatCount] = useState(0);
   const { theme, toggleTheme, isThemeReady } = useTheme();
+  const { canInstall, isInstalling, triggerInstall } = usePwa();
 
   const { isCartOpen, setIsCartOpen, cartQuantity, addToCart, rupiah } = useStore();
   const [searchQuery, setSearchQuery] = useState("");
@@ -308,6 +314,19 @@ export default function UserDashboard({ user }) {
         </nav>
 
         <div className={styles.sidebarFooter}>
+          {canInstall && (
+            <button
+              type="button"
+              onClick={() => {
+                if (!isInstalling) void triggerInstall();
+              }}
+              aria-disabled={isInstalling ? "true" : undefined}
+              className={pwaStyles.installBtn}
+            >
+              <AppIcon name="download" size={16} />
+              <span>{isInstalling ? pwaConfig.install.installingLabel : pwaConfig.install.buttonLabel}</span>
+            </button>
+          )}
           <button
             onClick={handleLogout}
             className={styles.logoutBtn}
@@ -349,6 +368,21 @@ export default function UserDashboard({ user }) {
             )}
           </div>
           <div className={styles.navbarActions}>
+            {canInstall && (
+              <button
+                type="button"
+                className={`${pwaStyles.installBtn} ${pwaStyles.installBtnCompact} ${styles.mobileInstallOnly}`}
+                onClick={() => {
+                  if (!isInstalling) void triggerInstall();
+                }}
+                aria-disabled={isInstalling ? "true" : undefined}
+                aria-label={pwaConfig.install.buttonLabel}
+                title={pwaConfig.install.buttonLabel}
+              >
+                <AppIcon name="download" size={15} />
+                <span>{pwaConfig.install.buttonLabel}</span>
+              </button>
+            )}
             {/* Theme Switcher Button */}
             <button
               type="button"
@@ -441,9 +475,9 @@ export default function UserDashboard({ user }) {
         </div>
       </main>
 
-      {/* Mobile Floating Bottom Navigation (Android Style) */}
+      {/* Mobile Floating Bottom Navigation (Android Style — 5 Primary Tabs) */}
       <nav className={styles.mobileBottomNav} aria-label={userConfig.aria?.mobileNav || "Mobile Bottom Navigation"}>
-        {filteredNav.map((item) => {
+        {mobileNavItems.map((item) => {
           const isActive = activeTab === item.id;
           const badgeCount =
             item.id === "notifications"

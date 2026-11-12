@@ -53,19 +53,24 @@
     "processingConfirm": "Memproses...",
     "reorder": "Pesan Lagi",
     "loadMore": "Muat Lebih Banyak",
-    "reviewedItem": "✓ {name} sudah diulas",
-    "reviewItem": "Ulas {name}"
+    "reviewedItem": "✓ Diulas",
+    "reviewItem": "Beri Ulasan",
+    "editReview1x": "Edit Ulasan (1x)",
+    "reviewedPermanent": "✓ Sudah Diulas"
   },
   "labels": {
     "orderId": "ID Transaksi",
     "product": "Produk",
+    "selectProductToReview": "Pilih Produk yang Diulas",
     "specsAndNotes": "Spesifikasi & Catatan",
     "paymentMethod": "Metode Pembayaran",
     "shippingAddress": "Alamat Pengiriman",
     "shippingReceipt": "Nomor Resi Pengiriman",
     "trackShipping": "Lacak Kurir",
     "totalPaid": "Total Pembayaran",
-    "reviewTitle": "Ulas Produk",
+    "reviewTitle": "Beri Ulasan Produk",
+    "editReviewTitle": "Edit Ulasan (Kesempatan 1x)",
+    "editReviewWarning": "Perhatian: Anda hanya dapat mengubah ulasan ini 1 kali lagi.",
     "ratingLabel": "Rating (1 - 5 Bintang)",
     "commentLabel": "Komentar Ulasan",
     "commentPlaceholder": "Bagaimana pengalaman Anda dengan aroma parfum ini?",
@@ -77,7 +82,8 @@
     "dropzoneSubText": "Format JPG, PNG, WebP (Maksimal 5 MB)",
     "cancelAction": "Batal",
     "submittingReview": "Mengirim Ulasan...",
-    "submitReview": "Kirim Ulasan & Foto"
+    "submitReview": "Kirim Ulasan",
+    "saveEditedReview": "Simpan Perubahan Ulasan"
   },
   "ratingOptions": [
     { "value": 5, "label": "★★★★★ (5 - Luar Biasa)" },
@@ -128,6 +134,7 @@
     "uploadPhotoError": "Gagal mengunggah foto. Silakan coba lagi nanti.",
     "savingReview": "Menyimpan ulasan...",
     "reviewSuccess": "Terima kasih! Ulasan Anda berhasil dikirim.",
+    "reviewEditSuccess": "Ulasan berhasil diperbarui (Batas edit 1x telah digunakan).",
     "reviewError": "Gagal mengirim ulasan."
   }
 }

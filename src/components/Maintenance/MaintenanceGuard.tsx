@@ -77,6 +77,10 @@ export function MaintenanceGuard({ children }: MaintenanceGuardProps) {
       return false;
     }
 
+    if (typeof navigator !== "undefined" && !navigator.onLine) {
+      return true;
+    }
+
     try {
       setIsChecking(true);
       const controller = new AbortController();
@@ -122,7 +126,10 @@ export function MaintenanceGuard({ children }: MaintenanceGuardProps) {
 
       return false;
     } catch {
-      // Network error, connection refused, or timeout
+      // Saat perangkat offline (PWA offline mode), jangan anggap sebagai server maintenance
+      if (typeof navigator !== "undefined" && !navigator.onLine) {
+        return true;
+      }
       return false;
     } finally {
       setIsChecking(false);

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0F172A" />
+  <title>Offline — MAMEKO</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #F8FAFC;
+      --card: #FFFFFF;
+      --text: #0F172A;
+      --muted: #475569;
+      --border: #E2E8F0;
+      --accent: #0F172A;
+      --accent-text: #FFFFFF;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0D0F12;
+        --card: #15181E;
+        --text: #F1F5F9;
+        --muted: #94A3B8;
+        --border: #222732;
+        --accent: #F1F5F9;
+        --accent-text: #0D0F12;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100dvh;
+      display: grid;
+      place-items: center;
+      padding: 1.5rem;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    .card {
+      max-width: 420px;
+      width: 100%;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 2rem 1.5rem;
+      text-align: center;
+    }
+    .badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+    }
+    h1 {
+      margin: 0 0 0.5rem;
+      font-size: 1.25rem;
+    }
+    p {
+      margin: 0 0 1.5rem;
+      font-size: 0.92rem;
+      line-height: 1.5;
+      color: var(--muted);
+    }
+    button {
+      width: 100%;
+      padding: 0.8rem 1.25rem;
+      border-radius: 10px;
+      border: 0;
+      background: var(--accent);
+      color: var(--accent-text);
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <span class="badge">MAMEKO • OFFLINE</span>
+    <h1>Koneksi Internet Terputus</h1>
+    <p>Periksa jaringan Wi-Fi atau data seluler Anda, lalu muat ulang halaman untuk melanjutkan ke dashboard MAMEKO.</p>
+    <button type="button" onclick="window.location.reload()">Coba Muat Ulang</button>
+  </main>
+</body>
+</html>
+

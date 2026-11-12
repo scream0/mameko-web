@@ -1,9 +1,15 @@
-﻿{
+{
   "header": {
     "title": "Ulasan Pelanggan",
     "basedOn": "berdasarkan",
     "reviewsCount": "ulasan",
-    "allRatings": "Semua Penilaian"
+    "allRatings": "Semua Penilaian",
+    "defaultReviewer": "Pelanggan Mameko"
+  },
+  "states": {
+    "loading": "Memuat ulasan...",
+    "photoAlt": "Foto Ulasan",
+    "zoomAlt": "Pratinjau Foto Ulasan"
   },
   "stats": {
     "outOf": "dari 5.0",

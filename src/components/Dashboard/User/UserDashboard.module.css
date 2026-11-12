@@ -4,6 +4,7 @@
 .dashboardContainer {
   display: flex;
   height: 100vh;
+  height: 100dvh;
   background:
     radial-gradient(circle at top center, rgba(var(--primary-accent-rgb), 0.12), transparent 40%),
     linear-gradient(180deg, rgba(var(--background-rgb), 0.8) 0%, rgba(var(--background-rgb), 1) 100%);
@@ -20,6 +21,7 @@
   align-items: center;
   justify-content: center;
   height: 100vh;
+  height: 100dvh;
   background-color: var(--background);
   color: var(--text-primary);
 }
@@ -266,8 +268,11 @@
 
 /* Sidebar Footer & Logout Button */
 .sidebarFooter {
-  padding: 1rem 1.25rem;
+  padding: 1rem 1.25rem calc(1rem + env(safe-area-inset-bottom, 0px));
   border-top: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
 }
 
 .logoutBtn {
@@ -344,6 +349,7 @@
   min-height: 0;
   background-color: var(--background);
   height: 100vh;
+  height: 100dvh;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
@@ -353,6 +359,7 @@
     margin-top: 0;
     margin-left: 270px;
     height: 100vh;
+    height: 100dvh;
   }
 }
 
@@ -652,10 +659,20 @@
   padding: 0.75rem 1.25rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
   position: sticky;
-  top: 16px;
+  top: calc(12px + env(safe-area-inset-top, 0px));
   z-index: 100;
-  margin: 1.25rem 1.5rem 0.5rem;
+  margin: calc(1.25rem + env(safe-area-inset-top, 0px)) 1.5rem 0.5rem;
   transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.mobileInstallOnly {
+  display: inline-flex;
+}
+
+@media (min-width: 1024px) {
+  .mobileInstallOnly {
+    display: none;
+  }
 }
 
 :global([data-theme="dark"]) .shopNavbar {

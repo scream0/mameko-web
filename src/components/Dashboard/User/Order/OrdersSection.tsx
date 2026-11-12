@@ -14,6 +14,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import ConfirmationModal from "@/components/UI/Modal/ConfirmationModal";
 import { getApiBaseUrl } from "@/lib/apiClient";
 import { convertToWebP } from "@/utils/imageConverter";
+import { normalizeOrderReviewState } from "@/utils/reviewSync";
 
 function getStatusInfo(rawStatus: any) {
   const key = (rawStatus || "pending").toLowerCase();
@@ -45,17 +46,18 @@ function formatOrderDoc(item: any, primaryAddress: any) {
 
   const rawAmount = Number(item.amount || item.gross_amount || item.total_amount || item.grand_total || item.price || 0);
 
-  const reviewedItemIds = Array.isArray(item.reviewedItemIds)
-    ? item.reviewedItemIds
-    : [];
+  const reviewState = normalizeOrderReviewState(item);
 
   return {
     id: item.orderId || item.order_id || item.id,
     order_number: item.order_number || item.orderNumber || item.orderId || item.order_id || item.id,
     name: displayName,
     items: item.items || [],
-    hasBeenReviewed: item.hasBeenReviewed || false,
-    reviewedItemIds,
+    hasBeenReviewed: reviewState.isReviewed,
+    is_reviewed: reviewState.isReviewed,
+    review_edit_count: reviewState.reviewEditCount,
+    review_rating: reviewState.reviewRating,
+    review_comment: reviewState.reviewComment,
     shippingReceiptNumber: item.shippingReceiptNumber || null,
     statusHistory: Array.isArray(item.statusHistory) ? item.statusHistory : [],
     concentration:
@@ -274,8 +276,18 @@ export default function OrdersSection() {
       )
       .subscribe();
 
+    const handleVisibilityRefresh = () => {
+      if (document.visibilityState === "visible") {
+        loadOrders();
+      }
+    };
+    window.addEventListener("focus", handleVisibilityRefresh);
+    document.addEventListener("visibilitychange", handleVisibilityRefresh);
+
     return () => {
       isActive = false;
+      window.removeEventListener("focus", handleVisibilityRefresh);
+      document.removeEventListener("visibilitychange", handleVisibilityRefresh);
       db.removeChannel(userOrdersChannel);
     };
   }, [currentUser, currentSession]);
@@ -636,11 +648,19 @@ export default function OrdersSection() {
     }
   };
 
-  const openReviewModal = (order, item: any) => {
+  const openReviewModal = (order: any, item?: any) => {
+    const revState = normalizeOrderReviewState(order);
+    if (revState.isReviewQuotaExhausted) return;
+    const fallbackItem =
+      item ||
+      (Array.isArray(order?.items) && order.items.length > 0
+        ? order.items[0]
+        : { id: order.id, product_id: order.id, name: order.name, product_name: order.name });
+
     setReviewModalOrder(order);
-    setReviewTargetItem(item);
-    setRating(5);
-    setComment("");
+    setReviewTargetItem(fallbackItem);
+    setRating(revState.isReviewed && revState.reviewRating ? revState.reviewRating : 5);
+    setComment(revState.isReviewed && revState.reviewComment ? revState.reviewComment : "");
     setReviewPhotoFile(null);
     setReviewPhotoPreview(null);
   };
@@ -757,20 +777,25 @@ export default function OrdersSection() {
         throw new Error(result.error || ordersConfig.toasts.reviewError || "Gagal mengirim ulasan.");
       }
 
-      toast.success(ordersConfig.toasts.reviewSuccess || "Terima kasih! Ulasan Anda berhasil dikirim.", {
-        id: toastId,
-      });
-
-      const targetItemId = String(reviewTargetItem.product_id || reviewTargetItem.productId || reviewTargetItem.id || "");
+      const wasEditing = normalizeOrderReviewState(reviewModalOrder).isReviewed;
+      toast.success(
+        wasEditing
+          ? ordersConfig.toasts.reviewEditSuccess
+          : ordersConfig.toasts.reviewSuccess,
+        { id: toastId }
+      );
 
       setOrders((prev) =>
         prev.map((o) => {
           if (o.id === reviewModalOrder.id) {
-            const updatedReviewedIds = [...(o.reviewedItemIds || []), targetItemId];
+            const prevState = normalizeOrderReviewState(o);
             return {
               ...o,
-              reviewedItemIds: updatedReviewedIds,
               hasBeenReviewed: true,
+              is_reviewed: true,
+              review_edit_count: prevState.isReviewed ? prevState.reviewEditCount + 1 : 0,
+              review_rating: rating,
+              review_comment: comment,
             };
           }
           return o;
@@ -784,14 +809,6 @@ export default function OrdersSection() {
     } finally {
       setIsSubmittingReview(false);
     }
-  };
-
-  const isItemReviewed = (order, item: any) => {
-    const itemId = String(item.product_id || item.productId || item.id || "");
-    if (order.reviewedItemIds && order.reviewedItemIds.length > 0) {
-      return order.reviewedItemIds.includes(itemId);
-    }
-    return order.hasBeenReviewed;
   };
 
   return (
@@ -871,10 +888,7 @@ export default function OrdersSection() {
               const isDelivered = ["shipping", "shipped", "delivered", "completed"].includes(order.status);
 
               let statusInfo = getStatusInfo(order.status);
-              const reviewableItems =
-                order.items && order.items.length > 0
-                  ? order.items
-                  : [{ id: order.id, name: order.name }];
+              const revState = normalizeOrderReviewState(order);
 
               return (
                 <div key={order.id} className={`card ${styles.orderCard}`}>
@@ -904,27 +918,42 @@ export default function OrdersSection() {
 
                     {isFinished && (
                       <div className={styles.perItemReviewRow}>
-                        {reviewableItems.map((item, idx: any) => {
-                          const reviewed = isItemReviewed(order, item);
-                          return (
+                        {!revState.isReviewed ? (
+                          <button
+                            type="button"
+                            onClick={() => openReviewModal(order)}
+                            className={styles.reviewBtn}
+                          >
+                            <AppIcon name="star" size={14} />
+                            <span>{ordersConfig.buttons.reviewItem}</span>
+                          </button>
+                        ) : revState.canEditReview ? (
+                          <>
                             <button
-                              key={idx}
-                              onClick={() =>
-                                !reviewed && openReviewModal(order, item)
-                              }
-                              disabled={reviewed}
-                              className={
-                                reviewed
-                                  ? styles.reviewBtnDisabled
-                                  : styles.reviewBtn
-                              }
+                              type="button"
+                              disabled
+                              className={styles.reviewBtnDisabled}
                             >
-                              {reviewed
-                                ? (ordersConfig.buttons.reviewedItem || "✓ {name} sudah diulas").replace("{name}", item.product_name || item.name)
-                                : (ordersConfig.buttons.reviewItem || "Ulas {name}").replace("{name}", item.product_name || item.name)}
+                              {ordersConfig.buttons.reviewedItem}
                             </button>
-                          );
-                        })}
+                            <button
+                              type="button"
+                              onClick={() => openReviewModal(order)}
+                              className={styles.editReviewBtn}
+                            >
+                              <AppIcon name="edit" size={14} />
+                              <span>{ordersConfig.buttons.editReview1x}</span>
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            type="button"
+                            disabled
+                            className={styles.reviewBtnDisabled}
+                          >
+                            {ordersConfig.buttons.reviewedPermanent}
+                          </button>
+                        )}
                       </div>
                     )}
                   </div>
@@ -1005,7 +1034,9 @@ export default function OrdersSection() {
           >
             <div className={styles.modalHeader}>
               <h3 className={styles.modalTitle}>
-                {ordersConfig.labels.reviewTitle}
+                {normalizeOrderReviewState(reviewModalOrder).isReviewed
+                  ? ordersConfig.labels.editReviewTitle
+                  : ordersConfig.labels.reviewTitle}
               </h3>
               <button
                 onClick={closeReviewModal}
@@ -1017,6 +1048,37 @@ export default function OrdersSection() {
             </div>
 
             <form onSubmit={handleReviewSubmit} className={styles.modalBody}>
+              {normalizeOrderReviewState(reviewModalOrder).isReviewed && (
+                <div className={styles.editWarningBanner}>
+                  {ordersConfig.labels.editReviewWarning}
+                </div>
+              )}
+
+              {Array.isArray(reviewModalOrder.items) && reviewModalOrder.items.length > 1 && (
+                <div>
+                  <span className={styles.modalFieldLabel}>
+                    {ordersConfig.labels.selectProductToReview}
+                  </span>
+                  <div className={styles.productChipRow}>
+                    {reviewModalOrder.items.map((item: any, idx: number) => {
+                      const itemKey = String(item.product_id || item.productId || item.id || idx);
+                      const targetKey = String(reviewTargetItem.product_id || reviewTargetItem.productId || reviewTargetItem.id || "");
+                      const isActiveChip = itemKey === targetKey;
+                      return (
+                        <button
+                          key={itemKey}
+                          type="button"
+                          onClick={() => setReviewTargetItem(item)}
+                          className={`${styles.productChip} ${isActiveChip ? styles.productChipActive : ""}`}
+                        >
+                          {item.product_name || item.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               <div className={styles.modalProductCard}>
                 <div className={styles.modalProductIconWrap}>
                   <AppIcon name="package" size={20} />
@@ -1140,7 +1202,11 @@ export default function OrdersSection() {
                   ) : (
                     <>
                       <AppIcon name="send" size={15} />
-                      <span>{ordersConfig.labels.submitReview}</span>
+                      <span>
+                        {normalizeOrderReviewState(reviewModalOrder).isReviewed
+                          ? ordersConfig.labels.saveEditedReview
+                          : ordersConfig.labels.submitReview}
+                      </span>
                     </>
                   )}
                 </button>

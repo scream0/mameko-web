@@ -72,6 +72,7 @@ import {
   Info,
   ThumbsUp,
   Home,
+  Pencil,
 } from "lucide-react";
 
 const iconMap: Record<string, React.ElementType> = {
@@ -172,6 +173,7 @@ const iconMap: Record<string, React.ElementType> = {
   "like": ThumbsUp,
   "whatsapp": MessageCircle,
   "home": Home,
+  "edit": Pencil,
 };
 
 const InstagramLogo = ({ className, size = 24, ...props }: any) => (
